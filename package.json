@@ -1,0 +1,47 @@
+{
+  "name": "valendo-teleprompter-suite",
+  "productName": "VaLendo",
+  "version": "1.0.0",
+  "buildNumber": 2,
+  "description": "VaLendo — A Teleprompter Suite. Teleprompter com edição de texto ao vivo durante a transmissão.",
+  "main": "out/main/index.js",
+  "type": "commonjs",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samaBR85/VaLendo-TeleprompterSuite.git"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "prebuild": "node scripts/bump-build.mjs",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "start:debug": "electron . --remote-debugging-port=9222",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "node scripts/verify.mjs"
+  },
+  "dependencies": {
+    "immer": "^11.1.15",
+    "mammoth": "^1.12.0",
+    "pdfjs-dist": "^6.2.108",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.6",
+    "vitest": "^4.1.10"
+  }
+}

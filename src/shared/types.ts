@@ -1,0 +1,120 @@
+/** Bloco de texto. `direction` são anotações em [colchetes], que não contam tempo. */
+export type BlockKind = 'speech' | 'direction' | 'chapter'
+
+export interface Block {
+  id: string
+  kind: BlockKind
+  text: string
+}
+
+/**
+ * Posição de leitura. Deliberadamente semântica, nunca em pixels: `wordOffset`
+ * é a quantidade (fracionária) de palavras percorridas dentro do bloco.
+ * É o que permite refluxo, troca de fonte e edição ao vivo sem mover o texto.
+ */
+export interface Anchor {
+  blockId: string
+  wordOffset: number
+}
+
+export interface LineRule {
+  minWords: number
+  maxWords: number
+}
+
+export interface Appearance extends LineRule {
+  fontFamily: string
+  /** px no viewport lógico da saída, não na tela do operador */
+  fontSize: number
+  fontWeight: number
+  lineHeight: number
+  letterSpacing: number
+  /** margem lateral em % da largura do viewport */
+  marginPct: number
+  textColor: string
+  bgColor: string
+  directionColor: string
+  align: 'left' | 'center'
+  /** posição vertical da marca de leitura, 0..1 */
+  readingLinePct: number
+  focusDim: boolean
+  mirrorX: boolean
+  mirrorY: boolean
+  rotation: 0 | 90 | 180 | 270
+}
+
+export interface ColorPreset {
+  id: string
+  name: string
+  textColor: string
+  bgColor: string
+}
+
+export interface Marker {
+  id: string
+  blockId: string
+  label: string
+}
+
+export interface Tab {
+  id: string
+  title: string
+  color: string
+  blocks: Block[]
+  appearance: Appearance
+  markers: Marker[]
+  anchor: Anchor | null
+  /** incrementa a cada mudança de conteúdo; usado para reconciliar renderers */
+  rev: number
+}
+
+export interface Transport {
+  playing: boolean
+  /** palavras por minuto */
+  ppm: number
+  /** índice global de palavras no instante em que o play foi acionado */
+  wordsAtStart: number
+  /** Date.now() do play */
+  startedAt: number
+  /** tela preta na saída, sem parar o relógio */
+  blackout: boolean
+  /** congela a saída enquanto o operador reescreve */
+  frozen: boolean
+}
+
+export interface OutputConfig {
+  displayId: number | null
+  enabled: boolean
+  /**
+   * Viewport que a janela de transmissão realmente tem, informado por ela.
+   *
+   * Não dá para deduzir do monitor: em cheio o Windows entrega alguns pixels a
+   * mais do que `display.size`, e a prévia do operador precisa do número certo
+   * ou deixa de ser réplica exata.
+   */
+  viewport: { width: number; height: number } | null
+}
+
+export type LayoutMode = 'split' | 'focus' | 'deck'
+
+export interface AppState {
+  tabs: Tab[]
+  activeTabId: string
+  layoutMode: LayoutMode
+  transport: Transport
+  output: OutputConfig
+  presets: ColorPreset[]
+  /** commandId -> binding, sobrepondo o padrão do registro */
+  keymap: Record<string, string>
+}
+
+export interface DisplayInfo {
+  id: number
+  label: string
+  bounds: { x: number; y: number; width: number; height: number }
+  size: { width: number; height: number }
+  scaleFactor: number
+  rotation: number
+  internal: boolean
+  primary: boolean
+}

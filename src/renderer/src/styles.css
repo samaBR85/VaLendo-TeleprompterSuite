@@ -1,0 +1,100 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ink-0: #0d0e10;
+  --color-ink-1: #15171a;
+  --color-ink-2: #1d2024;
+  --color-ink-3: #282c31;
+  --color-line: #33383e;
+  --color-fog-0: #f2f3f5;
+  --color-fog-1: #b9bfc6;
+  --color-fog-2: #7e858d;
+  --color-live: #e24b4a;
+  --color-go: #5dcaa5;
+  --color-warn: #ef9f27;
+  --color-link: #6fa8f0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--color-ink-0);
+  color: var(--color-fog-0);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* o textarea do editor tem cor transparente (o realce vem do <pre> atrás),
+   então o placeholder precisa de cor própria ou fica invisível */
+textarea::placeholder {
+  color: var(--color-fog-2);
+  opacity: 1;
+}
+
+input[type='range'] {
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-ink-3);
+  outline: none;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--color-fog-0);
+  cursor: pointer;
+}
+
+input[type='color'] {
+  appearance: none;
+  border: none;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type='color']::-webkit-color-swatch {
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-3);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}

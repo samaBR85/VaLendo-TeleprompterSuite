@@ -1,0 +1,414 @@
+import type { Action, HistoryInfo } from '@shared/actions'
+import {
+  anchorFromWordIndex,
+  composeLines,
+  remapAnchor,
+  totalWords,
+  wordIndexFromAnchor
+} from '@shared/anchor'
+import { COMMANDS_BY_ID } from '@shared/commands'
+import { TAB_COLORS, createTab } from '@shared/defaults'
+import { History } from '@shared/history'
+import { reconcileBlocks } from '@shared/text'
+import type { Anchor, AppState, LineRule, Tab } from '@shared/types'
+import { wordIndexAt } from '@shared/pacing'
+import { appendHistoryStep, loadHistorySteps, loadState, saveState } from './storage'
+
+/** Palavras devolvidas ao pausar, para o apresentador reentrar sem tropeço. */
+const REWIND_ON_PAUSE = 2
+const PPM_MIN = 60
+const PPM_MAX = 320
+const PPM_STEP = 6
+
+type Listener = (state: AppState, history: HistoryInfo) => void
+
+function rule(tab: Tab): LineRule {
+  return { minWords: tab.appearance.minWords, maxWords: tab.appearance.maxWords }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
+export class Store {
+  private state: AppState
+  private readonly histories = new Map<string, History<Tab>>()
+  private readonly listeners = new Set<Listener>()
+
+  constructor() {
+    this.state = loadState()
+  }
+
+  getState(): AppState {
+    return this.state
+  }
+
+  subscribe(listener: Listener): () => void {
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener)
+  }
+
+  historyInfo(): HistoryInfo {
+    // via historyFor: assim o histórico gravado em disco já aparece disponível
+    // na primeira abertura, antes de qualquer edição nova
+    const history = this.historyFor(this.state.activeTabId)
+    return { canUndo: history.canUndo, canRedo: history.canRedo, depth: history.depth }
+  }
+
+  private activeTab(): Tab | undefined {
+    return this.state.tabs.find((t) => t.id === this.state.activeTabId)
+  }
+
+  private historyFor(tabId: string): History<Tab> {
+    let history = this.histories.get(tabId)
+    if (!history) {
+      history = new History<Tab>(400)
+      history.restore(loadHistorySteps(tabId))
+      this.histories.set(tabId, history)
+    }
+    return history
+  }
+
+  /** Índice global de palavras da posição de leitura, agora. */
+  private currentWordIndex(): number {
+    return wordIndexAt(this.state.transport, Date.now())
+  }
+
+  private setState(next: AppState): void {
+    this.state = next
+    saveState(next)
+    const info = this.historyInfo()
+    for (const listener of this.listeners) listener(next, info)
+  }
+
+  private replaceTab(tab: Tab): AppState {
+    const index = this.state.tabs.findIndex((t) => t.id === tab.id)
+    if (index === -1) return this.state
+    return { ...this.state, tabs: this.state.tabs.with(index, tab) }
+  }
+
+  /** Mutação que entra no histórico de desfazer. */
+  private mutateTab(tabId: string, label: string, recipe: (draft: Tab) => void): Tab | null {
+    const tab = this.state.tabs.find((t) => t.id === tabId)
+    if (!tab) return null
+
+    const [next, step] = this.historyFor(tabId).apply(tab, label, recipe, Date.now())
+    if (!step) return null
+
+    const bumped = { ...next, rev: tab.rev + 1 }
+    appendHistoryStep(tabId, step)
+    this.state = this.replaceTab(bumped)
+    return bumped
+  }
+
+  /** Mutação fora do histórico: posição de leitura e chrome do app não são desfazíveis. */
+  private patchTab(tabId: string, patch: Partial<Tab>): void {
+    const tab = this.state.tabs.find((t) => t.id === tabId)
+    if (!tab) return
+    this.state = this.replaceTab({ ...tab, ...patch })
+  }
+
+  /**
+   * Recoloca o relógio na palavra onde a leitura estava.
+   *
+   * É a peça que sustenta a edição ao vivo: inserir texto acima do ponto de
+   * leitura muda o índice global daquela palavra, então o relógio precisa ser
+   * rebaseado ou a rolagem daria um salto.
+   */
+  private rebase(tab: Tab, anchor: Anchor | null): void {
+    if (tab.id !== this.state.activeTabId) return
+    const lines = composeLines(tab.blocks, rule(tab))
+    const wordIndex = anchor ? wordIndexFromAnchor(lines, anchor) : 0
+    this.state = {
+      ...this.state,
+      transport: {
+        ...this.state.transport,
+        wordsAtStart: clamp(wordIndex, 0, totalWords(lines)),
+        startedAt: Date.now()
+      }
+    }
+  }
+
+  /** Âncora correspondente à posição do relógio, calculada sobre os blocos atuais. */
+  private anchorNow(tab: Tab): Anchor | null {
+    if (tab.id !== this.state.activeTabId) return tab.anchor
+    const lines = composeLines(tab.blocks, rule(tab))
+    return anchorFromWordIndex(lines, this.currentWordIndex()) ?? tab.anchor
+  }
+
+  private seekWordIndex(wordIndex: number): void {
+    const tab = this.activeTab()
+    if (!tab) return
+    const lines = composeLines(tab.blocks, rule(tab))
+    const clamped = clamp(wordIndex, 0, totalWords(lines))
+    const anchor = anchorFromWordIndex(lines, clamped)
+    this.state = {
+      ...this.state,
+      transport: { ...this.state.transport, wordsAtStart: clamped, startedAt: Date.now() }
+    }
+    if (anchor) this.patchTab(tab.id, { anchor })
+  }
+
+  dispatch(action: Action): void {
+    switch (action.type) {
+      case 'text/set': {
+        const tab = this.state.tabs.find((t) => t.id === action.tabId)
+        if (!tab) return
+
+        const oldBlocks = tab.blocks
+        const anchorBefore = this.anchorNow(tab)
+        const newBlocks = reconcileBlocks(oldBlocks, action.text)
+        const anchorAfter = remapAnchor(oldBlocks, newBlocks, anchorBefore)
+        const surviving = new Set(newBlocks.map((b) => b.id))
+
+        const updated = this.mutateTab(action.tabId, 'texto', (draft) => {
+          draft.blocks = newBlocks
+          draft.anchor = anchorAfter
+          draft.markers = draft.markers.filter((m) => surviving.has(m.blockId))
+        })
+        if (updated) this.rebase(updated, anchorAfter)
+        break
+      }
+
+      case 'appearance/patch': {
+        // corpo, margem e palavras por linha não mexem no índice global de
+        // palavras, então não há relógio para rebasear aqui
+        this.mutateTab(action.tabId, `aparência:${Object.keys(action.patch).join(',')}`, (draft) => {
+          Object.assign(draft.appearance, action.patch)
+          draft.appearance.minWords = clamp(draft.appearance.minWords, 1, 20)
+          draft.appearance.maxWords = clamp(draft.appearance.maxWords, draft.appearance.minWords, 24)
+          draft.appearance.fontSize = clamp(draft.appearance.fontSize, 16, 260)
+          draft.appearance.marginPct = clamp(draft.appearance.marginPct, 0, 35)
+        })
+        break
+      }
+
+      case 'appearance/invert': {
+        this.mutateTab(action.tabId, 'inverter', (draft) => {
+          const { textColor, bgColor } = draft.appearance
+          draft.appearance.textColor = bgColor
+          draft.appearance.bgColor = textColor
+        })
+        break
+      }
+
+      case 'appearance/preset': {
+        const preset = this.state.presets.find((p) => p.id === action.presetId)
+        if (!preset) return
+        this.mutateTab(action.tabId, `preset:${preset.id}`, (draft) => {
+          draft.appearance.textColor = preset.textColor
+          draft.appearance.bgColor = preset.bgColor
+        })
+        break
+      }
+
+      case 'transport/toggle': {
+        const transport = this.state.transport
+        if (transport.playing) {
+          const stopped = Math.max(0, this.currentWordIndex() - REWIND_ON_PAUSE)
+          this.state = {
+            ...this.state,
+            transport: { ...transport, playing: false, wordsAtStart: stopped, startedAt: Date.now() }
+          }
+          this.seekWordIndex(stopped)
+        } else {
+          this.state = {
+            ...this.state,
+            transport: { ...transport, playing: true, startedAt: Date.now() }
+          }
+        }
+        break
+      }
+
+      case 'transport/pause': {
+        if (!this.state.transport.playing) break
+        const stopped = Math.max(0, this.currentWordIndex() - REWIND_ON_PAUSE)
+        this.state = {
+          ...this.state,
+          transport: { ...this.state.transport, playing: false, startedAt: Date.now() }
+        }
+        this.seekWordIndex(stopped)
+        break
+      }
+
+      case 'transport/restart':
+        this.seekWordIndex(0)
+        break
+
+      case 'transport/seekWords':
+        this.seekWordIndex(this.currentWordIndex() + action.delta)
+        break
+
+      case 'transport/seekAnchor': {
+        const tab = this.activeTab()
+        if (!tab) return
+        const lines = composeLines(tab.blocks, rule(tab))
+        this.seekWordIndex(wordIndexFromAnchor(lines, action.anchor))
+        break
+      }
+
+      case 'transport/ppm':
+      case 'transport/nudgePpm': {
+        const current = this.state.transport.ppm
+        const target = action.type === 'transport/ppm' ? action.ppm : current + action.delta * PPM_STEP
+        // rebaseia antes de trocar o ritmo, senão o novo ppm reescreve o passado
+        const at = this.currentWordIndex()
+        this.state = {
+          ...this.state,
+          transport: {
+            ...this.state.transport,
+            ppm: clamp(Math.round(target), PPM_MIN, PPM_MAX),
+            wordsAtStart: at,
+            startedAt: Date.now()
+          }
+        }
+        break
+      }
+
+      case 'transport/blackout':
+        this.state = {
+          ...this.state,
+          transport: { ...this.state.transport, blackout: !this.state.transport.blackout }
+        }
+        break
+
+      case 'transport/freeze':
+        this.state = {
+          ...this.state,
+          transport: { ...this.state.transport, frozen: !this.state.transport.frozen }
+        }
+        break
+
+      case 'marker/add': {
+        this.mutateTab(action.tabId, `marcador:${Date.now()}`, (draft) => {
+          if (draft.markers.some((m) => m.blockId === action.blockId)) return
+          draft.markers.push({
+            id: `m${Date.now().toString(36)}`,
+            blockId: action.blockId,
+            label: action.label
+          })
+        })
+        break
+      }
+
+      case 'marker/remove':
+        this.mutateTab(action.tabId, `marcador:remover:${action.markerId}`, (draft) => {
+          draft.markers = draft.markers.filter((m) => m.id !== action.markerId)
+        })
+        break
+
+      case 'tab/add': {
+        if (this.state.tabs.length >= 10) return
+        const color = TAB_COLORS[this.state.tabs.length % TAB_COLORS.length]
+        const tab = createTab(`Aba ${this.state.tabs.length + 1}`, '', color)
+        this.state = { ...this.state, tabs: [...this.state.tabs, tab] }
+        this.dispatch({ type: 'tab/activate', tabId: tab.id })
+        return
+      }
+
+      case 'tab/close': {
+        if (this.state.tabs.length <= 1) return
+        const tabs = this.state.tabs.filter((t) => t.id !== action.tabId)
+        this.histories.delete(action.tabId)
+        this.state = { ...this.state, tabs }
+        if (this.state.activeTabId === action.tabId) {
+          this.dispatch({ type: 'tab/activate', tabId: tabs[0].id })
+          return
+        }
+        break
+      }
+
+      case 'tab/activate': {
+        const tab = this.state.tabs.find((t) => t.id === action.tabId)
+        if (!tab) return
+        const lines = composeLines(tab.blocks, rule(tab))
+        this.state = {
+          ...this.state,
+          activeTabId: tab.id,
+          transport: {
+            ...this.state.transport,
+            playing: false,
+            wordsAtStart: tab.anchor ? wordIndexFromAnchor(lines, tab.anchor) : 0,
+            startedAt: Date.now()
+          }
+        }
+        break
+      }
+
+      case 'tab/rename':
+        this.mutateTab(action.tabId, `renomear:${action.tabId}`, (draft) => {
+          draft.title = action.title.slice(0, 40) || 'Sem título'
+        })
+        break
+
+      case 'layout/mode':
+        this.state = { ...this.state, layoutMode: action.mode }
+        break
+
+      case 'output/set':
+        // o viewport pertence à janela que estava aberta; ao trocar de monitor
+        // ou desligar, ele volta a ser desconhecido e a prévia cai na medida do
+        // monitor até a janela nova se apresentar
+        this.state = {
+          ...this.state,
+          output: { displayId: action.displayId, enabled: action.enabled, viewport: null }
+        }
+        break
+
+      case 'output/viewport':
+        if (!this.state.output.enabled) return
+        this.state = {
+          ...this.state,
+          output: {
+            ...this.state.output,
+            viewport: { width: action.width, height: action.height }
+          }
+        }
+        break
+
+      case 'keymap/set': {
+        if (!COMMANDS_BY_ID.has(action.commandId)) return
+        const keymap = { ...this.state.keymap }
+        if (action.binding === null) delete keymap[action.commandId]
+        else keymap[action.commandId] = action.binding
+        this.state = { ...this.state, keymap }
+        break
+      }
+
+      case 'document/import': {
+        if (action.text.trim().length === 0) return
+
+        const target =
+          action.intoNewTab && this.state.tabs.length < 10
+            ? (() => {
+                const color = TAB_COLORS[this.state.tabs.length % TAB_COLORS.length]
+                const tab = createTab(action.title, '', color)
+                this.state = { ...this.state, tabs: [...this.state.tabs, tab] }
+                this.dispatch({ type: 'tab/activate', tabId: tab.id })
+                return tab.id
+              })()
+            : this.state.activeTabId
+
+        this.dispatch({ type: 'tab/rename', tabId: target, title: action.title })
+        this.dispatch({ type: 'text/set', tabId: target, text: action.text })
+        this.dispatch({ type: 'transport/restart' })
+        return
+      }
+
+      case 'history/undo':
+      case 'history/redo': {
+        const tab = this.state.tabs.find((t) => t.id === action.tabId)
+        if (!tab) return
+        const history = this.historyFor(action.tabId)
+        const next = action.type === 'history/undo' ? history.undo(tab) : history.redo(tab)
+        if (next === tab) return
+        const bumped = { ...next, rev: tab.rev + 1 }
+        this.state = this.replaceTab(bumped)
+        this.rebase(bumped, bumped.anchor)
+        break
+      }
+    }
+
+    this.setState(this.state)
+  }
+}
