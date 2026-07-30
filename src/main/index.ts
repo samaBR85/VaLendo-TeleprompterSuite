@@ -1,9 +1,10 @@
 import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from 'electron'
 import { CHANNELS, type Action } from '@shared/actions'
-import type { ExportResult, ImportResult, StateSnapshot } from '@shared/api'
+import type { ExportResult, ImportResult, ProjectResult, StateSnapshot } from '@shared/api'
 import type { AppState } from '@shared/types'
 import { IMPORT_FILTERS, importFile } from './import'
 import { EXPORT_FILTERS, defaultFileName, exportScript } from './export'
+import { PROJECT_FILTERS, openProject, projectFileName, saveProject } from './project'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
 import { Store } from './state'
 import { flushState, onStorageHealth, storageHealth } from './storage'
@@ -111,6 +112,44 @@ function registerIpc(): void {
     } catch (error) {
       return { ok: false, path: target, format: '', error: (error as Error).message }
     }
+  })
+
+  ipcMain.handle(CHANNELS.projectSave, async (): Promise<ProjectResult | null> => {
+    const state = store.getState()
+    const ativa = state.tabs.find((t) => t.id === state.activeTabId)
+    const owner = getOperatorWindow()
+    const options = {
+      title: 'Salvar projeto',
+      defaultPath: projectFileName(ativa?.title ?? 'projeto'),
+      filters: PROJECT_FILTERS
+    }
+    const picked = owner ? await dialog.showSaveDialog(owner, options) : await dialog.showSaveDialog(options)
+    if (picked.canceled || !picked.filePath) return null
+
+    try {
+      await saveProject(picked.filePath, state)
+      return { ok: true, path: picked.filePath }
+    } catch (error) {
+      return { ok: false, path: picked.filePath, error: (error as Error).message }
+    }
+  })
+
+  ipcMain.handle(CHANNELS.projectOpen, async (): Promise<ProjectResult | null> => {
+    const owner = getOperatorWindow()
+    const options = {
+      title: 'Abrir projeto',
+      properties: ['openFile' as const],
+      filters: PROJECT_FILTERS
+    }
+    const picked = owner ? await dialog.showOpenDialog(owner, options) : await dialog.showOpenDialog(options)
+    if (picked.canceled || picked.filePaths.length === 0) return null
+
+    const caminho = picked.filePaths[0]
+    const { state, error } = await openProject(caminho)
+    if (!state) return { ok: false, path: caminho, error: error ?? 'Não deu para abrir o projeto.' }
+
+    store.dispatch({ type: 'project/replace', state })
+    return { ok: true, path: caminho }
   })
 
   // só http(s), e sempre no navegador do sistema: o app nunca navega para fora

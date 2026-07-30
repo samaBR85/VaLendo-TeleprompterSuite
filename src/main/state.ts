@@ -12,6 +12,9 @@ import { History } from '@shared/history'
 import { reconcileBlocks } from '@shared/text'
 import type { Anchor, Appearance, AppState, PacingRule, Tab } from '@shared/types'
 import { wordIndexAt } from '@shared/pacing'
+// a régua da tela e o passo do atalho saem da mesma constante: o degrau que se
+// vê tem que ser o degrau que a tecla anda
+import { PPM_MAX, PPM_MIN, PPM_STEP } from '@shared/ruler'
 import {
   appendHistoryStep,
   dismissStorageNotice,
@@ -31,9 +34,6 @@ import {
 
 /** Palavras devolvidas ao pausar, para o apresentador reentrar sem tropeço. */
 const REWIND_ON_PAUSE = 2
-const PPM_MIN = 60
-const PPM_MAX = 500
-const PPM_STEP = 12
 
 type Listener = (state: AppState, history: HistoryInfo) => void
 
@@ -509,6 +509,26 @@ export class Store {
       case 'storage/dismissNotice':
         dismissStorageNotice()
         break
+
+      /**
+       * Troca o programa inteiro pelo que veio do arquivo.
+       *
+       * As abas do projeto têm ids próprios, então o histórico de desfazer em
+       * memória não vale mais nada — apagá-lo é o que impede um Ctrl+Z de
+       * aplicar, no roteiro recém-aberto, o inverso de uma edição feita noutro.
+       * `customDefaults` não vem do arquivo: é do app desta máquina.
+       */
+      case 'project/replace': {
+        this.histories.clear()
+        this.rows.clear()
+        const aberto = action.state
+        const ativa = aberto.tabs.some((t) => t.id === aberto.activeTabId)
+          ? aberto.activeTabId
+          : aberto.tabs[0].id
+        this.state = { ...aberto, activeTabId: ativa, customDefaults: this.state.customDefaults }
+        this.dispatch({ type: 'tab/activate', tabId: ativa })
+        return
+      }
 
       // fora do histórico: desfazer devolve texto, não o arquivo em que ele foi
       // salvo. Um Ctrl+Z depois de salvar não pode fazer o próximo Ctrl+S

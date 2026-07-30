@@ -1,22 +1,37 @@
-import type { Action, HistoryInfo } from '@shared/actions'
+import { useEffect, useMemo, useState } from 'react'
+import type { Action } from '@shared/actions'
+import { composeLines, totalWords } from '@shared/anchor'
 import { formatBinding, parseBinding } from '@shared/commands'
+import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import type { AppState, DisplayInfo, Tab } from '@shared/types'
 import { Icon, type IconName } from '../ui/Icon'
+import { SpeedRuler } from './SpeedRuler'
 
 interface Props {
   state: AppState
   tab: Tab
-  history: HistoryInfo
   displays: DisplayInfo[]
   keymap: Map<string, string>
+  /** régua de rolagem medida, para os tempos baterem com o que rola na tela */
+  rows: number[]
   dispatch: (action: Action) => void
   run: (commandId: string) => void
   onImport: () => void
 }
 
-/** Nome do arquivo, sem o caminho todo, para caber no rótulo do botão. */
-function fileName(path: string): string {
-  return path.split(/[\\/]/).pop() ?? path
+/**
+ * O relógio do mostrador vive aqui dentro, e não no App.
+ *
+ * Se o App remarcasse a cada segundo, a prévia inteira remontaria junto — e ela
+ * desenha o roteiro todo. Só a barra precisa piscar.
+ */
+function useNow(intervalMs = 500): number {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), intervalMs)
+    return () => clearInterval(id)
+  }, [intervalMs])
+  return now
 }
 
 function hint(keymap: Map<string, string>, commandId: string): string {
@@ -25,21 +40,50 @@ function hint(keymap: Map<string, string>, commandId: string): string {
   return ` · ${formatBinding(binding, window.valendo.platform === 'darwin')}`
 }
 
+/** Nome do arquivo, sem o caminho todo, para caber no rótulo do botão. */
+function fileName(path: string): string {
+  return path.split(/[\\/]/).pop() ?? path
+}
+
+type Tamanho = 'normal' | 'grande' | 'principal'
+
+const MEDIDA: Record<Tamanho, string> = {
+  normal: 'h-[30px] w-[30px]',
+  grande: 'h-10 w-10',
+  principal: 'h-[52px] w-[52px]'
+}
+
+const ICONE: Record<Tamanho, number> = { normal: 17, grande: 21, principal: 26 }
+
 function Tool({
   icon,
   label,
+  size = 'normal',
   active,
   danger,
+  go,
   disabled,
   onClick
 }: {
   icon: IconName
   label: string
+  size?: Tamanho
   active?: boolean
   danger?: boolean
+  go?: boolean
   disabled?: boolean
   onClick: () => void
 }): React.JSX.Element {
+  const tom = go
+    ? 'bg-[var(--color-go)]/16 text-[var(--color-go)] hover:bg-[var(--color-go)]/24'
+    : active
+      ? danger
+        ? 'bg-[var(--color-live)]/18 text-[var(--color-live)]'
+        : 'bg-[var(--color-go)]/16 text-[var(--color-go)]'
+      : danger
+        ? 'text-[var(--color-live)] hover:bg-[var(--color-ink-3)]'
+        : 'text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]'
+
   return (
     <button
       type="button"
@@ -47,105 +91,139 @@ function Tool({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className={`rounded-md p-1.5 transition-colors disabled:opacity-30 ${
-        active
-          ? danger
-            ? 'bg-[var(--color-live)]/18 text-[var(--color-live)]'
-            : 'bg-[var(--color-go)]/16 text-[var(--color-go)]'
-          : 'text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]'
-      }`}
+      className={`flex flex-none items-center justify-center rounded-md transition-colors disabled:opacity-30 ${MEDIDA[size]} ${tom}`}
     >
-      <Icon name={icon} size={16} />
+      <Icon name={icon} size={ICONE[size]} />
     </button>
   )
 }
 
-export function Toolbar({
-  state,
-  tab,
-  history,
-  displays,
-  keymap,
-  dispatch,
-  run,
-  onImport
-}: Props): React.JSX.Element {
+/** Grupo com rótulo, como as seções de uma mesa de som. */
+function Zona({ label, children }: { label: string; children: React.ReactNode }): React.JSX.Element {
+  return (
+    <div className="flex flex-none items-center gap-0.5 rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-[3px] pl-1">
+      <span className="px-2 text-[9px] tracking-[0.14em] text-[var(--color-fog-2)] uppercase">{label}</span>
+      {children}
+    </div>
+  )
+}
+
+function Campo({
+  value,
+  unit,
+  tone,
+  wide
+}: {
+  value: string
+  unit: string
+  tone?: string
+  wide?: boolean
+}): React.JSX.Element {
+  return (
+    <div className={`flex flex-none flex-col leading-[1.15] ${wide ? 'min-w-[54px]' : ''}`}>
+      <span className="font-mono text-[21px] tabular-nums" style={{ color: tone ?? 'var(--color-fog-0)' }}>
+        {value}
+      </span>
+      <span className="font-mono text-[8px] tracking-[0.16em] text-[var(--color-fog-2)] uppercase">{unit}</span>
+    </div>
+  )
+}
+
+/**
+ * A barra de comando, arrumada como um console: documento à esquerda, o
+ * transporte e o mostrador no centro, o ar à direita.
+ *
+ * O que está aqui é o que se usa com a transmissão correndo. Aparência —
+ * inverter, espelhar, girar — mora nos ajustes, e as ferramentas de texto no
+ * cabeçalho do editor, que é onde elas agem.
+ */
+export function Toolbar({ state, tab, displays, keymap, rows, dispatch, run, onImport }: Props): React.JSX.Element {
   const { transport, output } = state
+  const now = useNow()
+
+  const ruler = useMemo(
+    () => totalWords(composeLines(tab.blocks, tab.appearance, rows)),
+    [tab.blocks, tab.appearance.minWords, tab.appearance.maxWords, tab.appearance.uniformSpeed, rows]
+  )
+  const lidas = Math.min(ruler, Math.max(0, wordIndexAt(transport, now)))
+  const total = secondsForWords(ruler, transport.ppm)
+  const elapsed = secondsForWords(lidas, transport.ppm)
 
   return (
-    <div className="flex items-center gap-2.5 border-b border-[var(--color-line)] px-3 py-1.5">
-      <div className="flex items-center gap-0.5">
-        <Tool icon="restart" label={`Voltar ao início${hint(keymap, 'transport.restart')}`} onClick={() => run('transport.restart')} />
-        <Tool
-          icon={transport.playing ? 'pause' : 'play'}
-          label={`${transport.playing ? 'Pausar' : 'Iniciar'}${hint(keymap, 'transport.playPause')}`}
-          active={transport.playing}
-          onClick={() => run('transport.playPause')}
-        />
-        <Tool icon="up" label={`Recuar${hint(keymap, 'transport.jumpBack')}`} onClick={() => run('transport.jumpBack')} />
-        <Tool icon="down" label={`Avançar${hint(keymap, 'transport.jumpForward')}`} onClick={() => run('transport.jumpForward')} />
-      </div>
-
-      <div className="h-4 w-px bg-[var(--color-line)]" />
-
-      <label className="flex items-center gap-2 text-[11px]">
-        <span className="text-[var(--color-fog-2)]">Ritmo</span>
-        <input
-          type="range"
-          min={60}
-          max={500}
-          step={1}
-          value={transport.ppm}
-          onChange={(event) => dispatch({ type: 'transport/ppm', ppm: Number(event.target.value) })}
-          className="w-24"
-        />
-        <span className="w-14 tabular-nums text-[var(--color-fog-0)]">{transport.ppm} ppm</span>
-      </label>
-
-      <div className="h-4 w-px bg-[var(--color-line)]" />
-
-      <div className="flex items-center gap-0.5">
-        <Tool
-          icon="chapter"
-          label={`Inserir capítulo — vira § no texto${hint(keymap, 'insert.chapter')}`}
-          onClick={() => run('insert.chapter')}
-        />
-        <Tool
-          icon="direction"
-          label={`Inserir direção de cena — vira [colchetes], não é lida${hint(keymap, 'insert.direction')}`}
-          onClick={() => run('insert.direction')}
-        />
-      </div>
-
-      <div className="h-4 w-px bg-[var(--color-line)]" />
-
-      <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-3.5 border-b border-[var(--color-line)] px-4 py-2.5">
+      <Zona label="Roteiro">
         <Tool icon="import" label="Importar roteiro (txt, md, docx, pdf)" onClick={onImport} />
         <Tool
           icon="export"
           label={
             tab.exportPath
-              ? `Salvar em ${fileName(tab.exportPath)}${hint(keymap, 'document.save')}`
-              : `Salvar o roteiro num arquivo (txt, md, docx, pdf)${hint(keymap, 'document.save')}`
+              ? `Salvar o roteiro em ${fileName(tab.exportPath)}${hint(keymap, 'document.save')}`
+              : `Salvar o roteiro num arquivo${hint(keymap, 'document.save')}`
           }
           onClick={() => run('document.save')}
         />
-        <Tool icon="marker" label={`Criar marcador${hint(keymap, 'marker.create')}`} onClick={() => run('marker.create')} />
-        <Tool icon="undo" label={`Desfazer${hint(keymap, 'edit.undo')}`} disabled={!history.canUndo} onClick={() => run('edit.undo')} />
-        <Tool icon="redo" label={`Refazer${hint(keymap, 'edit.redo')}`} disabled={!history.canRedo} onClick={() => run('edit.redo')} />
+        <Tool
+          icon="projectOpen"
+          label={`Abrir um projeto${hint(keymap, 'project.open')}`}
+          onClick={() => run('project.open')}
+        />
+        <Tool
+          icon="project"
+          label={`Salvar o projeto inteiro — abas, aparência, marcadores e ritmo${hint(keymap, 'project.save')}`}
+          onClick={() => run('project.save')}
+        />
+      </Zona>
+
+      <div className="ml-auto flex flex-none items-center gap-1.5">
+        <Tool icon="restart" label={`Voltar ao início${hint(keymap, 'transport.restart')}`} size="grande" onClick={() => run('transport.restart')} />
+        <Tool icon="up" label={`Recuar${hint(keymap, 'transport.jumpBack')}`} size="grande" onClick={() => run('transport.jumpBack')} />
+        <Tool
+          icon={transport.playing ? 'pause' : 'play'}
+          label={`${transport.playing ? 'Pausar' : 'Iniciar'}${hint(keymap, 'transport.playPause')}`}
+          size="principal"
+          go
+          onClick={() => run('transport.playPause')}
+        />
+        <Tool icon="down" label={`Avançar${hint(keymap, 'transport.jumpForward')}`} size="grande" onClick={() => run('transport.jumpForward')} />
+        <Tool icon="marker" label={`Criar marcador${hint(keymap, 'marker.create')}`} size="grande" onClick={() => run('marker.create')} />
       </div>
 
-      <div className="h-4 w-px bg-[var(--color-line)]" />
-
-      <div className="flex items-center gap-0.5">
-        <Tool icon="contrast" label={`Inverter cores${hint(keymap, 'colors.invert')}`} onClick={() => run('colors.invert')} />
-        <Tool icon="mirror" label={`Espelhar${hint(keymap, 'output.mirror')}`} active={tab.appearance.mirrorX} onClick={() => run('output.mirror')} />
-        <Tool icon="rotate" label={`Rotacionar${hint(keymap, 'output.rotate')}`} active={tab.appearance.rotation !== 0} onClick={() => run('output.rotate')} />
-        <Tool icon="freeze" label={`Congelar a saída${hint(keymap, 'transport.freeze')}`} active={transport.frozen} onClick={() => run('transport.freeze')} />
-        <Tool icon="blackout" label={`Tela preta${hint(keymap, 'output.blackout')}`} active={transport.blackout} danger onClick={() => run('output.blackout')} />
+      {/* o mostrador: o que o operador lê de relance, do outro lado da sala */}
+      <div className="flex flex-none items-center gap-4 rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-0)] px-3.5 py-1.5">
+        <div className="flex flex-none flex-col gap-[3px]">
+          <SpeedRuler ppm={transport.ppm} onChange={(ppm) => dispatch({ type: 'transport/ppm', ppm })} />
+          <div className="flex justify-between font-mono text-[8px] tracking-[0.12em] text-[var(--color-fog-2)]">
+            <span>60</span>
+            <span>500</span>
+          </div>
+        </div>
+        <Campo value={String(transport.ppm)} unit="ppm" wide />
+        <Campo value={formatClock(elapsed)} unit="decorrido" tone="var(--color-go)" />
+        <Campo value={`−${formatClock(Math.max(0, total - elapsed))}`} unit="restante" tone="var(--color-live)" />
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex flex-none items-center gap-2">
+        <Zona label="Ar">
+          <Tool
+            icon="blackout"
+            label={`Tela preta${hint(keymap, 'output.blackout')}`}
+            active={transport.blackout}
+            danger
+            onClick={() => run('output.blackout')}
+          />
+          <Tool
+            icon="freeze"
+            label={`Congelar a saída${hint(keymap, 'transport.freeze')}`}
+            active={transport.frozen}
+            onClick={() => run('transport.freeze')}
+          />
+          <Tool
+            icon="monitor"
+            label="Mostra um número grande em cada monitor"
+            onClick={() => window.valendo.identifyDisplays()}
+          />
+        </Zona>
+
         <select
           value={output.displayId ?? ''}
           onChange={(event) => {
@@ -156,9 +234,9 @@ export function Toolbar({
               enabled: value !== '' && output.enabled
             })
           }}
-          className="max-w-[230px] rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1 text-[11px]"
+          className="max-w-[190px] flex-none rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1.5 text-[11px]"
         >
-          <option value="">Escolha o monitor da transmissão</option>
+          <option value="">Escolha o monitor</option>
           {displays.map((display) => (
             <option key={display.id} value={display.id}>
               {display.label}
@@ -169,20 +247,11 @@ export function Toolbar({
 
         <button
           type="button"
-          onClick={() => window.valendo.identifyDisplays()}
-          title="Mostra um número grande em cada monitor"
-          className="rounded-md border border-[var(--color-line)] px-2 py-1 text-[11px] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]"
-        >
-          Identificar
-        </button>
-
-        <button
-          type="button"
           disabled={output.displayId === null}
           onClick={() => run('output.toggle')}
-          className={`rounded-md border px-2.5 py-1 text-[11px] disabled:opacity-30 ${
+          className={`flex-none rounded-lg border px-6 py-2.5 text-[18px] whitespace-nowrap disabled:opacity-30 ${
             output.enabled
-              ? 'border-[var(--color-live)]/50 bg-[var(--color-live)]/16 text-[var(--color-live)]'
+              ? 'border-[var(--color-live)]/50 bg-[var(--color-live)]/14 text-[var(--color-live)]'
               : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
           }`}
         >

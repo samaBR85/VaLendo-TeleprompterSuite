@@ -17,6 +17,7 @@ export interface CommandUi {
   flushEditor: () => void
   insertBlock: (kind: InsertKind) => void
   exportDocument: (saveAs: boolean) => void
+  project: (acao: 'salvar' | 'abrir') => void
 }
 
 function blockIdUnderReadingLine(state: AppState, tab: Tab, rows: number[]): string | null {
@@ -183,6 +184,12 @@ export function useCommands(
         case 'document.save':
         case 'document.saveAs':
           ui.exportDocument(commandId === 'document.saveAs')
+          break
+        case 'project.save':
+          ui.project('salvar')
+          break
+        case 'project.open':
+          ui.project('abrir')
           break
 
         case 'insert.chapter':

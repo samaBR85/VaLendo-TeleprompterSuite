@@ -1,4 +1,4 @@
-import type { Anchor, Appearance, LayoutMode } from './types'
+import type { Anchor, Appearance, AppState, LayoutMode } from './types'
 
 /**
  * Tudo que muda estado passa por aqui. O renderer nunca escreve direto: manda
@@ -35,6 +35,7 @@ export type Action =
   | { type: 'defaults/reset' }
   | { type: 'storage/dismissNotice' }
   | { type: 'document/exportedTo'; tabId: string; path: string }
+  | { type: 'project/replace'; state: AppState }
   | { type: 'history/undo'; tabId: string }
   | { type: 'history/redo'; tabId: string }
   | { type: 'document/import'; title: string; text: string; intoNewTab: boolean }
@@ -55,6 +56,8 @@ export const CHANNELS = {
   displaysIdentify: 'displays:identify',
   importDocument: 'document:import',
   exportDocument: 'document:export',
+  projectSave: 'project:save',
+  projectOpen: 'project:open',
   openExternal: 'app:openExternal',
   broadcastCoversOperator: 'broadcast:coversOperator'
 } as const

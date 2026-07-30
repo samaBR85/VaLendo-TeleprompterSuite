@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Action, HistoryInfo } from '@shared/actions'
 import type { StorageHealth } from '@shared/api'
 import { composeLines, totalWords } from '@shared/anchor'
-import { formatClock, ppmForTarget, secondsForWords, wordIndexAt } from '@shared/pacing'
+import { formatClock, ppmForTarget, secondsForWords } from '@shared/pacing'
 import { totalWordCount } from '@shared/text'
 import type { AppState, Tab } from '@shared/types'
 import { versionLabel } from '../ui/Wordmark'
@@ -15,15 +15,6 @@ interface Props {
   storage: StorageHealth
   dispatch: (action: Action) => void
   onOpenCredits: () => void
-}
-
-function useNow(intervalMs = 400): number {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), intervalMs)
-    return () => clearInterval(id)
-  }, [intervalMs])
-  return now
 }
 
 function parseDuration(text: string): number | null {
@@ -53,7 +44,6 @@ export function StatusBar({
   dispatch,
   onOpenCredits
 }: Props): React.JSX.Element {
-  const now = useNow()
   const [target, setTarget] = useState('')
 
   // "Palavras" é a contagem de fala de verdade. A régua de rolagem é outra
@@ -65,9 +55,7 @@ export function StatusBar({
     [tab.blocks, tab.appearance.minWords, tab.appearance.maxWords, tab.appearance.uniformSpeed, rows]
   )
 
-  const readWords = Math.min(ruler, Math.max(0, wordIndexAt(state.transport, now)))
   const total = secondsForWords(ruler, state.transport.ppm)
-  const elapsed = secondsForWords(readWords, state.transport.ppm)
 
   const applyTarget = (): void => {
     const seconds = parseDuration(target)
@@ -77,10 +65,11 @@ export function StatusBar({
 
   return (
     <footer className="flex flex-none items-center gap-4 border-t border-[var(--color-line)] bg-[var(--color-ink-1)] px-3 py-1.5 text-[11px]">
+      {/* decorrido e restante saíram daqui: agora estão no mostrador da barra de
+          cima, em corpo grande. Repetir os mesmos números em dois lugares só
+          ensina o olho a não confiar em nenhum dos dois */}
       <Cell label="Palavras" value={spoken.toLocaleString('pt-BR')} />
       <Cell label="Duração" value={formatClock(total)} />
-      <Cell label="No ar" value={formatClock(elapsed)} tone="var(--color-fog-0)" />
-      <Cell label="Resta" value={formatClock(total - elapsed)} tone="var(--color-warn)" />
 
       <label className="flex items-center gap-1.5">
         <span className="text-[var(--color-fog-2)]">Duração-alvo</span>

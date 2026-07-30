@@ -3,7 +3,7 @@ import type { InsertKind } from '@shared/insertBlock'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { PrompterStage } from '../prompter/PrompterStage'
 import { activeTabOf, useAppState } from '../state/useAppState'
-import { Icon } from '../ui/Icon'
+import { Icon, type IconName } from '../ui/Icon'
 import { Wordmark } from '../ui/Wordmark'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
@@ -38,6 +38,35 @@ function PanelHeader({
       {detail ? <span className="text-[var(--color-fog-2)]">{detail}</span> : null}
       <span className="ml-auto flex items-center gap-1.5">{action}</span>
     </div>
+  )
+}
+
+/**
+ * Ferramenta que age sobre o texto mora no cabeçalho do editor, e não na barra
+ * de comando: lá em cima fica o que se usa com a transmissão correndo.
+ */
+function EditorTool({
+  icon,
+  label,
+  disabled,
+  onClick
+}: {
+  icon: IconName
+  label: string
+  disabled?: boolean
+  onClick: () => void
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="rounded p-1 text-[var(--color-fog-2)] transition-colors hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] disabled:opacity-30"
+    >
+      <Icon name={icon} size={14} />
+    </button>
   )
 }
 
@@ -111,6 +140,29 @@ export function App(): React.JSX.Element {
     )
   }, [])
 
+  /** Grava ou abre o programa inteiro num .valendo. */
+  const project = useCallback(async (acao: 'salvar' | 'abrir'): Promise<void> => {
+    if (acao === 'salvar') editorRef.current?.flush()
+    await window.valendo.getState()
+
+    const result = acao === 'salvar' ? await window.valendo.saveProject() : await window.valendo.openProject()
+    if (!result) return
+
+    setNotice(
+      result.ok
+        ? {
+            title: acao === 'salvar' ? 'Projeto salvo' : 'Projeto aberto',
+            lines: [result.path],
+            tone: 'ok'
+          }
+        : {
+            title: acao === 'salvar' ? 'Não deu para salvar o projeto' : 'Não deu para abrir o projeto',
+            lines: [result.error ?? 'erro desconhecido'],
+            tone: 'warn'
+          }
+    )
+  }, [])
+
   const toggleFocusMode = useCallback(() => {
     if (!state) return
     dispatch({ type: 'layout/mode', mode: state.layoutMode === 'focus' ? 'split' : 'focus' })
@@ -123,9 +175,10 @@ export function App(): React.JSX.Element {
       toggleFocusMode,
       flushEditor: () => editorRef.current?.flush(),
       insertBlock: (kind: InsertKind) => editorRef.current?.insert(kind),
-      exportDocument: (saveAs: boolean) => void exportDocument(saveAs)
+      exportDocument: (saveAs: boolean) => void exportDocument(saveAs),
+      project: (acao: 'salvar' | 'abrir') => void project(acao)
     }),
-    [toggleFocusMode, exportDocument]
+    [toggleFocusMode, exportDocument, project]
   )
 
   // a prévia do operador é quem mede as fileiras e devolve ao main, para que
@@ -153,6 +206,20 @@ export function App(): React.JSX.Element {
     displays.find((d) => d.id === state.output.displayId)?.size ??
     FALLBACK_VIEWPORT
   const focusMode = state.layoutMode === 'focus'
+
+  const editorTools = (
+    <>
+      <EditorTool icon="chapter" label="Inserir capítulo — vira § no texto" onClick={() => run('insert.chapter')} />
+      <EditorTool
+        icon="direction"
+        label="Inserir direção de cena — vira [colchetes], não é lida"
+        onClick={() => run('insert.direction')}
+      />
+      <span className="mx-0.5 h-3.5 w-px bg-[var(--color-line)]" />
+      <EditorTool icon="undo" label="Desfazer" disabled={!history.canUndo} onClick={() => run('edit.undo')} />
+      <EditorTool icon="redo" label="Refazer" disabled={!history.canRedo} onClick={() => run('edit.redo')} />
+    </>
+  )
 
   const stage = (
     <PrompterStage
@@ -295,9 +362,9 @@ export function App(): React.JSX.Element {
       <Toolbar
         state={state}
         tab={tab}
-        history={history}
         displays={displays}
         keymap={keymap}
+        rows={rows}
         dispatch={dispatch}
         run={run}
         onImport={importDocument}
@@ -324,14 +391,14 @@ export function App(): React.JSX.Element {
             {markerStrip}
           </div>
           <div className="flex h-[34%] min-h-0 flex-col border-t border-[var(--color-line)]">
-            <PanelHeader label="Gaveta de edição" detail="edita no ar · F11 recolhe" />
+            <PanelHeader label="Gaveta de edição" detail="edita no ar · F11 recolhe" action={editorTools} />
             <Editor ref={editorRef} tab={tab} dispatch={dispatch} />
           </div>
         </main>
       ) : (
         <main ref={mainRef} className="flex min-h-0 flex-1">
           <section className="flex min-w-0 flex-col" style={{ flex: `${split} 1 0` }}>
-            <PanelHeader label="Edição" detail="[direções] · § capítulos" />
+            <PanelHeader label="Edição" detail="[direções] · § capítulos" action={editorTools} />
             <Editor ref={editorRef} tab={tab} dispatch={dispatch} />
           </section>
 

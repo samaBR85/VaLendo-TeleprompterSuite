@@ -49,6 +49,13 @@ export interface ExportResult {
   error?: string
 }
 
+/** Resultado de salvar ou abrir um projeto. Nulo quando o operador desistiu. */
+export interface ProjectResult {
+  ok: boolean
+  path: string
+  error?: string
+}
+
 export interface ImportResult {
   title: string
   text: string
@@ -70,6 +77,10 @@ export interface ValendoApi {
    * regrava por cima do último arquivo desta aba e só pergunta na primeira vez.
    */
   exportDocument(saveAs: boolean): Promise<ExportResult | null>
+  /** grava o programa inteiro num .valendo: abas, aparência, marcadores, ritmo */
+  saveProject(): Promise<ProjectResult | null>
+  /** abre um .valendo e substitui o que está na tela */
+  openProject(): Promise<ProjectResult | null>
   openExternal(url: string): void
   /** a transmissão está por cima da janela do operador? */
   coversOperator(): Promise<boolean>

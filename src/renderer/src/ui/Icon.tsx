@@ -26,6 +26,8 @@ export type IconName =
   | 'sliders'
   | 'alert'
   | 'export'
+  | 'project'
+  | 'projectOpen'
 
 const PATHS: Record<IconName, string> = {
   play: 'M8 5l11 7-11 7z',
@@ -57,7 +59,12 @@ const PATHS: Record<IconName, string> = {
   sliders: 'M4 7h16M4 12h16M4 17h16M9 5v4M16 10v4M7 15v4',
   alert: 'M12 3L2 20h20zM12 10v4M12 17h.01',
   // espelho do ícone de importar: a seta sai do documento em vez de entrar
-  export: 'M12 16V4M8 8l4-4 4 4M4 19h16'
+  export: 'M12 16V4M8 8l4-4 4 4M4 19h16',
+  // caixa fechada para salvar o projeto: leva o programa inteiro dentro, não só
+  // o texto. Abrir é uma pasta, e não outra caixa: dois ícones de caixa lado a
+  // lado ficam indistinguíveis a 17px, que é o tamanho em que eles vivem
+  project: 'M12 3l8 4v10l-8 4-8-4V7zM4 7l8 4 8-4M12 11v10',
+  projectOpen: 'M3 7h6l2 2h10v10H3zM3 9h18'
 }
 
 interface Props {
