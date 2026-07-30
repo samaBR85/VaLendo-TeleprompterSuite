@@ -12,7 +12,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
   const [editing, setEditing] = useState<string | null>(null)
 
   return (
-    <div className="flex items-center gap-1 overflow-x-auto">
+    <div className="flex items-center gap-2 overflow-x-auto">
       {state.tabs.map((tab, index) => {
         const active = tab.id === state.activeTabId
         return (
@@ -21,13 +21,13 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
             onClick={() => dispatch({ type: 'tab/activate', tabId: tab.id })}
             onDoubleClick={() => setEditing(tab.id)}
             title={`${tab.title} · Ctrl+${index === 9 ? 0 : index + 1}`}
-            className={`group flex flex-none items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] ${
+            className={`group flex flex-none items-center gap-2 rounded-md border px-3 py-2 text-[13px] ${
               active
                 ? 'border-[var(--color-line)] bg-[var(--color-ink-2)] text-[var(--color-fog-0)]'
                 : 'border-transparent text-[var(--color-fog-2)] hover:bg-[var(--color-ink-2)]'
             }`}
           >
-            <span className="h-2 w-2 flex-none rounded-full" style={{ background: tab.color }} />
+            <span className="h-2.5 w-2.5 flex-none rounded-full" style={{ background: tab.color }} />
             {editing === tab.id ? (
               <input
                 autoFocus
@@ -40,10 +40,10 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
                   if (event.key === 'Enter') event.currentTarget.blur()
                   if (event.key === 'Escape') setEditing(null)
                 }}
-                className="w-24 bg-transparent outline-none"
+                className="w-28 bg-transparent outline-none"
               />
             ) : (
-              <span className="max-w-[112px] truncate">{tab.title}</span>
+              <span className="max-w-[130px] truncate">{tab.title}</span>
             )}
             {state.tabs.length > 1 ? (
               <button
@@ -55,7 +55,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
                 }}
                 className="opacity-0 transition-opacity group-hover:opacity-60 hover:!opacity-100"
               >
-                <Icon name="close" size={12} />
+                <Icon name="close" size={16} />
               </button>
             ) : null}
           </div>
@@ -68,12 +68,12 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
           aria-label="Nova aba"
           title="Nova aba · Ctrl+T"
           onClick={() => dispatch({ type: 'tab/add' })}
-          className="flex-none rounded-md p-1 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-2)] hover:text-[var(--color-fog-0)]"
+          className="flex-none rounded-md p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-2)] hover:text-[var(--color-fog-0)]"
         >
-          <Icon name="plus" size={14} />
+          <Icon name="plus" size={20} />
         </button>
       ) : (
-        <span className="flex-none px-1 text-[11px] text-[var(--color-fog-2)]">10 abas</span>
+        <span className="flex-none px-1 text-[13px] text-[var(--color-fog-2)]">10 abas</span>
       )}
     </div>
   )

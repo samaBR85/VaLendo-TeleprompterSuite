@@ -6,7 +6,7 @@ import { Icon } from '../ui/Icon'
 import { Wordmark } from '../ui/Wordmark'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
-import { Editor } from './Editor'
+import { Editor, type EditorHandle } from './Editor'
 import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
 import { StatusBar } from './StatusBar'
@@ -43,6 +43,7 @@ export function App(): React.JSX.Element {
   const [credits, setCredits] = useState(false)
   const [notice, setNotice] = useState<string[]>([])
   const mainRef = useRef<HTMLElement>(null)
+  const editorRef = useRef<EditorHandle>(null)
 
   useEffect(() => {
     if (notice.length === 0) return
@@ -59,7 +60,8 @@ export function App(): React.JSX.Element {
     () => ({
       openPalette: () => setPalette(true),
       openKeymap: () => setKeymapOpen(true),
-      toggleFocusMode
+      toggleFocusMode,
+      flushEditor: () => editorRef.current?.flush()
     }),
     [toggleFocusMode]
   )
@@ -144,39 +146,39 @@ export function App(): React.JSX.Element {
 
   return (
     <div className="relative flex h-full flex-col bg-[var(--color-ink-0)]">
-      <header className="flex flex-none items-center gap-3 border-b border-[var(--color-line)] bg-[var(--color-ink-1)] px-3 py-1.5">
-        <Wordmark />
-        <div className="h-6 w-px flex-none bg-[var(--color-line)]" />
+      <header className="flex flex-none items-center gap-4 border-b border-[var(--color-line)] bg-[var(--color-ink-1)] px-4 py-3">
+        <Wordmark size={30} />
+        <div className="h-12 w-px flex-none bg-[var(--color-line)]" />
         <div className="min-w-0 flex-1">
           <Tabs state={state} dispatch={dispatch} />
         </div>
-        <div className="flex flex-none items-center gap-2 text-[11px]">
+        <div className="flex flex-none items-center gap-3 text-[13px]">
           <button
             type="button"
             onClick={() => setCredits(true)}
             title="Créditos"
-            className="rounded p-1 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+            className="rounded p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
-            <Icon name="info" size={15} />
+            <Icon name="info" size={30} />
           </button>
           <button
             type="button"
             onClick={() => setKeymapOpen(true)}
             title="Editar atalhos · Ctrl+,"
-            className="rounded p-1 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+            className="rounded p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
-            <Icon name="keyboard" size={15} />
+            <Icon name="keyboard" size={30} />
           </button>
           <button
             type="button"
             onClick={() => setPalette(true)}
             title="Paleta de comandos · Ctrl+K"
-            className="rounded p-1 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+            className="rounded p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
-            <Icon name="search" size={15} />
+            <Icon name="search" size={30} />
           </button>
           {state.output.enabled ? (
-            <span className="rounded bg-[var(--color-live)]/16 px-2 py-0.5 text-[var(--color-live)]">No ar</span>
+            <span className="rounded bg-[var(--color-live)]/16 px-2.5 py-1 text-[var(--color-live)]">No ar</span>
           ) : (
             <span className="text-[var(--color-fog-2)]">fora do ar</span>
           )}
@@ -216,14 +218,14 @@ export function App(): React.JSX.Element {
           </div>
           <div className="flex h-[34%] min-h-0 flex-col border-t border-[var(--color-line)]">
             <PanelHeader label="Gaveta de edição" detail="edita no ar · F11 recolhe" />
-            <Editor tab={tab} dispatch={dispatch} />
+            <Editor ref={editorRef} tab={tab} dispatch={dispatch} />
           </div>
         </main>
       ) : (
         <main ref={mainRef} className="flex min-h-0 flex-1">
           <section className="flex min-w-0 flex-col" style={{ flex: `${split} 1 0` }}>
             <PanelHeader label="Edição" detail="[direções] · § capítulos" />
-            <Editor tab={tab} dispatch={dispatch} />
+            <Editor ref={editorRef} tab={tab} dispatch={dispatch} />
           </section>
 
           <div

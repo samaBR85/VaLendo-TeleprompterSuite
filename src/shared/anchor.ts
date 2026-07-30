@@ -7,7 +7,16 @@ export interface LineSpec {
   blockId: string
   kind: BlockKind
   text: string
-  /** palavras nesta linha (0 para direções e capítulos) */
+  /**
+   * Peso desta linha na linha do tempo de rolagem — quanto ela "custa" em
+   * palavras para a marca de leitura atravessar. Direção e capítulo entram
+   * aqui com o tamanho do próprio texto, nunca zero: se custassem zero, a
+   * rolagem atravessaria a altura da linha inteira num único instante, e o
+   * texto pularia na tela bem no meio de uma anotação em `[colchetes]` ou de
+   * um título `§`. A contagem que existe para excluir direção e capítulo do
+   * tempo de fala estimado é outra, deliberadamente separada desta: mora em
+   * `totalWordCount` (text.ts), que opera em Block[], não em linha composta.
+   */
   wordCount: number
   /** palavras percorridas dentro do bloco até o início desta linha */
   blockWordStart: number
@@ -50,14 +59,24 @@ export function composeLines(blocks: Block[], rule: LineRule): LineSpec[] {
         globalWords += wordCount
       }
     } else {
+      // peso não-zero de propósito — ver o comentário de `wordCount` em LineSpec.
+      // piso na MÉDIA entre mínimo e máximo de palavras por linha, não no
+      // mínimo: `senseLines` empacota a fala perto do teto, então uma linha
+      // comum tem bem mais que `minWords` palavras na prática. Usar o mínimo
+      // como piso deixava direção e capítulo "mais leves" que uma linha de
+      // fala típica, e eles cruzavam a tela um pouco mais rápido — pequeno,
+      // mas perceptível a quem opera o teleprompter todo dia.
+      const typicalLineWords = (rule.minWords + rule.maxWords) / 2
+      const wordCount = Math.max(words(block.text).length, typicalLineWords)
       out.push({
         blockId: block.id,
         kind: block.kind,
         text: block.text,
-        wordCount: 0,
+        wordCount,
         blockWordStart: 0,
         wordStart: globalWords
       })
+      globalWords += wordCount
     }
   }
 

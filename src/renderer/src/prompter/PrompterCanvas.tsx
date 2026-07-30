@@ -197,13 +197,11 @@ export function PrompterCanvas({
                   line.kind === 'direction'
                     ? { color: appearance.directionColor, fontStyle: 'italic', opacity: 0.9 }
                     : line.kind === 'chapter'
-                      ? {
-                          fontSize: '0.5em',
-                          letterSpacing: '0.18em',
-                          opacity: 0.55,
-                          paddingTop: '0.6em',
-                          paddingBottom: '0.2em'
-                        }
+                      ? // sem mudar o tamanho da fonte nem acrescentar padding: a
+                        // altura da linha precisa continuar igual à de uma linha
+                        // comum, senão o peso em palavras atribuído a ela (em
+                        // anchor.ts) some de proporção e a rolagem trava aqui
+                        { letterSpacing: '0.2em', opacity: 0.6, textTransform: 'uppercase' }
                       : undefined
                 }
               >
@@ -227,17 +225,23 @@ export function PrompterCanvas({
                   pointerEvents: 'none'
                 }}
               >
-                {lines
-                  .filter((line) => line.kind !== 'chapter')
-                  .map((line, index) => (
-                    <div
-                      key={`probe-${index}`}
-                      data-probe-line
-                      style={line.kind === 'direction' ? { fontStyle: 'italic' } : undefined}
-                    >
-                      {line.text}
-                    </div>
-                  ))}
+                {lines.map((line, index) => (
+                  <div
+                    key={`probe-${index}`}
+                    data-probe-line
+                    style={
+                      line.kind === 'direction'
+                        ? { fontStyle: 'italic' }
+                        : line.kind === 'chapter'
+                          ? { letterSpacing: '0.2em', textTransform: 'uppercase' }
+                          : undefined
+                    }
+                  >
+                    {line.kind === 'chapter'
+                      ? chapterTitle({ id: line.blockId, kind: 'chapter', text: line.text })
+                      : line.text}
+                  </div>
+                ))}
               </div>
             ) : null}
           </div>

@@ -12,6 +12,8 @@ export interface CommandUi {
   openPalette: () => void
   openKeymap: () => void
   toggleFocusMode: () => void
+  /** manda agora, sem esperar o debounce, o que ainda estiver pendente no editor. */
+  flushEditor: () => void
 }
 
 function blockIdUnderReadingLine(state: AppState, tab: Tab): string | null {
@@ -176,9 +178,14 @@ export function useCommands(
           break
 
         case 'edit.undo':
+          // sem isso, desfazer logo após digitar reverte um passo mais antigo
+          // do que o esperado — a digitação mais recente ainda não tinha
+          // chegado ao histórico do main quando o desfazer foi disparado
+          ui.flushEditor()
           dispatch({ type: 'history/undo', tabId: tab.id })
           break
         case 'edit.redo':
+          ui.flushEditor()
           dispatch({ type: 'history/redo', tabId: tab.id })
           break
         case 'tab.new':

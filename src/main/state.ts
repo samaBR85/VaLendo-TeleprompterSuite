@@ -17,8 +17,8 @@ import { appendHistoryStep, loadHistorySteps, loadState, saveState } from './sto
 /** Palavras devolvidas ao pausar, para o apresentador reentrar sem tropeço. */
 const REWIND_ON_PAUSE = 2
 const PPM_MIN = 60
-const PPM_MAX = 320
-const PPM_STEP = 6
+const PPM_MAX = 500
+const PPM_STEP = 12
 
 type Listener = (state: AppState, history: HistoryInfo) => void
 

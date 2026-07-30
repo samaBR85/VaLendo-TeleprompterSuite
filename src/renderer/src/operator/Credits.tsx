@@ -55,6 +55,10 @@ export function Credits({ onClose }: Props): React.JSX.Element {
             </a>
           </div>
           <div className="flex gap-2 py-0.5">
+            <span className="w-[128px] flex-none text-[var(--color-fog-2)]">Idealização</span>
+            <span className="text-[var(--color-fog-1)]">Aline</span>
+          </div>
+          <div className="flex gap-2 py-0.5">
             <span className="w-[128px] flex-none text-[var(--color-fog-2)]">Desenvolvimento</span>
             <span className="text-[var(--color-fog-1)]">samaBR85, com Claude Code</span>
           </div>

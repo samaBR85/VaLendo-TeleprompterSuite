@@ -37,13 +37,33 @@ describe('composeLines', () => {
     expect(small.map((l) => l.wordCount)).toEqual(large.map((l) => l.wordCount))
   })
 
-  it('deixa direções e capítulos fora da contagem de palavras', () => {
+  it('dá peso não-zero a direções e capítulos, para a rolagem não pular a altura deles', () => {
+    // regressão: com peso zero, o relógio atravessa a linha inteira num
+    // instante e o texto salta na tela bem em cima de uma anotação
     const blocks = doc('§ Abertura', 'duas palavras aqui agora', '[olhar câmera 2]')
     const lines = composeLines(blocks, RULE)
 
-    expect(totalWords(lines)).toBe(4)
-    expect(lines.filter((l) => l.kind === 'direction')).toHaveLength(1)
-    expect(lines.filter((l) => l.kind === 'chapter')).toHaveLength(1)
+    const chapter = lines.find((l) => l.kind === 'chapter')
+    const direction = lines.find((l) => l.kind === 'direction')
+
+    expect(chapter?.wordCount).toBeGreaterThan(0)
+    expect(direction?.wordCount).toBeGreaterThan(0)
+    expect(totalWords(lines)).toBeGreaterThan(4)
+  })
+
+  it('atravessa direção e capítulo em pixel contínuo, sem salto', () => {
+    const blocks = doc('fala antes da direção aqui', '[uma direção com bom tamanho de texto]', 'fala depois da direção aqui')
+    const layout = withGeometry(composeLines(blocks, RULE), 50)
+
+    let previousY = -1
+    const totalScrollWords = totalWords(layout)
+    for (let w = 0; w <= totalScrollWords; w += 0.25) {
+      const anchor = anchorFromWordIndex(layout, w) as Anchor
+      const y = pixelFromAnchor(layout, anchor) as number
+      // nenhum incremento pequeno de w pode corresponder a um salto grande de pixel
+      expect(y - previousY).toBeLessThan(30)
+      previousY = y
+    }
   })
 })
 

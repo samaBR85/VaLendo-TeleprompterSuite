@@ -88,7 +88,7 @@ export function Toolbar({
         <input
           type="range"
           min={60}
-          max={320}
+          max={500}
           step={1}
           value={transport.ppm}
           onChange={(event) => dispatch({ type: 'transport/ppm', ppm: Number(event.target.value) })}

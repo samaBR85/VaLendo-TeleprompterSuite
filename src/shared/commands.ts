@@ -35,8 +35,8 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'transport.jumpForward', label: 'Avançar algumas palavras', group: 'Transporte', defaultBinding: 'ArrowDown' },
   { id: 'transport.freeze', label: 'Congelar a saída para reescrever', group: 'Transporte', defaultBinding: 'Mod+Shift+F' },
 
-  { id: 'speed.increase', label: 'Acelerar o texto', group: 'Ritmo', defaultBinding: 'Mod+ArrowRight' },
-  { id: 'speed.decrease', label: 'Desacelerar o texto', group: 'Ritmo', defaultBinding: 'Mod+ArrowLeft' },
+  { id: 'speed.increase', label: 'Acelerar o texto', group: 'Ritmo', defaultBinding: 'ArrowRight' },
+  { id: 'speed.decrease', label: 'Desacelerar o texto', group: 'Ritmo', defaultBinding: 'ArrowLeft' },
   { id: 'speed.set.1', label: 'Ritmo lento', group: 'Ritmo', defaultBinding: 'Mod+Alt+1' },
   { id: 'speed.set.2', label: 'Ritmo médio', group: 'Ritmo', defaultBinding: 'Mod+Alt+2' },
   { id: 'speed.set.3', label: 'Ritmo rápido', group: 'Ritmo', defaultBinding: 'Mod+Alt+3' },

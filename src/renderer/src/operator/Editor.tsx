@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { serializeBlocks } from '@shared/text'
 import type { Tab } from '@shared/types'
@@ -21,6 +21,11 @@ interface Props {
   dispatch: (action: Action) => void
 }
 
+export interface EditorHandle {
+  /** manda agora, sem esperar o debounce, o que ainda estiver pendente. */
+  flush: () => void
+}
+
 /**
  * Editor com realce por trás de um textarea de texto transparente.
  *
@@ -29,21 +34,44 @@ interface Props {
  * — cursor, seleção, teclado do sistema. Um textarea transparente sobre um
  * `pre` colorido dá as duas coisas.
  */
-export function Editor({ tab, dispatch }: Props): React.JSX.Element {
+export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dispatch }, ref) {
   const incoming = useMemo(() => serializeBlocks(tab.blocks), [tab.blocks])
   const [draft, setDraft] = useState(incoming)
 
   const areaRef = useRef<HTMLTextAreaElement>(null)
   const preRef = useRef<HTMLPreElement>(null)
   const lastSent = useRef(incoming)
+  const lastKey = useRef(`${tab.id}:${tab.rev}`)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingValue = useRef<string | null>(null)
 
-  // adota o texto do main só quando ele difere do que nós mandamos — assim o
-  // eco da nossa própria digitação não reposiciona o cursor, mas desfazer,
-  // refazer e troca de aba entram na hora
+  // adota o texto do main sempre que a aba ou a revisão dela mudar — assim o
+  // desfazer, o refazer e a troca de aba entram na hora. O gatilho é
+  // `id:rev`, não o texto: quando desfazer volta o documento para um texto
+  // IGUAL ao de antes de uma edição recente (ex.: digitar e desfazer em
+  // seguida), o React chega a lotear as duas atualizações juntas e nunca
+  // renderiza o estado intermediário — da perspectiva dele, o texto "não
+  // mudou" porque a string bate com a de antes. `rev` só sobe e nunca repete
+  // valor dentro da mesma aba, então o efeito sempre roda quando precisa.
   useEffect(() => {
+    const key = `${tab.id}:${tab.rev}`
+    if (key === lastKey.current) return
+    lastKey.current = key
+
+    // eco da nossa própria digitação: não reposiciona o cursor
     if (incoming === lastSent.current) return
     lastSent.current = incoming
+
+    // uma mudança externa (desfazer, refazer, troca de aba) chegou enquanto
+    // uma digitação ainda esperava os 140ms de debounce para ser enviada.
+    // Sem cancelar esse envio pendente, ele dispara logo depois e manda o
+    // texto antigo de volta por cima da mudança que acabou de chegar.
+    if (timer.current) {
+      clearTimeout(timer.current)
+      timer.current = null
+      pendingValue.current = null
+    }
+
     const caret = areaRef.current?.selectionStart ?? 0
     setDraft(incoming)
     requestAnimationFrame(() => {
@@ -52,7 +80,7 @@ export function Editor({ tab, dispatch }: Props): React.JSX.Element {
       const position = Math.min(caret, incoming.length)
       area.setSelectionRange(position, position)
     })
-  }, [incoming])
+  }, [tab.id, tab.rev, incoming])
 
   useEffect(() => {
     return () => {
@@ -60,14 +88,39 @@ export function Editor({ tab, dispatch }: Props): React.JSX.Element {
     }
   }, [])
 
+  const send = (value: string): void => {
+    lastSent.current = value
+    dispatch({ type: 'text/set', tabId: tab.id, text: value })
+  }
+
   const push = (value: string, delay: number): void => {
+    pendingValue.current = value
     if (timer.current) clearTimeout(timer.current)
     timer.current = setTimeout(() => {
       timer.current = null
-      lastSent.current = value
-      dispatch({ type: 'text/set', tabId: tab.id, text: value })
+      pendingValue.current = null
+      send(value)
     }, delay)
   }
+
+  /**
+   * Manda agora o que estiver esperando o debounce, sem esperar.
+   *
+   * Sem isso, desfazer logo depois de digitar reverte o histórico ANTES da
+   * digitação mais recente ter chegado até ele — o desfazer acaba pegando um
+   * passo mais antigo do que o esperado, e o que você acabou de escrever some
+   * junto, mesmo sem ter sido o alvo do desfazer.
+   */
+  const flush = useCallback((): void => {
+    if (timer.current === null) return
+    clearTimeout(timer.current)
+    timer.current = null
+    const value = pendingValue.current
+    pendingValue.current = null
+    if (value !== null) send(value)
+  }, [tab.id, dispatch])
+
+  useImperativeHandle(ref, () => ({ flush }), [flush])
 
   const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setDraft(event.target.value)
@@ -120,4 +173,4 @@ export function Editor({ tab, dispatch }: Props): React.JSX.Element {
       />
     </div>
   )
-}
+})
