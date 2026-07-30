@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { FONT_OPTIONS } from '@shared/defaults'
 import { TIMER_POSITIONS, type Appearance, type ColorPreset, type Tab } from '@shared/types'
@@ -8,6 +9,8 @@ interface Props {
   tab: Tab
   presets: ColorPreset[]
   metrics: PrompterMetrics | null
+  /** o operador já gravou um padrão próprio? */
+  customDefaults: boolean
   dispatch: (action: Action) => void
 }
 
@@ -88,10 +91,19 @@ function Toggle({
   )
 }
 
-export function Inspector({ tab, presets, metrics, dispatch }: Props): React.JSX.Element {
+export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: Props): React.JSX.Element {
   const a = tab.appearance
   const patch = (value: Partial<Appearance>): void =>
     dispatch({ type: 'appearance/patch', tabId: tab.id, patch: value })
+
+  // salvar o padrão quando já havia um não muda nada na tela; sem esta
+  // confirmação o operador não teria como saber se o clique pegou
+  const [salvou, setSalvou] = useState(false)
+  useEffect(() => {
+    if (!salvou) return
+    const timer = setTimeout(() => setSalvou(false), 2_400)
+    return () => clearTimeout(timer)
+  }, [salvou])
 
   return (
     <aside className="flex w-[214px] flex-none flex-col overflow-y-auto border-l border-[var(--color-line)] bg-[var(--color-ink-1)]">
@@ -302,6 +314,41 @@ export function Inspector({ tab, presets, metrics, dispatch }: Props): React.JSX
               onChange={(sizePct) => patch({ timers: { ...a.timers, sizePct } })}
             />
           </>
+        ) : null}
+      </Group>
+
+      <Group label="Padrão">
+        <button
+          type="button"
+          data-save-defaults
+          onClick={() => {
+            dispatch({ type: 'defaults/save' })
+            setSalvou(true)
+          }}
+          className={`rounded-md border py-1.5 text-[11px] transition-colors ${
+            salvou
+              ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
+              : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
+          }`}
+        >
+          {salvou ? 'Guardado' : 'Salvar estes ajustes como padrão'}
+        </button>
+
+        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
+          {customDefaults
+            ? 'Aba nova nasce com os seus ajustes e a sua velocidade.'
+            : 'Aba nova nasce com o padrão de fábrica. As outras abas não mudam.'}
+        </div>
+
+        {customDefaults ? (
+          <button
+            type="button"
+            data-reset-defaults
+            onClick={() => dispatch({ type: 'defaults/reset' })}
+            className="rounded-md border border-[var(--color-line)] py-1.5 text-[11px] text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]"
+          >
+            Voltar ao padrão de fábrica
+          </button>
         ) : null}
       </Group>
 

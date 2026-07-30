@@ -24,6 +24,7 @@ export type IconName =
   | 'chapter'
   | 'direction'
   | 'sliders'
+  | 'alert'
 
 const PATHS: Record<IconName, string> = {
   play: 'M8 5l11 7-11 7z',
@@ -52,7 +53,8 @@ const PATHS: Record<IconName, string> = {
   // repete a marcação que o operador digitaria à mão
   chapter: 'M6 4v16M18 4v16M6 12h12',
   direction: 'M9 4H5v16h4M15 4h4v16h-4',
-  sliders: 'M4 7h16M4 12h16M4 17h16M9 5v4M16 10v4M7 15v4'
+  sliders: 'M4 7h16M4 12h16M4 17h16M9 5v4M16 10v4M7 15v4',
+  alert: 'M12 3L2 20h20zM12 10v4M12 17h.01'
 }
 
 interface Props {

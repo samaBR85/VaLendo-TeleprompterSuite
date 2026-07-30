@@ -31,6 +31,9 @@ export type Action =
   | { type: 'output/set'; displayId: number | null; enabled: boolean }
   | { type: 'output/viewport'; width: number; height: number }
   | { type: 'keymap/set'; commandId: string; binding: string | null }
+  | { type: 'defaults/save' }
+  | { type: 'defaults/reset' }
+  | { type: 'storage/dismissNotice' }
   | { type: 'history/undo'; tabId: string }
   | { type: 'history/redo'; tabId: string }
   | { type: 'document/import'; title: string; text: string; intoNewTab: boolean }

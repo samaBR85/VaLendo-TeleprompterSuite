@@ -12,6 +12,32 @@ export interface StateSnapshot {
    * que main e renderer usem exatamente a mesma régua de rolagem.
    */
   rows: number[]
+  storage: StorageHealth
+}
+
+/**
+ * Se o app está conseguindo gravar o que o operador faz.
+ *
+ * Existe porque a falha que já aconteceu foi silenciosa: o app seguiu
+ * funcionando por meia hora sem gravar nada, e só dava para descobrir olhando
+ * a data do arquivo por fora. Um teleprompter que perde texto sem avisar é
+ * pior que um que não abre.
+ */
+export interface StorageHealth {
+  /**
+   * Condição de agora: não está dando para gravar. Some sozinho no instante em
+   * que uma gravação dá certo de novo.
+   */
+  problem: string | null
+  /**
+   * Algo que já aconteceu e o operador precisa saber — o trabalho gravado veio
+   * ilegível, por exemplo. Fica até ele dispensar.
+   *
+   * Separado de `problem` porque a primeira versão disto sumia sozinha: o app
+   * não conseguia ler o roteiro, avisava, e meio segundo depois o primeiro
+   * salvamento bem-sucedido apagava o aviso da tela. Ninguém nunca veria.
+   */
+  notice: string | null
 }
 
 export interface ImportResult {

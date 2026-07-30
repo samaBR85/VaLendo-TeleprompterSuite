@@ -1,11 +1,11 @@
 import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from 'electron'
 import { CHANNELS, type Action } from '@shared/actions'
-import type { ImportResult } from '@shared/api'
+import type { ImportResult, StateSnapshot } from '@shared/api'
 import type { AppState } from '@shared/types'
 import { IMPORT_FILTERS, importFile } from './import'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
 import { Store } from './state'
-import { flushState } from './storage'
+import { flushState, onStorageHealth, storageHealth } from './storage'
 import { buildBroadcastMenu } from './broadcastMenu'
 import {
   broadcastCoversOperator,
@@ -41,12 +41,17 @@ function syncOutput(state: AppState): void {
   }
 }
 
-function registerIpc(): void {
-  ipcMain.handle(CHANNELS.stateGet, () => ({
+function snapshot(): StateSnapshot {
+  return {
     state: store.getState(),
     history: store.historyInfo(),
-    rows: store.activeRows()
-  }))
+    rows: store.activeRows(),
+    storage: storageHealth()
+  }
+}
+
+function registerIpc(): void {
+  ipcMain.handle(CHANNELS.stateGet, () => snapshot())
   ipcMain.on(CHANNELS.stateAction, (_event, action: Action) => store.dispatch(action))
   ipcMain.handle(CHANNELS.displaysList, () => listDisplays())
   ipcMain.on(CHANNELS.displaysIdentify, () => identifyDisplays())
@@ -116,10 +121,16 @@ function bootstrap(): void {
   registerIpc()
   onBroadcastContextMenu(showBroadcastMenu)
 
-  store.subscribe((state, history) => {
-    sendToAll(CHANNELS.stateChanged, { state, history, rows: store.activeRows() })
-    syncOutput(state)
+  store.subscribe(() => {
+    sendToAll(CHANNELS.stateChanged, snapshot())
+    syncOutput(store.getState())
   })
+
+  // a gravação acontece meio segundo depois da mudança, então a notícia de que
+  // ela falhou chega atrasada em relação ao estado que já foi enviado. Sem este
+  // reenvio, o aviso só apareceria na tela na próxima vez que o operador
+  // mexesse em alguma coisa — e pode não haver próxima vez
+  onStorageHealth(() => sendToAll(CHANNELS.stateChanged, snapshot()))
 
   watchDisplays((displays) => {
     sendToAll(CHANNELS.displaysChanged, displays)

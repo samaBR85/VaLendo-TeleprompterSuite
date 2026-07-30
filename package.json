@@ -2,7 +2,7 @@
   "name": "valendo-teleprompter-suite",
   "productName": "VaLendo",
   "version": "1.0.0",
-  "buildNumber": 23,
+  "buildNumber": 25,
   "description": "VaLendo — A Teleprompter Suite. Teleprompter com edição de texto ao vivo durante a transmissão.",
   "main": "out/main/index.js",
   "type": "commonjs",

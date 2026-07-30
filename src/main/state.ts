@@ -12,7 +12,22 @@ import { History } from '@shared/history'
 import { reconcileBlocks } from '@shared/text'
 import type { Anchor, Appearance, AppState, PacingRule, Tab } from '@shared/types'
 import { wordIndexAt } from '@shared/pacing'
-import { appendHistoryStep, loadHistorySteps, loadState, saveState } from './storage'
+import {
+  appendHistoryStep,
+  dismissStorageNotice,
+  loadHistorySteps,
+  loadState,
+  reportStorageProblem,
+  saveState,
+  userDataRoot
+} from './storage'
+import {
+  FACTORY_DEFAULTS,
+  clearUserDefaults,
+  loadUserDefaults,
+  saveUserDefaults,
+  type UserDefaults
+} from './userDefaults'
 
 /** Palavras devolvidas ao pausar, para o apresentador reentrar sem tropeço. */
 const REWIND_ON_PAUSE = 2
@@ -49,8 +64,15 @@ export class Store {
    */
   private readonly rows = new Map<string, number[]>()
 
+  /** Com o que uma aba nova nasce. Vive fora do workspace, ver userDefaults.ts. */
+  private defaults: UserDefaults
+
   constructor() {
-    this.state = loadState()
+    const loaded = loadUserDefaults(userDataRoot())
+    this.defaults = loaded.defaults
+    // recalculado na abertura, nunca lido do workspace: o arquivo de padrões
+    // pode ter sido apagado com o app fechado
+    this.state = { ...loadState(loaded.defaults), customDefaults: loaded.custom }
   }
 
   getState(): AppState {
@@ -332,7 +354,7 @@ export class Store {
       case 'tab/add': {
         if (this.state.tabs.length >= 10) return
         const color = TAB_COLORS[this.state.tabs.length % TAB_COLORS.length]
-        const tab = createTab(`Aba ${this.state.tabs.length + 1}`, '', color)
+        const tab = createTab(`Aba ${this.state.tabs.length + 1}`, '', color, this.defaults.appearance)
         this.state = { ...this.state, tabs: [...this.state.tabs, tab] }
         this.dispatch({ type: 'tab/activate', tabId: tab.id })
         return
@@ -433,7 +455,7 @@ export class Store {
           action.intoNewTab && this.state.tabs.length < 10
             ? (() => {
                 const color = TAB_COLORS[this.state.tabs.length % TAB_COLORS.length]
-                const tab = createTab(action.title, '', color)
+                const tab = createTab(action.title, '', color, this.defaults.appearance)
                 this.state = { ...this.state, tabs: [...this.state.tabs, tab] }
                 this.dispatch({ type: 'tab/activate', tabId: tab.id })
                 return tab.id
@@ -445,6 +467,48 @@ export class Store {
         this.dispatch({ type: 'transport/restart' })
         return
       }
+
+      /**
+       * Congela os ajustes de agora como o padrão de abas novas.
+       *
+       * Grava a aparência da aba ativa e o ritmo em uso — que é o par que o
+       * operador enxerga como "o meu jeito". As outras abas ficam como estão:
+       * aparência é por aba de propósito, e mexer nelas sem pedir seria mudar
+       * um roteiro que pode estar no ar.
+       */
+      case 'defaults/save': {
+        const tab = this.activeTab()
+        if (!tab) return
+        const next: UserDefaults = {
+          appearance: { ...tab.appearance, timers: { ...tab.appearance.timers } },
+          ppm: this.state.transport.ppm
+        }
+        try {
+          saveUserDefaults(userDataRoot(), next)
+          this.defaults = next
+          this.state = { ...this.state, customDefaults: true }
+        } catch (error) {
+          reportStorageProblem(
+            `Não deu para gravar o padrão (${(error as Error).message}). Os ajustes desta aba continuam valendo, mas abas novas não vão herdá-los.`
+          )
+        }
+        break
+      }
+
+      case 'defaults/reset': {
+        try {
+          clearUserDefaults(userDataRoot())
+          this.defaults = FACTORY_DEFAULTS
+          this.state = { ...this.state, customDefaults: false }
+        } catch (error) {
+          reportStorageProblem(`Não deu para apagar o padrão gravado (${(error as Error).message}).`)
+        }
+        break
+      }
+
+      case 'storage/dismissNotice':
+        dismissStorageNotice()
+        break
 
       case 'history/undo':
       case 'history/redo': {

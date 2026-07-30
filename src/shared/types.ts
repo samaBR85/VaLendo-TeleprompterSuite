@@ -165,6 +165,14 @@ export interface AppState {
   presets: ColorPreset[]
   /** commandId -> binding, sobrepondo o padrão do registro */
   keymap: Record<string, string>
+  /**
+   * O operador gravou os próprios padrões, em vez dos de fábrica.
+   *
+   * Derivado da existência de `defaults.json`, e recalculado a cada abertura:
+   * o valor que estiver no workspace gravado não vale nada, porque o arquivo
+   * de padrões pode ter sido apagado enquanto o app estava fechado.
+   */
+  customDefaults: boolean
 }
 
 export interface DisplayInfo {

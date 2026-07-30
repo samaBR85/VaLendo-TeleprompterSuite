@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Action, HistoryInfo } from '@shared/actions'
+import type { StorageHealth } from '@shared/api'
 import { composeLines, totalWords } from '@shared/anchor'
 import { formatClock, ppmForTarget, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { totalWordCount } from '@shared/text'
@@ -11,6 +12,7 @@ interface Props {
   tab: Tab
   history: HistoryInfo
   rows: number[]
+  storage: StorageHealth
   dispatch: (action: Action) => void
   onOpenCredits: () => void
 }
@@ -42,7 +44,15 @@ function Cell({ label, value, tone }: { label: string; value: string; tone?: str
   )
 }
 
-export function StatusBar({ state, tab, history, rows, dispatch, onOpenCredits }: Props): React.JSX.Element {
+export function StatusBar({
+  state,
+  tab,
+  history,
+  rows,
+  storage,
+  dispatch,
+  onOpenCredits
+}: Props): React.JSX.Element {
   const now = useNow()
   const [target, setTarget] = useState('')
 
@@ -87,6 +97,15 @@ export function StatusBar({ state, tab, history, rows, dispatch, onOpenCredits }
       </label>
 
       <div className="ml-auto flex items-center gap-4 text-[var(--color-fog-2)]">
+        {/* dizer que está gravando é tão importante quanto dizer que falhou:
+            sem o sinal positivo, silêncio e defeito têm a mesma cara */}
+        <span
+          data-storage
+          style={storage.problem ? { color: 'var(--color-warn)' } : undefined}
+          title={storage.problem ?? 'O trabalho está sendo gravado no disco'}
+        >
+          {storage.problem ? 'não está salvando' : 'salvo'}
+        </span>
         <span>{tab.markers.length} marcadores</span>
         <span>{history.depth.toLocaleString('pt-BR')} passos de desfazer</span>
         <span>Ctrl+K comandos</span>

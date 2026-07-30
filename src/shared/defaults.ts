@@ -61,7 +61,17 @@ export const SAMPLE_TEXT = [
 
 let tabCounter = 0
 
-export function createTab(title: string, text: string, color: string): Tab {
+/**
+ * `appearance` entra por parâmetro para que a aba nova nasça com o padrão que o
+ * operador gravou, e não com o de fábrica. Sem isso, criar uma aba no meio do
+ * programa devolveria a fonte e as cores para valores que ele já tinha trocado.
+ */
+export function createTab(
+  title: string,
+  text: string,
+  color: string,
+  appearance: Appearance = DEFAULT_APPEARANCE
+): Tab {
   tabCounter += 1
   const blocks = blocksFromText(text)
   return {
@@ -69,7 +79,9 @@ export function createTab(title: string, text: string, color: string): Tab {
     title,
     color,
     blocks,
-    appearance: { ...DEFAULT_APPEARANCE },
+    // cópia em dois níveis: uma aba não pode compartilhar o objeto de relógios
+    // com o padrão, ou mexer numa mexeria na outra
+    appearance: { ...appearance, timers: { ...appearance.timers } },
     markers: [],
     anchor: blocks.length > 0 ? { blockId: blocks[0].id, wordOffset: 0 } : null,
     rev: 1
@@ -78,8 +90,10 @@ export function createTab(title: string, text: string, color: string): Tab {
 
 export const TAB_COLORS = ['#E24B4A', '#378ADD', '#1D9E75', '#EF9F27', '#7F77DD', '#D4537E']
 
-export function createInitialState(): AppState {
-  const tab = createTab('Abertura', SAMPLE_TEXT, TAB_COLORS[0])
+export function createInitialState(
+  defaults: { appearance: Appearance; ppm: number } = { appearance: DEFAULT_APPEARANCE, ppm: SPEED_PRESETS[1] }
+): AppState {
+  const tab = createTab('Abertura', SAMPLE_TEXT, TAB_COLORS[0], defaults.appearance)
   return {
     tabs: [tab],
     activeTabId: tab.id,
@@ -87,7 +101,7 @@ export function createInitialState(): AppState {
     inspectorVisible: true,
     transport: {
       playing: false,
-      ppm: SPEED_PRESETS[1],
+      ppm: defaults.ppm,
       wordsAtStart: 0,
       startedAt: 0,
       blackout: false,
@@ -95,6 +109,7 @@ export function createInitialState(): AppState {
     },
     output: { displayId: null, enabled: false, viewport: null },
     presets: DEFAULT_PRESETS,
-    keymap: {}
+    keymap: {},
+    customDefaults: false
   }
 }

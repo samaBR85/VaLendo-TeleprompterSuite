@@ -35,8 +35,40 @@ function PanelHeader({
   )
 }
 
+function StorageStrip({
+  mark,
+  message,
+  onDismiss
+}: {
+  mark: string
+  message: string
+  onDismiss?: () => void
+}): React.JSX.Element {
+  return (
+    <div
+      data-strip={mark}
+      className="flex flex-none items-start gap-2 border-b border-[var(--color-warn)]/50 bg-[var(--color-warn)]/12 px-4 py-2 text-[12px] leading-relaxed text-[var(--color-warn)]"
+    >
+      <span className="mt-0.5 flex-none">
+        <Icon name="alert" size={16} />
+      </span>
+      <span className="min-w-0 flex-1">{message}</span>
+      {onDismiss ? (
+        <button
+          type="button"
+          aria-label="Dispensar"
+          onClick={onDismiss}
+          className="mt-0.5 flex-none opacity-70 hover:opacity-100"
+        >
+          <Icon name="close" size={12} />
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
 export function App(): React.JSX.Element {
-  const { state, history, displays, rows, dispatch } = useAppState()
+  const { state, history, displays, rows, storage, dispatch } = useAppState()
   const [palette, setPalette] = useState(false)
   const [keymapOpen, setKeymapOpen] = useState(false)
   const [split, setSplit] = useState(0.46)
@@ -214,6 +246,21 @@ export function App(): React.JSX.Element {
         </div>
       </header>
 
+      {/* faixa fixa, e não um aviso que some sozinho: se o app não está
+          gravando, isso precisa continuar na frente do operador até deixar de
+          ser verdade. O aviso do que já aconteceu tem o × porque ele não deixa
+          de ser verdade nunca — só de ser novidade */}
+      {storage.problem ? (
+        <StorageStrip mark="storage-problem" message={storage.problem} />
+      ) : null}
+      {storage.notice ? (
+        <StorageStrip
+          mark="storage-notice"
+          message={storage.notice}
+          onDismiss={() => dispatch({ type: 'storage/dismissNotice' })}
+        />
+      ) : null}
+
       <Toolbar
         state={state}
         tab={tab}
@@ -282,7 +329,13 @@ export function App(): React.JSX.Element {
           </section>
 
           {state.inspectorVisible ? (
-            <Inspector tab={tab} presets={state.presets} metrics={metrics} dispatch={dispatch} />
+            <Inspector
+              tab={tab}
+              presets={state.presets}
+              metrics={metrics}
+              customDefaults={state.customDefaults}
+              dispatch={dispatch}
+            />
           ) : null}
         </main>
       )}
@@ -292,6 +345,7 @@ export function App(): React.JSX.Element {
         tab={tab}
         history={history}
         rows={rows}
+        storage={storage}
         dispatch={dispatch}
         onOpenCredits={() => setCredits(true)}
       />
