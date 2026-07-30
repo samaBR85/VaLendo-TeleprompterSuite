@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync, appendF
 import { join } from 'node:path'
 import type { HistoryStep } from '@shared/history'
 import { parseHistoryLines } from '@shared/history'
-import { createInitialState } from '@shared/defaults'
+import { DEFAULT_APPEARANCE, createInitialState } from '@shared/defaults'
 import type { AppState } from '@shared/types'
 
 function root(): string {
@@ -51,6 +51,16 @@ export function loadState(): AppState {
     // operador dizer que está pronto
     parsed.output = { ...parsed.output, enabled: false }
     if (!parsed.tabs.some((t) => t.id === parsed.activeTabId)) parsed.activeTabId = parsed.tabs[0].id
+
+    // workspace gravado por uma versão anterior não tem os campos de aparência
+    // que vieram depois. Sem completar aqui, um booleano ausente vira `false`
+    // e o app assume o oposto do padrão — foi o que quase aconteceu com
+    // `uniformSpeed`, que precisa nascer ligado
+    parsed.tabs = parsed.tabs.map((tab) => ({
+      ...tab,
+      appearance: { ...DEFAULT_APPEARANCE, ...tab.appearance }
+    }))
+
     return parsed
   } catch {
     return createInitialState()

@@ -51,8 +51,8 @@ export function PrompterCanvas({
   const readingLineY = stage.height * appearance.readingLinePct
 
   const lines = useMemo(
-    () => composeLines(blocks, { minWords: appearance.minWords, maxWords: appearance.maxWords }),
-    [blocks, appearance.minWords, appearance.maxWords]
+    () => composeLines(blocks, appearance),
+    [blocks, appearance.minWords, appearance.maxWords, appearance.uniformSpeed]
   )
 
   /** Mede o DOM depois do layout. A composição das linhas não muda aqui — só a geometria. */

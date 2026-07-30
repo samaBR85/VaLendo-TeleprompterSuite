@@ -11,9 +11,11 @@ import {
   type LineSpec
 } from './anchor'
 import { reconcileBlocks } from './text'
-import type { Anchor, Block, LineRule } from './types'
+import type { Anchor, Block, PacingRule } from './types'
 
-const RULE: LineRule = { minWords: 3, maxWords: 6 }
+/** Velocidade constante é o padrão do app; o modo por palavras é a exceção. */
+const RULE: PacingRule = { minWords: 3, maxWords: 6, uniformSpeed: true }
+const BY_WORDS: PacingRule = { ...RULE, uniformSpeed: false }
 
 /** Simula a medição do DOM: toda linha com a mesma altura. */
 function withGeometry(lines: LineSpec[], lineHeight: number): Layout {
@@ -41,25 +43,11 @@ describe('composeLines', () => {
     // regressão: com peso zero, o relógio atravessa a linha inteira num
     // instante e o texto salta na tela bem em cima de uma anotação
     const blocks = doc('§ Abertura', 'duas palavras aqui agora', '[olhar câmera 2]')
-    const lines = composeLines(blocks, RULE)
 
-    const chapter = lines.find((l) => l.kind === 'chapter')
-    const direction = lines.find((l) => l.kind === 'direction')
-
-    expect(chapter?.wordCount).toBeGreaterThan(0)
-    expect(direction?.wordCount).toBeGreaterThan(0)
-    expect(totalWords(lines)).toBeGreaterThan(4)
-  })
-
-  it('mantém a régua em números inteiros', () => {
-    // a contagem vira "Palavras" no rodapé: fração ali aparece como "108,5"
-    const blocks = doc('§ Abertura', 'duas palavras aqui agora', '[pausa]')
-    for (const rule of [
-      { minWords: 4, maxWords: 7 },
-      { minWords: 3, maxWords: 6 },
-      { minWords: 1, maxWords: 2 }
-    ]) {
-      expect(Number.isInteger(totalWords(composeLines(blocks, rule))), JSON.stringify(rule)).toBe(true)
+    for (const rule of [RULE, BY_WORDS]) {
+      const lines = composeLines(blocks, rule)
+      expect(lines.find((l) => l.kind === 'chapter')?.wordCount).toBeGreaterThan(0)
+      expect(lines.find((l) => l.kind === 'direction')?.wordCount).toBeGreaterThan(0)
     }
   })
 
@@ -68,14 +56,71 @@ describe('composeLines', () => {
     const layout = withGeometry(composeLines(blocks, RULE), 50)
 
     let previousY = -1
-    const totalScrollWords = totalWords(layout)
-    for (let w = 0; w <= totalScrollWords; w += 0.25) {
+    for (let w = 0; w <= totalWords(layout); w += 0.25) {
       const anchor = anchorFromWordIndex(layout, w) as Anchor
       const y = pixelFromAnchor(layout, anchor) as number
       // nenhum incremento pequeno de w pode corresponder a um salto grande de pixel
       expect(y - previousY).toBeLessThan(30)
       previousY = y
     }
+  })
+})
+
+describe('velocidade constante', () => {
+  const script = doc(
+    '§ Abertura',
+    'uma frase com bastante texto para render mais de uma linha composta aqui',
+    '[pausa]',
+    'outra frase, dessa vez curta',
+    'e um fecho um pouco mais comprido para variar o tamanho das linhas'
+  )
+
+  it('dá o mesmo peso a toda linha, seja fala, direção ou capítulo', () => {
+    const weights = composeLines(script, RULE).map((l) => l.wordCount)
+    expect(new Set(weights).size).toBe(1)
+  })
+
+  it('anda sempre o mesmo tanto de pixel por unidade de tempo', () => {
+    // é isto que o operador sente: o texto não acelera nem freia sozinho
+    const layout = withGeometry(composeLines(script, RULE), 50)
+    const step = 0.5
+
+    const deltas: number[] = []
+    for (let w = 0; w + step <= totalWords(layout); w += step) {
+      const from = pixelFromAnchor(layout, anchorFromWordIndex(layout, w) as Anchor) as number
+      const to = pixelFromAnchor(layout, anchorFromWordIndex(layout, w + step) as Anchor) as number
+      deltas.push(to - from)
+    }
+
+    const min = Math.min(...deltas)
+    const max = Math.max(...deltas)
+    expect(max - min).toBeLessThan(0.01)
+  })
+
+  it('desligada, a velocidade oscila conforme as palavras da linha', () => {
+    const layout = withGeometry(composeLines(script, BY_WORDS), 50)
+    const step = 0.5
+
+    const deltas: number[] = []
+    for (let w = 0; w + step <= totalWords(layout); w += step) {
+      const from = pixelFromAnchor(layout, anchorFromWordIndex(layout, w) as Anchor) as number
+      const to = pixelFromAnchor(layout, anchorFromWordIndex(layout, w + step) as Anchor) as number
+      deltas.push(to - from)
+    }
+
+    expect(Math.max(...deltas) - Math.min(...deltas)).toBeGreaterThan(1)
+  })
+
+  it('preserva a duração estimada: o peso total acompanha as palavras faladas', () => {
+    const spoken = composeLines(script, BY_WORDS)
+      .filter((l) => l.kind === 'speech')
+      .reduce((total, l) => total + l.wordCount, 0)
+    const uniform = totalWords(composeLines(script, RULE))
+
+    // a régua constante inclui direção e capítulo, que ocupam tela mas não
+    // são ditos — por isso é um pouco maior, nunca menor
+    expect(uniform).toBeGreaterThanOrEqual(spoken)
+    expect(uniform).toBeLessThan(spoken * 1.5)
   })
 })
 
@@ -190,7 +235,7 @@ describe('remapAnchor — o teste que define o produto', () => {
       ].join('\n\n')
     )
     const remapped = remapAnchor(before, after, anchor) as Anchor
-    const layoutAfter = withGeometry(composeLines(after, { minWords: 2, maxWords: 4 }), 96)
+    const layoutAfter = withGeometry(composeLines(after, { ...RULE, minWords: 2, maxWords: 4 }), 96)
 
     // a palavra sob a marca de leitura é a mesma, ainda que o pixel e o índice global mudem
     expect(remapped.blockId).toBe(anchor.blockId)

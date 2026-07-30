@@ -22,7 +22,20 @@ export interface LineRule {
   maxWords: number
 }
 
-export interface Appearance extends LineRule {
+export interface PacingRule extends LineRule {
+  /**
+   * Toda linha pesa igual na régua de rolagem, então o texto sobe sempre no
+   * mesmo número de pixels por segundo.
+   *
+   * Desligado, o peso de cada linha é o número de palavras dela — o ritmo
+   * fica exato em palavras por minuto, mas a velocidade na tela oscila, já
+   * que uma linha de 4 palavras e uma de 7 têm a mesma altura. Operar
+   * teleprompter é sobre previsibilidade, então o padrão é ligado.
+   */
+  uniformSpeed: boolean
+}
+
+export interface Appearance extends PacingRule {
   fontFamily: string
   /** px no viewport lógico da saída, não na tela do operador */
   fontSize: number

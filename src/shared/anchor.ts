@@ -1,4 +1,4 @@
-import type { Anchor, Block, BlockKind, LineRule } from './types'
+import type { Anchor, Block, BlockKind, PacingRule } from './types'
 import { senseLines } from './senseLines'
 import { blockWordCount, words } from './text'
 
@@ -8,14 +8,14 @@ export interface LineSpec {
   kind: BlockKind
   text: string
   /**
-   * Peso desta linha na linha do tempo de rolagem — quanto ela "custa" em
-   * palavras para a marca de leitura atravessar. Direção e capítulo entram
-   * aqui com o tamanho do próprio texto, nunca zero: se custassem zero, a
-   * rolagem atravessaria a altura da linha inteira num único instante, e o
-   * texto pularia na tela bem no meio de uma anotação em `[colchetes]` ou de
-   * um título `§`. A contagem que existe para excluir direção e capítulo do
-   * tempo de fala estimado é outra, deliberadamente separada desta: mora em
-   * `totalWordCount` (text.ts), que opera em Block[], não em linha composta.
+   * Peso desta linha na régua de rolagem — quanto ela "custa" para a marca de
+   * leitura atravessar. Nunca zero: uma linha de peso zero seria atravessada
+   * num instante, e como ela ocupa altura real na tela, o texto saltaria.
+   *
+   * Com `uniformSpeed` (o padrão) todas as linhas pesam igual, e como todas
+   * têm a mesma altura, a rolagem anda em pixels constantes. A contagem de
+   * palavras faladas de verdade é outra coisa, deliberadamente separada
+   * desta: mora em `totalWordCount` (text.ts), que opera em Block[].
    */
   wordCount: number
   /** palavras percorridas dentro do bloco até o início desta linha */
@@ -32,57 +32,85 @@ export interface LineGeometry {
 export type Line = LineSpec & LineGeometry
 export type Layout = Line[]
 
+interface LineDraft {
+  blockId: string
+  kind: BlockKind
+  text: string
+  words: number
+}
+
 /**
  * Compõe as linhas do documento. A composição depende só do texto e da regra
  * de palavras por linha — nunca do corpo da fonte. Por isso aumentar a fonte
  * não recompõe nada: as mesmas palavras seguem na mesma linha, só mais altas.
+ *
+ * O peso de cada linha na régua de rolagem sai daqui. Com `uniformSpeed`,
+ * todas pesam igual: como todas ocupam a mesma altura, o texto sobe sempre no
+ * mesmo número de pixels por segundo, do começo ao fim, sem acelerar nem
+ * frear sozinho.
  */
-export function composeLines(blocks: Block[], rule: LineRule): LineSpec[] {
-  const out: LineSpec[] = []
-  let globalWords = 0
+export function composeLines(blocks: Block[], rule: PacingRule): LineSpec[] {
+  const drafts: LineDraft[] = []
 
   for (const block of blocks) {
     if (block.kind === 'speech') {
-      const lines = senseLines(block.text, rule)
-      let blockWords = 0
-      for (const text of lines) {
-        const wordCount = words(text).length
-        out.push({
-          blockId: block.id,
-          kind: block.kind,
-          text,
-          wordCount,
-          blockWordStart: blockWords,
-          wordStart: globalWords
-        })
-        blockWords += wordCount
-        globalWords += wordCount
+      for (const text of senseLines(block.text, rule)) {
+        drafts.push({ blockId: block.id, kind: block.kind, text, words: words(text).length })
       }
     } else {
-      // peso não-zero de propósito — ver o comentário de `wordCount` em LineSpec.
-      // piso na MÉDIA entre mínimo e máximo de palavras por linha, não no
-      // mínimo: `senseLines` empacota a fala perto do teto, então uma linha
-      // comum tem bem mais que `minWords` palavras na prática. Usar o mínimo
-      // como piso deixava direção e capítulo "mais leves" que uma linha de
-      // fala típica, e eles cruzavam a tela um pouco mais rápido — pequeno,
-      // mas perceptível a quem opera o teleprompter todo dia.
-      // arredonda para cima: a régua inteira precisa ficar em números inteiros,
-      // senão a contagem de palavras no rodapé aparece quebrada ("108,5")
-      const typicalLineWords = Math.ceil((rule.minWords + rule.maxWords) / 2)
-      const wordCount = Math.max(words(block.text).length, typicalLineWords)
-      out.push({
+      drafts.push({
         blockId: block.id,
         kind: block.kind,
         text: block.text,
-        wordCount,
-        blockWordStart: 0,
-        wordStart: globalWords
+        words: words(block.text).length
       })
-      globalWords += wordCount
     }
   }
 
+  const weightOf = lineWeigher(drafts, rule)
+  const out: LineSpec[] = []
+  let globalWords = 0
+  let currentBlockId: string | null = null
+  let blockWords = 0
+
+  for (const draft of drafts) {
+    if (draft.blockId !== currentBlockId) {
+      currentBlockId = draft.blockId
+      blockWords = 0
+    }
+
+    const wordCount = weightOf(draft)
+    out.push({
+      blockId: draft.blockId,
+      kind: draft.kind,
+      text: draft.text,
+      wordCount,
+      blockWordStart: blockWords,
+      wordStart: globalWords
+    })
+    blockWords += wordCount
+    globalWords += wordCount
+  }
+
   return out
+}
+
+function lineWeigher(drafts: LineDraft[], rule: PacingRule): (draft: LineDraft) => number {
+  // linha de fala típica, usada como piso e como referência
+  const typical = Math.max(1, (rule.minWords + rule.maxWords) / 2)
+
+  if (rule.uniformSpeed) {
+    // peso igual para todas: a média real das linhas faladas mantém a duração
+    // estimada honesta, e a velocidade na tela constante
+    const speech = drafts.filter((draft) => draft.kind === 'speech')
+    const spoken = speech.reduce((total, draft) => total + draft.words, 0)
+    const perLine = speech.length > 0 ? Math.max(1, spoken / speech.length) : typical
+    return () => perLine
+  }
+
+  // ritmo por palavras: cada linha custa o que ela tem de fala. Direção e
+  // capítulo não têm fala, mas ocupam altura, então recebem o piso
+  return (draft) => (draft.kind === 'speech' ? draft.words : Math.max(draft.words, typical))
 }
 
 export function totalWords(lines: LineSpec[]): number {

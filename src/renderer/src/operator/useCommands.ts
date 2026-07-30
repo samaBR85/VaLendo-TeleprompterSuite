@@ -19,10 +19,7 @@ export interface CommandUi {
 }
 
 function blockIdUnderReadingLine(state: AppState, tab: Tab): string | null {
-  const lines = composeLines(tab.blocks, {
-    minWords: tab.appearance.minWords,
-    maxWords: tab.appearance.maxWords
-  })
+  const lines = composeLines(tab.blocks, tab.appearance)
   const anchor = anchorFromWordIndex(lines, wordIndexAt(state.transport, Date.now()))
   return anchor?.blockId ?? null
 }

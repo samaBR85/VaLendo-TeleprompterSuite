@@ -10,7 +10,7 @@ import { COMMANDS_BY_ID } from '@shared/commands'
 import { TAB_COLORS, createTab } from '@shared/defaults'
 import { History } from '@shared/history'
 import { reconcileBlocks } from '@shared/text'
-import type { Anchor, AppState, LineRule, Tab } from '@shared/types'
+import type { Anchor, Appearance, AppState, PacingRule, Tab } from '@shared/types'
 import { wordIndexAt } from '@shared/pacing'
 import { appendHistoryStep, loadHistorySteps, loadState, saveState } from './storage'
 
@@ -22,9 +22,13 @@ const PPM_STEP = 12
 
 type Listener = (state: AppState, history: HistoryInfo) => void
 
-function rule(tab: Tab): LineRule {
-  return { minWords: tab.appearance.minWords, maxWords: tab.appearance.maxWords }
+/** A aparência já é a regra de composição e de ritmo — não há o que traduzir. */
+function rule(tab: Tab): PacingRule {
+  return tab.appearance
 }
+
+/** Mudanças que alteram a régua de rolagem, e por isso exigem reancorar. */
+const PACING_KEYS: (keyof Appearance)[] = ['minWords', 'maxWords', 'uniformSpeed']
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
@@ -171,15 +175,28 @@ export class Store {
       }
 
       case 'appearance/patch': {
-        // corpo, margem e palavras por linha não mexem no índice global de
-        // palavras, então não há relógio para rebasear aqui
-        this.mutateTab(action.tabId, `aparência:${Object.keys(action.patch).join(',')}`, (draft) => {
-          Object.assign(draft.appearance, action.patch)
-          draft.appearance.minWords = clamp(draft.appearance.minWords, 1, 20)
-          draft.appearance.maxWords = clamp(draft.appearance.maxWords, draft.appearance.minWords, 24)
-          draft.appearance.fontSize = clamp(draft.appearance.fontSize, 16, 260)
-          draft.appearance.marginPct = clamp(draft.appearance.marginPct, 0, 35)
-        })
+        const target = this.state.tabs.find((t) => t.id === action.tabId)
+        if (!target) return
+
+        // corpo e margem não mexem na régua de rolagem. Palavras por linha e
+        // velocidade constante mexem: o índice passa a valer outra coisa, e
+        // sem reancorar a leitura saltaria para outro ponto do texto
+        const affectsPacing = PACING_KEYS.some((key) => key in action.patch)
+        const anchorBefore = affectsPacing ? this.anchorNow(target) : null
+
+        const updated = this.mutateTab(
+          action.tabId,
+          `aparência:${Object.keys(action.patch).join(',')}`,
+          (draft) => {
+            Object.assign(draft.appearance, action.patch)
+            draft.appearance.minWords = clamp(draft.appearance.minWords, 1, 20)
+            draft.appearance.maxWords = clamp(draft.appearance.maxWords, draft.appearance.minWords, 24)
+            draft.appearance.fontSize = clamp(draft.appearance.fontSize, 16, 260)
+            draft.appearance.marginPct = clamp(draft.appearance.marginPct, 0, 35)
+          }
+        )
+
+        if (updated && affectsPacing) this.rebase(updated, anchorBefore ?? updated.anchor)
         break
       }
 

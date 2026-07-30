@@ -139,6 +139,19 @@ export function Inspector({ tab, presets, metrics, dispatch }: Props): React.JSX
         />
       </Group>
 
+      <Group label="Ritmo">
+        <Toggle
+          label="Velocidade constante"
+          active={a.uniformSpeed}
+          onClick={() => patch({ uniformSpeed: !a.uniformSpeed })}
+        />
+        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
+          {a.uniformSpeed
+            ? 'O texto sobe sempre no mesmo ritmo, do começo ao fim.'
+            : 'A velocidade oscila: linha com mais palavras demora mais para passar.'}
+        </div>
+      </Group>
+
       <Group label="Composição">
         <Slider label="Margem" value={a.marginPct} min={0} max={35} suffix="%" onChange={(marginPct) => patch({ marginPct })} />
         <Slider label="Mínimo por linha" value={a.minWords} min={1} max={a.maxWords} onChange={(minWords) => patch({ minWords })} />

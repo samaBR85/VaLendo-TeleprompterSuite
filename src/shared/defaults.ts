@@ -19,6 +19,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   marginPct: 8,
   minWords: 4,
   maxWords: 7,
+  uniformSpeed: true,
   textColor: '#FFFFFF',
   bgColor: '#000000',
   directionColor: '#7FB2FF',
