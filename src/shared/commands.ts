@@ -60,6 +60,8 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'output.rotate', label: 'Rotacionar a saída', group: 'Saída', defaultBinding: 'Mod+Shift+R' },
   { id: 'output.toggle', label: 'Abrir ou fechar a transmissão', group: 'Saída', defaultBinding: 'Mod+Shift+O' },
 
+  { id: 'document.save', label: 'Salvar o roteiro num arquivo', group: 'Documento', defaultBinding: 'Mod+S' },
+  { id: 'document.saveAs', label: 'Salvar como…', group: 'Documento', defaultBinding: 'Mod+Shift+S' },
   { id: 'insert.chapter', label: 'Inserir capítulo', group: 'Documento', defaultBinding: 'Mod+Shift+C' },
   { id: 'insert.direction', label: 'Inserir direção de cena', group: 'Documento', defaultBinding: 'Mod+Shift+D' },
   { id: 'edit.undo', label: 'Desfazer', group: 'Documento', defaultBinding: 'Mod+Z' },

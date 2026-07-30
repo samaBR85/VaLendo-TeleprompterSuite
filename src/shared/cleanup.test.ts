@@ -147,6 +147,23 @@ describe('stripPaginationArtifacts', () => {
 })
 
 describe('cleanupPlainText', () => {
+  it('mantém a quebra que quem escreveu pôs de propósito', () => {
+    // as duas linhas terminam onde a frase termina: é diagramação, não texto
+    // quebrado pela largura da página. Juntar desmancharia o roteiro de quem
+    // salvou pelo próprio app e reabriu
+    const roteiro = 'Boa noite.\nHoje a gente fala de uma mudança.\n\nSegundo bloco.'
+
+    expect(cleanupPlainText(roteiro)).toBe(roteiro)
+  })
+
+  it('junta o que foi quebrado pela largura da página', () => {
+    const colado = 'Boa noite, e sejam bem-vindos ao\nprograma desta noite, que começa\nagora mesmo.'
+
+    expect(cleanupPlainText(colado)).toBe(
+      'Boa noite, e sejam bem-vindos ao programa desta noite, que começa agora mesmo.'
+    )
+  })
+
   it('entrega parágrafos separados por linha em branco', () => {
     const raw = 'Boa noite. Hoje a gente\nvai falar sobre uma mudan-\nça importante.\n\nSegundo bloco do roteiro.'
     expect(cleanupPlainText(raw)).toBe(

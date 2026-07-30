@@ -40,6 +40,15 @@ export interface StorageHealth {
   notice: string | null
 }
 
+/** Resultado de salvar o roteiro num arquivo. Nulo quando o operador desistiu. */
+export interface ExportResult {
+  ok: boolean
+  /** caminho gravado, para a confirmação dizer onde o arquivo ficou */
+  path: string
+  format: string
+  error?: string
+}
+
 export interface ImportResult {
   title: string
   text: string
@@ -56,6 +65,11 @@ export interface ValendoApi {
   identifyDisplays(): void
   /** abre o seletor de arquivo e devolve o roteiro já convertido e limpo */
   importDocument(): Promise<ImportResult | null>
+  /**
+   * Salva a aba ativa num arquivo. Com `saveAs`, sempre pergunta onde; sem ele,
+   * regrava por cima do último arquivo desta aba e só pergunta na primeira vez.
+   */
+  exportDocument(saveAs: boolean): Promise<ExportResult | null>
   openExternal(url: string): void
   /** a transmissão está por cima da janela do operador? */
   coversOperator(): Promise<boolean>

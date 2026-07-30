@@ -55,12 +55,22 @@ const SENTENCE_END = /[.!?:]["')\]]?$/
  * lista, não meio de parágrafo — por isso o corte usa o comprimento mediano do
  * bloco como referência, e não um número fixo.
  */
-export function joinWrappedLines(lines: string[]): string[] {
+/** Largura típica de linha do documento, referência para "linha curta". */
+export function medianLineLength(lines: string[]): number {
+  const meaningful = lines.map((line) => line.trim()).filter((line) => line.length > 0)
+  if (meaningful.length === 0) return 0
+  const lengths = meaningful.map((line) => line.length).sort((a, b) => a - b)
+  return lengths[Math.floor(lengths.length / 2)]
+}
+
+export function joinWrappedLines(lines: string[], reference?: number): string[] {
   const meaningful = lines.map((line) => line.trim()).filter((line) => line.length > 0)
   if (meaningful.length === 0) return []
 
-  const lengths = meaningful.map((line) => line.length).sort((a, b) => a - b)
-  const median = lengths[Math.floor(lengths.length / 2)]
+  // a referência vem do documento inteiro, não do parágrafo: num parágrafo de
+  // duas linhas a mediana é a própria linha maior, e a menor passaria por
+  // "curta" sempre — o que quebraria em dois o que era um parágrafo só
+  const median = reference && reference > 0 ? reference : medianLineLength(lines)
   const shortLine = median * 0.62
 
   const paragraphs: string[] = []
@@ -145,10 +155,53 @@ export function stripPaginationArtifacts(lines: string[]): string[] {
   return lines.filter((line, index) => !drop.has(index) && !EXPLICIT_PAGE.test(line))
 }
 
-/** Pipeline para texto solto: .txt, área de transferência, .docx já achatado. */
+/**
+ * Um parágrafo com quebras dentro é diagramação de quem escreveu — a menos que
+ * as quebras sejam de linha cheia, que é o caso do texto colado de PDF.
+ *
+ * A diferença está no fim das linhas: quem quebra de propósito termina a linha
+ * onde a frase termina; quem foi quebrado pela largura da página termina no
+ * meio. Sem esta distinção, um roteiro salvo pelo próprio VaLendo voltava com a
+ * diagramação desmanchada — cada quebra virava parágrafo.
+ */
+export function looksHardWrapped(lines: string[]): boolean {
+  const anteriores = lines
+    .slice(0, -1)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+
+  if (anteriores.length === 0) return false
+  return anteriores.filter((line) => !SENTENCE_END.test(line)).length > anteriores.length / 2
+}
+
+/**
+ * Pipeline para texto solto: .txt, área de transferência, .docx já achatado.
+ *
+ * A linha em branco é fronteira de parágrafo e é respeitada como tal. Dentro de
+ * cada parágrafo, só junta o que parece ter sido quebrado pela largura da
+ * página.
+ */
 export function cleanupPlainText(text: string): string {
   const lines = stripPaginationArtifacts(normalizeTypography(text).split('\n'))
-  return joinWrappedLines(dehyphenate(lines)).join('\n\n')
+  const largura = medianLineLength(lines)
+  const paragraphs: string[] = []
+  let buffer: string[] = []
+
+  const flush = (): void => {
+    if (buffer.length === 0) return
+    const unidas = dehyphenate(buffer)
+    if (looksHardWrapped(unidas)) paragraphs.push(...joinWrappedLines(unidas, largura))
+    else paragraphs.push(unidas.map((line) => line.trimEnd()).join('\n').trim())
+    buffer = []
+  }
+
+  for (const line of lines) {
+    if (line.trim().length === 0) flush()
+    else buffer.push(line)
+  }
+  flush()
+
+  return paragraphs.filter((paragraph) => paragraph.length > 0).join('\n\n')
 }
 
 /** Pipeline para PDF, onde saber onde cada página começa e termina ajuda. */

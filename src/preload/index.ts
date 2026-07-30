@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import { CHANNELS, type Action } from '@shared/actions'
-import type { ImportResult, StateSnapshot, ValendoApi } from '@shared/api'
+import type { ExportResult, ImportResult, StateSnapshot, ValendoApi } from '@shared/api'
 import type { DisplayInfo } from '@shared/types'
 
 function subscribe<T>(channel: string, callback: (payload: T) => void): () => void {
@@ -16,6 +16,8 @@ const api: ValendoApi = {
   listDisplays: () => ipcRenderer.invoke(CHANNELS.displaysList) as Promise<DisplayInfo[]>,
   identifyDisplays: () => ipcRenderer.send(CHANNELS.displaysIdentify),
   importDocument: () => ipcRenderer.invoke(CHANNELS.importDocument) as Promise<ImportResult | null>,
+  exportDocument: (saveAs: boolean) =>
+    ipcRenderer.invoke(CHANNELS.exportDocument, saveAs) as Promise<ExportResult | null>,
   openExternal: (url: string) => ipcRenderer.send(CHANNELS.openExternal, url),
   coversOperator: () => ipcRenderer.invoke(CHANNELS.broadcastCoversOperator) as Promise<boolean>,
   onState: (callback) => subscribe<StateSnapshot>(CHANNELS.stateChanged, callback),

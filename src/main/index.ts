@@ -1,8 +1,9 @@
 import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from 'electron'
 import { CHANNELS, type Action } from '@shared/actions'
-import type { ImportResult, StateSnapshot } from '@shared/api'
+import type { ExportResult, ImportResult, StateSnapshot } from '@shared/api'
 import type { AppState } from '@shared/types'
 import { IMPORT_FILTERS, importFile } from './import'
+import { EXPORT_FILTERS, defaultFileName, exportScript } from './export'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
 import { Store } from './state'
 import { flushState, onStorageHealth, storageHealth } from './storage'
@@ -76,6 +77,39 @@ function registerIpc(): void {
         text: '',
         warnings: [`Não deu para ler o arquivo: ${(error as Error).message}`]
       }
+    }
+  })
+
+  ipcMain.handle(CHANNELS.exportDocument, async (_event, saveAs: boolean): Promise<ExportResult | null> => {
+    const state = store.getState()
+    const tab = state.tabs.find((t) => t.id === state.activeTabId)
+    if (!tab) return null
+
+    // sem `saveAs`, regrava por cima do último arquivo desta aba: no meio de
+    // uma gravação, salvar não pode custar um diálogo e três cliques
+    let target = saveAs ? '' : (tab.exportPath ?? '')
+
+    if (!target) {
+      const owner = getOperatorWindow()
+      const options = {
+        title: 'Salvar roteiro',
+        defaultPath: tab.exportPath || defaultFileName(tab.title),
+        filters: EXPORT_FILTERS
+      }
+      const picked = owner
+        ? await dialog.showSaveDialog(owner, options)
+        : await dialog.showSaveDialog(options)
+
+      if (picked.canceled || !picked.filePath) return null
+      target = picked.filePath
+    }
+
+    try {
+      const format = await exportScript(target, tab.blocks, tab.title)
+      store.dispatch({ type: 'document/exportedTo', tabId: tab.id, path: target })
+      return { ok: true, path: target, format }
+    } catch (error) {
+      return { ok: false, path: target, format: '', error: (error as Error).message }
     }
   })
 

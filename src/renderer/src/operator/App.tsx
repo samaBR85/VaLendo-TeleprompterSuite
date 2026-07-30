@@ -17,6 +17,12 @@ import { useCommands } from './useCommands'
 
 const FALLBACK_VIEWPORT = { width: 1_920, height: 1_080 }
 
+interface Notice {
+  title: string
+  lines: string[]
+  tone: 'ok' | 'warn'
+}
+
 function PanelHeader({
   label,
   detail,
@@ -74,15 +80,36 @@ export function App(): React.JSX.Element {
   const [split, setSplit] = useState(0.46)
   const [metrics, setMetrics] = useState<PrompterMetrics | null>(null)
   const [credits, setCredits] = useState(false)
-  const [notice, setNotice] = useState<string[]>([])
+  const [notice, setNotice] = useState<Notice | null>(null)
   const mainRef = useRef<HTMLElement>(null)
   const editorRef = useRef<EditorHandle>(null)
 
   useEffect(() => {
-    if (notice.length === 0) return
-    const timer = setTimeout(() => setNotice([]), 9_000)
+    if (!notice) return
+    const timer = setTimeout(() => setNotice(null), 9_000)
     return () => clearTimeout(timer)
   }, [notice])
+
+  /**
+   * Salva a aba ativa num arquivo.
+   *
+   * O editor manda o texto com um respiro de alguns décimos; sem descarregar o
+   * que está pendente e esperar o main confirmar, o arquivo sai sem as últimas
+   * palavras digitadas — que numa gravação são justamente as que importam.
+   */
+  const exportDocument = useCallback(async (saveAs: boolean): Promise<void> => {
+    editorRef.current?.flush()
+    await window.valendo.getState()
+
+    const result = await window.valendo.exportDocument(saveAs)
+    if (!result) return
+
+    setNotice(
+      result.ok
+        ? { title: 'Roteiro salvo', lines: [result.path], tone: 'ok' }
+        : { title: 'Não deu para salvar', lines: [result.error ?? 'erro desconhecido'], tone: 'warn' }
+    )
+  }, [])
 
   const toggleFocusMode = useCallback(() => {
     if (!state) return
@@ -95,9 +122,10 @@ export function App(): React.JSX.Element {
       openKeymap: () => setKeymapOpen(true),
       toggleFocusMode,
       flushEditor: () => editorRef.current?.flush(),
-      insertBlock: (kind: InsertKind) => editorRef.current?.insert(kind)
+      insertBlock: (kind: InsertKind) => editorRef.current?.insert(kind),
+      exportDocument: (saveAs: boolean) => void exportDocument(saveAs)
     }),
-    [toggleFocusMode]
+    [toggleFocusMode, exportDocument]
   )
 
   // a prévia do operador é quem mede as fileiras e devolve ao main, para que
@@ -173,7 +201,9 @@ export function App(): React.JSX.Element {
         intoNewTab: tab.blocks.length > 0
       })
     }
-    if (result.warnings.length > 0) setNotice(result.warnings)
+    if (result.warnings.length > 0) {
+      setNotice({ title: 'Sobre a importação', lines: result.warnings, tone: 'warn' })
+    }
   }
 
   /** Arrasta a divisória: dá ao operador o controle do quanto cada painel ocupa. */
@@ -351,21 +381,31 @@ export function App(): React.JSX.Element {
         onOpenCredits={() => setCredits(true)}
       />
 
-      {notice.length > 0 ? (
-        <div className="absolute right-4 bottom-10 z-40 w-[340px] rounded-lg border border-[var(--color-warn)]/40 bg-[var(--color-ink-2)] px-3 py-2.5">
+      {notice ? (
+        <div
+          data-notice={notice.tone}
+          className={`absolute right-4 bottom-10 z-40 w-[340px] rounded-lg border bg-[var(--color-ink-2)] px-3 py-2.5 ${
+            notice.tone === 'ok' ? 'border-[var(--color-go)]/40' : 'border-[var(--color-warn)]/40'
+          }`}
+        >
           <div className="mb-1 flex items-center gap-2">
-            <span className="text-[11px] font-medium text-[var(--color-warn)]">Sobre a importação</span>
+            <span
+              className="text-[11px] font-medium"
+              style={{ color: notice.tone === 'ok' ? 'var(--color-go)' : 'var(--color-warn)' }}
+            >
+              {notice.title}
+            </span>
             <button
               type="button"
               aria-label="Dispensar"
-              onClick={() => setNotice([])}
+              onClick={() => setNotice(null)}
               className="ml-auto text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
             >
               <Icon name="close" size={12} />
             </button>
           </div>
-          {notice.map((message, index) => (
-            <p key={index} className="text-[11px] leading-relaxed text-[var(--color-fog-1)]">
+          {notice.lines.map((message, index) => (
+            <p key={index} className="text-[11px] leading-relaxed break-all text-[var(--color-fog-1)]">
               {message}
             </p>
           ))}

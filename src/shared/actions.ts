@@ -34,6 +34,7 @@ export type Action =
   | { type: 'defaults/save' }
   | { type: 'defaults/reset' }
   | { type: 'storage/dismissNotice' }
+  | { type: 'document/exportedTo'; tabId: string; path: string }
   | { type: 'history/undo'; tabId: string }
   | { type: 'history/redo'; tabId: string }
   | { type: 'document/import'; title: string; text: string; intoNewTab: boolean }
@@ -53,6 +54,7 @@ export const CHANNELS = {
   displaysChanged: 'displays:changed',
   displaysIdentify: 'displays:identify',
   importDocument: 'document:import',
+  exportDocument: 'document:export',
   openExternal: 'app:openExternal',
   broadcastCoversOperator: 'broadcast:coversOperator'
 } as const

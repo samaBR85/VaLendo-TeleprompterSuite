@@ -510,6 +510,13 @@ export class Store {
         dismissStorageNotice()
         break
 
+      // fora do histórico: desfazer devolve texto, não o arquivo em que ele foi
+      // salvo. Um Ctrl+Z depois de salvar não pode fazer o próximo Ctrl+S
+      // perguntar de novo onde gravar
+      case 'document/exportedTo':
+        this.patchTab(action.tabId, { exportPath: action.path })
+        break
+
       case 'history/undo':
       case 'history/redo': {
         const tab = this.state.tabs.find((t) => t.id === action.tabId)

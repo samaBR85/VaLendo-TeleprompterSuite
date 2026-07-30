@@ -121,6 +121,14 @@ export interface Tab {
   appearance: Appearance
   markers: Marker[]
   anchor: Anchor | null
+  /**
+   * Último arquivo em que esta aba foi salva.
+   *
+   * É o que faz Ctrl+S regravar por cima sem perguntar nada. No meio de uma
+   * gravação, diálogo na tela é o que ninguém quer — ainda mais com a
+   * transmissão por cima de tudo.
+   */
+  exportPath?: string
   /** incrementa a cada mudança de conteúdo; usado para reconciliar renderers */
   rev: number
 }

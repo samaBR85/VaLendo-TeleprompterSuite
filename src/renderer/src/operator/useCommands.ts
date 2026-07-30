@@ -16,6 +16,7 @@ export interface CommandUi {
   /** manda agora, sem esperar o debounce, o que ainda estiver pendente no editor. */
   flushEditor: () => void
   insertBlock: (kind: InsertKind) => void
+  exportDocument: (saveAs: boolean) => void
 }
 
 function blockIdUnderReadingLine(state: AppState, tab: Tab, rows: number[]): string | null {
@@ -177,6 +178,11 @@ export function useCommands(
             displayId: state.output.displayId,
             enabled: !state.output.enabled
           })
+          break
+
+        case 'document.save':
+        case 'document.saveAs':
+          ui.exportDocument(commandId === 'document.saveAs')
           break
 
         case 'insert.chapter':

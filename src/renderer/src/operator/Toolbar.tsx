@@ -14,6 +14,11 @@ interface Props {
   onImport: () => void
 }
 
+/** Nome do arquivo, sem o caminho todo, para caber no rótulo do botão. */
+function fileName(path: string): string {
+  return path.split(/[\\/]/).pop() ?? path
+}
+
 function hint(keymap: Map<string, string>, commandId: string): string {
   const binding = parseBinding(keymap.get(commandId) ?? '')
   if (!binding) return ''
@@ -116,6 +121,15 @@ export function Toolbar({
 
       <div className="flex items-center gap-0.5">
         <Tool icon="import" label="Importar roteiro (txt, md, docx, pdf)" onClick={onImport} />
+        <Tool
+          icon="export"
+          label={
+            tab.exportPath
+              ? `Salvar em ${fileName(tab.exportPath)}${hint(keymap, 'document.save')}`
+              : `Salvar o roteiro num arquivo (txt, md, docx, pdf)${hint(keymap, 'document.save')}`
+          }
+          onClick={() => run('document.save')}
+        />
         <Tool icon="marker" label={`Criar marcador${hint(keymap, 'marker.create')}`} onClick={() => run('marker.create')} />
         <Tool icon="undo" label={`Desfazer${hint(keymap, 'edit.undo')}`} disabled={!history.canUndo} onClick={() => run('edit.undo')} />
         <Tool icon="redo" label={`Refazer${hint(keymap, 'edit.redo')}`} disabled={!history.canRedo} onClick={() => run('edit.redo')} />
