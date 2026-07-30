@@ -205,9 +205,13 @@ export function PrompterCanvas({
                       : undefined
                 }
               >
-                {line.kind === 'chapter'
-                  ? chapterTitle({ id: line.blockId, kind: 'chapter', text: line.text })
-                  : line.text}
+                {line.spacer
+                  ? // espaço inquebrável: um div vazio teria altura zero, e a
+                    // linha em branco do roteiro não apareceria na tela
+                    ' '
+                  : line.kind === 'chapter'
+                    ? chapterTitle({ id: line.blockId, kind: 'chapter', text: line.text })
+                    : line.text}
               </div>
             ))}
 

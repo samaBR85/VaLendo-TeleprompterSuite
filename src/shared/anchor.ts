@@ -22,6 +22,12 @@ export interface LineSpec {
   blockWordStart: number
   /** palavras percorridas no documento inteiro até o início desta linha */
   wordStart: number
+  /**
+   * Linha em branco de diagramação, vinda da linha em branco que separa dois
+   * parágrafos no editor. Ocupa uma linha de altura na tela, como o operador
+   * escreveu, e por isso pesa na régua como qualquer outra.
+   */
+  spacer?: boolean
 }
 
 export interface LineGeometry {
@@ -37,6 +43,7 @@ interface LineDraft {
   kind: BlockKind
   text: string
   words: number
+  spacer?: boolean
 }
 
 /**
@@ -51,8 +58,18 @@ interface LineDraft {
  */
 export function composeLines(blocks: Block[], rule: PacingRule): LineSpec[] {
   const drafts: LineDraft[] = []
+  let previous: Block | null = null
 
   for (const block of blocks) {
+    // a linha em branco que separa dois parágrafos no editor é diagramação:
+    // o operador abriu respiro ali de propósito, e ele precisa existir na tela
+    // do apresentador. Fica presa ao bloco anterior para que saltar para um
+    // capítulo ou marcador caia no texto, não no branco acima dele
+    if (previous) {
+      drafts.push({ blockId: previous.id, kind: previous.kind, text: '', words: 0, spacer: true })
+    }
+    previous = block
+
     if (block.kind === 'speech') {
       // a quebra de linha que o operador digitou é respeitada: ele a colocou
       // ali de propósito, para marcar respiração ou ênfase. A regra de
@@ -91,7 +108,8 @@ export function composeLines(blocks: Block[], rule: PacingRule): LineSpec[] {
       text: draft.text,
       wordCount,
       blockWordStart: blockWords,
-      wordStart: globalWords
+      wordStart: globalWords,
+      ...(draft.spacer ? { spacer: true } : {})
     })
     blockWords += wordCount
     globalWords += wordCount
@@ -107,15 +125,17 @@ function lineWeigher(drafts: LineDraft[], rule: PacingRule): (draft: LineDraft) 
   if (rule.uniformSpeed) {
     // peso igual para todas: a média real das linhas faladas mantém a duração
     // estimada honesta, e a velocidade na tela constante
-    const speech = drafts.filter((draft) => draft.kind === 'speech')
+    const speech = drafts.filter((draft) => draft.kind === 'speech' && !draft.spacer)
     const spoken = speech.reduce((total, draft) => total + draft.words, 0)
     const perLine = speech.length > 0 ? Math.max(1, spoken / speech.length) : typical
     return () => perLine
   }
 
-  // ritmo por palavras: cada linha custa o que ela tem de fala. Direção e
-  // capítulo não têm fala, mas ocupam altura, então recebem o piso
-  return (draft) => (draft.kind === 'speech' ? draft.words : Math.max(draft.words, typical))
+  // ritmo por palavras: cada linha custa o que ela tem de fala. Direção,
+  // capítulo e linha em branco não têm fala, mas ocupam altura na tela, então
+  // recebem o piso — sem isso a rolagem saltaria por cima delas
+  return (draft) =>
+    draft.kind === 'speech' && !draft.spacer ? draft.words : Math.max(draft.words, typical)
 }
 
 export function totalWords(lines: LineSpec[]): number {
@@ -203,11 +223,19 @@ export function wordIndexFromAnchor(lines: LineSpec[], anchor: Anchor): number {
   return last.wordStart + last.wordCount
 }
 
+/**
+ * Confere que o bloco ainda existe e mantém a âncora dentro dele.
+ *
+ * Só há limite por baixo. Por cima quem fecha é `pixelFromAnchor`, que devolve
+ * o fim do bloco quando o deslocamento passa dele — e é preciso ser assim:
+ * `wordOffset` está na unidade da régua de rolagem, que com velocidade
+ * constante não é o número de palavras do bloco. Limitar aqui pela contagem de
+ * palavras puxaria a leitura para trás sem motivo.
+ */
 export function clampAnchor(blocks: Block[], anchor: Anchor): Anchor | null {
   const block = blocks.find((b) => b.id === anchor.blockId)
   if (!block) return null
-  const max = blockWordCount(block)
-  return { blockId: block.id, wordOffset: Math.min(Math.max(0, anchor.wordOffset), max) }
+  return { blockId: block.id, wordOffset: Math.max(0, anchor.wordOffset) }
 }
 
 /**

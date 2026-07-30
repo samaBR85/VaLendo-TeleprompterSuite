@@ -77,6 +77,49 @@ describe('composeLines', () => {
     expect(lines.map((l) => l.text).join(' ')).toBe('primeira parte aqui segunda parte aqui')
   })
 
+  it('abre uma linha em branco entre parágrafos, como no editor', () => {
+    // diagramação: o operador separou os blocos de propósito, e esse respiro
+    // precisa existir na tela do apresentador
+    const blocks = doc('primeiro parágrafo aqui', 'segundo parágrafo aqui')
+    const lines = composeLines(blocks, RULE)
+
+    expect(lines.map((l) => (l.spacer ? '(branco)' : l.text))).toEqual([
+      'primeiro parágrafo aqui',
+      '(branco)',
+      'segundo parágrafo aqui'
+    ])
+  })
+
+  it('não abre branco antes do primeiro nem depois do último parágrafo', () => {
+    const lines = composeLines(doc('um só parágrafo aqui'), RULE)
+    expect(lines.some((l) => l.spacer)).toBe(false)
+  })
+
+  it('a linha em branco pesa como as outras, senão a rolagem saltaria por cima', () => {
+    const lines = composeLines(doc('primeiro parágrafo aqui', 'segundo parágrafo aqui'), RULE)
+    const blank = lines.find((l) => l.spacer)
+
+    expect(blank?.wordCount).toBeGreaterThan(0)
+    for (const rule of [RULE, BY_WORDS]) {
+      const spacer = composeLines(doc('um bloco', 'outro bloco'), rule).find((l) => l.spacer)
+      expect(spacer?.wordCount, JSON.stringify(rule)).toBeGreaterThan(0)
+    }
+  })
+
+  it('a linha em branco fica presa ao bloco de cima, para saltos caírem no texto', () => {
+    const blocks = doc('primeiro parágrafo aqui', '§ Bloco 2')
+    const lines = composeLines(blocks, RULE)
+    const blank = lines.find((l) => l.spacer)
+
+    expect(blank?.blockId).toBe(blocks[0].id)
+
+    // saltar para o capítulo cai na primeira linha dele, não no branco acima
+    const layout = withGeometry(lines, 50)
+    const y = pixelFromAnchor(layout, { blockId: blocks[1].id, wordOffset: 0 }) as number
+    const chapterLine = layout.find((l) => l.blockId === blocks[1].id && !l.spacer)
+    expect(y).toBe(chapterLine?.top)
+  })
+
   it('atravessa direção e capítulo em pixel contínuo, sem salto', () => {
     const blocks = doc('fala antes da direção aqui', '[uma direção com bom tamanho de texto]', 'fala depois da direção aqui')
     const layout = withGeometry(composeLines(blocks, RULE), 50)
