@@ -4,7 +4,7 @@ import { activeTabOf, useAppState } from '../state/useAppState'
 
 /** A janela que o apresentador vê. Nada de interface: só o texto. */
 export function Broadcast(): React.JSX.Element {
-  const { state, dispatch } = useAppState()
+  const { state, rows, dispatch } = useAppState()
   const [viewport, setViewport] = useState({ width: window.innerWidth, height: window.innerHeight })
   const [covering, setCovering] = useState(false)
 
@@ -47,6 +47,7 @@ export function Broadcast(): React.JSX.Element {
         appearance={tab.appearance}
         transport={state.transport}
         viewport={viewport}
+        rows={rows}
       />
 
       {covering ? (

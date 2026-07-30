@@ -42,7 +42,11 @@ function syncOutput(state: AppState): void {
 }
 
 function registerIpc(): void {
-  ipcMain.handle(CHANNELS.stateGet, () => ({ state: store.getState(), history: store.historyInfo() }))
+  ipcMain.handle(CHANNELS.stateGet, () => ({
+    state: store.getState(),
+    history: store.historyInfo(),
+    rows: store.activeRows()
+  }))
   ipcMain.on(CHANNELS.stateAction, (_event, action: Action) => store.dispatch(action))
   ipcMain.handle(CHANNELS.displaysList, () => listDisplays())
   ipcMain.on(CHANNELS.displaysIdentify, () => identifyDisplays())
@@ -113,7 +117,7 @@ function bootstrap(): void {
   onBroadcastContextMenu(showBroadcastMenu)
 
   store.subscribe((state, history) => {
-    sendToAll(CHANNELS.stateChanged, { state, history })
+    sendToAll(CHANNELS.stateChanged, { state, history, rows: store.activeRows() })
     syncOutput(state)
   })
 

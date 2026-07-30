@@ -18,8 +18,10 @@ export interface CommandUi {
   insertBlock: (kind: InsertKind) => void
 }
 
-function blockIdUnderReadingLine(state: AppState, tab: Tab): string | null {
-  const lines = composeLines(tab.blocks, tab.appearance)
+function blockIdUnderReadingLine(state: AppState, tab: Tab, rows: number[]): string | null {
+  // a mesma régua do main e da tela: com outra, criar marcador ou saltar de
+  // capítulo cairia num ponto diferente do que está sob a marca de leitura
+  const lines = composeLines(tab.blocks, tab.appearance, rows)
   const anchor = anchorFromWordIndex(lines, wordIndexAt(state.transport, Date.now()))
   return anchor?.blockId ?? null
 }
@@ -45,6 +47,7 @@ function stepThrough(
 
 export function useCommands(
   state: AppState | null,
+  rows: number[],
   dispatch: (action: Action) => void,
   ui: CommandUi
 ): { run: (commandId: string) => void; keymap: Map<string, string> } {
@@ -102,7 +105,7 @@ export function useCommands(
           break
 
         case 'marker.create': {
-          const blockId = blockIdUnderReadingLine(state, tab)
+          const blockId = blockIdUnderReadingLine(state, tab, rows)
           if (!blockId) break
           const block = tab.blocks.find((b) => b.id === blockId)
           const label =
@@ -116,7 +119,7 @@ export function useCommands(
         case 'marker.prev': {
           const target = stepThrough(
             tab.markers.map((m) => m.blockId),
-            blockIdUnderReadingLine(state, tab),
+            blockIdUnderReadingLine(state, tab, rows),
             tab.blocks,
             commandId === 'marker.next' ? 1 : -1
           )
@@ -127,7 +130,7 @@ export function useCommands(
         case 'chapter.prev': {
           const target = stepThrough(
             tab.blocks.filter((b) => b.kind === 'chapter').map((b) => b.id),
-            blockIdUnderReadingLine(state, tab),
+            blockIdUnderReadingLine(state, tab, rows),
             tab.blocks,
             commandId === 'chapter.next' ? 1 : -1
           )
@@ -212,7 +215,7 @@ export function useCommands(
           break
       }
     },
-    [state, dispatch, ui]
+    [state, rows, dispatch, ui]
   )
 
   useEffect(() => {

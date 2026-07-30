@@ -36,7 +36,7 @@ function PanelHeader({
 }
 
 export function App(): React.JSX.Element {
-  const { state, history, displays, dispatch } = useAppState()
+  const { state, history, displays, rows, dispatch } = useAppState()
   const [palette, setPalette] = useState(false)
   const [keymapOpen, setKeymapOpen] = useState(false)
   const [split, setSplit] = useState(0.46)
@@ -68,7 +68,18 @@ export function App(): React.JSX.Element {
     [toggleFocusMode]
   )
 
-  const { run, keymap } = useCommands(state, dispatch, ui)
+  // a prévia do operador é quem mede as fileiras e devolve ao main, para que
+  // as duas janelas e o processo principal usem a mesma régua de rolagem
+  const activeTabId = state?.activeTabId
+  const handleMetrics = useCallback(
+    (next: PrompterMetrics) => {
+      setMetrics(next)
+      if (activeTabId) dispatch({ type: 'layout/rows', tabId: activeTabId, rows: next.rows })
+    },
+    [activeTabId, dispatch]
+  )
+
+  const { run, keymap } = useCommands(state, rows, dispatch, ui)
 
   if (!state) {
     return <div className="flex h-full items-center justify-center text-[var(--color-fog-2)]">Carregando…</div>
@@ -89,7 +100,8 @@ export function App(): React.JSX.Element {
       appearance={tab.appearance}
       transport={state.transport}
       viewport={viewport}
-      onMetrics={setMetrics}
+      rows={rows}
+      onMetrics={handleMetrics}
     />
   )
 
@@ -279,6 +291,7 @@ export function App(): React.JSX.Element {
         state={state}
         tab={tab}
         history={history}
+        rows={rows}
         dispatch={dispatch}
         onOpenCredits={() => setCredits(true)}
       />

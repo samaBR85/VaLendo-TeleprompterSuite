@@ -47,16 +47,28 @@ interface LineDraft {
 }
 
 /**
+ * Quantas fileiras visuais cada linha composta ocupou de fato na tela, medido
+ * pelo renderer.
+ *
+ * Uma linha composta pode não caber na largura e dobrar em duas ou três
+ * fileiras. Ela então ocupa o dobro ou o triplo da altura, e se pesasse o
+ * mesmo que uma linha de uma fileira, a rolagem passaria por ela no dobro da
+ * velocidade. Medido no app: 149px por fileira, e a linha dobrada de 297px
+ * cruzava a 28px por amostra contra 14px das demais.
+ */
+export type MeasuredRows = number[]
+
+/**
  * Compõe as linhas do documento. A composição depende só do texto e da regra
  * de palavras por linha — nunca do corpo da fonte. Por isso aumentar a fonte
  * não recompõe nada: as mesmas palavras seguem na mesma linha, só mais altas.
  *
- * O peso de cada linha na régua de rolagem sai daqui. Com `uniformSpeed`,
- * todas pesam igual: como todas ocupam a mesma altura, o texto sobe sempre no
- * mesmo número de pixels por segundo, do começo ao fim, sem acelerar nem
- * frear sozinho.
+ * O peso de cada linha na régua de rolagem sai daqui. Com `uniformSpeed`, o
+ * peso é proporcional à altura que a linha ocupa de fato — daí `rows`, medido
+ * na tela. É isso que faz o texto subir sempre no mesmo número de pixels por
+ * segundo, sem acelerar nem frear sozinho.
  */
-export function composeLines(blocks: Block[], rule: PacingRule): LineSpec[] {
+export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredRows): LineSpec[] {
   const drafts: LineDraft[] = []
   let previous: Block | null = null
 
@@ -89,19 +101,25 @@ export function composeLines(blocks: Block[], rule: PacingRule): LineSpec[] {
     }
   }
 
-  const weightOf = lineWeigher(drafts, rule)
+  // a medição só vale se for do mesmo conjunto de linhas; texto editado desde
+  // a última medida invalida tudo, e aí é melhor uma fileira por linha do que
+  // pesos deslocados
+  const measured = rows && rows.length === drafts.length ? rows : null
+  const rowsOf = (index: number): number => Math.max(1, measured ? measured[index] : 1)
+
+  const weightOf = lineWeigher(drafts, rule, rowsOf)
   const out: LineSpec[] = []
   let globalWords = 0
   let currentBlockId: string | null = null
   let blockWords = 0
 
-  for (const draft of drafts) {
+  for (const [index, draft] of drafts.entries()) {
     if (draft.blockId !== currentBlockId) {
       currentBlockId = draft.blockId
       blockWords = 0
     }
 
-    const wordCount = weightOf(draft)
+    const wordCount = weightOf(draft, index)
     out.push({
       blockId: draft.blockId,
       kind: draft.kind,
@@ -118,17 +136,28 @@ export function composeLines(blocks: Block[], rule: PacingRule): LineSpec[] {
   return out
 }
 
-function lineWeigher(drafts: LineDraft[], rule: PacingRule): (draft: LineDraft) => number {
+function lineWeigher(
+  drafts: LineDraft[],
+  rule: PacingRule,
+  rowsOf: (index: number) => number
+): (draft: LineDraft, index: number) => number {
   // linha de fala típica, usada como piso e como referência
   const typical = Math.max(1, (rule.minWords + rule.maxWords) / 2)
 
   if (rule.uniformSpeed) {
-    // peso igual para todas: a média real das linhas faladas mantém a duração
-    // estimada honesta, e a velocidade na tela constante
-    const speech = drafts.filter((draft) => draft.kind === 'speech' && !draft.spacer)
-    const spoken = speech.reduce((total, draft) => total + draft.words, 0)
-    const perLine = speech.length > 0 ? Math.max(1, spoken / speech.length) : typical
-    return () => perLine
+    // peso por FILEIRA, não por linha composta: uma linha que dobrou ocupa duas
+    // fileiras de altura e precisa custar o dobro, senão a rolagem a atravessa
+    // no dobro da velocidade
+    let spoken = 0
+    let rows = 0
+    drafts.forEach((draft, index) => {
+      if (draft.kind !== 'speech' || draft.spacer) return
+      spoken += draft.words
+      rows += rowsOf(index)
+    })
+
+    const perRow = rows > 0 ? Math.max(1, spoken / rows) : typical
+    return (_draft, index) => perRow * rowsOf(index)
   }
 
   // ritmo por palavras: cada linha custa o que ela tem de fala. Direção,

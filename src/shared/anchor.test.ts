@@ -135,6 +135,55 @@ describe('composeLines', () => {
   })
 })
 
+describe('velocidade constante com linhas que dobram', () => {
+  // o caso medido no app: linha de 1 fileira a 14px por amostra, linha
+  // dobrada de 2 fileiras a 28px — o dobro da velocidade
+  const script = doc('primeira linha curta', 'uma linha que dobra na tela', 'terceira linha curta')
+
+  /** Geometria em que a linha do meio ocupa duas fileiras. */
+  function withRows(lines: LineSpec[], rows: number[], rowHeight: number): Layout {
+    let top = 0
+    return lines.map((line, i) => {
+      const height = rows[i] * rowHeight
+      const placed = { ...line, top, height }
+      top += height
+      return placed
+    })
+  }
+
+  it('a linha que dobra pesa o dobro', () => {
+    const plain = composeLines(script, RULE)
+    const rows = plain.map((_, i) => (i === 2 ? 2 : 1))
+    const weighted = composeLines(script, RULE, rows)
+
+    expect(weighted[2].wordCount).toBeCloseTo(weighted[0].wordCount * 2, 5)
+  })
+
+  it('atravessa a linha dobrada na mesma velocidade das demais', () => {
+    const plain = composeLines(script, RULE)
+    const rows = plain.map((_, i) => (i === 2 ? 2 : 1))
+    const layout = withRows(composeLines(script, RULE, rows), rows, 50)
+
+    const step = 0.25
+    const deltas: number[] = []
+    for (let w = 0; w + step <= totalWords(layout); w += step) {
+      const from = pixelFromAnchor(layout, anchorFromWordIndex(layout, w) as Anchor) as number
+      const to = pixelFromAnchor(layout, anchorFromWordIndex(layout, w + step) as Anchor) as number
+      deltas.push(to - from)
+    }
+
+    expect(Math.max(...deltas) - Math.min(...deltas)).toBeLessThan(0.01)
+  })
+
+  it('sem medida, cai numa fileira por linha em vez de errar o peso', () => {
+    const plain = composeLines(script, RULE)
+    const stale = composeLines(script, RULE, [1, 2])
+
+    // medida de tamanho errado é medida de outro texto: ignorar é mais seguro
+    expect(stale.map((l) => l.wordCount)).toEqual(plain.map((l) => l.wordCount))
+  })
+})
+
 describe('velocidade constante', () => {
   const script = doc(
     '§ Abertura',

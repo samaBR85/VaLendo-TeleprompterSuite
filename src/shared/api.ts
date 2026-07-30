@@ -4,6 +4,14 @@ import type { AppState, DisplayInfo } from './types'
 export interface StateSnapshot {
   state: AppState
   history: HistoryInfo
+  /**
+   * Fileiras visuais medidas para cada linha da aba ativa.
+   *
+   * Vive fora do `AppState` de propósito: é medida, não configuração, e não
+   * faz sentido gravar no workspace. Mas precisa chegar às duas janelas para
+   * que main e renderer usem exatamente a mesma régua de rolagem.
+   */
+  rows: number[]
 }
 
 export interface ImportResult {

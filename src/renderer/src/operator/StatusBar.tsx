@@ -10,6 +10,7 @@ interface Props {
   state: AppState
   tab: Tab
   history: HistoryInfo
+  rows: number[]
   dispatch: (action: Action) => void
   onOpenCredits: () => void
 }
@@ -41,7 +42,7 @@ function Cell({ label, value, tone }: { label: string; value: string; tone?: str
   )
 }
 
-export function StatusBar({ state, tab, history, dispatch, onOpenCredits }: Props): React.JSX.Element {
+export function StatusBar({ state, tab, history, rows, dispatch, onOpenCredits }: Props): React.JSX.Element {
   const now = useNow()
   const [target, setTarget] = useState('')
 
@@ -50,8 +51,8 @@ export function StatusBar({ state, tab, history, dispatch, onOpenCredits }: Prop
   // mas ocupam tempo de tela — por isso alimenta os tempos, não a contagem
   const spoken = useMemo(() => totalWordCount(tab.blocks), [tab.blocks])
   const ruler = useMemo(
-    () => totalWords(composeLines(tab.blocks, tab.appearance)),
-    [tab.blocks, tab.appearance.minWords, tab.appearance.maxWords, tab.appearance.uniformSpeed]
+    () => totalWords(composeLines(tab.blocks, tab.appearance, rows)),
+    [tab.blocks, tab.appearance.minWords, tab.appearance.maxWords, tab.appearance.uniformSpeed, rows]
   )
 
   const readWords = Math.min(ruler, Math.max(0, wordIndexAt(state.transport, now)))

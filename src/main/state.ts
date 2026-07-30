@@ -34,10 +34,20 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }
 
+function sameRows(a: number[], b: number[]): boolean {
+  return a.length === b.length && a.every((value, index) => value === b[index])
+}
+
 export class Store {
   private state: AppState
   private readonly histories = new Map<string, History<Tab>>()
   private readonly listeners = new Set<Listener>()
+  /**
+   * Fileiras medidas por aba. Fora do AppState porque é medida, não
+   * configuração — não vai para o disco, e é reconstruída assim que a prévia
+   * do operador desenha.
+   */
+  private readonly rows = new Map<string, number[]>()
 
   constructor() {
     this.state = loadState()
@@ -45,6 +55,11 @@ export class Store {
 
   getState(): AppState {
     return this.state
+  }
+
+  /** Fileiras medidas da aba ativa, para main e renderer usarem a mesma régua. */
+  activeRows(): number[] {
+    return this.rows.get(this.state.activeTabId) ?? []
   }
 
   subscribe(listener: Listener): () => void {
@@ -121,7 +136,7 @@ export class Store {
    */
   private rebase(tab: Tab, anchor: Anchor | null): void {
     if (tab.id !== this.state.activeTabId) return
-    const lines = composeLines(tab.blocks, rule(tab))
+    const lines = composeLines(tab.blocks, rule(tab), this.rows.get(tab.id))
     const wordIndex = anchor ? wordIndexFromAnchor(lines, anchor) : 0
     this.state = {
       ...this.state,
@@ -136,14 +151,14 @@ export class Store {
   /** Âncora correspondente à posição do relógio, calculada sobre os blocos atuais. */
   private anchorNow(tab: Tab): Anchor | null {
     if (tab.id !== this.state.activeTabId) return tab.anchor
-    const lines = composeLines(tab.blocks, rule(tab))
+    const lines = composeLines(tab.blocks, rule(tab), this.rows.get(tab.id))
     return anchorFromWordIndex(lines, this.currentWordIndex()) ?? tab.anchor
   }
 
   private seekWordIndex(wordIndex: number): void {
     const tab = this.activeTab()
     if (!tab) return
-    const lines = composeLines(tab.blocks, rule(tab))
+    const lines = composeLines(tab.blocks, rule(tab), this.rows.get(tab.id))
     const clamped = clamp(wordIndex, 0, totalWords(lines))
     const anchor = anchorFromWordIndex(lines, clamped)
     this.state = {
@@ -259,7 +274,7 @@ export class Store {
       case 'transport/seekAnchor': {
         const tab = this.activeTab()
         if (!tab) return
-        const lines = composeLines(tab.blocks, rule(tab))
+        const lines = composeLines(tab.blocks, rule(tab), this.rows.get(tab.id))
         this.seekWordIndex(wordIndexFromAnchor(lines, action.anchor))
         break
       }
@@ -338,7 +353,7 @@ export class Store {
       case 'tab/activate': {
         const tab = this.state.tabs.find((t) => t.id === action.tabId)
         if (!tab) return
-        const lines = composeLines(tab.blocks, rule(tab))
+        const lines = composeLines(tab.blocks, rule(tab), this.rows.get(tab.id))
         this.state = {
           ...this.state,
           activeTabId: tab.id,
@@ -365,6 +380,21 @@ export class Store {
       case 'layout/inspector':
         this.state = { ...this.state, inspectorVisible: action.visible }
         break
+
+      case 'layout/rows': {
+        const previous = this.rows.get(action.tabId)
+        if (previous && sameRows(previous, action.rows)) return
+
+        // a medida muda o peso das linhas, e com ele o que o índice do relógio
+        // significa. Sem reancorar, a leitura saltaria no instante em que uma
+        // linha passasse a dobrar
+        const target = this.state.tabs.find((t) => t.id === action.tabId)
+        const anchorBefore = target ? this.anchorNow(target) : null
+
+        this.rows.set(action.tabId, action.rows)
+        if (target) this.rebase(target, anchorBefore ?? target.anchor)
+        break
+      }
 
       case 'output/set':
         // o viewport pertence à janela que estava aberta; ao trocar de monitor

@@ -27,6 +27,7 @@ export type Action =
   | { type: 'tab/rename'; tabId: string; title: string }
   | { type: 'layout/mode'; mode: LayoutMode }
   | { type: 'layout/inspector'; visible: boolean }
+  | { type: 'layout/rows'; tabId: string; rows: number[] }
   | { type: 'output/set'; displayId: number | null; enabled: boolean }
   | { type: 'output/viewport'; width: number; height: number }
   | { type: 'keymap/set'; commandId: string; binding: string | null }

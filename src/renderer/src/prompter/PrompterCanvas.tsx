@@ -14,6 +14,8 @@ export interface PrompterMetrics {
   wrapping: boolean
   /** maior corpo de fonte em que nenhuma linha dobra */
   fitFontSize: number
+  /** fileiras visuais de cada linha composta, na ordem */
+  rows: number[]
 }
 
 interface Props {
@@ -22,6 +24,8 @@ interface Props {
   transport: Transport
   /** tamanho lógico da saída, em pixels reais do monitor de destino */
   viewport: Viewport
+  /** fileiras medidas, vindas do main: main e renderer precisam da mesma régua */
+  rows?: number[]
   onMetrics?: (metrics: PrompterMetrics) => void
 }
 
@@ -37,6 +41,7 @@ export function PrompterCanvas({
   appearance,
   transport,
   viewport,
+  rows,
   onMetrics
 }: Props): React.JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -51,8 +56,8 @@ export function PrompterCanvas({
   const readingLineY = stage.height * appearance.readingLinePct
 
   const lines = useMemo(
-    () => composeLines(blocks, appearance),
-    [blocks, appearance.minWords, appearance.maxWords, appearance.uniformSpeed]
+    () => composeLines(blocks, appearance, rows),
+    [blocks, appearance.minWords, appearance.maxWords, appearance.uniformSpeed, rows]
   )
 
   /** Mede o DOM depois do layout. A composição das linhas não muda aqui — só a geometria. */
@@ -61,7 +66,7 @@ export function PrompterCanvas({
     if (!container) return
 
     const measure = (): void => {
-      const nodes = container.querySelectorAll<HTMLElement>('[data-line]')
+      const nodes = [...container.querySelectorAll<HTMLElement>('[data-line]')]
       geometry.current = lines.map((spec, index) => {
         const node = nodes[index]
         return { ...spec, top: node?.offsetTop ?? 0, height: node?.offsetHeight ?? 0 }
@@ -69,12 +74,21 @@ export function PrompterCanvas({
 
       if (!onMetrics) return
 
-      // largura natural de cada linha, medida sem permitir dobra, contra a
-      // largura útil: é assim que se descobre se a regra de palavras por linha
-      // está sendo respeitada de fato ou só no papel
       const style = getComputedStyle(container)
       const available =
         container.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+
+      // quantas fileiras visuais cada linha ocupou de fato. É a régua de
+      // rolagem: uma linha que dobrou tem o dobro da altura e precisa custar o
+      // dobro, senão o texto passa por ela no dobro da velocidade
+      const rowHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize)
+      const measuredRows = [...nodes].map((node) =>
+        rowHeight > 0 ? Math.max(1, Math.round(node.offsetHeight / rowHeight)) : 1
+      )
+
+      // largura natural de cada linha, medida sem permitir dobra, contra a
+      // largura útil: é assim que se descobre se a regra de palavras por linha
+      // está sendo respeitada de fato ou só no papel
       const probes = container.querySelectorAll<HTMLElement>('[data-probe-line]')
 
       let widest = 0
@@ -84,10 +98,10 @@ export function PrompterCanvas({
       const fitFontSize =
         widest > 0 ? Math.max(12, Math.floor((appearance.fontSize * available) / widest)) : appearance.fontSize
 
-      const signature = `${wrapping}:${fitFontSize}`
+      const signature = `${wrapping}:${fitFontSize}:${measuredRows.join(',')}`
       if (signature === lastMetrics.current) return
       lastMetrics.current = signature
-      onMetrics({ wrapping, fitFontSize })
+      onMetrics({ wrapping, fitFontSize, rows: measuredRows })
     }
 
     measure()

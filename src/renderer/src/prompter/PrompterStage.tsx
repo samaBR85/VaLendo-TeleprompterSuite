@@ -7,6 +7,7 @@ interface Props {
   appearance: Appearance
   transport: Transport
   viewport: Viewport
+  rows?: number[]
   onMetrics?: (metrics: PrompterMetrics) => void
 }
 
