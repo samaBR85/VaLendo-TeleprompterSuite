@@ -24,6 +24,13 @@ function timerPlacement(position: TimerPosition, inset: number): React.CSSProper
   }
 }
 
+/**
+ * Cinza escuro fixo, não uma cor do tema: a guia precisa ficar discreta sobre o
+ * fundo preto de sempre e ainda assim aparecer sobre um fundo claro, e não pode
+ * competir com a marca de leitura pela atenção do operador.
+ */
+const MARGIN_GUIDE = '#4D4D4D'
+
 export interface PrompterMetrics {
   /** alguma linha composta não caberia na largura e o navegador dobrou */
   wrapping: boolean
@@ -41,6 +48,14 @@ interface Props {
   viewport: Viewport
   /** fileiras medidas, vindas do main: main e renderer precisam da mesma régua */
   rows?: number[]
+  /**
+   * Desenha as duas linhas verticais onde a margem corta o texto.
+   *
+   * Só a prévia do operador liga isto. É a única coisa que ela mostra a mais
+   * que a transmissão, e de propósito: é auxílio de quem monta o roteiro, não
+   * de quem lê. Na tela do apresentador seria sujeira.
+   */
+  marginGuides?: boolean
   onMetrics?: (metrics: PrompterMetrics) => void
 }
 
@@ -57,6 +72,7 @@ export function PrompterCanvas({
   transport,
   viewport,
   rows,
+  marginGuides = false,
   onMetrics
 }: Props): React.JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -327,6 +343,30 @@ export function PrompterCanvas({
             ) : null}
           </div>
         ) : null}
+
+        {/* guias de margem: fora do container que rola, para ficarem paradas, e
+            dentro do rotador, para acompanharem rotação e espelho junto com o
+            texto que elas delimitam. Centradas no limite, não encostadas nele */}
+        {marginGuides
+          ? ([0, 1] as const).map((side) => (
+              <div
+                key={side}
+                data-margin-guide={side === 0 ? 'left' : 'right'}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  bottom: 0,
+                  [side === 0 ? 'left' : 'right']: `${appearance.marginPct}%`,
+                  // espessura proporcional: a prévia é desenhada em tamanho real
+                  // e depois reduzida, e 1px viraria menos de um pixel na tela
+                  width: Math.max(1, stage.width * 0.0012),
+                  transform: `translateX(${side === 0 ? '-50%' : '50%'})`,
+                  background: MARGIN_GUIDE,
+                  pointerEvents: 'none'
+                }}
+              />
+            ))
+          : null}
 
         {/* marca de leitura: espessura proporcional ao viewport para continuar
             visível quando a prévia do operador reduz a escala, e cunhas nas

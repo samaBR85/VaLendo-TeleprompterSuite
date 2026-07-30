@@ -133,6 +133,7 @@ export function App(): React.JSX.Element {
       transport={state.transport}
       viewport={viewport}
       rows={rows}
+      marginGuides
       onMetrics={handleMetrics}
     />
   )

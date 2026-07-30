@@ -8,6 +8,8 @@ interface Props {
   transport: Transport
   viewport: Viewport
   rows?: number[]
+  /** linhas do limite da margem; só a prévia do operador as mostra */
+  marginGuides?: boolean
   onMetrics?: (metrics: PrompterMetrics) => void
 }
 
