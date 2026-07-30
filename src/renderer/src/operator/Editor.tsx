@@ -1,7 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { insertBlock, type InsertKind } from '@shared/insertBlock'
-import { serializeBlocks } from '@shared/text'
+import { blocksFromText, serializeBlocks } from '@shared/text'
 import type { Tab } from '@shared/types'
 
 const TYPE_SETTINGS: React.CSSProperties = {
@@ -44,6 +44,15 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
   const areaRef = useRef<HTMLTextAreaElement>(null)
   const preRef = useRef<HTMLPreElement>(null)
   const lastSent = useRef(incoming)
+  /**
+   * A forma normalizada do que mandamos.
+   *
+   * O modelo de blocos descarta espaço em branco de sobra: "abc\n" volta do
+   * main como "abc". Sem reconhecer isso como eco da própria digitação, o
+   * editor adotava a versão normalizada e recuava o cursor — era o Enter que
+   * parecia não funcionar.
+   */
+  const lastSentNormalized = useRef(incoming)
   const lastKey = useRef(`${tab.id}:${tab.rev}`)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingValue = useRef<string | null>(null)
@@ -61,9 +70,11 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
     if (key === lastKey.current) return
     lastKey.current = key
 
-    // eco da nossa própria digitação: não reposiciona o cursor
-    if (incoming === lastSent.current) return
+    // eco da nossa própria digitação: não reposiciona o cursor. Vale tanto
+    // para o texto igual ao que mandamos quanto para a normalização dele
+    if (incoming === lastSent.current || incoming === lastSentNormalized.current) return
     lastSent.current = incoming
+    lastSentNormalized.current = incoming
 
     // uma mudança externa (desfazer, refazer, troca de aba) chegou enquanto
     // uma digitação ainda esperava os 140ms de debounce para ser enviada.
@@ -93,6 +104,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
 
   const send = (value: string): void => {
     lastSent.current = value
+    lastSentNormalized.current = serializeBlocks(blocksFromText(value))
     dispatch({ type: 'text/set', tabId: tab.id, text: value })
   }
 

@@ -13,6 +13,18 @@ describe('classificação de blocos', () => {
     expect(totalWordCount(blocks)).toBe(3)
   })
 
+  it('normaliza o texto: é o que o editor precisa reconhecer como eco', () => {
+    // o modelo de blocos descarta espaço em branco de sobra. Se o editor não
+    // souber que "abc\n" volta como "abc", ele adota a versão normalizada e
+    // recua o cursor — era o Enter que "não funcionava"
+    const roundTrip = (text: string): string => serializeBlocks(blocksFromText(text))
+
+    expect(roundTrip('abc\n')).toBe('abc')
+    expect(roundTrip('abc\n\n')).toBe('abc')
+    expect(roundTrip('abc\ndef')).toBe('abc def')
+    expect(roundTrip('abc\n\ndef')).toBe('abc\n\ndef')
+  })
+
   it('junta linhas soltas dentro do mesmo parágrafo', () => {
     const blocks = blocksFromText('primeira linha\nsegunda linha\n\noutro parágrafo')
     expect(blocks).toHaveLength(2)
