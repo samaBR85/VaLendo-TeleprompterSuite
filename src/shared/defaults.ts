@@ -28,7 +28,14 @@ export const DEFAULT_APPEARANCE: Appearance = {
   focusDim: true,
   mirrorX: false,
   mirrorY: false,
-  rotation: 0
+  rotation: 0,
+  timers: {
+    elapsed: false,
+    remaining: false,
+    corner: 'topRight',
+    color: '#7FB2FF',
+    sizePct: 3.5
+  }
 }
 
 export const DEFAULT_PRESETS: ColorPreset[] = [

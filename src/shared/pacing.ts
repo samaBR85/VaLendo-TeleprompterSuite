@@ -25,6 +25,25 @@ export function ppmForTarget(wordCount: number, seconds: number): number {
   return (wordCount / seconds) * 60
 }
 
+export interface TimerReading {
+  elapsed: string
+  remaining: string
+}
+
+/**
+ * O que os relógios da transmissão mostram neste instante.
+ *
+ * O restante nunca passa a ser negativo: quando o roteiro acaba e a rolagem
+ * continua, "-0:12" na cara do apresentador não ajuda em nada.
+ */
+export function timerReading(wordIndex: number, totalWords: number, ppm: number): TimerReading {
+  const read = Math.min(Math.max(0, wordIndex), totalWords)
+  return {
+    elapsed: formatClock(secondsForWords(read, ppm)),
+    remaining: formatClock(secondsForWords(totalWords - read, ppm))
+  }
+}
+
 export function formatClock(seconds: number): string {
   const safe = Math.max(0, Math.round(seconds))
   const m = Math.floor(safe / 60)

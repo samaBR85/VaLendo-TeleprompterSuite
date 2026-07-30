@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatClock, ppmForTarget, secondsForWords, wordIndexAt } from './pacing'
+import { formatClock, ppmForTarget, secondsForWords, timerReading, wordIndexAt } from './pacing'
 import { totalWordCount } from './text'
 import { blocksFromText } from './text'
 import type { Transport } from './types'
@@ -45,6 +45,28 @@ describe('ppm e duração', () => {
   it('ignora direções ao estimar a duração', () => {
     const blocks = blocksFromText('uma duas três quatro\n\n[isto não é falado e não conta tempo]')
     expect(totalWordCount(blocks)).toBe(4)
+  })
+})
+
+describe('timerReading', () => {
+  it('mostra decorrido e restante somando a duração total', () => {
+    // 300 palavras a 150 ppm são 2:00 no total
+    expect(timerReading(150, 300, 150)).toEqual({ elapsed: '1:00', remaining: '1:00' })
+    expect(timerReading(0, 300, 150)).toEqual({ elapsed: '0:00', remaining: '2:00' })
+  })
+
+  it('não mostra tempo negativo quando a rolagem passa do fim', () => {
+    // "-0:12" na cara do apresentador não ajuda em nada
+    expect(timerReading(999, 300, 150)).toEqual({ elapsed: '2:00', remaining: '0:00' })
+  })
+
+  it('trata posição antes do início', () => {
+    expect(timerReading(-50, 300, 150).elapsed).toBe('0:00')
+  })
+
+  it('aguenta roteiro vazio sem dividir por zero', () => {
+    expect(timerReading(0, 0, 150)).toEqual({ elapsed: '0:00', remaining: '0:00' })
+    expect(timerReading(0, 300, 0)).toEqual({ elapsed: '0:00', remaining: '0:00' })
   })
 })
 

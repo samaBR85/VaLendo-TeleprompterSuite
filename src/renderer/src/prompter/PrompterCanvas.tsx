@@ -1,12 +1,21 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
-import { anchorFromWordIndex, composeLines, pixelFromAnchor, type Layout } from '@shared/anchor'
-import { wordIndexAt } from '@shared/pacing'
+import { anchorFromWordIndex, composeLines, pixelFromAnchor, totalWords, type Layout } from '@shared/anchor'
+import { timerReading, wordIndexAt } from '@shared/pacing'
 import { chapterTitle } from '@shared/text'
-import type { Appearance, Block, Transport } from '@shared/types'
+import type { Appearance, Block, TimerCorner, Transport } from '@shared/types'
 
 export interface Viewport {
   width: number
   height: number
+}
+
+function timerCorner(corner: TimerCorner, inset: number): React.CSSProperties {
+  return {
+    top: corner.startsWith('top') ? inset : undefined,
+    bottom: corner.startsWith('bottom') ? inset : undefined,
+    left: corner.endsWith('Left') ? inset : undefined,
+    right: corner.endsWith('Right') ? inset : undefined
+  }
 }
 
 export interface PrompterMetrics {
@@ -47,6 +56,7 @@ export function PrompterCanvas({
   const scrollRef = useRef<HTMLDivElement>(null)
   const geometry = useRef<Layout>([])
   const lastMetrics = useRef('')
+  const timerRef = useRef<HTMLDivElement>(null)
 
   const rotated = appearance.rotation === 90 || appearance.rotation === 270
   const stage = rotated
@@ -136,6 +146,25 @@ export function PrompterCanvas({
       if (!container || transport.frozen) return
 
       const wordIndex = wordIndexAt(transport, Date.now())
+
+      // relógios escritos direto no DOM, como a rolagem: passar por estado do
+      // React a cada quadro derrubaria o desempenho da própria rolagem
+      const clock = timerRef.current
+      if (clock) {
+        const reading = timerReading(wordIndex, totalWords(geometry.current), transport.ppm)
+        const text = [
+          appearance.timers.elapsed ? reading.elapsed : null,
+          appearance.timers.remaining ? `-${reading.remaining}` : null
+        ]
+          .filter(Boolean)
+          .join('   ')
+
+        // compara com o próprio DOM em vez de guardar o último valor: desligar
+        // e religar os relógios cria um elemento novo e vazio, e um cache com
+        // o texto antigo faria a escrita ser pulada, deixando o canto em branco
+        if (clock.textContent !== text) clock.textContent = text
+      }
+
       const anchor = anchorFromWordIndex(geometry.current, wordIndex)
       if (!anchor) return
 
@@ -147,7 +176,7 @@ export function PrompterCanvas({
 
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [transport, readingLineY])
+  }, [transport, readingLineY, appearance.timers.elapsed, appearance.timers.remaining])
 
   const mirror = `${appearance.mirrorX ? ' scaleX(-1)' : ''}${appearance.mirrorY ? ' scaleY(-1)' : ''}`
 
@@ -264,6 +293,27 @@ export function PrompterCanvas({
             ) : null}
           </div>
         </div>
+
+        {/* relógios: dentro do rotador, para acompanharem espelho e rotação —
+            no vidro do beam-splitter o número precisa ser legível junto com o
+            texto, não invertido ao contrário dele */}
+        {appearance.timers.elapsed || appearance.timers.remaining ? (
+          <div
+            ref={timerRef}
+            data-timers
+            style={{
+              position: 'absolute',
+              ...timerCorner(appearance.timers.corner, stage.height * 0.025),
+              color: appearance.timers.color,
+              fontSize: (stage.height * appearance.timers.sizePct) / 100,
+              fontVariantNumeric: 'tabular-nums',
+              fontWeight: 500,
+              lineHeight: 1,
+              whiteSpace: 'pre',
+              pointerEvents: 'none'
+            }}
+          />
+        ) : null}
 
         {/* marca de leitura: espessura proporcional ao viewport para continuar
             visível quando a prévia do operador reduz a escala, e cunhas nas

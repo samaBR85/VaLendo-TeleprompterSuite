@@ -54,6 +54,27 @@ export interface Appearance extends PacingRule {
   mirrorX: boolean
   mirrorY: boolean
   rotation: 0 | 90 | 180 | 270
+  timers: TimerOverlay
+}
+
+export type TimerCorner = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'
+
+/**
+ * Relógios sobre a transmissão.
+ *
+ * Desligados por padrão: o que o apresentador precisa ver é o texto, e número
+ * piscando no canto tira o olho da leitura. Existem para os casos em que o
+ * tempo é o assunto — ao vivo com janela fechada, gravação cronometrada.
+ */
+export interface TimerOverlay {
+  /** tempo desde o início da leitura */
+  elapsed: boolean
+  /** tempo restante até o fim do roteiro */
+  remaining: boolean
+  corner: TimerCorner
+  color: string
+  /** tamanho em % da altura da saída */
+  sizePct: number
 }
 
 export interface ColorPreset {

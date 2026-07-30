@@ -230,6 +230,67 @@ export function Inspector({ tab, presets, metrics, dispatch }: Props): React.JSX
         </button>
       </Group>
 
+      <Group label="Relógios na transmissão">
+        <Toggle
+          label="Tempo decorrido"
+          active={a.timers.elapsed}
+          onClick={() => patch({ timers: { ...a.timers, elapsed: !a.timers.elapsed } })}
+        />
+        <Toggle
+          label="Tempo restante"
+          active={a.timers.remaining}
+          onClick={() => patch({ timers: { ...a.timers, remaining: !a.timers.remaining } })}
+        />
+
+        {a.timers.elapsed || a.timers.remaining ? (
+          <>
+            <div className="grid grid-cols-2 gap-1.5">
+              {(
+                [
+                  ['topLeft', 'Sup. esq.'],
+                  ['topRight', 'Sup. dir.'],
+                  ['bottomLeft', 'Inf. esq.'],
+                  ['bottomRight', 'Inf. dir.']
+                ] as const
+              ).map(([corner, label]) => (
+                <button
+                  key={corner}
+                  type="button"
+                  onClick={() => patch({ timers: { ...a.timers, corner } })}
+                  className={`rounded-md border px-2 py-1.5 text-[11px] ${
+                    a.timers.corner === corner
+                      ? 'border-[var(--color-fog-1)] text-[var(--color-fog-0)]'
+                      : 'border-[var(--color-line)] text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <label className="flex items-center gap-2 text-[11px]">
+              <input
+                type="color"
+                value={a.timers.color}
+                onChange={(event) => patch({ timers: { ...a.timers, color: event.target.value } })}
+                className="h-6 w-8"
+              />
+              <span className="text-[var(--color-fog-1)]">Cor do relógio</span>
+            </label>
+
+            <Slider
+              label="Tamanho"
+              value={a.timers.sizePct}
+              min={1.5}
+              max={10}
+              step={0.5}
+              suffix="%"
+              onChange={(sizePct) => patch({ timers: { ...a.timers, sizePct } })}
+            />
+          </>
+        ) : null}
+      </Group>
+
       <Group label="Saída">
         <Toggle label="Espelhar horizontal" active={a.mirrorX} onClick={() => patch({ mirrorX: !a.mirrorX })} />
         <Toggle label="Espelhar vertical" active={a.mirrorY} onClick={() => patch({ mirrorY: !a.mirrorY })} />
