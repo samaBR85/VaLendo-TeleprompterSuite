@@ -101,8 +101,10 @@ function Tool({
 /** Grupo com rótulo, como as seções de uma mesa de som. */
 function Zona({ label, children }: { label: string; children: React.ReactNode }): React.JSX.Element {
   return (
-    <div className="flex flex-none items-center gap-0.5 rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-[3px] pl-1">
-      <span className="px-2 text-[9px] tracking-[0.14em] text-[var(--color-fog-2)] uppercase">{label}</span>
+    <div className="flex flex-none items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1 pl-1.5">
+      <span className="px-1.5 pr-2.5 text-[9px] tracking-[0.14em] text-[var(--color-fog-2)] uppercase">
+        {label}
+      </span>
       {children}
     </div>
   )
@@ -151,6 +153,9 @@ export function Toolbar({ state, tab, displays, keymap, rows, dispatch, run, onI
 
   return (
     <div className="flex items-center gap-3.5 border-b border-[var(--color-line)] px-4 py-2.5">
+      {/* roteiro e projeto em pills separadas: são coisas diferentes — uma leva
+          só o texto, para mandar a alguém; a outra leva o programa inteiro.
+          Juntos numa pill só, os quatro ícones sugeriam que fazem a mesma coisa */}
       <Zona label="Roteiro">
         <Tool icon="import" label="Importar roteiro (txt, md, docx, pdf)" onClick={onImport} />
         <Tool
@@ -158,10 +163,13 @@ export function Toolbar({ state, tab, displays, keymap, rows, dispatch, run, onI
           label={
             tab.exportPath
               ? `Salvar o roteiro em ${fileName(tab.exportPath)}${hint(keymap, 'document.save')}`
-              : `Salvar o roteiro num arquivo${hint(keymap, 'document.save')}`
+              : `Salvar o roteiro num arquivo — só o texto${hint(keymap, 'document.save')}`
           }
           onClick={() => run('document.save')}
         />
+      </Zona>
+
+      <Zona label="Projeto">
         <Tool
           icon="projectOpen"
           label={`Abrir um projeto${hint(keymap, 'project.open')}`}
