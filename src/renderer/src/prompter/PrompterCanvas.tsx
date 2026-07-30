@@ -2,19 +2,25 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { anchorFromWordIndex, composeLines, pixelFromAnchor, totalWords, type Layout } from '@shared/anchor'
 import { timerReading, wordIndexAt } from '@shared/pacing'
 import { chapterTitle } from '@shared/text'
-import type { Appearance, Block, TimerCorner, Transport } from '@shared/types'
+import { timerCell, type Appearance, type Block, type TimerPosition, type Transport } from '@shared/types'
 
 export interface Viewport {
   width: number
   height: number
 }
 
-function timerCorner(corner: TimerCorner, inset: number): React.CSSProperties {
+/** Traduz a célula da grade em posicionamento absoluto dentro da saída. */
+function timerPlacement(position: TimerPosition, inset: number): React.CSSProperties {
+  const { row, column } = timerCell(position)
+  const shiftX = column === 1 ? '-50%' : '0'
+  const shiftY = row === 1 ? '-50%' : '0'
+
   return {
-    top: corner.startsWith('top') ? inset : undefined,
-    bottom: corner.startsWith('bottom') ? inset : undefined,
-    left: corner.endsWith('Left') ? inset : undefined,
-    right: corner.endsWith('Right') ? inset : undefined
+    top: row === 0 ? inset : row === 1 ? '50%' : undefined,
+    bottom: row === 2 ? inset : undefined,
+    left: column === 0 ? inset : column === 1 ? '50%' : undefined,
+    right: column === 2 ? inset : undefined,
+    transform: shiftX === '0' && shiftY === '0' ? undefined : `translate(${shiftX}, ${shiftY})`
   }
 }
 
@@ -299,7 +305,7 @@ export function PrompterCanvas({
             data-timers
             style={{
               position: 'absolute',
-              ...timerCorner(appearance.timers.corner, stage.height * 0.025),
+              ...timerPlacement(appearance.timers.position, stage.height * 0.025),
               display: 'flex',
               gap: '0.8em',
               fontSize: (stage.height * appearance.timers.sizePct) / 100,

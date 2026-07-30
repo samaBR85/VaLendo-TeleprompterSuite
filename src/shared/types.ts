@@ -57,7 +57,28 @@ export interface Appearance extends PacingRule {
   timers: TimerOverlay
 }
 
-export type TimerCorner = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'
+/**
+ * As nove posições do relógio, na mesma disposição em que aparecem na grade do
+ * inspetor. A ordem das linhas e colunas aqui é a de cima para baixo e da
+ * esquerda para a direita, e é dela que sai tanto o desenho da grade quanto o
+ * posicionamento na tela — uma fonte só, para as duas não desandarem.
+ */
+export const TIMER_POSITIONS = [
+  ['topLeft', 'topCenter', 'topRight'],
+  ['middleLeft', 'middleCenter', 'middleRight'],
+  ['bottomLeft', 'bottomCenter', 'bottomRight']
+] as const
+
+export type TimerPosition = (typeof TIMER_POSITIONS)[number][number]
+
+/** Linha e coluna da posição na grade de três por três. */
+export function timerCell(position: TimerPosition): { row: number; column: number } {
+  for (let row = 0; row < TIMER_POSITIONS.length; row += 1) {
+    const column = (TIMER_POSITIONS[row] as readonly string[]).indexOf(position)
+    if (column >= 0) return { row, column }
+  }
+  return { row: 0, column: 2 }
+}
 
 /**
  * Relógios sobre a transmissão.
@@ -71,7 +92,7 @@ export interface TimerOverlay {
   elapsed: boolean
   /** tempo restante até o fim do roteiro */
   remaining: boolean
-  corner: TimerCorner
+  position: TimerPosition
   /** cor de cada um, separada: verde e vermelho se explicam sozinhos de relance */
   elapsedColor: string
   remainingColor: string

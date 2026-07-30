@@ -1,6 +1,6 @@
 import type { Action } from '@shared/actions'
 import { FONT_OPTIONS } from '@shared/defaults'
-import type { Appearance, ColorPreset, Tab } from '@shared/types'
+import { TIMER_POSITIONS, type Appearance, type ColorPreset, type Tab } from '@shared/types'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { Icon } from '../ui/Icon'
 
@@ -269,28 +269,27 @@ export function Inspector({ tab, presets, metrics, dispatch }: Props): React.JSX
 
         {a.timers.elapsed || a.timers.remaining ? (
           <>
-            <div className="grid grid-cols-2 gap-1.5">
-              {(
-                [
-                  ['topLeft', 'Sup. esq.'],
-                  ['topRight', 'Sup. dir.'],
-                  ['bottomLeft', 'Inf. esq.'],
-                  ['bottomRight', 'Inf. dir.']
-                ] as const
-              ).map(([corner, label]) => (
-                <button
-                  key={corner}
-                  type="button"
-                  onClick={() => patch({ timers: { ...a.timers, corner } })}
-                  className={`rounded-md border px-2 py-1.5 text-[11px] ${
-                    a.timers.corner === corner
-                      ? 'border-[var(--color-fog-1)] text-[var(--color-fog-0)]'
-                      : 'border-[var(--color-line)] text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+            {/* grade de 3x3 com a forma da própria saída: escolher onde o
+                relógio fica apontando o lugar é mais direto que ler rótulos */}
+            <div>
+              <div className="mb-1.5 text-[11px] text-[var(--color-fog-1)]">Posição</div>
+              <div className="grid grid-cols-3 gap-1 rounded-md border border-[var(--color-line)] p-1">
+                {TIMER_POSITIONS.flat().map((position) => (
+                  <button
+                    key={position}
+                    type="button"
+                    aria-label={`Posição ${position}`}
+                    aria-pressed={a.timers.position === position}
+                    data-position={position}
+                    onClick={() => patch({ timers: { ...a.timers, position } })}
+                    className={`aspect-square rounded-sm transition-colors ${
+                      a.timers.position === position
+                        ? 'bg-[var(--color-go)]'
+                        : 'bg-[var(--color-ink-3)] hover:bg-[var(--color-fog-2)]'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
 
             <Slider

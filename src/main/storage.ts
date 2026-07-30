@@ -3,7 +3,8 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync, appendF
 import { join } from 'node:path'
 import type { HistoryStep } from '@shared/history'
 import { parseHistoryLines } from '@shared/history'
-import { DEFAULT_APPEARANCE, createInitialState } from '@shared/defaults'
+import { createInitialState } from '@shared/defaults'
+import { mergeAppearance } from './mergeAppearance'
 import type { AppState } from '@shared/types'
 
 function root(): string {
@@ -57,17 +58,9 @@ export function loadState(): AppState {
     state.output = { ...state.output, enabled: false }
     if (!state.tabs.some((t) => t.id === state.activeTabId)) state.activeTabId = state.tabs[0].id
 
-    // `timers` precisa de mescla própria: a de cima é rasa, e um objeto salvo
-    // pela versão anterior substituiria o padrão inteiro, deixando sem valor
-    // os campos que nasceram depois — foi o que aconteceria ao separar a cor
-    // do decorrido da cor do restante
     state.tabs = state.tabs.map((tab) => ({
       ...tab,
-      appearance: {
-        ...DEFAULT_APPEARANCE,
-        ...tab.appearance,
-        timers: { ...DEFAULT_APPEARANCE.timers, ...tab.appearance?.timers }
-      }
+      appearance: mergeAppearance(tab.appearance)
     }))
 
     return state

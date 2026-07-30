@@ -32,7 +32,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   timers: {
     elapsed: false,
     remaining: false,
-    corner: 'topRight',
+    position: 'topRight',
     elapsedColor: '#5DCAA5',
     remainingColor: '#E24B4A',
     sizePct: 3.5

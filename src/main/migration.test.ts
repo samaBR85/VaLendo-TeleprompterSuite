@@ -1,43 +1,25 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_APPEARANCE } from '@shared/defaults'
 import type { Appearance } from '@shared/types'
-
-/**
- * A mescla que `loadState` aplica sobre a aparência gravada.
- *
- * Está aqui, e não só dentro de `storage.ts`, porque o modo de falha é
- * silencioso: um campo que nasce depois fica `undefined` no workspace de quem
- * já usava o app, e um booleano `undefined` vira `false` — o app assume o
- * oposto do padrão sem avisar ninguém.
- */
-function mergeAppearance(saved: Partial<Appearance> | undefined): Appearance {
-  return {
-    ...DEFAULT_APPEARANCE,
-    ...saved,
-    timers: { ...DEFAULT_APPEARANCE.timers, ...saved?.timers }
-  }
-}
+import { mergeAppearance } from './mergeAppearance'
 
 describe('migração da aparência gravada', () => {
   it('completa campo que ainda não existia no workspace salvo', () => {
-    const antigo = { fontSize: 90 } as Partial<Appearance>
-    const merged = mergeAppearance(antigo)
+    const merged = mergeAppearance({ fontSize: 90 })
 
     expect(merged.fontSize).toBe(90)
     expect(merged.uniformSpeed).toBe(true)
   })
 
   it('completa dentro de timers, não só na raiz', () => {
-    // a versão anterior gravava uma cor só; separar em duas apagaria ambas se
-    // a mescla fosse rasa
-    const antigo = {
-      timers: { elapsed: true, remaining: true, corner: 'topLeft', sizePct: 5 }
-    } as unknown as Partial<Appearance>
-
-    const merged = mergeAppearance(antigo)
+    // mescla rasa substituiria o objeto inteiro, e os campos novos ficariam
+    // sem valor no workspace de quem já usava o app
+    const merged = mergeAppearance({
+      timers: { elapsed: true, sizePct: 5 }
+    } as unknown as Partial<Appearance>)
 
     expect(merged.timers.elapsed).toBe(true)
-    expect(merged.timers.corner).toBe('topLeft')
+    expect(merged.timers.sizePct).toBe(5)
     expect(merged.timers.elapsedColor).toBe(DEFAULT_APPEARANCE.timers.elapsedColor)
     expect(merged.timers.remainingColor).toBe(DEFAULT_APPEARANCE.timers.remainingColor)
   })
@@ -65,6 +47,33 @@ describe('migração da aparência gravada', () => {
 
   it('aguenta workspace sem aparência alguma', () => {
     expect(mergeAppearance(undefined)).toEqual(DEFAULT_APPEARANCE)
+  })
+})
+
+describe('nomes antigos que ainda precisam ser lidos', () => {
+  it('recupera a posição gravada como "corner"', () => {
+    // o campo virou `position` ao trocar os quatro cantos pela grade de nove;
+    // a escolha do operador não pode se perder por causa disso
+    const merged = mergeAppearance({ timers: { corner: 'bottomLeft' } } as unknown as Partial<Appearance>)
+    expect(merged.timers.position).toBe('bottomLeft')
+  })
+
+  it('recupera a cor única gravada como "color" para o decorrido', () => {
+    const merged = mergeAppearance({ timers: { color: '#abcdef' } } as unknown as Partial<Appearance>)
+    expect(merged.timers.elapsedColor).toBe('#abcdef')
+    expect(merged.timers.remainingColor).toBe(DEFAULT_APPEARANCE.timers.remainingColor)
+  })
+
+  it('prefere o nome atual quando os dois existem', () => {
+    const merged = mergeAppearance({
+      timers: { position: 'middleCenter', corner: 'topLeft' }
+    } as unknown as Partial<Appearance>)
+    expect(merged.timers.position).toBe('middleCenter')
+  })
+
+  it('descarta posição que não existe mais em vez de deixar o app quebrado', () => {
+    const merged = mergeAppearance({ timers: { position: 'sideways' } } as unknown as Partial<Appearance>)
+    expect(merged.timers.position).toBe(DEFAULT_APPEARANCE.timers.position)
   })
 })
 
