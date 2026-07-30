@@ -51,6 +51,18 @@ describe('composeLines', () => {
     expect(totalWords(lines)).toBeGreaterThan(4)
   })
 
+  it('mantém a régua em números inteiros', () => {
+    // a contagem vira "Palavras" no rodapé: fração ali aparece como "108,5"
+    const blocks = doc('§ Abertura', 'duas palavras aqui agora', '[pausa]')
+    for (const rule of [
+      { minWords: 4, maxWords: 7 },
+      { minWords: 3, maxWords: 6 },
+      { minWords: 1, maxWords: 2 }
+    ]) {
+      expect(Number.isInteger(totalWords(composeLines(blocks, rule))), JSON.stringify(rule)).toBe(true)
+    }
+  })
+
   it('atravessa direção e capítulo em pixel contínuo, sem salto', () => {
     const blocks = doc('fala antes da direção aqui', '[uma direção com bom tamanho de texto]', 'fala depois da direção aqui')
     const layout = withGeometry(composeLines(blocks, RULE), 50)

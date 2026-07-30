@@ -100,6 +100,21 @@ export function Toolbar({
       <div className="h-4 w-px bg-[var(--color-line)]" />
 
       <div className="flex items-center gap-0.5">
+        <Tool
+          icon="chapter"
+          label={`Inserir capítulo — vira § no texto${hint(keymap, 'insert.chapter')}`}
+          onClick={() => run('insert.chapter')}
+        />
+        <Tool
+          icon="direction"
+          label={`Inserir direção de cena — vira [colchetes], não é lida${hint(keymap, 'insert.direction')}`}
+          onClick={() => run('insert.direction')}
+        />
+      </div>
+
+      <div className="h-4 w-px bg-[var(--color-line)]" />
+
+      <div className="flex items-center gap-0.5">
         <Tool icon="import" label="Importar roteiro (txt, md, docx, pdf)" onClick={onImport} />
         <Tool icon="marker" label={`Criar marcador${hint(keymap, 'marker.create')}`} onClick={() => run('marker.create')} />
         <Tool icon="undo" label={`Desfazer${hint(keymap, 'edit.undo')}`} disabled={!history.canUndo} onClick={() => run('edit.undo')} />

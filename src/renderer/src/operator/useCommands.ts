@@ -3,6 +3,7 @@ import type { Action } from '@shared/actions'
 import { anchorFromWordIndex, composeLines } from '@shared/anchor'
 import { parseBinding, resolveKeymap } from '@shared/commands'
 import { SPEED_PRESETS } from '@shared/defaults'
+import type { InsertKind } from '@shared/insertBlock'
 import { wordIndexAt } from '@shared/pacing'
 import { chapterTitle } from '@shared/text'
 import type { AppState, Tab } from '@shared/types'
@@ -14,6 +15,7 @@ export interface CommandUi {
   toggleFocusMode: () => void
   /** manda agora, sem esperar o debounce, o que ainda estiver pendente no editor. */
   flushEditor: () => void
+  insertBlock: (kind: InsertKind) => void
 }
 
 function blockIdUnderReadingLine(state: AppState, tab: Tab): string | null {
@@ -175,6 +177,13 @@ export function useCommands(
             displayId: state.output.displayId,
             enabled: !state.output.enabled
           })
+          break
+
+        case 'insert.chapter':
+          ui.insertBlock('chapter')
+          break
+        case 'insert.direction':
+          ui.insertBlock('direction')
           break
 
         case 'edit.undo':

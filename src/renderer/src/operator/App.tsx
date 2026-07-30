@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { InsertKind } from '@shared/insertBlock'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { PrompterStage } from '../prompter/PrompterStage'
 import { activeTabOf, useAppState } from '../state/useAppState'
@@ -61,7 +62,8 @@ export function App(): React.JSX.Element {
       openPalette: () => setPalette(true),
       openKeymap: () => setKeymapOpen(true),
       toggleFocusMode,
-      flushEditor: () => editorRef.current?.flush()
+      flushEditor: () => editorRef.current?.flush(),
+      insertBlock: (kind: InsertKind) => editorRef.current?.insert(kind)
     }),
     [toggleFocusMode]
   )

@@ -66,7 +66,9 @@ export function composeLines(blocks: Block[], rule: LineRule): LineSpec[] {
       // como piso deixava direção e capítulo "mais leves" que uma linha de
       // fala típica, e eles cruzavam a tela um pouco mais rápido — pequeno,
       // mas perceptível a quem opera o teleprompter todo dia.
-      const typicalLineWords = (rule.minWords + rule.maxWords) / 2
+      // arredonda para cima: a régua inteira precisa ficar em números inteiros,
+      // senão a contagem de palavras no rodapé aparece quebrada ("108,5")
+      const typicalLineWords = Math.ceil((rule.minWords + rule.maxWords) / 2)
       const wordCount = Math.max(words(block.text).length, typicalLineWords)
       out.push({
         blockId: block.id,

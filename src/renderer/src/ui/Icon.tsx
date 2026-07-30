@@ -21,6 +21,8 @@ export type IconName =
   | 'search'
   | 'info'
   | 'import'
+  | 'chapter'
+  | 'direction'
 
 const PATHS: Record<IconName, string> = {
   play: 'M8 5l11 7-11 7z',
@@ -44,7 +46,11 @@ const PATHS: Record<IconName, string> = {
   rotate: 'M3 12a9 9 0 1 1 3 6.7M3 12V7M3 12h5',
   search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM16 16l4 4',
   info: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8h.01M11 12h1v5h1',
-  import: 'M12 3v12M8 11l4 4 4-4M4 19h16'
+  import: 'M12 3v12M8 11l4 4 4-4M4 19h16',
+  // "H" de heading para capítulo, e colchetes literais para direção: o ícone
+  // repete a marcação que o operador digitaria à mão
+  chapter: 'M6 4v16M18 4v16M6 12h12',
+  direction: 'M9 4H5v16h4M15 4h4v16h-4'
 }
 
 interface Props {

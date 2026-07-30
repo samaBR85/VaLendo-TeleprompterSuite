@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
+import { insertBlock, type InsertKind } from '@shared/insertBlock'
 import { serializeBlocks } from '@shared/text'
 import type { Tab } from '@shared/types'
 
@@ -24,6 +25,8 @@ interface Props {
 export interface EditorHandle {
   /** manda agora, sem esperar o debounce, o que ainda estiver pendente. */
   flush: () => void
+  /** insere capítulo ou direção no cursor, já com o miolo selecionado. */
+  insert: (kind: InsertKind) => void
 }
 
 /**
@@ -120,7 +123,29 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
     if (value !== null) send(value)
   }, [tab.id, dispatch])
 
-  useImperativeHandle(ref, () => ({ flush }), [flush])
+  /**
+   * O botão da barra tira o foco do textarea antes do clique, mas o textarea
+   * guarda a última seleção mesmo desfocado — então a inserção cai no ponto
+   * onde o cursor estava, e o foco volta logo em seguida.
+   */
+  const insert = useCallback(
+    (kind: InsertKind): void => {
+      const area = areaRef.current
+      if (!area) return
+
+      const result = insertBlock(area.value, area.selectionStart, area.selectionEnd, kind)
+      setDraft(result.text)
+      push(result.text, 0)
+
+      requestAnimationFrame(() => {
+        area.focus()
+        area.setSelectionRange(result.selectionStart, result.selectionEnd)
+      })
+    },
+    [tab.id, dispatch]
+  )
+
+  useImperativeHandle(ref, () => ({ flush, insert }), [flush, insert])
 
   const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setDraft(event.target.value)
