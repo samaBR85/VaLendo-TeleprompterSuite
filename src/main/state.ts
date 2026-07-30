@@ -362,6 +362,10 @@ export class Store {
         this.state = { ...this.state, layoutMode: action.mode }
         break
 
+      case 'layout/inspector':
+        this.state = { ...this.state, inspectorVisible: action.visible }
+        break
+
       case 'output/set':
         // o viewport pertence à janela que estava aberta; ao trocar de monitor
         // ou desligar, ele volta a ser desconhecido e a prévia cai na medida do

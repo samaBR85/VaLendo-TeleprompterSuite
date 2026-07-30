@@ -23,6 +23,7 @@ export type IconName =
   | 'import'
   | 'chapter'
   | 'direction'
+  | 'sliders'
 
 const PATHS: Record<IconName, string> = {
   play: 'M8 5l11 7-11 7z',
@@ -50,7 +51,8 @@ const PATHS: Record<IconName, string> = {
   // "H" de heading para capítulo, e colchetes literais para direção: o ícone
   // repete a marcação que o operador digitaria à mão
   chapter: 'M6 4v16M18 4v16M6 12h12',
-  direction: 'M9 4H5v16h4M15 4h4v16h-4'
+  direction: 'M9 4H5v16h4M15 4h4v16h-4',
+  sliders: 'M4 7h16M4 12h16M4 17h16M9 5v4M16 10v4M7 15v4'
 }
 
 interface Props {

@@ -34,12 +34,17 @@ function writeAtomic(path: string, contents: string): void {
 export function loadState(): AppState {
   try {
     const raw = readFileSync(workspacePath(), 'utf8')
-    const parsed = JSON.parse(raw) as AppState
-    if (!Array.isArray(parsed.tabs) || parsed.tabs.length === 0) return createInitialState()
+    const saved = JSON.parse(raw) as Partial<AppState>
+    if (!Array.isArray(saved.tabs) || saved.tabs.length === 0) return createInitialState()
+
+    // completa por cima dos padrões: um workspace gravado por versão anterior
+    // não tem os campos que vieram depois, e um booleano ausente viraria
+    // `false` — o app assumiria o oposto do padrão sem avisar
+    const state: AppState = { ...createInitialState(), ...saved } as AppState
 
     // nada transitório volta ligado depois de um fechamento inesperado
-    parsed.transport = {
-      ...parsed.transport,
+    state.transport = {
+      ...state.transport,
       playing: false,
       blackout: false,
       frozen: false,
@@ -49,19 +54,15 @@ export function loadState(): AppState {
     // o monitor escolhido é lembrado, mas a transmissão nunca sobe sozinha:
     // abrir o app não pode jogar texto na tela do apresentador antes do
     // operador dizer que está pronto
-    parsed.output = { ...parsed.output, enabled: false }
-    if (!parsed.tabs.some((t) => t.id === parsed.activeTabId)) parsed.activeTabId = parsed.tabs[0].id
+    state.output = { ...state.output, enabled: false }
+    if (!state.tabs.some((t) => t.id === state.activeTabId)) state.activeTabId = state.tabs[0].id
 
-    // workspace gravado por uma versão anterior não tem os campos de aparência
-    // que vieram depois. Sem completar aqui, um booleano ausente vira `false`
-    // e o app assume o oposto do padrão — foi o que quase aconteceu com
-    // `uniformSpeed`, que precisa nascer ligado
-    parsed.tabs = parsed.tabs.map((tab) => ({
+    state.tabs = state.tabs.map((tab) => ({
       ...tab,
       appearance: { ...DEFAULT_APPEARANCE, ...tab.appearance }
     }))
 
-    return parsed
+    return state
   } catch {
     return createInitialState()
   }

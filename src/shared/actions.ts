@@ -26,6 +26,7 @@ export type Action =
   | { type: 'tab/activate'; tabId: string }
   | { type: 'tab/rename'; tabId: string; title: string }
   | { type: 'layout/mode'; mode: LayoutMode }
+  | { type: 'layout/inspector'; visible: boolean }
   | { type: 'output/set'; displayId: number | null; enabled: boolean }
   | { type: 'output/viewport'; width: number; height: number }
   | { type: 'keymap/set'; commandId: string; binding: string | null }
@@ -48,5 +49,6 @@ export const CHANNELS = {
   displaysChanged: 'displays:changed',
   displaysIdentify: 'displays:identify',
   importDocument: 'document:import',
-  openExternal: 'app:openExternal'
+  openExternal: 'app:openExternal',
+  broadcastCoversOperator: 'broadcast:coversOperator'
 } as const

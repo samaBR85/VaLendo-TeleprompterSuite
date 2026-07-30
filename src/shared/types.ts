@@ -114,6 +114,8 @@ export interface AppState {
   tabs: Tab[]
   activeTabId: string
   layoutMode: LayoutMode
+  /** painel de ajustes da direita */
+  inspectorVisible: boolean
   transport: Transport
   output: OutputConfig
   presets: ColorPreset[]

@@ -76,6 +76,7 @@ export function createInitialState(): AppState {
     tabs: [tab],
     activeTabId: tab.id,
     layoutMode: 'split',
+    inspectorVisible: true,
     transport: {
       playing: false,
       ppm: SPEED_PRESETS[1],

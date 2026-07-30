@@ -17,6 +17,7 @@ const api: ValendoApi = {
   identifyDisplays: () => ipcRenderer.send(CHANNELS.displaysIdentify),
   importDocument: () => ipcRenderer.invoke(CHANNELS.importDocument) as Promise<ImportResult | null>,
   openExternal: (url: string) => ipcRenderer.send(CHANNELS.openExternal, url),
+  coversOperator: () => ipcRenderer.invoke(CHANNELS.broadcastCoversOperator) as Promise<boolean>,
   onState: (callback) => subscribe<StateSnapshot>(CHANNELS.stateChanged, callback),
   onDisplays: (callback) => subscribe<DisplayInfo[]>(CHANNELS.displaysChanged, callback)
 }

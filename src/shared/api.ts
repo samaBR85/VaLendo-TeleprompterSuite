@@ -23,6 +23,8 @@ export interface ValendoApi {
   /** abre o seletor de arquivo e devolve o roteiro já convertido e limpo */
   importDocument(): Promise<ImportResult | null>
   openExternal(url: string): void
+  /** a transmissão está por cima da janela do operador? */
+  coversOperator(): Promise<boolean>
   onState(callback: (snapshot: StateSnapshot) => void): () => void
   onDisplays(callback: (displays: DisplayInfo[]) => void): () => void
 }

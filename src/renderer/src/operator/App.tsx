@@ -157,11 +157,13 @@ export function App(): React.JSX.Element {
         <div className="flex flex-none items-center gap-3 text-[13px]">
           <button
             type="button"
-            onClick={() => setCredits(true)}
-            title="Créditos"
-            className="rounded p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+            onClick={() => dispatch({ type: 'layout/inspector', visible: !state.inspectorVisible })}
+            title="Ajustes"
+            className={`rounded p-2 hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] ${
+              state.inspectorVisible ? 'text-[var(--color-fog-0)]' : 'text-[var(--color-fog-2)]'
+            }`}
           >
-            <Icon name="info" size={30} />
+            <Icon name="sliders" size={30} />
           </button>
           <button
             type="button"
@@ -179,10 +181,23 @@ export function App(): React.JSX.Element {
           >
             <Icon name="search" size={30} />
           </button>
+          <button
+            type="button"
+            onClick={() => setCredits(true)}
+            title="Créditos"
+            className="rounded p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+          >
+            <Icon name="info" size={30} />
+          </button>
+
+          {/* estado da transmissão fica por último e maior: é a informação que
+              o operador precisa achar sem procurar */}
           {state.output.enabled ? (
-            <span className="rounded bg-[var(--color-live)]/16 px-2.5 py-1 text-[var(--color-live)]">No ar</span>
+            <span className="rounded bg-[var(--color-live)]/16 px-3.5 py-1.5 text-[20px] text-[var(--color-live)]">
+              No ar
+            </span>
           ) : (
-            <span className="text-[var(--color-fog-2)]">fora do ar</span>
+            <span className="px-1 text-[20px] text-[var(--color-fog-2)]">fora do ar</span>
           )}
         </div>
       </header>
@@ -254,7 +269,9 @@ export function App(): React.JSX.Element {
             {markerStrip}
           </section>
 
-          <Inspector tab={tab} presets={state.presets} metrics={metrics} dispatch={dispatch} />
+          {state.inspectorVisible ? (
+            <Inspector tab={tab} presets={state.presets} metrics={metrics} dispatch={dispatch} />
+          ) : null}
         </main>
       )}
 

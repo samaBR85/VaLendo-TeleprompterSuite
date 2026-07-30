@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from 'electron'
 import { CHANNELS, type Action } from '@shared/actions'
 import type { ImportResult } from '@shared/api'
 import type { AppState } from '@shared/types'
@@ -6,11 +6,15 @@ import { IMPORT_FILTERS, importFile } from './import'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
 import { Store } from './state'
 import { flushState } from './storage'
+import { buildBroadcastMenu } from './broadcastMenu'
 import {
+  broadcastCoversOperator,
   broadcastDisplayStillExists,
   closeBroadcastWindow,
   createOperatorWindow,
+  getBroadcastWindow,
   getOperatorWindow,
+  onBroadcastContextMenu,
   openBroadcastWindow,
   sendToAll
 } from './windows'
@@ -71,10 +75,42 @@ function registerIpc(): void {
   ipcMain.on(CHANNELS.openExternal, (_event, url: string) => {
     if (/^https?:\/\//i.test(url)) void shell.openExternal(url)
   })
+
+  ipcMain.handle(CHANNELS.broadcastCoversOperator, () => broadcastCoversOperator())
+}
+
+/**
+ * Menu de contexto da transmissão: trocar de monitor ou encerrar.
+ *
+ * Sem ele, escolher o monitor onde está o operador cobre a interface inteira e
+ * não sobra em que clicar — só fechar o app à força.
+ */
+function showBroadcastMenu(): void {
+  const window = getBroadcastWindow()
+  if (!window || window.isDestroyed()) return
+
+  const current = store.getState().output.displayId
+  const template = buildBroadcastMenu(listDisplays(), current).flatMap((entry) => [
+    ...(entry.separatorBefore ? [{ type: 'separator' as const }] : []),
+    {
+      label: entry.label,
+      type: entry.displayId === null ? ('normal' as const) : ('checkbox' as const),
+      checked: entry.checked,
+      click: () =>
+        store.dispatch({
+          type: 'output/set',
+          displayId: entry.displayId ?? current,
+          enabled: entry.displayId !== null
+        })
+    }
+  ])
+
+  Menu.buildFromTemplate(template).popup({ window })
 }
 
 function bootstrap(): void {
   registerIpc()
+  onBroadcastContextMenu(showBroadcastMenu)
 
   store.subscribe((state, history) => {
     sendToAll(CHANNELS.stateChanged, { state, history })

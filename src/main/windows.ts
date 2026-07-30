@@ -1,9 +1,31 @@
-import { BrowserWindow, Menu, dialog, powerSaveBlocker } from 'electron'
+import { BrowserWindow, Menu, dialog, powerSaveBlocker, screen } from 'electron'
 import { join } from 'node:path'
 import { findDisplay } from './displays'
 
 const isMac = process.platform === 'darwin'
 const preload = join(__dirname, '../preload/index.js')
+
+/**
+ * Menu de contexto da janela de transmissão.
+ *
+ * É a saída de emergência: escolher sem querer o monitor onde está o operador
+ * cobre a interface inteira, e sem isso só resta fechar o app à força.
+ */
+let contextMenuHandler: (() => void) | null = null
+
+export function onBroadcastContextMenu(handler: () => void): void {
+  contextMenuHandler = handler
+}
+
+/** A transmissão está cobrindo a janela do operador? */
+export function broadcastCoversOperator(): boolean {
+  if (!broadcastWindow || broadcastWindow.isDestroyed()) return false
+  if (!operatorWindow || operatorWindow.isDestroyed()) return false
+
+  const operatorDisplay = screen.getDisplayMatching(operatorWindow.getBounds())
+  const broadcastDisplay = screen.getDisplayMatching(broadcastWindow.getBounds())
+  return operatorDisplay.id === broadcastDisplay.id
+}
 
 function loadPage(window: BrowserWindow, page: 'operator' | 'broadcast'): void {
   const devServer = process.env['ELECTRON_RENDERER_URL']
@@ -106,6 +128,10 @@ export function openBroadcastWindow(displayId: number | null): boolean {
     else broadcastWindow.setKiosk(true)
     broadcastWindow.showInactive()
   })
+
+  // botão direito na transmissão: trocar de monitor ou encerrar. Sem isto,
+  // transmitir no monitor do operador não tem volta pela interface
+  broadcastWindow.webContents.on('context-menu', () => contextMenuHandler?.())
 
   broadcastWindow.on('closed', () => {
     broadcastWindow = null
