@@ -98,16 +98,31 @@ function Tool({
   )
 }
 
-/** Grupo com rótulo, como as seções de uma mesa de som. */
-function Zona({ label, children }: { label: string; children: React.ReactNode }): React.JSX.Element {
+/** A caixa de uma seção da mesa. Pode guardar mais de um grupo, separados por um traço. */
+function Pill({ name, children }: { name: string; children: React.ReactNode }): React.JSX.Element {
   return (
-    <div className="flex flex-none items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1 pl-1.5">
+    <div
+      data-pill={name}
+      className="flex flex-none items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1 pl-1.5"
+    >
+      {children}
+    </div>
+  )
+}
+
+function Grupo({ label, children }: { label: string; children: React.ReactNode }): React.JSX.Element {
+  return (
+    <div data-grupo={label.toLowerCase()} className="flex flex-none items-center gap-1">
       <span className="px-1.5 pr-2.5 text-[9px] tracking-[0.14em] text-[var(--color-fog-2)] uppercase">
         {label}
       </span>
       {children}
     </div>
   )
+}
+
+function Divisoria(): React.JSX.Element {
+  return <span className="mx-1 h-5 w-px flex-none bg-[var(--color-line)]" />
 }
 
 function Campo({
@@ -153,34 +168,39 @@ export function Toolbar({ state, tab, displays, keymap, rows, dispatch, run, onI
 
   return (
     <div className="flex items-center gap-3.5 border-b border-[var(--color-line)] px-4 py-2.5">
-      {/* roteiro e projeto em pills separadas: são coisas diferentes — uma leva
-          só o texto, para mandar a alguém; a outra leva o programa inteiro.
-          Juntos numa pill só, os quatro ícones sugeriam que fazem a mesma coisa */}
-      <Zona label="Roteiro">
-        <Tool icon="import" label="Importar roteiro (txt, md, docx, pdf)" onClick={onImport} />
-        <Tool
-          icon="export"
-          label={
-            tab.exportPath
-              ? `Salvar o roteiro em ${fileName(tab.exportPath)}${hint(keymap, 'document.save')}`
-              : `Salvar o roteiro num arquivo — só o texto${hint(keymap, 'document.save')}`
-          }
-          onClick={() => run('document.save')}
-        />
-      </Zona>
+      {/* uma caixa só, com um traço no meio: projeto e roteiro são coisas
+          diferentes — um leva o programa inteiro, o outro só o texto —, mas os
+          dois são arquivo, e uma caixa por grupo picotava a barra. O projeto
+          vem primeiro porque é o que contém o outro */}
+      <Pill name="documento">
+        <Grupo label="Projeto">
+          <Tool
+            icon="projectOpen"
+            label={`Abrir um projeto${hint(keymap, 'project.open')}`}
+            onClick={() => run('project.open')}
+          />
+          <Tool
+            icon="project"
+            label={`Salvar o projeto inteiro — abas, aparência, marcadores e ritmo${hint(keymap, 'project.save')}`}
+            onClick={() => run('project.save')}
+          />
+        </Grupo>
 
-      <Zona label="Projeto">
-        <Tool
-          icon="projectOpen"
-          label={`Abrir um projeto${hint(keymap, 'project.open')}`}
-          onClick={() => run('project.open')}
-        />
-        <Tool
-          icon="project"
-          label={`Salvar o projeto inteiro — abas, aparência, marcadores e ritmo${hint(keymap, 'project.save')}`}
-          onClick={() => run('project.save')}
-        />
-      </Zona>
+        <Divisoria />
+
+        <Grupo label="Roteiro">
+          <Tool icon="import" label="Importar roteiro (txt, md, docx, pdf)" onClick={onImport} />
+          <Tool
+            icon="export"
+            label={
+              tab.exportPath
+                ? `Salvar o roteiro em ${fileName(tab.exportPath)}${hint(keymap, 'document.save')}`
+                : `Salvar o roteiro num arquivo — só o texto${hint(keymap, 'document.save')}`
+            }
+            onClick={() => run('document.save')}
+          />
+        </Grupo>
+      </Pill>
 
       <div className="ml-auto flex flex-none items-center gap-1.5">
         <Tool icon="restart" label={`Voltar ao início${hint(keymap, 'transport.restart')}`} size="grande" onClick={() => run('transport.restart')} />
@@ -211,26 +231,28 @@ export function Toolbar({ state, tab, displays, keymap, rows, dispatch, run, onI
       </div>
 
       <div className="ml-auto flex flex-none items-center gap-2">
-        <Zona label="Ar">
-          <Tool
-            icon="blackout"
-            label={`Tela preta${hint(keymap, 'output.blackout')}`}
-            active={transport.blackout}
-            danger
-            onClick={() => run('output.blackout')}
-          />
-          <Tool
-            icon="freeze"
-            label={`Congelar a saída${hint(keymap, 'transport.freeze')}`}
-            active={transport.frozen}
-            onClick={() => run('transport.freeze')}
-          />
-          <Tool
-            icon="monitor"
-            label="Mostra um número grande em cada monitor"
-            onClick={() => window.valendo.identifyDisplays()}
-          />
-        </Zona>
+        <Pill name="ar">
+          <Grupo label="Ar">
+            <Tool
+              icon="blackout"
+              label={`Tela preta${hint(keymap, 'output.blackout')}`}
+              active={transport.blackout}
+              danger
+              onClick={() => run('output.blackout')}
+            />
+            <Tool
+              icon="freeze"
+              label={`Congelar a saída${hint(keymap, 'transport.freeze')}`}
+              active={transport.frozen}
+              onClick={() => run('transport.freeze')}
+            />
+            <Tool
+              icon="monitor"
+              label="Mostra um número grande em cada monitor"
+              onClick={() => window.valendo.identifyDisplays()}
+            />
+          </Grupo>
+        </Pill>
 
         <select
           value={output.displayId ?? ''}
