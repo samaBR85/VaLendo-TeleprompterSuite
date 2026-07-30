@@ -72,7 +72,9 @@ export interface TimerOverlay {
   /** tempo restante até o fim do roteiro */
   remaining: boolean
   corner: TimerCorner
-  color: string
+  /** cor de cada um, separada: verde e vermelho se explicam sozinhos de relance */
+  elapsedColor: string
+  remainingColor: string
   /** tamanho em % da altura da saída */
   sizePct: number
 }

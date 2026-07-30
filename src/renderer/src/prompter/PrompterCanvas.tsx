@@ -56,7 +56,8 @@ export function PrompterCanvas({
   const scrollRef = useRef<HTMLDivElement>(null)
   const geometry = useRef<Layout>([])
   const lastMetrics = useRef('')
-  const timerRef = useRef<HTMLDivElement>(null)
+  const elapsedRef = useRef<HTMLSpanElement>(null)
+  const remainingRef = useRef<HTMLSpanElement>(null)
 
   const rotated = appearance.rotation === 90 || appearance.rotation === 270
   const stage = rotated
@@ -148,21 +149,17 @@ export function PrompterCanvas({
       const wordIndex = wordIndexAt(transport, Date.now())
 
       // relógios escritos direto no DOM, como a rolagem: passar por estado do
-      // React a cada quadro derrubaria o desempenho da própria rolagem
-      const clock = timerRef.current
-      if (clock) {
+      // React a cada quadro derrubaria o desempenho da própria rolagem.
+      // A comparação é com o próprio DOM, e não com um valor guardado:
+      // desligar e religar cria elementos novos e vazios, e um cache com o
+      // texto antigo faria a escrita ser pulada, deixando o canto em branco
+      const elapsed = elapsedRef.current
+      const remaining = remainingRef.current
+      if (elapsed || remaining) {
         const reading = timerReading(wordIndex, totalWords(geometry.current), transport.ppm)
-        const text = [
-          appearance.timers.elapsed ? reading.elapsed : null,
-          appearance.timers.remaining ? `-${reading.remaining}` : null
-        ]
-          .filter(Boolean)
-          .join('   ')
-
-        // compara com o próprio DOM em vez de guardar o último valor: desligar
-        // e religar os relógios cria um elemento novo e vazio, e um cache com
-        // o texto antigo faria a escrita ser pulada, deixando o canto em branco
-        if (clock.textContent !== text) clock.textContent = text
+        if (elapsed && elapsed.textContent !== reading.elapsed) elapsed.textContent = reading.elapsed
+        const rest = `-${reading.remaining}`
+        if (remaining && remaining.textContent !== rest) remaining.textContent = rest
       }
 
       const anchor = anchorFromWordIndex(geometry.current, wordIndex)
@@ -299,20 +296,30 @@ export function PrompterCanvas({
             texto, não invertido ao contrário dele */}
         {appearance.timers.elapsed || appearance.timers.remaining ? (
           <div
-            ref={timerRef}
             data-timers
             style={{
               position: 'absolute',
               ...timerCorner(appearance.timers.corner, stage.height * 0.025),
-              color: appearance.timers.color,
+              display: 'flex',
+              gap: '0.8em',
               fontSize: (stage.height * appearance.timers.sizePct) / 100,
               fontVariantNumeric: 'tabular-nums',
               fontWeight: 500,
               lineHeight: 1,
-              whiteSpace: 'pre',
               pointerEvents: 'none'
             }}
-          />
+          >
+            {appearance.timers.elapsed ? (
+              <span ref={elapsedRef} data-timer-elapsed style={{ color: appearance.timers.elapsedColor }} />
+            ) : null}
+            {appearance.timers.remaining ? (
+              <span
+                ref={remainingRef}
+                data-timer-remaining
+                style={{ color: appearance.timers.remainingColor }}
+              />
+            ) : null}
+          </div>
         ) : null}
 
         {/* marca de leitura: espessura proporcional ao viewport para continuar

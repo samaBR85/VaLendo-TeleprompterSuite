@@ -231,16 +231,41 @@ export function Inspector({ tab, presets, metrics, dispatch }: Props): React.JSX
       </Group>
 
       <Group label="Relógios na transmissão">
-        <Toggle
-          label="Tempo decorrido"
-          active={a.timers.elapsed}
-          onClick={() => patch({ timers: { ...a.timers, elapsed: !a.timers.elapsed } })}
-        />
-        <Toggle
-          label="Tempo restante"
-          active={a.timers.remaining}
-          onClick={() => patch({ timers: { ...a.timers, remaining: !a.timers.remaining } })}
-        />
+        {/* a cor fica junto do próprio relógio: separada, dava para trocar a
+            do decorrido achando que era a do restante */}
+        <div className="flex items-center gap-1.5">
+          <div className="min-w-0 flex-1">
+            <Toggle
+              label="Tempo decorrido"
+              active={a.timers.elapsed}
+              onClick={() => patch({ timers: { ...a.timers, elapsed: !a.timers.elapsed } })}
+            />
+          </div>
+          <input
+            type="color"
+            aria-label="Cor do tempo decorrido"
+            value={a.timers.elapsedColor}
+            onChange={(event) => patch({ timers: { ...a.timers, elapsedColor: event.target.value } })}
+            className="h-7 w-7 flex-none"
+          />
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <div className="min-w-0 flex-1">
+            <Toggle
+              label="Tempo restante"
+              active={a.timers.remaining}
+              onClick={() => patch({ timers: { ...a.timers, remaining: !a.timers.remaining } })}
+            />
+          </div>
+          <input
+            type="color"
+            aria-label="Cor do tempo restante"
+            value={a.timers.remainingColor}
+            onChange={(event) => patch({ timers: { ...a.timers, remainingColor: event.target.value } })}
+            className="h-7 w-7 flex-none"
+          />
+        </div>
 
         {a.timers.elapsed || a.timers.remaining ? (
           <>
@@ -267,16 +292,6 @@ export function Inspector({ tab, presets, metrics, dispatch }: Props): React.JSX
                 </button>
               ))}
             </div>
-
-            <label className="flex items-center gap-2 text-[11px]">
-              <input
-                type="color"
-                value={a.timers.color}
-                onChange={(event) => patch({ timers: { ...a.timers, color: event.target.value } })}
-                className="h-6 w-8"
-              />
-              <span className="text-[var(--color-fog-1)]">Cor do relógio</span>
-            </label>
 
             <Slider
               label="Tamanho"

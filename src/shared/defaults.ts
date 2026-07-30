@@ -33,7 +33,8 @@ export const DEFAULT_APPEARANCE: Appearance = {
     elapsed: false,
     remaining: false,
     corner: 'topRight',
-    color: '#7FB2FF',
+    elapsedColor: '#5DCAA5',
+    remainingColor: '#E24B4A',
     sizePct: 3.5
   }
 }
