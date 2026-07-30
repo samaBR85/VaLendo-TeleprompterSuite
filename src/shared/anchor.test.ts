@@ -51,6 +51,32 @@ describe('composeLines', () => {
     }
   })
 
+  it('respeita a quebra de linha digitada pelo operador', () => {
+    // duas frases curtas caberiam juntas numa linha de até 6 palavras, mas o
+    // operador quebrou de propósito — a tela precisa mostrar como ele escreveu
+    const blocks = doc('olha para a câmera\ne respira fundo')
+    const lines = composeLines(blocks, RULE)
+
+    expect(lines.map((l) => l.text)).toEqual(['olha para a câmera', 'e respira fundo'])
+  })
+
+  it('ainda divide a linha digitada que ficou comprida demais', () => {
+    const blocks = doc('uma linha só que o operador escreveu bem comprida e não caberia nunca na tela inteira')
+    const lines = composeLines(blocks, RULE)
+
+    expect(lines.length).toBeGreaterThan(1)
+    for (const line of lines) {
+      expect(line.text.split(' ').length).toBeLessThanOrEqual(RULE.maxWords)
+    }
+  })
+
+  it('a quebra digitada não vira palavra nem some do texto', () => {
+    const blocks = doc('primeira parte aqui\nsegunda parte aqui')
+    const lines = composeLines(blocks, RULE)
+
+    expect(lines.map((l) => l.text).join(' ')).toBe('primeira parte aqui segunda parte aqui')
+  })
+
   it('atravessa direção e capítulo em pixel contínuo, sem salto', () => {
     const blocks = doc('fala antes da direção aqui', '[uma direção com bom tamanho de texto]', 'fala depois da direção aqui')
     const layout = withGeometry(composeLines(blocks, RULE), 50)

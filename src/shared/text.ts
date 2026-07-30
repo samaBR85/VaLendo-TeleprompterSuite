@@ -32,12 +32,18 @@ function newId(): string {
   return `b${Date.now().toString(36)}${idCounter.toString(36)}`
 }
 
+/**
+ * Divide em parágrafos por linha em branco, preservando as quebras simples.
+ *
+ * A quebra que o operador digitou fica no texto do bloco de propósito: ela é
+ * intencional e precisa aparecer na tela do apresentador. Quem transforma isso
+ * em linhas é `composeLines`.
+ */
 function splitParagraphs(text: string): string[] {
   return text
     .replace(/\r\n?/g, '\n')
     .split(/\n{2,}/)
-    .map((p) => p.replace(/\n/g, ' ').trim())
-    .filter((p) => p.length > 0)
+    .filter((paragraph) => paragraph.trim().length > 0)
 }
 
 function similarity(a: string, b: string): number {

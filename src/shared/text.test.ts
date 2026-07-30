@@ -13,22 +13,26 @@ describe('classificação de blocos', () => {
     expect(totalWordCount(blocks)).toBe(3)
   })
 
-  it('normaliza o texto: é o que o editor precisa reconhecer como eco', () => {
-    // o modelo de blocos descarta espaço em branco de sobra. Se o editor não
-    // souber que "abc\n" volta como "abc", ele adota a versão normalizada e
-    // recua o cursor — era o Enter que "não funcionava"
-    const roundTrip = (text: string): string => serializeBlocks(blocksFromText(text))
+  it('preserva a quebra de linha que o operador digitou', () => {
+    // ele colocou ali de propósito: a quebra precisa chegar até a tela do
+    // apresentador, não virar espaço
+    const blocks = blocksFromText('primeira linha\nsegunda linha\n\noutro parágrafo')
 
-    expect(roundTrip('abc\n')).toBe('abc')
-    expect(roundTrip('abc\n\n')).toBe('abc')
-    expect(roundTrip('abc\ndef')).toBe('abc def')
-    expect(roundTrip('abc\n\ndef')).toBe('abc\n\ndef')
+    expect(blocks).toHaveLength(2)
+    expect(blocks[0].text).toBe('primeira linha\nsegunda linha')
+    expect(blocks[1].text).toBe('outro parágrafo')
   })
 
-  it('junta linhas soltas dentro do mesmo parágrafo', () => {
-    const blocks = blocksFromText('primeira linha\nsegunda linha\n\noutro parágrafo')
-    expect(blocks).toHaveLength(2)
-    expect(blocks[0].text).toBe('primeira linha segunda linha')
+  it('faz ida e volta pelo editor sem alterar o texto', () => {
+    // o editor compara o que recebe com o que mandou; toda diferença aqui é
+    // uma chance de o cursor pular sozinho enquanto se digita
+    const roundTrip = (text: string): string => serializeBlocks(blocksFromText(text))
+
+    expect(roundTrip('abc\n')).toBe('abc\n')
+    expect(roundTrip('abc\ndef')).toBe('abc\ndef')
+    expect(roundTrip('abc\n\ndef')).toBe('abc\n\ndef')
+    // linha em branco no fim não tem parágrafo para sustentar, e é descartada
+    expect(roundTrip('abc\n\n')).toBe('abc')
   })
 })
 

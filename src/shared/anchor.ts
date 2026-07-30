@@ -54,8 +54,13 @@ export function composeLines(blocks: Block[], rule: PacingRule): LineSpec[] {
 
   for (const block of blocks) {
     if (block.kind === 'speech') {
-      for (const text of senseLines(block.text, rule)) {
-        drafts.push({ blockId: block.id, kind: block.kind, text, words: words(text).length })
+      // a quebra de linha que o operador digitou é respeitada: ele a colocou
+      // ali de propósito, para marcar respiração ou ênfase. A regra de
+      // palavras por linha só entra depois, para dividir o que sobrou comprido
+      for (const typed of block.text.split('\n')) {
+        for (const text of senseLines(typed, rule)) {
+          drafts.push({ blockId: block.id, kind: block.kind, text, words: words(text).length })
+        }
       }
     } else {
       drafts.push({

@@ -204,7 +204,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
           if (preRef.current && areaRef.current) preRef.current.scrollTop = areaRef.current.scrollTop
         }}
         spellCheck={false}
-        placeholder="Cole ou digite o roteiro. Linha em branco separa parágrafos, [colchetes] marcam direções, § abre capítulo."
+        placeholder="Cole ou digite o roteiro. Onde você quebrar a linha, ela quebra na tela do apresentador. [colchetes] marcam direções, § abre capítulo."
         className="absolute inset-0 resize-none bg-transparent outline-none"
         style={{ ...TYPE_SETTINGS, color: 'transparent', caretColor: 'var(--color-fog-0)', userSelect: 'text' }}
       />
