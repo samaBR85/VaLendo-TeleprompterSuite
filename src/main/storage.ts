@@ -204,9 +204,28 @@ export function appendHistoryStep(tabId: string, step: HistoryStep): void {
 }
 
 export function loadHistorySteps(tabId: string): HistoryStep[] {
+  let path: string
+  let lines: string[]
   try {
-    return parseHistoryLines(readFileSync(historyPath(tabId), 'utf8').split('\n'))
+    path = historyPath(tabId)
+    lines = readFileSync(path, 'utf8').split('\n')
   } catch {
     return []
   }
+
+  const steps = parseHistoryLines(lines)
+
+  // compacta o que a releitura já descartou: enquanto um passo coalesce ele é
+  // regravado inteiro a cada mudança, e sem isto o arquivo cresce ao quadrado —
+  // meia hora de trabalho virou 2 MB para 484 passos
+  const gravadas = lines.filter((line) => line.trim()).length
+  if (steps.length < gravadas) {
+    try {
+      writeAtomic(path, steps.map((step) => `${JSON.stringify(step)}\n`).join(''))
+    } catch {
+      // compactar é economia, não correção: o desfazer já está certo em memória
+    }
+  }
+
+  return steps
 }

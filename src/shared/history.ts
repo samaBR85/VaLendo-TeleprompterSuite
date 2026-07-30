@@ -3,6 +3,16 @@ import { applyPatches, enablePatches, produceWithPatches, type Objectish, type P
 enablePatches()
 
 export interface HistoryStep {
+  /**
+   * Identidade do passo, estável enquanto ele coalesce.
+   *
+   * Existe por causa do disco: um passo que ainda está crescendo é gravado
+   * inteiro a cada mudança, então o arquivo tem várias linhas do mesmo passo,
+   * cada uma maior que a anterior. Sem o id, reabrir o app transformava um
+   * arrasto de slider em dezenas de passos de desfazer — e os primeiros
+   * Ctrl+Z não mudavam nada visível, porque desfaziam versões parciais.
+   */
+  id: string
   at: number
   label: string
   patches: Patch[]
@@ -20,6 +30,7 @@ export interface HistoryStep {
 export class History<T extends Objectish> {
   private past: HistoryStep[] = []
   private future: HistoryStep[] = []
+  private seq = 0
 
   constructor(private readonly coalesceMs = 400) {}
 
@@ -50,7 +61,16 @@ export class History<T extends Objectish> {
       return [next as T, last]
     }
 
-    const step: HistoryStep = { at: now, label, patches: [...patches], inverse: [...inverse] }
+    // o id carrega o instante para não colidir com o de outra sessão: o
+    // arquivo é acumulado entre aberturas do app, e dois passos com o mesmo id
+    // seriam mesclados num só ao reler
+    const step: HistoryStep = {
+      id: `${now.toString(36)}${(this.seq++).toString(36)}`,
+      at: now,
+      label,
+      patches: [...patches],
+      inverse: [...inverse]
+    }
     this.past.push(step)
     return [next as T, step]
   }
@@ -80,17 +100,31 @@ export class History<T extends Objectish> {
   }
 }
 
+/**
+ * Relê o histórico gravado, com a última versão de cada passo.
+ *
+ * O arquivo é só-append: enquanto um passo coalesce, ele é regravado inteiro a
+ * cada mudança, e a linha mais nova contém tudo o que as anteriores tinham.
+ * Aqui a última vence, na posição em que apareceu pela primeira vez — é o que
+ * faz um arrasto de slider voltar a ser um Ctrl+Z, e não trinta.
+ */
 export function parseHistoryLines(lines: string[]): HistoryStep[] {
-  const steps: HistoryStep[] = []
+  const byId = new Map<string, HistoryStep>()
+  let anonymous = 0
+
   for (const line of lines) {
     const trimmed = line.trim()
     if (!trimmed) continue
     try {
       const parsed = JSON.parse(trimmed) as HistoryStep
-      if (Array.isArray(parsed.patches) && Array.isArray(parsed.inverse)) steps.push(parsed)
+      if (!Array.isArray(parsed.patches) || !Array.isArray(parsed.inverse)) continue
+      // arquivo de versão anterior não tem id: cada linha continua valendo por
+      // si, que é o comportamento que aquele arquivo já tinha
+      byId.set(typeof parsed.id === 'string' ? parsed.id : `sem-id-${anonymous++}`, parsed)
     } catch {
       // linha truncada por queda de energia: ignora e segue
     }
   }
-  return steps
+
+  return [...byId.values()]
 }
