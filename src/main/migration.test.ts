@@ -94,6 +94,22 @@ describe('a linha da marca de leitura', () => {
   })
 })
 
+describe('compensação do vidro', () => {
+  it('o espelho horizontal nasce ligado: é a montagem comum de teleprompter', () => {
+    expect(DEFAULT_APPEARANCE.mirrorX).toBe(true)
+    // vertical e giro dependem do rig, então esses o operador liga se precisar
+    expect(DEFAULT_APPEARANCE.mirrorY).toBe(false)
+    expect(DEFAULT_APPEARANCE.rotation).toBe(0)
+  })
+
+  it('workspace salvo antes disso mantém o espelho como o operador deixou', () => {
+    // virar o texto de quem já tinha o app configurado seria pior que o
+    // padrão antigo: no ar, ninguém entende por que o roteiro inverteu
+    expect(mergeAppearance({ mirrorX: false }).mirrorX).toBe(false)
+    expect(mergeAppearance({ mirrorX: true }).mirrorX).toBe(true)
+  })
+})
+
 describe('padrões dos relógios', () => {
   it('nascem desligados: o apresentador precisa ver o texto, não números', () => {
     expect(DEFAULT_APPEARANCE.timers.elapsed).toBe(false)

@@ -27,7 +27,11 @@ export const DEFAULT_APPEARANCE: Appearance = {
   readingLinePct: 0.38,
   readingMarkOnOutput: false,
   focusDim: true,
-  mirrorX: false,
+  // ligado de fábrica: o teleprompter devolve a imagem por um vidro
+  // semiespelhado, então a montagem comum já pede o espelho horizontal —
+  // nascer desligado fazia todo rig novo começar com o texto ao contrário na
+  // cara do apresentador. Não mexe na prévia nem na página da rede
+  mirrorX: true,
   mirrorY: false,
   rotation: 0,
   timers: {
