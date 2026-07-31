@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { composeLines, totalWords } from '@shared/anchor'
 import { wordIndexAt } from '@shared/pacing'
@@ -46,11 +46,25 @@ const PREVIEW_MIN = 220
 // A prévia pode crescer até sobrar só o espaço mínimo da lista à esquerda —
 // não um teto fixo, que deixava largura vazia sem uso em janelas largas.
 const RUNDOWN_MIN = 320
+// Proporção de referência aprovada: prévia grande o bastante para ler o
+// texto de longe, lista ainda com espaço para os números não apertarem.
+const PREVIEW_DEFAULT_RATIO = 0.58
 
 export function Deck({ tab, transport, rows, viewport, dispatch, onMetrics }: Props): React.JSX.Element {
   const now = useNow()
   const corpoRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(300)
+
+  // Mede a área disponível assim que a Mesa monta, para nascer na proporção
+  // de referência em vez de sempre nos mesmos 300px — antes de pintar, para
+  // não piscar do valor pequeno para o certo.
+  useLayoutEffect(() => {
+    const box = corpoRef.current?.getBoundingClientRect()
+    if (!box || box.width === 0) return
+    const max = Math.max(PREVIEW_MIN, box.width - RUNDOWN_MIN)
+    setPreviewWidth(Math.min(max, Math.max(PREVIEW_MIN, Math.round(box.width * PREVIEW_DEFAULT_RATIO))))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   /** Arrasta a divisória: o mesmo gesto que já redimensiona edição × transmissão no Split. */
   const startDrag = (): void => {
