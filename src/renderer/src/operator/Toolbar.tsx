@@ -302,17 +302,21 @@ export function Toolbar({
           ))}
         </select>
 
+        {/* o botão diz o que ele está fazendo; quem diz o estado do programa é o
+            "No ar" lá em cima. Os dois escritos igual desperdiçavam os dois —
+            e o vermelho fica reservado para o indicador, que é o alarme */}
         <button
           type="button"
+          data-broadcast-toggle
           disabled={output.displayId === null}
           onClick={() => run('output.toggle')}
           className={`flex-none rounded-lg border px-6 py-2.5 text-[18px] whitespace-nowrap disabled:opacity-30 ${
             output.enabled
-              ? 'border-[var(--color-live)]/50 bg-[var(--color-live)]/14 text-[var(--color-live)]'
+              ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/14 text-[var(--color-go)]'
               : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
           }`}
         >
-          {output.enabled ? 'No ar' : 'Transmitir'}
+          {output.enabled ? 'Transmitindo' : 'Transmitir'}
         </button>
       </div>
     </div>

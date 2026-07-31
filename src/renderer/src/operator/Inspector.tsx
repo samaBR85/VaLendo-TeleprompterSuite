@@ -177,8 +177,11 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
           onChange={(value) => patch({ readingLinePct: value / 100 })}
         />
         {/* na prévia a linha aparece sempre; isto decide só a transmissão */}
+        {/* rótulo curto porque o painel tem 214px: "Mostrar a linha na
+            transmissão" ficava cortado no meio, e rótulo cortado é rótulo que
+            não informa */}
         <Toggle
-          label="Mostrar a linha na transmissão"
+          label="Linha na transmissão"
           active={a.readingMarkOnOutput}
           onClick={() => patch({ readingMarkOnOutput: !a.readingMarkOnOutput })}
         />
