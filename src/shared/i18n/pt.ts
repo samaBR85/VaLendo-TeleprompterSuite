@@ -317,6 +317,8 @@ export const pt = {
   'cards.pickTitle': 'Escolher imagem do cartão',
   'cards.imageFilter': 'Imagens',
   'cards.name': 'Nome',
+  'cards.namePlaceholderImage': 'Standby',
+  'cards.namePlaceholderText': 'Corta',
   'cards.message': 'Recado',
   'cards.messagePlaceholder': 'CORTA · FALTAM 2 MIN',
   'cards.show': 'Mostrar',

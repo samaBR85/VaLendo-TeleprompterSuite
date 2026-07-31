@@ -5,7 +5,7 @@ import { buildProject, readProject, serializeProject } from './project'
 import type { AppState, Cartao } from './types'
 
 const IMAGEM: Cartao = { id: 'c1', kind: 'image', nome: 'Standby', arquivo: 'c1.png' }
-const RECADO: Cartao = { id: 'c2', kind: 'text', texto: 'CORTA' }
+const RECADO: Cartao = { id: 'c2', kind: 'text', nome: '', texto: 'CORTA' }
 
 function comCartoes(cards: Cartao[], noAr: string | null = null): AppState {
   const base = createInitialState()
@@ -28,12 +28,14 @@ describe('qual cartão está na tela', () => {
   })
 })
 
-describe('só a imagem tem nome', () => {
-  it('o recado não carrega um rótulo à parte da mensagem', () => {
-    // dois campos pediriam escrever "Corta" em cima de "CORTA": a mensagem já
-    // é o rótulo legível, e o segundo campo só dava trabalho
-    expect('nome' in RECADO).toBe(false)
-    expect('nome' in IMAGEM).toBe(true)
+describe('o nome do cartão', () => {
+  it('é opcional: nasce vazio, e o exemplo em cinza é que diz o que ele quer', () => {
+    expect(RECADO.nome).toBe('')
+  })
+
+  it('mas quando existe, viaja com o projeto', () => {
+    const salvo = buildProject(comCartoes([IMAGEM]), 0)
+    expect(salvo.state.cards[0]).toMatchObject({ nome: 'Standby' })
   })
 })
 

@@ -294,6 +294,8 @@ export const it: Dicionario = {
   'cards.pickTitle': 'Scegli l’immagine del cartello',
   'cards.imageFilter': 'Immagini',
   'cards.name': 'Nome',
+  'cards.namePlaceholderImage': 'Attesa',
+  'cards.namePlaceholderText': 'Stacca',
   'cards.message': 'Messaggio',
   'cards.messagePlaceholder': 'STACCA · MANCANO 2 MIN',
   'cards.show': 'Mostra',

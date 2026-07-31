@@ -292,6 +292,8 @@ export const es: Dicionario = {
   'cards.pickTitle': 'Elegir la imagen de la tarjeta',
   'cards.imageFilter': 'Imágenes',
   'cards.name': 'Nombre',
+  'cards.namePlaceholderImage': 'Espera',
+  'cards.namePlaceholderText': 'Corta',
   'cards.message': 'Recado',
   'cards.messagePlaceholder': 'CORTA · QUEDAN 2 MIN',
   'cards.show': 'Mostrar',

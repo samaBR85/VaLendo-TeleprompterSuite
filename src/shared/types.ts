@@ -153,22 +153,21 @@ export interface Tab {
  * acompanha o espelho e o giro da saída, senão o apresentador lê ao contrário
  * através do vidro.
  */
+/**
+ * `nome` é como o operador chama o cartão na lista, e nasce vazio: quem quiser
+ * batizar, batiza; quem não quiser, se vira pela miniatura, que já mostra a
+ * arte ou o próprio recado. O campo diz o que quer pelo texto de exemplo, em
+ * cinza — sem isso ele ficava mudo e parecia obrigatório.
+ */
 export type Cartao =
   | {
       id: string
       kind: 'image'
-      /**
-       * Como o operador chama, para achar na lista.
-       *
-       * Só a imagem tem: no recado, a própria mensagem já é o rótulo legível,
-       * e um segundo campo seria pedir para escrever "Corta" em cima de
-       * "CORTA".
-       */
       nome: string
       /** nome do arquivo dentro de userData/cartoes — nunca o caminho de origem */
       arquivo: string
     }
-  | { id: string; kind: 'text'; texto: string }
+  | { id: string; kind: 'text'; nome: string; texto: string }
 
 export interface Transport {
   playing: boolean

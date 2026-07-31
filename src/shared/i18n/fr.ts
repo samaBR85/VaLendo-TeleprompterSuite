@@ -294,6 +294,8 @@ export const fr: Dicionario = {
   'cards.pickTitle': 'Choisir l’image du carton',
   'cards.imageFilter': 'Images',
   'cards.name': 'Nom',
+  'cards.namePlaceholderImage': 'Attente',
+  'cards.namePlaceholderText': 'Coupez',
   'cards.message': 'Message',
   'cards.messagePlaceholder': 'COUPEZ · 2 MIN RESTANTES',
   'cards.show': 'Afficher',

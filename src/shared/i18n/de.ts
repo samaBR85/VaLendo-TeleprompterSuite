@@ -294,6 +294,8 @@ export const de: Dicionario = {
   'cards.pickTitle': 'Bild der Karte wählen',
   'cards.imageFilter': 'Bilder',
   'cards.name': 'Name',
+  'cards.namePlaceholderImage': 'Standby',
+  'cards.namePlaceholderText': 'Schnitt',
   'cards.message': 'Nachricht',
   'cards.messagePlaceholder': 'SCHNITT · NOCH 2 MIN',
   'cards.show': 'Zeigen',

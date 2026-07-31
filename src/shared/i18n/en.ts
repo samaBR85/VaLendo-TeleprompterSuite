@@ -290,6 +290,8 @@ export const en: Dicionario = {
   'cards.pickTitle': 'Choose the card image',
   'cards.imageFilter': 'Images',
   'cards.name': 'Name',
+  'cards.namePlaceholderImage': 'Standby',
+  'cards.namePlaceholderText': 'Cut',
   'cards.message': 'Message',
   'cards.messagePlaceholder': 'CUT · 2 MIN LEFT',
   'cards.show': 'Show',
