@@ -18,6 +18,10 @@ interface Props {
 export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React.JSX.Element {
   const [copiado, setCopiado] = useState<string | null>(null)
 
+  // "no ar" é o que está acontecendo, não o que foi pedido: com a porta
+  // ocupada, o botão verde seria mentira
+  const noAr = enabled && info.running && !info.error
+
   const copiar = (url: string): void => {
     void navigator.clipboard.writeText(url).then(() => {
       setCopiado(url)
@@ -59,15 +63,15 @@ export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React
           data-webview-toggle
           onClick={() => dispatch({ type: 'webview/set', enabled: !enabled })}
           className={`mb-4 flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-[13px] transition-colors ${
-            enabled
+            noAr
               ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
               : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
           }`}
         >
-          <span>{enabled ? 'No ar na rede local' : 'Publicar na rede local'}</span>
+          <span>{noAr ? 'No ar na rede local' : 'Publicar na rede local'}</span>
           <span
             className={`h-2.5 w-2.5 flex-none rounded-full ${
-              enabled ? 'bg-[var(--color-go)]' : 'border border-[var(--color-line)]'
+              noAr ? 'bg-[var(--color-go)]' : 'border border-[var(--color-line)]'
             }`}
           />
         </button>
@@ -78,7 +82,7 @@ export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React
           </p>
         ) : null}
 
-        {enabled && !info.error ? (
+        {noAr ? (
           info.addresses.length > 0 ? (
             <div className="flex flex-col gap-1.5">
               <div className="text-[11px] text-[var(--color-fog-2)]">

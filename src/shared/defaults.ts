@@ -25,6 +25,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   directionColor: '#7FB2FF',
   align: 'left',
   readingLinePct: 0.38,
+  readingMarkOnOutput: false,
   focusDim: true,
   mirrorX: false,
   mirrorY: false,

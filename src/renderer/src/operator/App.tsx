@@ -370,6 +370,7 @@ export function App(): React.JSX.Element {
         dispatch={dispatch}
         run={run}
         onImport={importDocument}
+        webviewLive={state.webview.enabled && webview.running && !webview.error}
         onOpenWebview={() => setWebviewOpen(true)}
       />
 

@@ -17,6 +17,8 @@ interface Props {
   dispatch: (action: Action) => void
   run: (commandId: string) => void
   onImport: () => void
+  /** a página da rede está mesmo no ar, e não só pedida */
+  webviewLive: boolean
   onOpenWebview: () => void
 }
 
@@ -164,6 +166,7 @@ export function Toolbar({
   dispatch,
   run,
   onImport,
+  webviewLive,
   onOpenWebview
 }: Props): React.JSX.Element {
   const { transport, output } = state
@@ -262,14 +265,17 @@ export function Toolbar({
               label="Mostra um número grande em cada monitor"
               onClick={() => window.valendo.identifyDisplays()}
             />
+            {/* aceso pelo que está acontecendo, não pelo que foi pedido: com a
+                porta ocupada, o ícone verde diria que há uma página no ar
+                quando não há */}
             <Tool
               icon="webview"
               label={
-                state.webview.enabled
+                webviewLive
                   ? 'Publicado na rede local — quem está no wi-fi acompanha a leitura'
                   : 'Ver na rede local'
               }
-              active={state.webview.enabled}
+              active={webviewLive}
               onClick={onOpenWebview}
             />
           </Grupo>

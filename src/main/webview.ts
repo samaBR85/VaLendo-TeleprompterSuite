@@ -22,6 +22,19 @@ function rendererDir(): string {
 
 let server: Server | null = null
 let error: string | null = null
+let onChange: (() => void) | null = null
+
+/**
+ * O main usa isto para reemitir o estado quando o servidor muda por conta
+ * própria.
+ *
+ * `listen` falha de forma assíncrona: quando o erro chega, o instantâneo já foi
+ * mandado para a tela, e sem este aviso o operador veria o botão verde e
+ * nenhum endereço, sem nada explicando por quê.
+ */
+export function onWebviewChange(handler: () => void): void {
+  onChange = handler
+}
 const clientes = new Set<ServerResponse>()
 let ultimoQuadro: WebviewFrame | null = null
 let batida: NodeJS.Timeout | null = null
@@ -113,8 +126,10 @@ export function startWebview(): WebviewInfo {
         ? `A porta ${WEBVIEW_PORT} já está ocupada por outro programa nesta máquina.`
         : `Não deu para abrir a página na rede: ${erro.message}`
     server = null
+    onChange?.()
   })
 
+  novo.on('listening', () => onChange?.())
   novo.listen(WEBVIEW_PORT, '0.0.0.0')
   server = novo
 

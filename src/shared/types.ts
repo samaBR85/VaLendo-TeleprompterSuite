@@ -50,6 +50,15 @@ export interface Appearance extends PacingRule {
   align: 'left' | 'center'
   /** posição vertical da marca de leitura, 0..1 */
   readingLinePct: number
+  /**
+   * Desenhar a linha da marca de leitura também na transmissão.
+   *
+   * Desligado por padrão: para o operador a linha é referência, mas na tela do
+   * apresentador ela é um traço atravessando o texto — e no vidro do
+   * beam-splitter, atravessando o rosto de quem lê. Na prévia do operador ela
+   * aparece sempre, independente disto.
+   */
+  readingMarkOnOutput: boolean
   focusDim: boolean
   mirrorX: boolean
   mirrorY: boolean

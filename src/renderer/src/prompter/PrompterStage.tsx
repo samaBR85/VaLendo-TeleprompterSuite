@@ -55,7 +55,10 @@ export function PrompterStage(props: Props): React.JSX.Element {
           outline: `${Math.max(1, 1 / scale)}px solid var(--color-line)`
         }}
       >
-        <PrompterCanvas {...props} />
+        {/* na prévia a marca aparece sempre: é dela que o operador tira a
+            referência de onde a leitura está, e escondê-la aqui seria esconder
+            a informação de quem precisa dela */}
+        <PrompterCanvas {...props} readingMark />
       </div>
     </div>
   )

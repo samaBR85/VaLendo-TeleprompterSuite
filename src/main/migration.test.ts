@@ -77,6 +77,23 @@ describe('nomes antigos que ainda precisam ser lidos', () => {
   })
 })
 
+describe('a linha da marca de leitura', () => {
+  it('nasce desligada na transmissão', () => {
+    // o operador precisa da referência; o apresentador precisa do texto limpo
+    expect(DEFAULT_APPEARANCE.readingMarkOnOutput).toBe(false)
+  })
+
+  it('workspace de antes do recurso não liga a linha sem pedir', () => {
+    const merged = mergeAppearance({ fontSize: 50 })
+    expect(merged.readingMarkOnOutput).toBe(false)
+  })
+
+  it('mas a escolha de quem ligou é respeitada', () => {
+    const merged = mergeAppearance({ readingMarkOnOutput: true })
+    expect(merged.readingMarkOnOutput).toBe(true)
+  })
+})
+
 describe('padrões dos relógios', () => {
   it('nascem desligados: o apresentador precisa ver o texto, não números', () => {
     expect(DEFAULT_APPEARANCE.timers.elapsed).toBe(false)

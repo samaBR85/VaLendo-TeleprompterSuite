@@ -176,6 +176,17 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
           suffix="%"
           onChange={(value) => patch({ readingLinePct: value / 100 })}
         />
+        {/* na prévia a linha aparece sempre; isto decide só a transmissão */}
+        <Toggle
+          label="Mostrar a linha na transmissão"
+          active={a.readingMarkOnOutput}
+          onClick={() => patch({ readingMarkOnOutput: !a.readingMarkOnOutput })}
+        />
+        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
+          {a.readingMarkOnOutput
+            ? 'O apresentador também vê a linha atravessando o texto.'
+            : 'A linha fica só aqui na sua prévia. O apresentador vê o texto limpo.'}
+        </div>
         <div className="flex gap-1.5">
           {(['left', 'center'] as const).map((align) => (
             <button

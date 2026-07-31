@@ -56,6 +56,14 @@ interface Props {
    * de quem lê. Na tela do apresentador seria sujeira.
    */
   marginGuides?: boolean
+  /**
+   * Desenhar a marca de leitura.
+   *
+   * A prévia do operador manda `true` sempre — é dela que ele tira a
+   * referência. A transmissão e a página da rede seguem o que o operador
+   * escolheu nos ajustes.
+   */
+  readingMark: boolean
   onMetrics?: (metrics: PrompterMetrics) => void
 }
 
@@ -73,6 +81,7 @@ export function PrompterCanvas({
   viewport,
   rows,
   marginGuides = false,
+  readingMark,
   onMetrics
 }: Props): React.JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -371,37 +380,42 @@ export function PrompterCanvas({
         {/* marca de leitura: espessura proporcional ao viewport para continuar
             visível quando a prévia do operador reduz a escala, e cunhas nas
             laterais, que sobrevivem melhor à redução do que uma linha fina */}
-        <div
-          data-reading-mark
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: readingLineY,
-            height: Math.max(2, stage.height * 0.004),
-            background: appearance.directionColor,
-            opacity: 0.5,
-            pointerEvents: 'none'
-          }}
-        />
-        {([0, 1] as const).map((side) => (
-          <div
-            key={side}
-            style={{
-              position: 'absolute',
-              top: readingLineY,
-              [side === 0 ? 'left' : 'right']: 0,
-              transform: 'translateY(-50%)',
-              width: 0,
-              height: 0,
-              borderTop: `${stage.height * 0.014}px solid transparent`,
-              borderBottom: `${stage.height * 0.014}px solid transparent`,
-              [side === 0 ? 'borderLeft' : 'borderRight']:
-                `${stage.height * 0.016}px solid ${appearance.directionColor}`,
-              pointerEvents: 'none'
-            }}
-          />
-        ))}
+        {readingMark ? (
+          <>
+            <div
+              data-reading-mark
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: readingLineY,
+                height: Math.max(2, stage.height * 0.004),
+                background: appearance.directionColor,
+                opacity: 0.5,
+                pointerEvents: 'none'
+              }}
+            />
+            {([0, 1] as const).map((side) => (
+              <div
+                key={side}
+                data-reading-wedge
+                style={{
+                  position: 'absolute',
+                  top: readingLineY,
+                  [side === 0 ? 'left' : 'right']: 0,
+                  transform: 'translateY(-50%)',
+                  width: 0,
+                  height: 0,
+                  borderTop: `${stage.height * 0.014}px solid transparent`,
+                  borderBottom: `${stage.height * 0.014}px solid transparent`,
+                  [side === 0 ? 'borderLeft' : 'borderRight']:
+                    `${stage.height * 0.016}px solid ${appearance.directionColor}`,
+                  pointerEvents: 'none'
+                }}
+              />
+            ))}
+          </>
+        ) : null}
       </div>
 
       {transport.blackout ? (

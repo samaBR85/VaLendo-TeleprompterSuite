@@ -48,6 +48,7 @@ export function Broadcast(): React.JSX.Element {
         transport={state.transport}
         viewport={viewport}
         rows={rows}
+        readingMark={tab.appearance.readingMarkOnOutput}
       />
 
       {covering ? (

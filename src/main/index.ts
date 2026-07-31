@@ -5,7 +5,7 @@ import type { AppState } from '@shared/types'
 import { IMPORT_FILTERS, importFile } from './import'
 import { EXPORT_FILTERS, defaultFileName, exportScript } from './export'
 import { PROJECT_FILTERS, openProject, projectFileName, saveProject } from './project'
-import { publish, startWebview, stopWebview, webviewInfo } from './webview'
+import { onWebviewChange, publish, startWebview, stopWebview, webviewInfo } from './webview'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
 import { Store } from './state'
 import { flushState, onStorageHealth, storageHealth } from './storage'
@@ -231,6 +231,10 @@ function bootstrap(): void {
   // reenvio, o aviso só apareceria na tela na próxima vez que o operador
   // mexesse em alguma coisa — e pode não haver próxima vez
   onStorageHealth(() => sendToAll(CHANNELS.stateChanged, snapshot()))
+
+  // pelo mesmo motivo: o servidor da rede sobe ou falha depois que o
+  // instantâneo já saiu, e a tela precisa saber qual dos dois aconteceu
+  onWebviewChange(() => sendToAll(CHANNELS.stateChanged, snapshot()))
 
   watchDisplays((displays) => {
     sendToAll(CHANNELS.displaysChanged, displays)

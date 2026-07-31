@@ -87,6 +87,8 @@ export function Webview(): React.JSX.Element {
           transport={transport}
           viewport={viewport}
           rows={quadro.rows}
+          // quem assiste vê o que o apresentador vê, marca inclusive
+          readingMark={quadro.appearance.readingMarkOnOutput}
         />
       </div>
 
