@@ -96,17 +96,22 @@
   }
 
   ::-webkit-scrollbar {
-    width: 9px;
-    height: 9px;
+    width: 13px;
+    height: 13px;
   }
 
   ::-webkit-scrollbar-thumb {
     background: var(--color-ink-3);
     border-radius: 5px;
+    /* sem isto, passar por cima da barra de rolagem do editor mostra o cursor
+       de texto do textarea por baixo, em vez da seta — a barra é pintada
+       dentro da mesma caixa, e por padrão herda o cursor dela */
+    cursor: default;
   }
 
   ::-webkit-scrollbar-track {
     background: transparent;
+    cursor: default;
   }
 }
 

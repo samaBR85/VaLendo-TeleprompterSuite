@@ -109,6 +109,16 @@ export function useCommands(
         case 'marker.create': {
           const blockId = blockIdUnderReadingLine(state, tab, rows)
           if (!blockId) break
+
+          // um bloco de fala dura vários segundos de leitura, e o marcador só
+          // existe por bloco — sem alternar, apertar de novo no mesmo trecho
+          // não fazia nada, e sem aviso nenhum isso parecia um botão quebrado
+          const existente = tab.markers.find((m) => m.blockId === blockId)
+          if (existente) {
+            dispatch({ type: 'marker/remove', tabId: tab.id, markerId: existente.id })
+            break
+          }
+
           const block = tab.blocks.find((b) => b.id === blockId)
           const label =
             block?.kind === 'chapter'

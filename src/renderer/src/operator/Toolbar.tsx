@@ -65,6 +65,7 @@ function Tool({
   active,
   danger,
   go,
+  tint,
   disabled,
   onClick
 }: {
@@ -74,6 +75,8 @@ function Tool({
   active?: boolean
   danger?: boolean
   go?: boolean
+  /** cor própria em repouso, para o ícone não ficar plano — "tela preta" já tinha a dela */
+  tint?: string
   disabled?: boolean
   onClick: () => void
 }): React.JSX.Element {
@@ -85,7 +88,9 @@ function Tool({
         : 'bg-[var(--color-go)]/16 text-[var(--color-go)]'
       : danger
         ? 'text-[var(--color-live)] hover:bg-[var(--color-ink-3)]'
-        : 'text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]'
+        : !tint
+          ? 'text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]'
+          : 'hover:bg-[var(--color-ink-3)]'
 
   return (
     <button
@@ -94,6 +99,7 @@ function Tool({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
+      style={tint && !active && !danger ? { color: tint } : undefined}
       className={`flex flex-none items-center justify-center rounded-md transition-colors disabled:opacity-30 ${MEDIDA[size]} ${tom}`}
     >
       <Icon name={icon} size={ICONE[size]} />
@@ -243,11 +249,13 @@ export function Toolbar({
                   icon="freeze"
                   label={`Congelar a saída${hint(keymap, 'transport.freeze')}`}
                   active={transport.frozen}
+                  tint="#378ADD"
                   onClick={() => run('transport.freeze')}
                 />
                 <Tool
                   icon="monitor"
                   label="Mostra um número grande em cada monitor"
+                  tint="#7F77DD"
                   onClick={() => window.valendo.identifyDisplays()}
                 />
                 {/* aceso pelo que está acontecendo, não pelo que foi pedido:
@@ -261,6 +269,7 @@ export function Toolbar({
                       : 'Ver na rede local'
                   }
                   active={webviewLive}
+                  tint="#1D9E75"
                   onClick={onOpenWebview}
                 />
               </Grupo>
