@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { InsertKind } from '@shared/insertBlock'
+import type { LayoutMode } from '@shared/types'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { PrompterStage } from '../prompter/PrompterStage'
 import { activeTabOf, useAppState } from '../state/useAppState'
@@ -7,6 +8,7 @@ import { Icon, type IconName } from '../ui/Icon'
 import { Wordmark } from '../ui/Wordmark'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
+import { Deck } from './deck/Deck'
 import { Editor, type EditorHandle } from './Editor'
 import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
@@ -24,7 +26,7 @@ interface Notice {
   tone: 'ok' | 'warn'
 }
 
-function PanelHeader({
+export function PanelHeader({
   label,
   detail,
   action
@@ -68,6 +70,40 @@ function EditorTool({
     >
       <Icon name={icon} size={14} />
     </button>
+  )
+}
+
+const MODOS: { mode: LayoutMode; label: string; icon: IconName; hint: string }[] = [
+  { mode: 'split', label: 'Split', icon: 'layoutSplit', hint: 'edição e transmissão lado a lado' },
+  { mode: 'focus', label: 'Foco', icon: 'layoutFocus', hint: 'transmissão em largura total · F11' },
+  { mode: 'deck', label: 'Mesa', icon: 'layoutDeck', hint: 'linha do tempo e rundown de um programa com vários blocos' }
+]
+
+/** Split, Foco e Mesa são jeitos de olhar para o mesmo roteiro, não documentos diferentes. */
+function ModeSwitch({ mode, onChange }: { mode: LayoutMode; onChange: (mode: LayoutMode) => void }): React.JSX.Element {
+  return (
+    <div
+      data-mode-switch
+      className="flex flex-none items-center gap-0.5 rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-0.5"
+    >
+      {MODOS.map((item) => (
+        <button
+          key={item.mode}
+          type="button"
+          data-mode={item.mode}
+          title={`${item.label} — ${item.hint}`}
+          onClick={() => onChange(item.mode)}
+          className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] transition-colors ${
+            mode === item.mode
+              ? 'bg-[var(--color-ink-3)] text-[var(--color-fog-0)]'
+              : 'text-[var(--color-fog-2)] hover:text-[var(--color-fog-1)]'
+          }`}
+        >
+          <Icon name={item.icon} size={14} />
+          {item.label}
+        </button>
+      ))}
+    </div>
   )
 }
 
@@ -295,6 +331,7 @@ export function App(): React.JSX.Element {
       <header className="flex flex-none items-center gap-4 border-b border-[var(--color-line)] bg-[var(--color-ink-1)] px-4 py-3">
         <Wordmark size={30} />
         <div className="h-12 w-px flex-none bg-[var(--color-line)]" />
+        <ModeSwitch mode={state.layoutMode} onChange={(mode) => dispatch({ type: 'layout/mode', mode })} />
         <div className="min-w-0 flex-1">
           <Tabs state={state} dispatch={dispatch} />
         </div>
@@ -374,7 +411,16 @@ export function App(): React.JSX.Element {
         onOpenWebview={() => setWebviewOpen(true)}
       />
 
-      {focusMode ? (
+      {state.layoutMode === 'deck' ? (
+        <Deck
+          tab={tab}
+          transport={state.transport}
+          rows={rows}
+          viewport={viewport}
+          dispatch={dispatch}
+          onMetrics={handleMetrics}
+        />
+      ) : focusMode ? (
         <main className="flex min-h-0 flex-1 flex-col">
           <div className="flex min-h-0 flex-1 flex-col">
             <PanelHeader

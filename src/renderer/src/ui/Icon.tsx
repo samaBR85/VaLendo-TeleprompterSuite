@@ -29,6 +29,9 @@ export type IconName =
   | 'project'
   | 'projectOpen'
   | 'webview'
+  | 'layoutSplit'
+  | 'layoutFocus'
+  | 'layoutDeck'
 
 const PATHS: Record<IconName, string> = {
   play: 'M8 5l11 7-11 7z',
@@ -68,7 +71,12 @@ const PATHS: Record<IconName, string> = {
   projectOpen: 'M3 7h6l2 2h10v10H3zM3 9h18',
   // ondas saindo de um ponto: o sinal do wi-fi, que é como as pessoas na
   // gravação vão chegar até a página
-  webview: 'M12 19h.01M8.5 15.5a5 5 0 0 1 7 0M5 12a10 10 0 0 1 14 0M2 8.5a15 15 0 0 1 20 0'
+  webview: 'M12 19h.01M8.5 15.5a5 5 0 0 1 7 0M5 12a10 10 0 0 1 14 0M2 8.5a15 15 0 0 1 20 0',
+  // os três modos: duas colunas lado a lado, uma tela só, e uma trilha fina em
+  // cima de linhas de lista — a mesma leitura visual do que cada um mostra
+  layoutSplit: 'M3 5h8v14H3zM13 5h8v14H13z',
+  layoutFocus: 'M3 5h18v10H3zM7 19h10',
+  layoutDeck: 'M3 4h18v5H3zM3 13h8M3 17h8M13 13h8M13 17h5'
 }
 
 interface Props {
