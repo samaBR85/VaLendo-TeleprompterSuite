@@ -43,7 +43,9 @@ function useNow(intervalMs = 500): number {
  * levar, não uma conta à parte que pode divergir.
  */
 const PREVIEW_MIN = 220
-const PREVIEW_MAX = 560
+// A prévia pode crescer até sobrar só o espaço mínimo da lista à esquerda —
+// não um teto fixo, que deixava largura vazia sem uso em janelas largas.
+const RUNDOWN_MIN = 320
 
 export function Deck({ tab, transport, rows, viewport, dispatch, onMetrics }: Props): React.JSX.Element {
   const now = useNow()
@@ -55,7 +57,8 @@ export function Deck({ tab, transport, rows, viewport, dispatch, onMetrics }: Pr
     const onMove = (event: MouseEvent): void => {
       const box = corpoRef.current?.getBoundingClientRect()
       if (!box) return
-      setPreviewWidth(Math.min(PREVIEW_MAX, Math.max(PREVIEW_MIN, box.right - event.clientX)))
+      const max = Math.max(PREVIEW_MIN, box.width - RUNDOWN_MIN)
+      setPreviewWidth(Math.min(max, Math.max(PREVIEW_MIN, box.right - event.clientX)))
     }
     const onUp = (): void => {
       window.removeEventListener('mousemove', onMove)

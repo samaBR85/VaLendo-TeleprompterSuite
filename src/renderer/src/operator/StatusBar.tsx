@@ -4,7 +4,8 @@ import type { StorageHealth } from '@shared/api'
 import { composeLines, totalWords } from '@shared/anchor'
 import { formatClock, ppmForTarget, secondsForWords } from '@shared/pacing'
 import { totalWordCount } from '@shared/text'
-import type { AppState, Tab } from '@shared/types'
+import type { AppState, LayoutMode, Tab } from '@shared/types'
+import { Icon, type IconName } from '../ui/Icon'
 import { versionLabel } from '../ui/Wordmark'
 
 interface Props {
@@ -15,6 +16,41 @@ interface Props {
   storage: StorageHealth
   dispatch: (action: Action) => void
   onOpenCredits: () => void
+  onModeChange: (mode: LayoutMode) => void
+}
+
+const MODOS: { mode: LayoutMode; label: string; icon: IconName; hint: string }[] = [
+  { mode: 'split', label: 'Split', icon: 'layoutSplit', hint: 'edição e transmissão lado a lado' },
+  { mode: 'focus', label: 'Foco', icon: 'layoutFocus', hint: 'transmissão em largura total · F11' },
+  { mode: 'deck', label: 'Mesa', icon: 'layoutDeck', hint: 'linha do tempo e rundown de um programa com vários blocos' }
+]
+
+/** Split, Foco e Mesa são jeitos de olhar para o mesmo roteiro, não documentos diferentes. */
+function ModeSwitch({ mode, onChange }: { mode: LayoutMode; onChange: (mode: LayoutMode) => void }): React.JSX.Element {
+  return (
+    <div
+      data-mode-switch
+      className="flex flex-none items-center gap-0.5 rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1"
+    >
+      {MODOS.map((item) => (
+        <button
+          key={item.mode}
+          type="button"
+          data-mode={item.mode}
+          title={`${item.label} — ${item.hint}`}
+          onClick={() => onChange(item.mode)}
+          className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-[11px] transition-colors ${
+            mode === item.mode
+              ? 'bg-[var(--color-ink-3)] text-[var(--color-fog-0)]'
+              : 'text-[var(--color-fog-2)] hover:text-[var(--color-fog-1)]'
+          }`}
+        >
+          <Icon name={item.icon} size={15} />
+          {item.label}
+        </button>
+      ))}
+    </div>
+  )
 }
 
 function parseDuration(text: string): number | null {
@@ -42,7 +78,8 @@ export function StatusBar({
   rows,
   storage,
   dispatch,
-  onOpenCredits
+  onOpenCredits,
+  onModeChange
 }: Props): React.JSX.Element {
   const [target, setTarget] = useState('')
 
@@ -64,7 +101,10 @@ export function StatusBar({
   }
 
   return (
-    <footer className="flex flex-none items-center gap-4 border-t border-[var(--color-line)] bg-[var(--color-ink-1)] px-3 py-1.5 text-[11px]">
+    <footer className="flex flex-none items-center gap-4 border-t border-[var(--color-line)] bg-[var(--color-ink-1)] px-3 py-2 text-[11px]">
+      <ModeSwitch mode={state.layoutMode} onChange={onModeChange} />
+      <div className="h-8 w-px flex-none bg-[var(--color-line)]" />
+
       {/* decorrido e restante saíram daqui: agora estão no mostrador da barra de
           cima, em corpo grande. Repetir os mesmos números em dois lugares só
           ensina o olho a não confiar em nenhum dos dois */}
