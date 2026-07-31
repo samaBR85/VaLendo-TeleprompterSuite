@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Action } from '@shared/actions'
 import type { WebviewInfo } from '@shared/api'
 import { Icon } from '../ui/Icon'
+import { QrCode } from '../ui/QrCode'
 
 interface Props {
   info: WebviewInfo
@@ -82,25 +83,29 @@ export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React
             <div className="flex flex-col gap-1.5">
               <div className="text-[11px] text-[var(--color-fog-2)]">
                 {info.addresses.length > 1
-                  ? 'Esta máquina está em mais de uma rede — use o endereço da rede em que o telefone está:'
-                  : 'Digite no navegador do telefone:'}
+                  ? 'Esta máquina está em mais de uma rede — aponte a câmera para o código da rede em que o telefone está:'
+                  : 'Aponte a câmera do telefone:'}
               </div>
               {info.addresses.map((address) => {
                 const url = `http://${address}:${info.port}`
                 return (
-                  <button
+                  <div
                     key={address}
-                    type="button"
-                    data-webview-url
-                    onClick={() => copiar(url)}
-                    title="Copiar"
-                    className="flex items-center gap-2 rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] px-3 py-2 text-left font-mono text-[15px] text-[var(--color-fog-0)] hover:bg-[var(--color-ink-3)]"
+                    className="flex items-center gap-3 rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] p-2.5"
                   >
-                    {url}
-                    <span className="ml-auto text-[10px] text-[var(--color-fog-2)]">
-                      {copiado === url ? 'copiado' : 'copiar'}
-                    </span>
-                  </button>
+                    <QrCode text={url} size={104} />
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                      <span className="font-mono text-[15px] break-all text-[var(--color-fog-0)]">{url}</span>
+                      <button
+                        type="button"
+                        data-webview-url
+                        onClick={() => copiar(url)}
+                        className="self-start rounded border border-[var(--color-line)] px-2 py-1 text-[11px] text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+                      >
+                        {copiado === url ? 'copiado' : 'copiar'}
+                      </button>
+                    </div>
+                  </div>
                 )
               })}
             </div>
