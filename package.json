@@ -1,6 +1,7 @@
 {
   "name": "valendo-teleprompter-suite",
   "productName": "VaLendo",
+  "author": "samaBR85",
   "version": "1.0.0",
   "buildNumber": 53,
   "description": "VaLendo — A Teleprompter Suite. Teleprompter com edição de texto ao vivo durante a transmissão.",
@@ -20,7 +21,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verify": "node scripts/verify.mjs"
+    "verify": "node scripts/verify.mjs",
+    "dist:win": "electron-vite build && electron-builder --win nsis"
   },
   "dependencies": {
     "docx": "^9.7.1",

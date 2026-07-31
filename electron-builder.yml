@@ -1,0 +1,37 @@
+appId: com.samabr85.valendo
+productName: VaLendo
+copyright: Copyright © VaLendo
+
+directories:
+  buildResources: build
+  output: dist
+
+# main e preload usam externalizeDepsPlugin (electron.vite.config.ts): as
+# dependências ficam de fora do bundle e continuam como require() de verdade,
+# então node_modules precisa viajar junto com out/ dentro do instalador.
+files:
+  - out/**/*
+  - node_modules/**/*
+  - package.json
+  - '!src/**'
+  - '!scripts/**'
+  - '!teste_projetos/**'
+  - '!electron.vite.config.ts'
+  - '!*.md'
+  - '!Abrir VaLendo.bat'
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: ${productName}-${version}-setup.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: VaLendo
+  artifactName: ${productName}-${version}-setup.${ext}
