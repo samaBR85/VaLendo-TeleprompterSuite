@@ -147,6 +147,10 @@ export function loadState(defaults: UserDefaults): AppState {
     // abrir o app não pode jogar texto na tela do apresentador antes do
     // operador dizer que está pronto
     state.output = { ...state.output, enabled: false }
+
+    // e o roteiro não vai para a rede sozinho, pelo mesmo motivo: pôr o texto
+    // ao alcance de quem estiver no wi-fi é uma decisão do operador
+    state.webview = { enabled: false }
     if (!state.tabs.some((t) => t.id === state.activeTabId)) state.activeTabId = state.tabs[0].id
 
     state.tabs = state.tabs.map((tab) => ({

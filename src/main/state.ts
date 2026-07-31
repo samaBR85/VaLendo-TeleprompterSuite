@@ -506,6 +506,10 @@ export class Store {
         break
       }
 
+      case 'webview/set':
+        this.state = { ...this.state, webview: { enabled: action.enabled } }
+        break
+
       case 'storage/dismissNotice':
         dismissStorageNotice()
         break

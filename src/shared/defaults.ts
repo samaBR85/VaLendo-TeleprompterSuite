@@ -110,6 +110,7 @@ export function createInitialState(
     output: { displayId: null, enabled: false, viewport: null },
     presets: DEFAULT_PRESETS,
     keymap: {},
-    customDefaults: false
+    customDefaults: false,
+    webview: { enabled: false }
   }
 }

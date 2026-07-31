@@ -13,6 +13,7 @@ import { KeymapEditor } from './KeymapEditor'
 import { StatusBar } from './StatusBar'
 import { Tabs } from './Tabs'
 import { Toolbar } from './Toolbar'
+import { WebviewPanel } from './WebviewPanel'
 import { useCommands } from './useCommands'
 
 const FALLBACK_VIEWPORT = { width: 1_920, height: 1_080 }
@@ -103,7 +104,8 @@ function StorageStrip({
 }
 
 export function App(): React.JSX.Element {
-  const { state, history, displays, rows, storage, dispatch } = useAppState()
+  const { state, history, displays, rows, storage, webview, dispatch } = useAppState()
+  const [webviewOpen, setWebviewOpen] = useState(false)
   const [palette, setPalette] = useState(false)
   const [keymapOpen, setKeymapOpen] = useState(false)
   const [split, setSplit] = useState(0.46)
@@ -368,6 +370,7 @@ export function App(): React.JSX.Element {
         dispatch={dispatch}
         run={run}
         onImport={importDocument}
+        onOpenWebview={() => setWebviewOpen(true)}
       />
 
       {focusMode ? (
@@ -479,6 +482,14 @@ export function App(): React.JSX.Element {
         </div>
       ) : null}
 
+      {webviewOpen ? (
+        <WebviewPanel
+          info={webview}
+          enabled={state.webview.enabled}
+          dispatch={dispatch}
+          onClose={() => setWebviewOpen(false)}
+        />
+      ) : null}
       {credits ? <Credits onClose={() => setCredits(false)} /> : null}
       {palette ? (
         <CommandPalette keymap={keymap} onRun={run} onClose={() => setPalette(false)} />

@@ -181,6 +181,14 @@ export interface AppState {
    * de padrões pode ter sido apagado enquanto o app estava fechado.
    */
   customDefaults: boolean
+  /**
+   * A página que quem está na mesma rede abre para acompanhar a leitura.
+   *
+   * Como a transmissão, nunca sobe sozinha ao abrir o app: pôr o roteiro na
+   * rede é uma decisão, e decisão que o app toma por conta própria não é
+   * decisão de ninguém.
+   */
+  webview: { enabled: boolean }
 }
 
 export interface DisplayInfo {

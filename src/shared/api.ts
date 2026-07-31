@@ -1,5 +1,5 @@
 import type { Action, HistoryInfo } from './actions'
-import type { AppState, DisplayInfo } from './types'
+import type { Appearance, AppState, Block, DisplayInfo, Transport } from './types'
 
 export interface StateSnapshot {
   state: AppState
@@ -13,6 +13,7 @@ export interface StateSnapshot {
    */
   rows: number[]
   storage: StorageHealth
+  webview: WebviewInfo
 }
 
 /**
@@ -54,6 +55,32 @@ export interface ProjectResult {
   ok: boolean
   path: string
   error?: string
+}
+
+/**
+ * O quadro que a página da rede local recebe.
+ *
+ * Só o necessário para desenhar a aba que está no ar — as outras abas não
+ * viajam. `now` é o relógio do computador que transmite: o telefone de quem
+ * assiste pode estar com a hora errada em minutos, e sem essa referência a
+ * posição da leitura sairia completamente fora do lugar.
+ */
+export interface WebviewFrame {
+  blocks: Block[]
+  appearance: Appearance
+  transport: Transport
+  rows: number[]
+  viewport: { width: number; height: number } | null
+  now: number
+}
+
+/** Estado do servidor da rede local, para a interface do operador mostrar. */
+export interface WebviewInfo {
+  running: boolean
+  port: number
+  /** endereços em que a página responde, prontos para digitar no telefone */
+  addresses: string[]
+  error: string | null
 }
 
 export interface ImportResult {

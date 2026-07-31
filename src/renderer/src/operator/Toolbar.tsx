@@ -17,6 +17,7 @@ interface Props {
   dispatch: (action: Action) => void
   run: (commandId: string) => void
   onImport: () => void
+  onOpenWebview: () => void
 }
 
 /**
@@ -154,7 +155,17 @@ function Campo({
  * inverter, espelhar, girar — mora nos ajustes, e as ferramentas de texto no
  * cabeçalho do editor, que é onde elas agem.
  */
-export function Toolbar({ state, tab, displays, keymap, rows, dispatch, run, onImport }: Props): React.JSX.Element {
+export function Toolbar({
+  state,
+  tab,
+  displays,
+  keymap,
+  rows,
+  dispatch,
+  run,
+  onImport,
+  onOpenWebview
+}: Props): React.JSX.Element {
   const { transport, output } = state
   const now = useNow()
 
@@ -250,6 +261,16 @@ export function Toolbar({ state, tab, displays, keymap, rows, dispatch, run, onI
               icon="monitor"
               label="Mostra um número grande em cada monitor"
               onClick={() => window.valendo.identifyDisplays()}
+            />
+            <Tool
+              icon="webview"
+              label={
+                state.webview.enabled
+                  ? 'Publicado na rede local — quem está no wi-fi acompanha a leitura'
+                  : 'Ver na rede local'
+              }
+              active={state.webview.enabled}
+              onClick={onOpenWebview}
             />
           </Grupo>
         </Pill>

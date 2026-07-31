@@ -5,6 +5,7 @@ import type { AppState } from '@shared/types'
 import { IMPORT_FILTERS, importFile } from './import'
 import { EXPORT_FILTERS, defaultFileName, exportScript } from './export'
 import { PROJECT_FILTERS, openProject, projectFileName, saveProject } from './project'
+import { publish, startWebview, stopWebview, webviewInfo } from './webview'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
 import { Store } from './state'
 import { flushState, onStorageHealth, storageHealth } from './storage'
@@ -48,8 +49,33 @@ function snapshot(): StateSnapshot {
     state: store.getState(),
     history: store.historyInfo(),
     rows: store.activeRows(),
-    storage: storageHealth()
+    storage: storageHealth(),
+    webview: webviewInfo()
   }
+}
+
+/**
+ * Liga ou desliga a página da rede, e manda o quadro a quem já está assistindo.
+ *
+ * O quadro leva só a aba que está no ar: as outras não viajam, e o que não sai
+ * da máquina não vaza.
+ */
+function syncWebview(state: AppState): void {
+  const ligado = webviewInfo().running
+  if (state.webview.enabled && !ligado) startWebview()
+  else if (!state.webview.enabled && ligado) stopWebview()
+
+  if (!webviewInfo().running) return
+
+  const tab = state.tabs.find((t) => t.id === state.activeTabId) ?? state.tabs[0]
+  publish({
+    blocks: tab.blocks,
+    appearance: tab.appearance,
+    transport: state.transport,
+    rows: store.activeRows(),
+    viewport: state.output.viewport,
+    now: Date.now()
+  })
 }
 
 function registerIpc(): void {
@@ -195,6 +221,7 @@ function bootstrap(): void {
   onBroadcastContextMenu(showBroadcastMenu)
 
   store.subscribe(() => {
+    syncWebview(store.getState())
     sendToAll(CHANNELS.stateChanged, snapshot())
     syncOutput(store.getState())
   })
@@ -246,6 +273,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('before-quit', () => {
     closeIdentifyWindows()
     closeBroadcastWindow()
+    stopWebview()
     flushState()
   })
 }

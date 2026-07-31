@@ -28,6 +28,7 @@ export type IconName =
   | 'export'
   | 'project'
   | 'projectOpen'
+  | 'webview'
 
 const PATHS: Record<IconName, string> = {
   play: 'M8 5l11 7-11 7z',
@@ -64,7 +65,10 @@ const PATHS: Record<IconName, string> = {
   // o texto. Abrir é uma pasta, e não outra caixa: dois ícones de caixa lado a
   // lado ficam indistinguíveis a 17px, que é o tamanho em que eles vivem
   project: 'M12 3l8 4v10l-8 4-8-4V7zM4 7l8 4 8-4M12 11v10',
-  projectOpen: 'M3 7h6l2 2h10v10H3zM3 9h18'
+  projectOpen: 'M3 7h6l2 2h10v10H3zM3 9h18',
+  // ondas saindo de um ponto: o sinal do wi-fi, que é como as pessoas na
+  // gravação vão chegar até a página
+  webview: 'M12 19h.01M8.5 15.5a5 5 0 0 1 7 0M5 12a10 10 0 0 1 14 0M2 8.5a15 15 0 0 1 20 0'
 }
 
 interface Props {

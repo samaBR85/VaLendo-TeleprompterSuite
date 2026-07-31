@@ -36,6 +36,7 @@ export type Action =
   | { type: 'storage/dismissNotice' }
   | { type: 'document/exportedTo'; tabId: string; path: string }
   | { type: 'project/replace'; state: AppState }
+  | { type: 'webview/set'; enabled: boolean }
   | { type: 'history/undo'; tabId: string }
   | { type: 'history/redo'; tabId: string }
   | { type: 'document/import'; title: string; text: string; intoNewTab: boolean }

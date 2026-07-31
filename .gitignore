@@ -3,5 +3,7 @@ out/
 dist/
 release/
 *.log
+# projetos salvos ao testar o app não são código do app
+teste_projetos/
 .DS_Store
 Thumbs.db

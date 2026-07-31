@@ -41,7 +41,10 @@ export default defineConfig({
       rollupOptions: {
         input: {
           operator: resolve('src/renderer/operator.html'),
-          broadcast: resolve('src/renderer/broadcast.html')
+          broadcast: resolve('src/renderer/broadcast.html'),
+          // a página que quem está na rede local abre no navegador; servida
+          // pelo processo principal, não carregada numa janela
+          webview: resolve('src/renderer/webview.html')
         }
       }
     }
