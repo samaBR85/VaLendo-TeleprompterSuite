@@ -57,7 +57,10 @@ export function createOperatorWindow(): BrowserWindow {
   if (!isMac) Menu.setApplicationMenu(null)
 
   operatorWindow = new BrowserWindow({
-    width: 1_480,
+    // acima da largura em que a barra de comando cabe numa linha só (medido:
+    // ~1500px de janela). Abrir já assim é o que a maioria das telas comporta;
+    // encolher a janela abaixo disso é o que vira a barra em duas linhas
+    width: 1_640,
     height: 940,
     minWidth: 1_080,
     minHeight: 660,
