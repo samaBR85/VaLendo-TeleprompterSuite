@@ -59,6 +59,19 @@ function connect(target) {
       await send('Input.dispatchKeyEvent', { type: 'keyDown', text, ...base })
       await send('Input.dispatchKeyEvent', { type: 'keyUp', ...base })
       await wait(150)
+    },
+    /**
+     * Escreve como quem digita.
+     *
+     * Antes isto forjava o evento: mexia no valor do textarea por baixo do
+     * React e disparava um `input` à mão. Parou de surtir efeito — o React
+     * reconhece o valor como já visto e devolve o texto anterior —, e o
+     * aceite passou a medir o próprio truque em vez de medir o app. Digitar
+     * de verdade não tem esse risco, e é o que o operador faz.
+     */
+    async type(text) {
+      await send('Input.insertText', { text })
+      await wait(150)
     }
   }
 }
@@ -74,14 +87,16 @@ const READ = `(() => {
   const scroller = lines[0]?.parentElement
   const style = scroller ? getComputedStyle(scroller) : null
   let word = null
+  let dentro = null
   if (i >= 0) {
     const b = lines[i].getBoundingClientRect()
     const words = lines[i].textContent.trim().split(/\\s+/)
     const f = (y - b.top) / b.height
+    dentro = f
     word = words[Math.min(words.length - 1, Math.floor(f * words.length))]
   }
   return {
-    index: i, word, lines: lines.length,
+    index: i, word, dentro, lines: lines.length,
     fontSize: style?.fontSize, paddingLeft: style?.paddingLeft, transform: style?.transform
   }
 })()`
@@ -98,16 +113,60 @@ if (!operatorTarget) {
 const app = connect(operatorTarget)
 await app.ready
 
+/*
+ * Espera o app estar de fato montado antes de medir.
+ *
+ * Conectar não é estar pronto: as fileiras que governam a régua de rolagem só
+ * existem depois que a prévia desenha e devolve a medição ao main. Medindo
+ * antes disso, o aceite lia um layout provisório e acusava deriva que não
+ * houve — foi o que fez este teste oscilar entre 8/8 e 6/8 sem nada ter
+ * mudado no app.
+ */
+for (let i = 0; i < 40; i += 1) {
+  const pronto = await app.evaluate(`(() => {
+    const linhas = document.querySelectorAll('[data-line]').length
+    const marca = document.querySelector('[data-reading-mark]')
+    return linhas > 5 && marca !== null
+  })()`)
+  const rows = await app.evaluate(`window.valendo.getState().then((s) => s.rows.length)`)
+  if (pronto && rows > 5) break
+  await wait(250)
+}
+
 const space = () => app.press(' ', 'Space', 0, ' ')
 const restart = () => app.press('Home', 'Home', MOD.ctrl)
 
-/** Leva a leitura para o meio do roteiro e pausa, para não medir no ponto zero. */
+/**
+ * Leva a leitura para o meio do roteiro e pausa.
+ *
+ * Salta por comando em vez de deixar rolar por 2,2s: o quanto o texto anda
+ * nesse tempo depende do ritmo e da régua, e quando parava perto do zero o
+ * aceite media outra coisa — no começo do documento, inserir "acima do ponto
+ * de leitura" é inserir acima de tudo, e aí não há âncora para segurar. O que
+ * este teste precisa provar é a edição no MEIO, que é onde dói.
+ */
 async function parkMidScript() {
   await restart()
-  await space()
-  await wait(2200)
-  await space()
-  await wait(500)
+  await app.evaluate(`window.valendo.dispatch({ type: 'transport/seekWords', delta: 40 })`)
+  await wait(600)
+
+  /*
+   * Avança até a marca cair sobre uma palavra de verdade.
+   *
+   * Entre dois parágrafos existe uma linha em branco, que é diagramação e não
+   * texto. Parando ali, "a palavra sob a marca" é string vazia — e comparar
+   * vazio com vazio não prova nada, enquanto sair do vazio acusa um erro que
+   * não houve. A garantia só é mensurável onde há palavra.
+   */
+  for (let i = 0; i < 10; i += 1) {
+    const { word, dentro } = await app.evaluate(READ)
+    // longe das bordas: encostada no fim de uma linha, a marca escorrega para a
+    // linha de baixo com qualquer mudança de corpo, e o teste acusaria deriva
+    // onde houve arredondamento
+    if (word && word.trim() && dentro > 0.2 && dentro < 0.8) return
+    await app.evaluate(`window.valendo.dispatch({ type: 'transport/seekWords', delta: 3 })`)
+    await wait(300)
+  }
 }
 
 // 1. edição acima do ponto de leitura
@@ -115,12 +174,14 @@ await parkMidScript()
 const beforeEdit = await app.evaluate(READ)
 check('marca sobre uma linha', beforeEdit.index >= 0, `index=${beforeEdit.index}`)
 
+// o cursor no começo do roteiro, e o texto entra ACIMA do ponto de leitura —
+// que é justamente o caso que o app existe para aguentar
 await app.evaluate(`(() => {
   const ta = document.querySelector('textarea')
-  const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
-  setter.call(ta, 'PARAGRAFO DE TESTE NO TOPO.\\n\\nOUTRO PARAGRAFO DE TESTE.\\n\\n' + ta.value)
-  ta.dispatchEvent(new Event('input', { bubbles: true }))
+  ta.focus()
+  ta.setSelectionRange(0, 0)
 })()`)
+await app.type('PARAGRAFO DE TESTE NO TOPO.\n\nOUTRO PARAGRAFO DE TESTE.\n\n')
 await wait(900)
 
 const afterEdit = await app.evaluate(READ)

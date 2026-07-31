@@ -1,7 +1,6 @@
-import { app, protocol, net } from 'electron'
+import { app, protocol } from 'electron'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { extname, join, basename } from 'node:path'
-import { pathToFileURL } from 'node:url'
 import type { Cartao } from '@shared/types'
 
 export const PROTOCOLO = 'valendo'
@@ -94,7 +93,12 @@ export function registerCardProtocol(): void {
     const caminho = cardPath(arquivo)
     if (!arquivo || !existsSync(caminho)) return new Response('não encontrado', { status: 404 })
 
-    return net.fetch(pathToFileURL(caminho).toString(), { headers: { 'Cache-Control': 'no-store' } })
+    // os bytes direto, sem passar por `net.fetch` com file://: assim o tipo do
+    // conteúdo é o que este módulo já sabe, e não o que outro componente
+    // adivinha
+    return new Response(readFileSync(caminho), {
+      headers: { 'Content-Type': cardMimeType(arquivo), 'Cache-Control': 'no-store' }
+    })
   })
 }
 
