@@ -101,29 +101,34 @@ export function StatusBar({
   }
 
   return (
-    <footer className="flex flex-none items-center gap-4 border-t border-[var(--color-line)] bg-[var(--color-ink-1)] px-3 py-2 text-[11px]">
-      <ModeSwitch mode={state.layoutMode} onChange={onModeChange} />
-      <div className="h-8 w-px flex-none bg-[var(--color-line)]" />
+    <footer className="relative flex flex-none items-center border-t border-[var(--color-line)] bg-[var(--color-ink-1)] px-3 py-2 text-[11px]">
+      <div className="flex items-center gap-4">
+        {/* decorrido e restante saíram daqui: agora estão no mostrador da barra de
+            cima, em corpo grande. Repetir os mesmos números em dois lugares só
+            ensina o olho a não confiar em nenhum dos dois */}
+        <Cell label="Palavras" value={spoken.toLocaleString('pt-BR')} />
+        <Cell label="Duração" value={formatClock(total)} />
 
-      {/* decorrido e restante saíram daqui: agora estão no mostrador da barra de
-          cima, em corpo grande. Repetir os mesmos números em dois lugares só
-          ensina o olho a não confiar em nenhum dos dois */}
-      <Cell label="Palavras" value={spoken.toLocaleString('pt-BR')} />
-      <Cell label="Duração" value={formatClock(total)} />
+        <label className="flex items-center gap-1.5">
+          <span className="text-[var(--color-fog-2)]">Duração-alvo</span>
+          <input
+            value={target}
+            onChange={(event) => setTarget(event.target.value)}
+            onBlur={applyTarget}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') applyTarget()
+            }}
+            placeholder="2:00"
+            className="w-14 rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-1.5 py-0.5 text-center outline-none"
+          />
+        </label>
+      </div>
 
-      <label className="flex items-center gap-1.5">
-        <span className="text-[var(--color-fog-2)]">Duração-alvo</span>
-        <input
-          value={target}
-          onChange={(event) => setTarget(event.target.value)}
-          onBlur={applyTarget}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') applyTarget()
-          }}
-          placeholder="2:00"
-          className="w-14 rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-1.5 py-0.5 text-center outline-none"
-        />
-      </label>
+      {/* centralizado de verdade — `absolute` em vez de flex/auto-margin, para
+          não depender de quanto os grupos dos dois lados pesam */}
+      <div className="absolute left-1/2 -translate-x-1/2">
+        <ModeSwitch mode={state.layoutMode} onChange={onModeChange} />
+      </div>
 
       <div className="ml-auto flex items-center gap-4 text-[var(--color-fog-2)]">
         {/* dizer que está gravando é tão importante quanto dizer que falhou:
