@@ -1,5 +1,6 @@
 import { formatClock, secondsForWords } from '@shared/pacing'
 import type { RundownMarker, Segment } from '@shared/rundown'
+import { useT } from '../../i18n'
 
 interface Props {
   segments: Segment[]
@@ -40,6 +41,7 @@ function pct(value: number, total: number): string {
  * cima — não um resumo, o mesmo relógio que move a marca de leitura na tela.
  */
 export function Timeline({ segments, totalRuler, currentRuler, currentIndex, ppm, onSeek }: Props): React.JSX.Element {
+  const { t } = useT()
   const totalSeconds = secondsForWords(totalRuler, ppm)
   const step = niceStep(totalSeconds)
   const marcas: number[] = []
@@ -49,7 +51,7 @@ export function Timeline({ segments, totalRuler, currentRuler, currentIndex, ppm
     <div data-timeline className="flex flex-none flex-col gap-1.5 border-b border-[var(--color-line)] px-4 py-3">
       <div className="flex items-baseline justify-between">
         <span className="font-mono text-[10px] tracking-[0.12em] text-[var(--color-fog-2)] uppercase">
-          Linha do tempo do programa
+          {t('deck.timeline')}
         </span>
         <span className="font-mono text-[11px] text-[var(--color-fog-2)]">
           <span className="text-[var(--color-fog-0)]">{formatClock(secondsForWords(currentRuler, ppm))}</span> de{' '}

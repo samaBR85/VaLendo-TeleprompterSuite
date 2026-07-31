@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Action } from '@shared/actions'
 import type { AppState } from '@shared/types'
+import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function Tabs({ state, dispatch }: Props): React.JSX.Element {
+  const { t } = useT()
   const [editing, setEditing] = useState<string | null>(null)
 
   return (
@@ -48,7 +50,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
             {state.tabs.length > 1 ? (
               <button
                 type="button"
-                aria-label={`Fechar ${tab.title}`}
+                aria-label={t('tabs.close', { title: tab.title })}
                 onClick={(event) => {
                   event.stopPropagation()
                   dispatch({ type: 'tab/close', tabId: tab.id })
@@ -65,15 +67,15 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
       {state.tabs.length < 10 ? (
         <button
           type="button"
-          aria-label="Nova aba"
-          title="Nova aba · Ctrl+T"
+          aria-label={t('tabs.new')}
+          title={t('tabs.new.hint')}
           onClick={() => dispatch({ type: 'tab/add' })}
           className="flex-none rounded-md p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-2)] hover:text-[var(--color-fog-0)]"
         >
           <Icon name="plus" size={20} />
         </button>
       ) : (
-        <span className="flex-none px-1 text-[13px] text-[var(--color-fog-2)]">10 abas</span>
+        <span className="flex-none px-1 text-[13px] text-[var(--color-fog-2)]">{t('tabs.max')}</span>
       )}
     </div>
   )

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { COMMANDS, formatBinding, parseBinding } from '@shared/commands'
+import { useT } from '../i18n'
 import { Modal } from '../ui/Modal'
 
 interface Props {
@@ -16,6 +17,7 @@ function normalize(text: string): string {
 }
 
 export function CommandPalette({ keymap, onRun, onClose }: Props): React.JSX.Element {
+  const { t, tc } = useT()
   const [query, setQuery] = useState('')
   const [cursor, setCursor] = useState(0)
   const isMac = window.valendo.platform === 'darwin'
@@ -25,9 +27,11 @@ export function CommandPalette({ keymap, onRun, onClose }: Props): React.JSX.Ele
     const visible = COMMANDS.filter((command) => !command.hidden)
     if (!needle) return visible
     return visible.filter(
-      (command) => normalize(command.label).includes(needle) || normalize(command.group).includes(needle)
+      (command) => normalize(tc(command.id)).includes(needle) || normalize(t(`group.${command.group}`)).includes(needle)
     )
-  }, [query])
+    // a busca precisa refazer quando o idioma muda: ela procura no texto
+    // traduzido, não no id
+  }, [query, tc, t])
 
   const index = Math.min(cursor, Math.max(0, results.length - 1))
   const selected = results[index]
@@ -47,7 +51,7 @@ export function CommandPalette({ keymap, onRun, onClose }: Props): React.JSX.Ele
   }
 
   return (
-    <Modal title="Paleta de comandos" subtitle="Tudo que o app faz, sem tirar a mão do teclado" onClose={onClose}>
+    <Modal title={t('palette.title')} subtitle={t('palette.subtitle')} onClose={onClose}>
       <input
         autoFocus
         value={query}
@@ -56,14 +60,14 @@ export function CommandPalette({ keymap, onRun, onClose }: Props): React.JSX.Ele
           setCursor(0)
         }}
         onKeyDown={onKeyDown}
-        placeholder="Digite para filtrar"
+        placeholder={t('palette.filter')}
         className="border-b border-[var(--color-line)] bg-transparent px-3.5 py-2.5 text-[13px] outline-none"
       />
 
       <div className="min-h-0 flex-1 overflow-y-auto py-1">
         {results.length === 0 ? (
           <div className="px-3.5 py-6 text-center text-[11px] text-[var(--color-fog-2)]">
-            Nenhum comando com esse nome
+            {t('palette.none')}
           </div>
         ) : (
           results.map((command, position) => {
@@ -81,8 +85,10 @@ export function CommandPalette({ keymap, onRun, onClose }: Props): React.JSX.Ele
                   position === index ? 'bg-[var(--color-ink-3)]' : ''
                 }`}
               >
-                <span className="w-[86px] flex-none text-[11px] text-[var(--color-fog-2)]">{command.group}</span>
-                <span className="flex-1 truncate">{command.label}</span>
+                <span className="w-[86px] flex-none text-[11px] text-[var(--color-fog-2)]">
+                  {t(`group.${command.group}`)}
+                </span>
+                <span className="flex-1 truncate">{tc(command.id)}</span>
                 {binding ? (
                   <kbd className="flex-none rounded border border-[var(--color-line)] px-1.5 py-0.5 text-[10px] text-[var(--color-fog-1)]">
                     {formatBinding(binding, isMac)}

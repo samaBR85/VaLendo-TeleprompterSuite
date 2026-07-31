@@ -7,6 +7,7 @@ import { EXPORT_FILTERS, defaultFileName, exportScript } from './export'
 import { PROJECT_FILTERS, openProject, projectFileName, saveProject } from './project'
 import { onWebviewChange, publish, startWebview, stopWebview, webviewInfo } from './webview'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
+import { traduzir } from '@shared/i18n'
 import { Store } from './state'
 import { flushState, onStorageHealth, storageHealth } from './storage'
 import { buildBroadcastMenu } from './broadcastMenu'
@@ -24,6 +25,11 @@ import {
 } from './windows'
 
 const store = new Store()
+
+/** Traduz no idioma que o operador escolheu — o main também fala com ele. */
+function idioma(chave: Parameters<typeof traduzir>[1], valores?: Record<string, string | number>): string {
+  return traduzir(store.getState().language, chave, valores)
+}
 
 /** Assinatura da saída, para abrir e fechar a janela só quando algo realmente muda. */
 function outputSignature(state: AppState): string {
@@ -70,6 +76,7 @@ function syncWebview(state: AppState): void {
 
   const tab = state.tabs.find((t) => t.id === state.activeTabId) ?? state.tabs[0]
   publish({
+    language: state.language,
     blocks: tab.blocks,
     appearance: tab.appearance,
     transport: state.transport,
@@ -89,7 +96,7 @@ function registerIpc(): void {
     const owner = getOperatorWindow()
     const picked = owner
       ? await dialog.showOpenDialog(owner, {
-          title: 'Importar roteiro',
+          title: idioma('main.importTitle'),
           properties: ['openFile'],
           filters: IMPORT_FILTERS
         })
@@ -101,9 +108,9 @@ function registerIpc(): void {
       return await importFile(picked.filePaths[0])
     } catch (error) {
       return {
-        title: 'Falha na importação',
+        title: idioma('main.importFail'),
         text: '',
-        warnings: [`Não deu para ler o arquivo: ${(error as Error).message}`]
+        warnings: [idioma('main.importFailDetail', { erro: (error as Error).message })]
       }
     }
   })
@@ -120,7 +127,7 @@ function registerIpc(): void {
     if (!target) {
       const owner = getOperatorWindow()
       const options = {
-        title: 'Salvar roteiro',
+        title: idioma('main.saveScriptTitle'),
         defaultPath: tab.exportPath || defaultFileName(tab.title),
         filters: EXPORT_FILTERS
       }
@@ -146,7 +153,7 @@ function registerIpc(): void {
     const ativa = state.tabs.find((t) => t.id === state.activeTabId)
     const owner = getOperatorWindow()
     const options = {
-      title: 'Salvar projeto',
+      title: idioma('main.saveProjectTitle'),
       defaultPath: projectFileName(ativa?.title ?? 'projeto'),
       filters: PROJECT_FILTERS
     }
@@ -164,7 +171,7 @@ function registerIpc(): void {
   ipcMain.handle(CHANNELS.projectOpen, async (): Promise<ProjectResult | null> => {
     const owner = getOperatorWindow()
     const options = {
-      title: 'Abrir projeto',
+      title: idioma('main.openProjectTitle'),
       properties: ['openFile' as const],
       filters: PROJECT_FILTERS
     }
@@ -173,7 +180,7 @@ function registerIpc(): void {
 
     const caminho = picked.filePaths[0]
     const { state, error } = await openProject(caminho)
-    if (!state) return { ok: false, path: caminho, error: error ?? 'Não deu para abrir o projeto.' }
+    if (!state) return { ok: false, path: caminho, error: error ?? idioma('project.cantOpen') }
 
     store.dispatch({ type: 'project/replace', state })
     return { ok: true, path: caminho }

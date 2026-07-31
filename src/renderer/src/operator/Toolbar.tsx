@@ -5,6 +5,7 @@ import { formatBinding, parseBinding } from '@shared/commands'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import type { AppState, DisplayInfo, Tab } from '@shared/types'
 import { Icon, type IconName } from '../ui/Icon'
+import { useT } from '../i18n'
 import { SpeedRuler } from './SpeedRuler'
 
 interface Props {
@@ -183,6 +184,7 @@ export function Toolbar({
   webviewLive,
   onOpenWebview
 }: Props): React.JSX.Element {
+  const { t } = useT()
   const { transport, output } = state
   const now = useNow()
 
@@ -206,29 +208,29 @@ export function Toolbar({
               mas os dois são arquivo, e uma caixa por grupo picotava a barra.
               O projeto vem primeiro porque é o que contém o outro */}
           <Pill name="documento" className="toolbar-grp-doc">
-            <Grupo label="Projeto">
+            <Grupo label={t('toolbar.group.project')}>
               <Tool
                 icon="projectOpen"
-                label={`Abrir um projeto${hint(keymap, 'project.open')}`}
+                label={`${t('toolbar.openProject')}${hint(keymap, 'project.open')}`}
                 onClick={() => run('project.open')}
               />
               <Tool
                 icon="project"
-                label={`Salvar o projeto inteiro — abas, aparência, marcadores e ritmo${hint(keymap, 'project.save')}`}
+                label={`${t('toolbar.saveProject')}${hint(keymap, 'project.save')}`}
                 onClick={() => run('project.save')}
               />
             </Grupo>
 
             <Divisoria />
 
-            <Grupo label="Roteiro">
-              <Tool icon="import" label="Importar roteiro (txt, md, docx, pdf)" onClick={onImport} />
+            <Grupo label={t('toolbar.group.script')}>
+              <Tool icon="import" label={t('toolbar.import')} onClick={onImport} />
               <Tool
                 icon="export"
                 label={
                   tab.exportPath
-                    ? `Salvar o roteiro em ${fileName(tab.exportPath)}${hint(keymap, 'document.save')}`
-                    : `Salvar o roteiro num arquivo — só o texto${hint(keymap, 'document.save')}`
+                    ? `${t('toolbar.saveScriptTo', { file: fileName(tab.exportPath) })}${hint(keymap, 'document.save')}`
+                    : `${t('toolbar.saveScript')}${hint(keymap, 'document.save')}`
                 }
                 onClick={() => run('document.save')}
               />
@@ -237,24 +239,24 @@ export function Toolbar({
 
           <div className="toolbar-grp-ar flex flex-none items-center gap-2">
             <Pill name="ar">
-              <Grupo label="Ar">
+              <Grupo label={t('toolbar.group.air')}>
                 <Tool
                   icon="blackout"
-                  label={`Tela preta${hint(keymap, 'output.blackout')}`}
+                  label={`${t('toolbar.blackout')}${hint(keymap, 'output.blackout')}`}
                   active={transport.blackout}
                   danger
                   onClick={() => run('output.blackout')}
                 />
                 <Tool
                   icon="freeze"
-                  label={`Congelar a saída${hint(keymap, 'transport.freeze')}`}
+                  label={`${t('toolbar.freeze')}${hint(keymap, 'transport.freeze')}`}
                   active={transport.frozen}
                   tint="#378ADD"
                   onClick={() => run('transport.freeze')}
                 />
                 <Tool
                   icon="monitor"
-                  label="Mostra um número grande em cada monitor"
+                  label={t('toolbar.identify')}
                   tint="#7F77DD"
                   onClick={() => window.valendo.identifyDisplays()}
                 />
@@ -265,8 +267,8 @@ export function Toolbar({
                   icon="webview"
                   label={
                     webviewLive
-                      ? 'Publicado na rede local — quem está no wi-fi acompanha a leitura'
-                      : 'Ver na rede local'
+                      ? t('toolbar.webviewOn')
+                      : t('toolbar.webviewOff')
                   }
                   active={webviewLive}
                   tint="#1D9E75"
@@ -287,11 +289,11 @@ export function Toolbar({
               }}
               className="max-w-[190px] flex-none rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1.5 text-[11px]"
             >
-              <option value="">Escolha o monitor</option>
+              <option value="">{t('toolbar.pickMonitor')}</option>
               {displays.map((display) => (
                 <option key={display.id} value={display.id}>
                   {display.label}
-                  {display.primary ? ' · principal' : ''}
+                  {display.primary ? ` · ${t('toolbar.primary')}` : ''}
                 </option>
               ))}
             </select>
@@ -311,7 +313,7 @@ export function Toolbar({
                   : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
               }`}
             >
-              {output.enabled ? 'Transmitindo' : 'Transmitir'}
+              {output.enabled ? t('toolbar.broadcasting') : t('toolbar.broadcast')}
             </button>
           </div>
         </div>
@@ -319,17 +321,17 @@ export function Toolbar({
         {/* fila do que se toca a cada segundo com a transmissão correndo */}
         <div className="toolbar-fila">
           <div className="toolbar-grp-transporte flex flex-none items-center gap-1.5">
-            <Tool icon="restart" label={`Voltar ao início${hint(keymap, 'transport.restart')}`} size="grande" onClick={() => run('transport.restart')} />
-            <Tool icon="up" label={`Recuar${hint(keymap, 'transport.jumpBack')}`} size="grande" onClick={() => run('transport.jumpBack')} />
+            <Tool icon="restart" label={`${t('toolbar.restart')}${hint(keymap, 'transport.restart')}`} size="grande" onClick={() => run('transport.restart')} />
+            <Tool icon="up" label={`${t('toolbar.back')}${hint(keymap, 'transport.jumpBack')}`} size="grande" onClick={() => run('transport.jumpBack')} />
             <Tool
               icon={transport.playing ? 'pause' : 'play'}
-              label={`${transport.playing ? 'Pausar' : 'Iniciar'}${hint(keymap, 'transport.playPause')}`}
+              label={`${transport.playing ? t('toolbar.pause') : t('toolbar.play')}${hint(keymap, 'transport.playPause')}`}
               size="principal"
               go
               onClick={() => run('transport.playPause')}
             />
-            <Tool icon="down" label={`Avançar${hint(keymap, 'transport.jumpForward')}`} size="grande" onClick={() => run('transport.jumpForward')} />
-            <Tool icon="marker" label={`Criar marcador${hint(keymap, 'marker.create')}`} size="grande" onClick={() => run('marker.create')} />
+            <Tool icon="down" label={`${t('toolbar.forward')}${hint(keymap, 'transport.jumpForward')}`} size="grande" onClick={() => run('transport.jumpForward')} />
+            <Tool icon="marker" label={`${t('toolbar.marker')}${hint(keymap, 'marker.create')}`} size="grande" onClick={() => run('marker.create')} />
           </div>
 
           {/* o mostrador: o que o operador lê de relance, do outro lado da sala */}
@@ -341,9 +343,9 @@ export function Toolbar({
                 <span>500</span>
               </div>
             </div>
-            <Campo value={String(transport.ppm)} unit="ppm" wide />
-            <Campo value={formatClock(elapsed)} unit="decorrido" tone="var(--color-go)" />
-            <Campo value={`−${formatClock(Math.max(0, total - elapsed))}`} unit="restante" tone="var(--color-live)" />
+            <Campo value={String(transport.ppm)} unit={t('toolbar.ppm')} wide />
+            <Campo value={formatClock(elapsed)} unit={t('toolbar.elapsed')} tone="var(--color-go)" />
+            <Campo value={`−${formatClock(Math.max(0, total - elapsed))}`} unit={t('toolbar.remaining')} tone="var(--color-live)" />
           </div>
         </div>
       </div>

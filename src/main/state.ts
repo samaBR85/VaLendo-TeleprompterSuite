@@ -1,3 +1,4 @@
+import { app } from 'electron'
 import type { Action, HistoryInfo } from '@shared/actions'
 import {
   anchorFromWordIndex,
@@ -72,7 +73,7 @@ export class Store {
     this.defaults = loaded.defaults
     // recalculado na abertura, nunca lido do workspace: o arquivo de padrões
     // pode ter sido apagado com o app fechado
-    this.state = { ...loadState(loaded.defaults), customDefaults: loaded.custom }
+    this.state = { ...loadState(loaded.defaults, app.getLocale()), customDefaults: loaded.custom }
   }
 
   getState(): AppState {
@@ -393,6 +394,10 @@ export class Store {
         this.mutateTab(action.tabId, `renomear:${action.tabId}`, (draft) => {
           draft.title = action.title.slice(0, 40) || 'Sem título'
         })
+        break
+
+      case 'app/language':
+        this.state = { ...this.state, language: action.language }
         break
 
       case 'layout/mode':

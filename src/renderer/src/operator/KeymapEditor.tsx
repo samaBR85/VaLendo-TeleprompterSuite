@@ -3,11 +3,13 @@ import type { Action } from '@shared/actions'
 import {
   COMMANDS,
   COMMANDS_BY_ID,
+  type CommandGroup,
   findConflicts,
   formatBinding,
   parseBinding,
   serializeBinding
 } from '@shared/commands'
+import { useT } from '../i18n'
 import { Modal } from '../ui/Modal'
 import { bindingFromEvent } from './keys'
 
@@ -19,6 +21,7 @@ interface Props {
 }
 
 export function KeymapEditor({ keymap, overrides, dispatch, onClose }: Props): React.JSX.Element {
+  const { t, tc } = useT()
   const [capturing, setCapturing] = useState<string | null>(null)
   const isMac = window.valendo.platform === 'darwin'
 
@@ -62,7 +65,7 @@ export function KeymapEditor({ keymap, overrides, dispatch, onClose }: Props): R
   }, [capturing, dispatch, isMac])
 
   const groups = useMemo(() => {
-    const map = new Map<string, typeof COMMANDS>()
+    const map = new Map<CommandGroup, typeof COMMANDS>()
     for (const command of COMMANDS) {
       const list = map.get(command.group) ?? []
       list.push(command)
@@ -73,8 +76,8 @@ export function KeymapEditor({ keymap, overrides, dispatch, onClose }: Props): R
 
   return (
     <Modal
-      title="Atalhos"
-      subtitle="Clique na tecla para regravar. Esc cancela a captura."
+      title={t('keymap.title')}
+      subtitle={t('keymap.subtitle')}
       width={620}
       onClose={onClose}
     >
@@ -82,7 +85,7 @@ export function KeymapEditor({ keymap, overrides, dispatch, onClose }: Props): R
         {groups.map(([group, commands]) => (
           <section key={group}>
             <div className="sticky top-0 bg-[var(--color-ink-1)] px-3.5 pt-3 pb-1 text-[11px] font-medium text-[var(--color-fog-2)]">
-              {group}
+              {t(`group.${group}`)}
             </div>
             {commands.map((command) => {
               const text = keymap.get(command.id) ?? command.defaultBinding
@@ -92,14 +95,14 @@ export function KeymapEditor({ keymap, overrides, dispatch, onClose }: Props): R
 
               return (
                 <div key={command.id} className="flex items-center gap-3 px-3.5 py-1">
-                  <span className="flex-1 truncate text-[12px]">{command.label}</span>
+                  <span className="flex-1 truncate text-[12px]">{tc(command.id)}</span>
 
                   {clash?.length ? (
                     <span
-                      title={clash.map((id) => COMMANDS_BY_ID.get(id)?.label ?? id).join(', ')}
+                      title={clash.map((id) => (COMMANDS_BY_ID.has(id) ? tc(id) : id)).join(', ')}
                       className="flex-none rounded bg-[var(--color-live)]/16 px-1.5 py-0.5 text-[10px] text-[var(--color-live)]"
                     >
-                      em conflito
+                      {t('keymap.conflict')}
                     </span>
                   ) : null}
 
@@ -109,7 +112,7 @@ export function KeymapEditor({ keymap, overrides, dispatch, onClose }: Props): R
                       onClick={() => dispatch({ type: 'keymap/set', commandId: command.id, binding: null })}
                       className="flex-none text-[10px] text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
                     >
-                      padrão
+                      {t('keymap.default')}
                     </button>
                   ) : null}
 
@@ -124,7 +127,7 @@ export function KeymapEditor({ keymap, overrides, dispatch, onClose }: Props): R
                           : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
                     }`}
                   >
-                    {capturing === command.id ? 'tecle agora…' : binding ? formatBinding(binding, isMac) : text}
+                    {capturing === command.id ? t('keymap.press') : binding ? formatBinding(binding, isMac) : text}
                   </button>
                 </div>
               )

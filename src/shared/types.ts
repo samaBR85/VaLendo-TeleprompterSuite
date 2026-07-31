@@ -1,3 +1,5 @@
+import type { Lang } from './i18n/types'
+
 /** Bloco de texto. `direction` são anotações em [colchetes], que não contam tempo. */
 export type BlockKind = 'speech' | 'direction' | 'chapter'
 
@@ -174,6 +176,11 @@ export type LayoutMode = 'split' | 'focus' | 'deck'
 export interface AppState {
   tabs: Tab[]
   activeTabId: string
+  /**
+   * Idioma da interface. Do app inteiro, não da aba: é cromo do programa, e
+   * não uma escolha de aparência do roteiro.
+   */
+  language: Lang
   layoutMode: LayoutMode
   /** painel de ajustes da direita */
   inspectorVisible: boolean

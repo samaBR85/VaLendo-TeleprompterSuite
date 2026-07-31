@@ -6,6 +6,8 @@ import { formatClock, ppmForTarget, secondsForWords } from '@shared/pacing'
 import { totalWordCount } from '@shared/text'
 import type { AppState, LayoutMode, Tab } from '@shared/types'
 import { Icon, type IconName } from '../ui/Icon'
+import type { Chave } from '@shared/i18n'
+import { useT } from '../i18n'
 import { versionLabel } from '../ui/Wordmark'
 
 interface Props {
@@ -19,14 +21,15 @@ interface Props {
   onModeChange: (mode: LayoutMode) => void
 }
 
-const MODOS: { mode: LayoutMode; label: string; icon: IconName; hint: string }[] = [
-  { mode: 'split', label: 'Split', icon: 'layoutSplit', hint: 'edição e transmissão lado a lado' },
-  { mode: 'focus', label: 'Foco', icon: 'layoutFocus', hint: 'transmissão em largura total · F11' },
-  { mode: 'deck', label: 'Mesa', icon: 'layoutDeck', hint: 'linha do tempo e rundown de um programa com vários blocos' }
+const MODOS: { mode: LayoutMode; icon: IconName; rotulo: 'mode.split' | 'mode.focus' | 'mode.deck' }[] = [
+  { mode: 'split', icon: 'layoutSplit', rotulo: 'mode.split' },
+  { mode: 'focus', icon: 'layoutFocus', rotulo: 'mode.focus' },
+  { mode: 'deck', icon: 'layoutDeck', rotulo: 'mode.deck' }
 ]
 
 /** Split, Foco e Mesa são jeitos de olhar para o mesmo roteiro, não documentos diferentes. */
 function ModeSwitch({ mode, onChange }: { mode: LayoutMode; onChange: (mode: LayoutMode) => void }): React.JSX.Element {
+  const { t } = useT()
   return (
     <div
       data-mode-switch
@@ -37,7 +40,7 @@ function ModeSwitch({ mode, onChange }: { mode: LayoutMode; onChange: (mode: Lay
           key={item.mode}
           type="button"
           data-mode={item.mode}
-          title={`${item.label} — ${item.hint}`}
+          title={`${t(item.rotulo)} — ${t(`${item.rotulo}.hint` as Chave)}`}
           onClick={() => onChange(item.mode)}
           className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-[11px] transition-colors ${
             mode === item.mode
@@ -46,7 +49,7 @@ function ModeSwitch({ mode, onChange }: { mode: LayoutMode; onChange: (mode: Lay
           }`}
         >
           <Icon name={item.icon} size={15} />
-          {item.label}
+          {t(item.rotulo)}
         </button>
       ))}
     </div>
@@ -81,6 +84,7 @@ export function StatusBar({
   onOpenCredits,
   onModeChange
 }: Props): React.JSX.Element {
+  const { t, tp, lang } = useT()
   const [target, setTarget] = useState('')
 
   // "Palavras" é a contagem de fala de verdade. A régua de rolagem é outra
@@ -106,11 +110,11 @@ export function StatusBar({
         {/* decorrido e restante saíram daqui: agora estão no mostrador da barra de
             cima, em corpo grande. Repetir os mesmos números em dois lugares só
             ensina o olho a não confiar em nenhum dos dois */}
-        <Cell label="Palavras" value={spoken.toLocaleString('pt-BR')} />
-        <Cell label="Duração" value={formatClock(total)} />
+        <Cell label={t('status.words')} value={spoken.toLocaleString(lang)} />
+        <Cell label={t('status.duration')} value={formatClock(total)} />
 
         <label className="flex items-center gap-1.5">
-          <span className="text-[var(--color-fog-2)]">Duração-alvo</span>
+          <span className="text-[var(--color-fog-2)]">{t('status.target')}</span>
           <input
             value={target}
             onChange={(event) => setTarget(event.target.value)}
@@ -136,17 +140,17 @@ export function StatusBar({
         <span
           data-storage
           style={storage.problem ? { color: 'var(--color-warn)' } : undefined}
-          title={storage.problem ?? 'O trabalho está sendo gravado no disco'}
+          title={storage.problem ?? t('status.savedHint')}
         >
-          {storage.problem ? 'não está salvando' : 'salvo'}
+          {storage.problem ? t('status.notSaved') : t('status.saved')}
         </span>
-        <span>{tab.markers.length} marcadores</span>
-        <span>{history.depth.toLocaleString('pt-BR')} passos de desfazer</span>
-        <span>Ctrl+K comandos</span>
+        <span>{tp('status.markers', tab.markers.length)}</span>
+        <span>{tp('status.undo', history.depth)}</span>
+        <span>{t('status.paletteHint')}</span>
         <button
           type="button"
           onClick={onOpenCredits}
-          title="Créditos"
+          title={t('app.credits')}
           className="tabular-nums hover:text-[var(--color-fog-0)]"
         >
           {versionLabel()}

@@ -1,3 +1,4 @@
+import { traduzir, type Lang } from './i18n'
 import type { Appearance, AppState, ColorPreset, Tab } from './types'
 import { blocksFromText } from './text'
 
@@ -44,25 +45,34 @@ export const DEFAULT_APPEARANCE: Appearance = {
   }
 }
 
-export const DEFAULT_PRESETS: ColorPreset[] = [
-  { id: 'classico', name: 'Clássico', textColor: '#FFFFFF', bgColor: '#000000' },
-  { id: 'papel', name: 'Papel', textColor: '#111111', bgColor: '#FFFFFF' },
-  { id: 'ambar', name: 'Âmbar', textColor: '#FFD79A', bgColor: '#1A1206' },
-  { id: 'noite', name: 'Azul noite', textColor: '#DCE9FF', bgColor: '#04142B' },
-  { id: 'baixocontraste', name: 'Suave', textColor: '#D8D8D2', bgColor: '#16181A' }
-]
+/**
+ * As paletas nascem com o nome no idioma da instalação.
+ *
+ * Nome é dado, não interface: fica gravado no workspace e no .valendo. Por
+ * isso é traduzido na hora de criar, e não a cada desenho — trocar o idioma
+ * depois não renomeia paleta que já está salva, do mesmo jeito que não
+ * renomeia aba que o operador batizou.
+ */
+export function presetsPadrao(lang: Lang = 'pt-BR'): ColorPreset[] {
+  return [
+    { id: 'classico', name: traduzir(lang, 'content.preset.classic'), textColor: '#FFFFFF', bgColor: '#000000' },
+    { id: 'papel', name: traduzir(lang, 'content.preset.paper'), textColor: '#111111', bgColor: '#FFFFFF' },
+    { id: 'ambar', name: traduzir(lang, 'content.preset.amber'), textColor: '#FFD79A', bgColor: '#1A1206' },
+    { id: 'noite', name: traduzir(lang, 'content.preset.night'), textColor: '#DCE9FF', bgColor: '#04142B' },
+    { id: 'baixocontraste', name: traduzir(lang, 'content.preset.soft'), textColor: '#D8D8D2', bgColor: '#16181A' }
+  ]
+}
+
+export const DEFAULT_PRESETS: ColorPreset[] = presetsPadrao('pt-BR')
 
 export const SPEED_PRESETS = [110, 148, 190]
 
-export const SAMPLE_TEXT = [
-  '§ Abertura',
-  'Boa noite. Hoje a gente vai falar sobre uma mudança que já está acontecendo nos estúdios do país inteiro.',
-  '[olhar câmera 2 · pausa]',
-  'E o mais importante: ninguém precisa mais parar a gravação para corrigir uma frase.',
-  'Vamos ver como isso funciona na prática. Este texto pode ser editado agora, com a transmissão no ar, e a palavra que está sob a marca de leitura não vai se mexer.',
-  '§ Bloco 2',
-  'Experimente: aumente o corpo da fonte, mude a margem, troque as palavras por linha. Nada salta.'
-].join('\n\n')
+/** Roteiro de demonstração, no idioma da instalação. Também é dado, não interface. */
+export function roteiroDeExemplo(lang: Lang = 'pt-BR'): string {
+  return traduzir(lang, 'content.sample')
+}
+
+export const SAMPLE_TEXT = roteiroDeExemplo('pt-BR')
 
 let tabCounter = 0
 
@@ -96,12 +106,19 @@ export function createTab(
 export const TAB_COLORS = ['#E24B4A', '#378ADD', '#1D9E75', '#EF9F27', '#7F77DD', '#D4537E']
 
 export function createInitialState(
-  defaults: { appearance: Appearance; ppm: number } = { appearance: DEFAULT_APPEARANCE, ppm: SPEED_PRESETS[1] }
+  defaults: { appearance: Appearance; ppm: number } = { appearance: DEFAULT_APPEARANCE, ppm: SPEED_PRESETS[1] },
+  lang: Lang = 'pt-BR'
 ): AppState {
-  const tab = createTab('Abertura', SAMPLE_TEXT, TAB_COLORS[0], defaults.appearance)
+  const tab = createTab(
+    traduzir(lang, 'content.firstTab'),
+    roteiroDeExemplo(lang),
+    TAB_COLORS[0],
+    defaults.appearance
+  )
   return {
     tabs: [tab],
     activeTabId: tab.id,
+    language: lang,
     layoutMode: 'split',
     inspectorVisible: true,
     transport: {
@@ -113,7 +130,7 @@ export function createInitialState(
       frozen: false
     },
     output: { displayId: null, enabled: false, viewport: null },
-    presets: DEFAULT_PRESETS,
+    presets: presetsPadrao(lang),
     keymap: {},
     customDefaults: false,
     webview: { enabled: false }

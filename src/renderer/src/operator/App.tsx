@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { InsertKind } from '@shared/insertBlock'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { PrompterStage } from '../prompter/PrompterStage'
+import { LANGS, type Lang } from '@shared/i18n'
+import { ProvedorDeIdioma, useT } from '../i18n'
 import { activeTabOf, useAppState } from '../state/useAppState'
 import { Icon, type IconName } from '../ui/Icon'
 import { Wordmark } from '../ui/Wordmark'
@@ -73,6 +75,77 @@ function EditorTool({
   )
 }
 
+/**
+ * O globo fica com os outros ícones do app — ajustes, atalhos, paleta,
+ * créditos —, e não nos Ajustes: aquele painel é aparência da aba, e idioma é
+ * do programa inteiro. Cada idioma aparece escrito nele mesmo, porque quem
+ * precisa trocar é justamente quem não está lendo o idioma atual.
+ */
+function LanguagePicker({
+  lang,
+  onChange
+}: {
+  lang: Lang
+  onChange: (lang: Lang) => void
+}): React.JSX.Element {
+  const { t } = useT()
+  const [aberto, setAberto] = useState(false)
+  const atual = LANGS.find((l) => l.id === lang) ?? LANGS[0]
+
+  useEffect(() => {
+    if (!aberto) return
+    const fechar = (): void => setAberto(false)
+    // no capture, para fechar antes de qualquer clique de dentro virar ação
+    window.addEventListener('mousedown', fechar)
+    return () => window.removeEventListener('mousedown', fechar)
+  }, [aberto])
+
+  return (
+    <div className="relative" onMouseDown={(event) => event.stopPropagation()}>
+      <button
+        type="button"
+        data-language-picker
+        title={`${t('app.language')} — ${atual.nome}`}
+        aria-label={t('app.language')}
+        onClick={() => setAberto((v) => !v)}
+        className={`flex items-center gap-1 rounded p-2 hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] ${
+          aberto ? 'text-[var(--color-fog-0)]' : 'text-[var(--color-fog-2)]'
+        }`}
+      >
+        <Icon name="globe" size={30} />
+        <span className="font-mono text-[11px] tracking-wide">{atual.sigla}</span>
+      </button>
+
+      {aberto ? (
+        <div
+          data-language-menu
+          className="absolute top-full right-0 z-50 mt-1 w-[190px] overflow-hidden rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] py-1"
+        >
+          {LANGS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              data-language={item.id}
+              onClick={() => {
+                onChange(item.id)
+                setAberto(false)
+              }}
+              className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] hover:bg-[var(--color-ink-3)] ${
+                item.id === lang ? 'text-[var(--color-go)]' : 'text-[var(--color-fog-1)]'
+              }`}
+            >
+              <span className="w-[22px] flex-none font-mono text-[10px] text-[var(--color-fog-2)]">
+                {item.sigla}
+              </span>
+              {item.nome}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 function StorageStrip({
   mark,
   message,
@@ -82,6 +155,7 @@ function StorageStrip({
   message: string
   onDismiss?: () => void
 }): React.JSX.Element {
+  const { t } = useT()
   return (
     <div
       data-strip={mark}
@@ -94,7 +168,7 @@ function StorageStrip({
       {onDismiss ? (
         <button
           type="button"
-          aria-label="Dispensar"
+          aria-label={t('app.dismiss')}
           onClick={onDismiss}
           className="mt-0.5 flex-none opacity-70 hover:opacity-100"
         >
@@ -105,8 +179,33 @@ function StorageStrip({
   )
 }
 
+/**
+ * Casca fina: lê o estado, descobre o idioma e só então monta a interface.
+ *
+ * Precisa ser um componente à parte porque o provedor tem de estar ACIMA de
+ * quem chama `useT()` — se o App inteiro fosse um só, ele leria o contexto
+ * padrão (português) na mesma renderização em que instala o provedor, e a
+ * primeira pintura sairia em português mesmo para quem escolheu alemão.
+ */
 export function App(): React.JSX.Element {
-  const { state, history, displays, rows, storage, webview, dispatch } = useAppState()
+  const dados = useAppState()
+  return (
+    <ProvedorDeIdioma lang={dados.state?.language ?? 'pt-BR'}>
+      <AppConteudo {...dados} />
+    </ProvedorDeIdioma>
+  )
+}
+
+function AppConteudo({
+  state,
+  history,
+  displays,
+  rows,
+  storage,
+  webview,
+  dispatch
+}: ReturnType<typeof useAppState>): React.JSX.Element {
+  const { t } = useT()
   const [webviewOpen, setWebviewOpen] = useState(false)
   const [palette, setPalette] = useState(false)
   const [keymapOpen, setKeymapOpen] = useState(false)
@@ -151,8 +250,8 @@ export function App(): React.JSX.Element {
 
     setNotice(
       result.ok
-        ? { title: 'Roteiro salvo', lines: [result.path], tone: 'ok' }
-        : { title: 'Não deu para salvar', lines: [result.error ?? 'erro desconhecido'], tone: 'warn' }
+        ? { title: t('notice.scriptSaved'), lines: [result.path], tone: 'ok' }
+        : { title: t('notice.scriptFail'), lines: [result.error ?? t('notice.unknownError')], tone: 'warn' }
     )
   }, [])
 
@@ -167,13 +266,13 @@ export function App(): React.JSX.Element {
     setNotice(
       result.ok
         ? {
-            title: acao === 'salvar' ? 'Projeto salvo' : 'Projeto aberto',
+            title: acao === 'salvar' ? t('notice.projectSaved') : t('notice.projectOpened'),
             lines: [result.path],
             tone: 'ok'
           }
         : {
-            title: acao === 'salvar' ? 'Não deu para salvar o projeto' : 'Não deu para abrir o projeto',
-            lines: [result.error ?? 'erro desconhecido'],
+            title: acao === 'salvar' ? t('notice.projectSaveFail') : t('notice.projectOpenFail'),
+            lines: [result.error ?? t('notice.unknownError')],
             tone: 'warn'
           }
     )
@@ -211,7 +310,7 @@ export function App(): React.JSX.Element {
   const { run, keymap } = useCommands(state, rows, dispatch, ui)
 
   if (!state) {
-    return <div className="flex h-full items-center justify-center text-[var(--color-fog-2)]">Carregando…</div>
+    return <div className="flex h-full items-center justify-center text-[var(--color-fog-2)]">{t('app.loading')}</div>
   }
 
   const tab = activeTabOf(state)
@@ -225,15 +324,11 @@ export function App(): React.JSX.Element {
 
   const editorTools = (
     <>
-      <EditorTool icon="chapter" label="Inserir capítulo — vira § no texto" onClick={() => run('insert.chapter')} />
-      <EditorTool
-        icon="direction"
-        label="Inserir direção de cena — vira [colchetes], não é lida"
-        onClick={() => run('insert.direction')}
-      />
+      <EditorTool icon="chapter" label={t('editor.chapter')} onClick={() => run('insert.chapter')} />
+      <EditorTool icon="direction" label={t('editor.direction')} onClick={() => run('insert.direction')} />
       <span className="mx-0.5 h-3.5 w-px bg-[var(--color-line)]" />
-      <EditorTool icon="undo" label="Desfazer" disabled={!history.canUndo} onClick={() => run('edit.undo')} />
-      <EditorTool icon="redo" label="Refazer" disabled={!history.canRedo} onClick={() => run('edit.redo')} />
+      <EditorTool icon="undo" label={t('editor.undo')} disabled={!history.canUndo} onClick={() => run('edit.undo')} />
+      <EditorTool icon="redo" label={t('editor.redo')} disabled={!history.canRedo} onClick={() => run('edit.redo')} />
     </>
   )
 
@@ -285,7 +380,7 @@ export function App(): React.JSX.Element {
       })
     }
     if (result.warnings.length > 0) {
-      setNotice({ title: 'Sobre a importação', lines: result.warnings, tone: 'warn' })
+      setNotice({ title: t('notice.importInfo'), lines: result.warnings, tone: 'warn' })
     }
   }
 
@@ -313,10 +408,14 @@ export function App(): React.JSX.Element {
           <Tabs state={state} dispatch={dispatch} />
         </div>
         <div className="flex flex-none items-center gap-3 text-[13px]">
+          <LanguagePicker
+            lang={state.language}
+            onChange={(language) => dispatch({ type: 'app/language', language })}
+          />
           <button
             type="button"
             onClick={() => dispatch({ type: 'layout/inspector', visible: !state.inspectorVisible })}
-            title="Ajustes"
+            title={t('app.settings')}
             className={`rounded p-2 hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] ${
               state.inspectorVisible ? 'text-[var(--color-fog-0)]' : 'text-[var(--color-fog-2)]'
             }`}
@@ -326,7 +425,7 @@ export function App(): React.JSX.Element {
           <button
             type="button"
             onClick={() => setKeymapOpen(true)}
-            title="Editar atalhos · Ctrl+,"
+            title={t('app.shortcuts')}
             className="rounded p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
             <Icon name="keyboard" size={30} />
@@ -334,7 +433,7 @@ export function App(): React.JSX.Element {
           <button
             type="button"
             onClick={() => setPalette(true)}
-            title="Paleta de comandos · Ctrl+K"
+            title={t('app.palette')}
             className="rounded p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
             <Icon name="search" size={30} />
@@ -342,7 +441,7 @@ export function App(): React.JSX.Element {
           <button
             type="button"
             onClick={() => setCredits(true)}
-            title="Créditos"
+            title={t('app.credits')}
             className="rounded p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
             <Icon name="info" size={30} />
@@ -352,10 +451,10 @@ export function App(): React.JSX.Element {
               o operador precisa achar sem procurar */}
           {state.output.enabled ? (
             <span className="rounded bg-[var(--color-live)]/16 px-3.5 py-1.5 text-[20px] text-[var(--color-live)]">
-              No ar
+              {t('app.onAir')}
             </span>
           ) : (
-            <span className="px-1 text-[20px] text-[var(--color-fog-2)]">fora do ar</span>
+            <span className="px-1 text-[20px] text-[var(--color-fog-2)]">{t('app.offAir')}</span>
           )}
         </div>
       </header>
@@ -401,13 +500,13 @@ export function App(): React.JSX.Element {
         <main className="flex min-h-0 flex-1 flex-col">
           <div className="flex min-h-0 flex-1 flex-col">
             <PanelHeader
-              label="Transmitindo"
+              label={t('panel.broadcasting')}
               detail={`${viewport.width} × ${viewport.height}`}
               action={
                 <button
                   type="button"
                   onClick={toggleFocusMode}
-                  title="Voltar ao split · F11"
+                  title={t('panel.collapse')}
                   className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
                 >
                   <Icon name="collapse" size={14} />
@@ -418,14 +517,14 @@ export function App(): React.JSX.Element {
             {markerStrip}
           </div>
           <div className="flex h-[34%] min-h-0 flex-col border-t border-[var(--color-line)]">
-            <PanelHeader label="Gaveta de edição" detail="edita no ar · F11 recolhe" action={editorTools} />
+            <PanelHeader label={t('panel.drawer')} detail={t('panel.drawer.hint')} action={editorTools} />
             <Editor ref={editorRef} tab={tab} dispatch={dispatch} />
           </div>
         </main>
       ) : (
         <main ref={mainRef} className="flex min-h-0 flex-1">
           <section className="flex min-w-0 flex-col" style={{ flex: `${split} 1 0` }}>
-            <PanelHeader label="Edição" detail="[direções] · § capítulos" action={editorTools} />
+            <PanelHeader label={t('panel.edit')} detail={t('panel.edit.hint')} action={editorTools} />
             <Editor ref={editorRef} tab={tab} dispatch={dispatch} />
           </section>
 
@@ -436,13 +535,13 @@ export function App(): React.JSX.Element {
 
           <section className="flex min-w-0 flex-col" style={{ flex: `${1 - split} 1 0` }}>
             <PanelHeader
-              label="Transmitindo"
+              label={t('panel.broadcasting')}
               detail={`${viewport.width} × ${viewport.height}`}
               action={
                 <button
                   type="button"
                   onClick={toggleFocusMode}
-                  title="Expandir a transmissão · F11"
+                  title={t('panel.expand')}
                   className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
                 >
                   <Icon name="expand" size={14} />
@@ -492,7 +591,7 @@ export function App(): React.JSX.Element {
             </span>
             <button
               type="button"
-              aria-label="Dispensar"
+              aria-label={t('app.dismiss')}
               onClick={() => setNotice(null)}
               className="ml-auto text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
             >

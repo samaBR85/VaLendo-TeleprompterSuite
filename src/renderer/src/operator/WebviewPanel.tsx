@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Action } from '@shared/actions'
 import type { WebviewInfo } from '@shared/api'
+import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
 import { QrCode } from '../ui/QrCode'
 
@@ -16,6 +17,7 @@ interface Props {
  * próprio telefone, sem nenhum programa instalado.
  */
 export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React.JSX.Element {
+  const { t } = useT()
   const [copiado, setCopiado] = useState<string | null>(null)
 
   // "no ar" é o que está acontecendo, não o que foi pedido: com a porta
@@ -42,10 +44,10 @@ export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React
       >
         <div className="mb-4 flex items-center gap-2">
           <Icon name="webview" size={18} />
-          <h2 className="text-[15px] text-[var(--color-fog-0)]">Ver na rede</h2>
+          <h2 className="text-[15px] text-[var(--color-fog-0)]">{t('web.title')}</h2>
           <button
             type="button"
-            aria-label="Fechar"
+            aria-label={t('app.close')}
             onClick={onClose}
             className="ml-auto text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
           >
@@ -54,8 +56,7 @@ export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React
         </div>
 
         <p className="mb-4 text-[12px] leading-relaxed text-[var(--color-fog-1)]">
-          Quem estiver no mesmo wi-fi abre o endereço no navegador e acompanha a leitura ao vivo,
-          igualzinho ao que o apresentador está vendo. Não precisa instalar nada.
+          {t('web.intro')}
         </p>
 
         <button
@@ -68,7 +69,7 @@ export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React
               : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
           }`}
         >
-          <span>{noAr ? 'No ar na rede local' : 'Publicar na rede local'}</span>
+          <span>{noAr ? t('web.live') : t('web.publish')}</span>
           <span
             className={`h-2.5 w-2.5 flex-none rounded-full ${
               noAr ? 'bg-[var(--color-go)]' : 'border border-[var(--color-line)]'
@@ -87,8 +88,8 @@ export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React
             <div className="flex flex-col gap-1.5">
               <div className="text-[11px] text-[var(--color-fog-2)]">
                 {info.addresses.length > 1
-                  ? 'Esta máquina está em mais de uma rede — aponte a câmera para o código da rede em que o telefone está:'
-                  : 'Aponte a câmera do telefone:'}
+                  ? t('web.multiNet')
+                  : t('web.pointCamera')}
               </div>
               {info.addresses.map((address) => {
                 const url = `http://${address}:${info.port}`
@@ -106,7 +107,7 @@ export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React
                         onClick={() => copiar(url)}
                         className="self-start rounded border border-[var(--color-line)] px-2 py-1 text-[11px] text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
                       >
-                        {copiado === url ? 'copiado' : 'copiar'}
+                        {copiado === url ? t('web.copied') : t('web.copy')}
                       </button>
                     </div>
                   </div>
@@ -115,15 +116,14 @@ export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React
             </div>
           ) : (
             <p className="text-[11px] text-[var(--color-warn)]">
-              Esta máquina não está em nenhuma rede. Conecte o cabo ou o wi-fi.
+              {t('web.noNetwork')}
             </p>
           )
         ) : null}
 
         {/* dito uma vez, sem alarde: é uma página aberta, e quem tem o endereço lê */}
         <p className="mt-4 border-t border-[var(--color-line)] pt-3 text-[11px] leading-relaxed text-[var(--color-fog-2)]">
-          Enquanto estiver ligado, qualquer pessoa na mesma rede que souber o endereço consegue ler o
-          roteiro — não há senha. Só a aba que está no ar é publicada; as outras não saem daqui.
+          {t('web.warning')}
         </p>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { WebviewFrame } from '@shared/api'
 import { canvasBox } from '@shared/output'
+import { idiomaDoSistema, traduzir } from '@shared/i18n'
 import { PrompterCanvas } from '../prompter/PrompterCanvas'
 
 const PADRAO = { width: 1_920, height: 1_080 }
@@ -46,6 +47,11 @@ export function Webview(): React.JSX.Element {
     }
   }, [])
 
+  // antes do primeiro quadro não há idioma vindo do app ainda, então a
+  // página cai no idioma do próprio aparelho de quem abriu — depois disso
+  // vale o que o operador escolheu
+  const idioma = quadro?.language ?? idiomaDoSistema(navigator.language)
+
   if (!quadro) {
     return (
       <div
@@ -59,7 +65,7 @@ export function Webview(): React.JSX.Element {
           fontSize: 15
         }}
       >
-        Esperando o VaLendo…
+        {traduzir(idioma, 'web.waiting')}
       </div>
     )
   }
@@ -111,7 +117,7 @@ export function Webview(): React.JSX.Element {
             fontSize: 13
           }}
         >
-          Sem conexão com o VaLendo
+          {traduzir(idioma, 'web.offline')}
         </div>
       ) : null}
     </div>

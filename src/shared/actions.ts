@@ -1,3 +1,4 @@
+import type { Lang } from './i18n/types'
 import type { Anchor, Appearance, AppState, LayoutMode } from './types'
 
 /**
@@ -25,6 +26,7 @@ export type Action =
   | { type: 'tab/close'; tabId: string }
   | { type: 'tab/activate'; tabId: string }
   | { type: 'tab/rename'; tabId: string; title: string }
+  | { type: 'app/language'; language: Lang }
   | { type: 'layout/mode'; mode: LayoutMode }
   | { type: 'layout/inspector'; visible: boolean }
   | { type: 'layout/rows'; tabId: string; rows: number[] }

@@ -1,0 +1,326 @@
+/**
+ * O dicionário de origem. Os outros cinco são `Record<Chave, string>` sobre
+ * este, então esquecer uma chave em alemão vira erro de compilação, e não um
+ * rótulo em português aparecendo no meio da interface em alemão.
+ *
+ * `{x}` é interpolação. Chaves terminadas em `_1` e `_n` são singular e
+ * plural — ver `plural()` em `index.ts`.
+ */
+export const pt = {
+  /* ---------------------------------------------------------- app e janelas */
+  'app.settings': 'Ajustes',
+  'app.shortcuts': 'Editar atalhos',
+  'app.palette': 'Paleta de comandos',
+  'app.credits': 'Créditos',
+  'app.language': 'Idioma',
+  'app.onAir': 'No ar',
+  'app.offAir': 'fora do ar',
+  'app.dismiss': 'Dispensar',
+  'app.close': 'Fechar',
+  'app.loading': 'Carregando…',
+
+  /* ------------------------------------------------------------- modos de ver */
+  'mode.split': 'Split',
+  'mode.split.hint': 'edição e transmissão lado a lado',
+  'mode.focus': 'Foco',
+  'mode.focus.hint': 'transmissão em largura total · F11',
+  'mode.deck': 'Mesa',
+  'mode.deck.hint': 'linha do tempo e rundown de um programa com vários blocos',
+
+  /* ---------------------------------------------------------------- painéis */
+  'panel.edit': 'Edição',
+  'panel.edit.hint': '[direções] · § capítulos',
+  'panel.broadcasting': 'Transmitindo',
+  'panel.drawer': 'Gaveta de edição',
+  'panel.drawer.hint': 'edita no ar · F11 recolhe',
+  'panel.expand': 'Expandir a transmissão · F11',
+  'panel.collapse': 'Voltar ao split · F11',
+  'panel.livePreview': 'Prévia ao vivo',
+
+  /* ----------------------------------------------------------------- editor */
+  'editor.chapter': 'Inserir capítulo — vira § no texto',
+  'editor.direction': 'Inserir direção de cena — vira [colchetes], não é lida',
+  'editor.undo': 'Desfazer',
+  'editor.redo': 'Refazer',
+  'editor.placeholder':
+    'Cole ou digite o roteiro. Onde você quebrar a linha, ela quebra na tela do apresentador. [colchetes] marcam direções, § abre capítulo.',
+
+  /* ------------------------------------------------------------------- abas */
+  'tabs.new': 'Nova aba',
+  'tabs.new.hint': 'Nova aba · Ctrl+T',
+  'tabs.close': 'Fechar {title}',
+  'tabs.max': '10 abas',
+
+  /* --------------------------------------------------------- barra de comando */
+  'toolbar.group.project': 'Projeto',
+  'toolbar.group.script': 'Roteiro',
+  'toolbar.group.air': 'Ar',
+  'toolbar.openProject': 'Abrir um projeto',
+  'toolbar.saveProject': 'Salvar o projeto inteiro — abas, aparência, marcadores e ritmo',
+  'toolbar.import': 'Importar roteiro (txt, md, docx, pdf)',
+  'toolbar.saveScript': 'Salvar o roteiro num arquivo — só o texto',
+  'toolbar.saveScriptTo': 'Salvar o roteiro em {file}',
+  'toolbar.blackout': 'Tela preta',
+  'toolbar.freeze': 'Congelar a saída',
+  'toolbar.identify': 'Mostra um número grande em cada monitor',
+  'toolbar.webviewOn': 'Publicado na rede local — quem está no wi-fi acompanha a leitura',
+  'toolbar.webviewOff': 'Ver na rede local',
+  'toolbar.pickMonitor': 'Escolha o monitor',
+  'toolbar.primary': 'principal',
+  'toolbar.broadcast': 'Transmitir',
+  'toolbar.broadcasting': 'Transmitindo',
+  'toolbar.restart': 'Voltar ao início',
+  'toolbar.back': 'Recuar',
+  'toolbar.forward': 'Avançar',
+  'toolbar.play': 'Iniciar',
+  'toolbar.pause': 'Pausar',
+  'toolbar.marker': 'Criar marcador',
+  'toolbar.ppm': 'ppm',
+  'toolbar.elapsed': 'decorrido',
+  'toolbar.remaining': 'restante',
+
+  /* ---------------------------------------------------------------- ajustes */
+  'insp.tab.text': 'Texto',
+  'insp.tab.text.hint': 'fonte, corpo, alinhamento e cores',
+  'insp.tab.reading': 'Leitura',
+  'insp.tab.reading.hint': 'margem, palavras por linha, marca de leitura e ritmo',
+  'insp.tab.output': 'Saída',
+  'insp.tab.output.hint': 'relógios, espelho e giro da tela do apresentador',
+
+  'insp.wrapping': 'As linhas estão dobrando',
+  'insp.wrapping.detail': 'Não cabem {words} palavras na largura desta saída com {size}px.',
+  'insp.wrapping.fix': 'Ajustar corpo para {size}px',
+
+  'insp.body': 'Corpo',
+  'insp.weight': 'Peso',
+  'insp.lineHeight': 'Entrelinha',
+  'insp.letterSpacing': 'Entre letras',
+  'insp.alignLeft': 'À esquerda',
+  'insp.alignCenter': 'Centralizado',
+
+  'insp.colors': 'Cores',
+  'insp.textColor': 'Texto',
+  'insp.bgColor': 'Fundo',
+  'insp.invert': 'Inverter cores',
+
+  'insp.margin': 'Margem',
+  'insp.minWords': 'Mínimo por linha',
+  'insp.maxWords': 'Máximo por linha',
+  'insp.readingMark': 'Marca de leitura',
+  'insp.markOnOutput': 'Linha na transmissão',
+  'insp.markOn.yes': 'O apresentador também vê a linha.',
+  'insp.markOn.no': 'A linha fica só na sua prévia.',
+  'insp.focusDim': 'Esmaecer bordas',
+
+  'insp.rhythm': 'Ritmo',
+  'insp.uniform': 'Velocidade constante',
+  'insp.uniform.yes': 'Mesmo ritmo do começo ao fim.',
+  'insp.uniform.no': 'Linha com mais palavras demora mais para passar.',
+
+  'insp.clocks': 'Relógios',
+  'insp.clock.elapsed': 'Tempo decorrido',
+  'insp.clock.remaining': 'Tempo restante',
+  'insp.clock.elapsedColor': 'Cor do tempo decorrido',
+  'insp.clock.remainingColor': 'Cor do tempo restante',
+  'insp.clock.position': 'Posição',
+  'insp.clock.positionOf': 'Posição {pos}',
+  'insp.clock.size': 'Tamanho',
+
+  'insp.glass': 'Compensação do vidro',
+  'insp.glass.hint': 'Só na tela do apresentador. A prévia e a rede seguem sem espelho, para dar leitura.',
+  'insp.mirrorH': 'Espelhar horizontal',
+  'insp.mirrorV': 'Espelhar vertical',
+
+  'insp.saveDefaults': 'Salvar como padrão',
+  'insp.saved': 'Guardado',
+  'insp.defaults.custom': 'Aba nova nasce com os seus ajustes e a sua velocidade.',
+  'insp.defaults.factory': 'Aba nova nasce com o padrão de fábrica. As outras abas não mudam.',
+  'insp.defaults.reset': 'Voltar ao padrão de fábrica',
+
+  /* ------------------------------------------------------------ barra de baixo */
+  'status.words': 'Palavras',
+  'status.duration': 'Duração',
+  'status.target': 'Duração-alvo',
+  'status.saved': 'salvo',
+  'status.notSaved': 'não está salvando',
+  'status.savedHint': 'O trabalho está sendo gravado no disco',
+  'status.markers_1': '{n} marcador',
+  'status.markers_n': '{n} marcadores',
+  'status.undo_1': '{n} passo de desfazer',
+  'status.undo_n': '{n} passos de desfazer',
+  'status.paletteHint': 'Ctrl+K comandos',
+
+  /* -------------------------------------------------------------------- mesa */
+  'deck.timeline': 'Linha do tempo do programa',
+  'deck.of': 'de',
+  'deck.block': 'Bloco',
+  'deck.words': 'Palavras',
+  'deck.duration': 'Duração',
+  'deck.status': 'Status',
+  'deck.noChapter': 'Sem capítulo',
+  'deck.done': 'feito',
+  'deck.onAir': 'no ar',
+  'deck.next': 'a seguir',
+  'deck.empty': 'Nada para mostrar ainda — escreva o roteiro no Split.',
+
+  /* ----------------------------------------------------------------- paleta */
+  'palette.title': 'Paleta de comandos',
+  'palette.subtitle': 'Tudo que o app faz, sem tirar a mão do teclado',
+  'palette.filter': 'Digite para filtrar',
+  'palette.none': 'Nenhum comando com esse nome',
+
+  /* ---------------------------------------------------------------- atalhos */
+  'keymap.title': 'Atalhos',
+  'keymap.subtitle': 'Clique na tecla para regravar. Esc cancela a captura.',
+  'keymap.conflict': 'em conflito',
+  'keymap.default': 'padrão',
+  'keymap.press': 'tecle agora…',
+
+  /* ------------------------------------------------------------ rede local */
+  'web.title': 'Ver na rede',
+  'web.intro':
+    'Quem estiver no mesmo wi-fi abre o endereço no navegador e acompanha a leitura ao vivo, igualzinho ao que o apresentador está vendo. Não precisa instalar nada.',
+  'web.publish': 'Publicar na rede local',
+  'web.live': 'No ar na rede local',
+  'web.multiNet': 'Esta máquina está em mais de uma rede — aponte a câmera para o código da rede em que o telefone está:',
+  'web.pointCamera': 'Aponte a câmera do telefone:',
+  'web.copy': 'copiar',
+  'web.copied': 'copiado',
+  'web.noNetwork': 'Esta máquina não está em nenhuma rede. Conecte o cabo ou o wi-fi.',
+  'web.warning':
+    'Enquanto estiver ligado, qualquer pessoa na mesma rede que souber o endereço consegue ler o roteiro — não há senha. Só a aba que está no ar é publicada; as outras não saem daqui.',
+  'web.waiting': 'Esperando o VaLendo…',
+  'web.offline': 'Sem conexão com o VaLendo',
+
+  /* --------------------------------------------------------- fechar com o ar */
+  'close.title': 'A transmissão está no ar.',
+  'close.detail': 'Fechar o app agora apaga o texto na tela do apresentador.',
+  'close.cancel': 'Cancelar',
+  'close.confirm': 'Encerrar a transmissão',
+
+  /* --------------------------------------------------------------- créditos */
+  'credits.about':
+    'Teleprompter em que o roteiro é editado com a transmissão no ar. A posição de leitura é uma âncora no texto, não um pixel na tela — por isso digitar, trocar a fonte ou mudar a margem não move a palavra que o apresentador está lendo.',
+  'credits.builtWith': 'Construído com',
+  'credits.repo': 'Repositório',
+  'credits.idea': 'Idealização',
+  'credits.dev': 'Desenvolvimento',
+  'credits.role.electron': 'janela, múltiplos monitores e integração com o sistema',
+  'credits.role.react': 'interface do operador e do prompter',
+  'credits.role.vite': 'build e estilos',
+  'credits.role.immer': 'desfazer infinito por patches',
+  'credits.role.import': 'leitura de .docx e .pdf',
+
+  /* ------------------------------------------------------ avisos e mensagens */
+  'notice.scriptSaved': 'Roteiro salvo',
+  'notice.scriptFail': 'Não deu para salvar',
+  'notice.projectSaved': 'Projeto salvo',
+  'notice.projectOpened': 'Projeto aberto',
+  'notice.projectSaveFail': 'Não deu para salvar o projeto',
+  'notice.projectOpenFail': 'Não deu para abrir o projeto',
+  'notice.importInfo': 'Sobre a importação',
+  'notice.unknownError': 'erro desconhecido',
+
+  /* ------------------------------------------------- processo principal (main) */
+  'main.importTitle': 'Importar roteiro',
+  'main.importFail': 'Falha na importação',
+  'main.importFailDetail': 'Não deu para ler o arquivo: {erro}',
+  'main.saveScriptTitle': 'Salvar roteiro',
+  'main.saveProjectTitle': 'Salvar projeto',
+  'main.openProjectTitle': 'Abrir projeto',
+  'main.endBroadcast': 'Encerrar a transmissão',
+  'main.coveringOperator':
+    'Esta transmissão está cobrindo a janela do operador. Clique com o botão direito aqui para trocar de monitor ou encerrar.',
+
+  'filter.allFormats': 'Todos os formatos aceitos',
+  'filter.text': 'Texto',
+  'filter.markdown': 'Markdown',
+  'filter.word': 'Word',
+  'filter.pdf': 'PDF',
+  'filter.project': 'Projeto do VaLendo',
+
+  'import.imported': 'Importado',
+  'import.scannedPdf': 'Este PDF é digitalizado: não tem camada de texto. O OCR entra no próximo marco.',
+
+  'project.notValendo': 'Este arquivo não é um projeto do VaLendo.',
+  'project.tooNew': 'Este projeto foi salvo por uma versão mais nova do VaLendo. Atualize o app para abrir.',
+  'project.noScript': 'O projeto está sem roteiro dentro.',
+  'project.cantOpen': 'Não deu para abrir o projeto.',
+
+  /* ------------------------------------------------- grupos e nomes de comandos */
+  'group.Transporte': 'Transporte',
+  'group.Ritmo': 'Ritmo',
+  'group.Marcadores': 'Marcadores',
+  'group.Aparência': 'Aparência',
+  'group.Saída': 'Saída',
+  'group.Documento': 'Documento',
+  'group.Visão': 'Visão',
+
+  'cmd.transport.playPause': 'Iniciar ou pausar a rolagem',
+  'cmd.transport.restart': 'Voltar ao início',
+  'cmd.transport.jumpBack': 'Recuar algumas palavras',
+  'cmd.transport.jumpForward': 'Avançar algumas palavras',
+  'cmd.transport.freeze': 'Congelar a saída para reescrever',
+  'cmd.speed.increase': 'Acelerar o texto',
+  'cmd.speed.decrease': 'Desacelerar o texto',
+  'cmd.speed.set.1': 'Ritmo lento',
+  'cmd.speed.set.2': 'Ritmo médio',
+  'cmd.speed.set.3': 'Ritmo rápido',
+  'cmd.marker.create': 'Criar marcador aqui',
+  'cmd.marker.next': 'Próximo marcador',
+  'cmd.marker.prev': 'Marcador anterior',
+  'cmd.chapter.next': 'Próximo capítulo',
+  'cmd.chapter.prev': 'Capítulo anterior',
+  'cmd.font.increase': 'Aumentar a fonte',
+  'cmd.font.decrease': 'Diminuir a fonte',
+  'cmd.margin.increase': 'Aumentar a margem',
+  'cmd.margin.decrease': 'Diminuir a margem',
+  'cmd.words.increase': 'Mais palavras por linha',
+  'cmd.words.decrease': 'Menos palavras por linha',
+  'cmd.colors.invert': 'Inverter cores',
+  'cmd.output.blackout': 'Tela preta na saída',
+  'cmd.output.mirror': 'Espelhar horizontalmente',
+  'cmd.output.rotate': 'Rotacionar a saída',
+  'cmd.output.toggle': 'Abrir ou fechar a transmissão',
+  'cmd.document.save': 'Salvar o roteiro num arquivo',
+  'cmd.document.saveAs': 'Salvar o roteiro como…',
+  'cmd.project.save': 'Salvar o projeto inteiro',
+  'cmd.project.open': 'Abrir um projeto',
+  'cmd.insert.chapter': 'Inserir capítulo',
+  'cmd.insert.direction': 'Inserir direção de cena',
+  'cmd.edit.undo': 'Desfazer',
+  'cmd.edit.redo': 'Refazer',
+  'cmd.tab.new': 'Nova aba',
+  'cmd.tab.close': 'Fechar aba',
+  'cmd.view.focusMode': 'Alternar modo foco',
+  'cmd.view.inspector': 'Abrir ou fechar os ajustes',
+  'cmd.view.split': 'Ir para o modo Split',
+  'cmd.view.focus': 'Ir para o modo Foco',
+  'cmd.view.deck': 'Ir para a Mesa de comando',
+  'cmd.palette.open': 'Paleta de comandos',
+  'cmd.keymap.open': 'Editar atalhos',
+  'cmd.tab.switch': 'Ir para a aba {n}',
+  'cmd.marker.goto': 'Saltar para o marcador {n}',
+
+  /* ----------------------------------------------------------------- conteúdo
+   * Traduzido só quando o app cria a coisa pela primeira vez. Projeto já
+   * salvo não é renomeado: o nome que está lá é do operador, não nosso.
+   */
+  'content.firstTab': 'Abertura',
+  'content.preset.classic': 'Clássico',
+  'content.preset.paper': 'Papel',
+  'content.preset.amber': 'Âmbar',
+  'content.preset.night': 'Azul noite',
+  'content.preset.soft': 'Suave',
+  'content.sample': [
+    '§ Abertura',
+    'Boa noite. Hoje a gente vai falar sobre uma mudança que já está acontecendo nos estúdios do país inteiro.',
+    '[olhar câmera 2 · pausa]',
+    'E o mais importante: ninguém precisa mais parar a gravação para corrigir uma frase.',
+    'Vamos ver como isso funciona na prática. Este texto pode ser editado agora, com a transmissão no ar, e a palavra que está sob a marca de leitura não vai se mexer.',
+    '§ Bloco 2',
+    'Experimente: aumente o corpo da fonte, mude a margem, troque as palavras por linha. Nada salta.'
+  ].join('\n\n')
+} as const
+
+export type Chave = keyof typeof pt

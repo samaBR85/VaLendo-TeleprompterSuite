@@ -13,6 +13,7 @@ import type { StorageHealth } from '@shared/api'
 import type { HistoryStep } from '@shared/history'
 import { parseHistoryLines } from '@shared/history'
 import { createInitialState } from '@shared/defaults'
+import { idiomaDoSistema } from '@shared/i18n'
 import { mergeAppearance } from './mergeAppearance'
 import type { UserDefaults } from './userDefaults'
 import type { AppState } from '@shared/types'
@@ -104,9 +105,11 @@ function stamp(): string {
  * normal" — só que o roteiro sumiu. Se o arquivo existe e não dá para ler, ele
  * é guardado com outro nome e o operador é avisado.
  */
-export function loadState(defaults: UserDefaults): AppState {
+export function loadState(defaults: UserDefaults, locale = 'pt-BR'): AppState {
   const path = workspacePath()
-  const fresh = (): AppState => createInitialState(defaults)
+  // só na instalação nova: a partir daí vale o que o operador escolheu, e
+  // trocar o idioma do Windows não pode mexer no app já configurado
+  const fresh = (): AppState => createInitialState(defaults, idiomaDoSistema(locale))
 
   if (!existsSync(path)) return fresh()
 

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
  * ação de risco nunca deve ser a que dispara sem querer.
  */
 export function CloseConfirm({ onCancel, onConfirm }: Props): React.JSX.Element {
+  const { t } = useT()
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
@@ -36,9 +38,9 @@ export function CloseConfirm({ onCancel, onConfirm }: Props): React.JSX.Element 
             <Icon name="alert" size={20} />
           </span>
           <div>
-            <div className="text-[13px] font-medium text-[var(--color-fog-0)]">A transmissão está no ar.</div>
+            <div className="text-[13px] font-medium text-[var(--color-fog-0)]">{t('close.title')}</div>
             <div className="mt-1 text-[12px] leading-relaxed text-[var(--color-fog-1)]">
-              Fechar o app agora apaga o texto na tela do apresentador.
+              {t('close.detail')}
             </div>
           </div>
         </div>
@@ -49,14 +51,14 @@ export function CloseConfirm({ onCancel, onConfirm }: Props): React.JSX.Element 
             onClick={onCancel}
             className="rounded-md px-3 py-1.5 text-[12px] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
-            Cancelar
+            {t('close.cancel')}
           </button>
           <button
             type="button"
             onClick={onConfirm}
             className="rounded-md bg-[var(--color-live)]/16 px-3 py-1.5 text-[12px] font-medium text-[var(--color-live)] hover:bg-[var(--color-live)]/24"
           >
-            Encerrar a transmissão
+            {t('close.confirm')}
           </button>
         </div>
       </div>

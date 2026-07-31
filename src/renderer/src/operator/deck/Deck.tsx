@@ -6,6 +6,7 @@ import { buildRundown, segmentIndexAt } from '@shared/rundown'
 import type { Tab, Transport } from '@shared/types'
 import type { PrompterMetrics, Viewport } from '../../prompter/PrompterCanvas'
 import { PrompterStage } from '../../prompter/PrompterStage'
+import { useT } from '../../i18n'
 import { PanelHeader } from '../App'
 import { Rundown } from './Rundown'
 import { Timeline } from './Timeline'
@@ -51,6 +52,7 @@ const RUNDOWN_MIN = 320
 const PREVIEW_DEFAULT_RATIO = 0.58
 
 export function Deck({ tab, transport, rows, viewport, dispatch, onMetrics }: Props): React.JSX.Element {
+  const { t } = useT()
   const now = useNow()
   const corpoRef = useRef<HTMLDivElement>(null)
   const [previewWidth, setPreviewWidth] = useState(300)
@@ -114,7 +116,7 @@ export function Deck({ tab, transport, rows, viewport, dispatch, onMetrics }: Pr
         />
 
         <div data-deck-preview className="flex min-h-0 flex-none flex-col" style={{ width: previewWidth }}>
-          <PanelHeader label="Prévia ao vivo" detail={`${viewport.width} × ${viewport.height}`} />
+          <PanelHeader label={t('panel.livePreview')} detail={`${viewport.width} × ${viewport.height}`} />
           <PrompterStage
             blocks={tab.blocks}
             appearance={tab.appearance}

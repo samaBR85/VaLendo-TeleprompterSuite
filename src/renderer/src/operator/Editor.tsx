@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRe
 import type { Action } from '@shared/actions'
 import { insertBlock, type InsertKind } from '@shared/insertBlock'
 import { blocksFromText, serializeBlocks } from '@shared/text'
+import { useT } from '../i18n'
 import type { Tab } from '@shared/types'
 
 const TYPE_SETTINGS: React.CSSProperties = {
@@ -38,6 +39,7 @@ export interface EditorHandle {
  * `pre` colorido dá as duas coisas.
  */
 export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dispatch }, ref) {
+  const { t } = useT()
   const incoming = useMemo(() => serializeBlocks(tab.blocks), [tab.blocks])
   const [draft, setDraft] = useState(incoming)
 
@@ -209,7 +211,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
           if (preRef.current && areaRef.current) preRef.current.scrollTop = areaRef.current.scrollTop
         }}
         spellCheck={false}
-        placeholder="Cole ou digite o roteiro. Onde você quebrar a linha, ela quebra na tela do apresentador. [colchetes] marcam direções, § abre capítulo."
+        placeholder={t('editor.placeholder')}
         className="absolute inset-0 resize-none bg-transparent outline-none"
         style={{
           ...TYPE_SETTINGS,

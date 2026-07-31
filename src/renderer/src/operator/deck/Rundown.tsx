@@ -1,5 +1,6 @@
 import { formatClock, secondsForWords } from '@shared/pacing'
 import type { Segment } from '@shared/rundown'
+import { useT } from '../../i18n'
 import { Icon } from '../../ui/Icon'
 
 interface Props {
@@ -12,7 +13,8 @@ interface Props {
 const COLUNAS = '28px 1fr 70px 76px 84px 22px'
 
 function StatusPill({ status }: { status: 'feito' | 'no-ar' | 'a-seguir' }): React.JSX.Element {
-  const texto = status === 'no-ar' ? 'no ar' : status === 'feito' ? 'feito' : 'a seguir'
+  const { t } = useT()
+  const texto = status === 'no-ar' ? t('deck.onAir') : status === 'feito' ? t('deck.done') : t('deck.next')
   const classe =
     status === 'no-ar'
       ? 'bg-[var(--color-go)]/16 text-[var(--color-go)]'
@@ -32,6 +34,7 @@ function StatusPill({ status }: { status: 'feito' | 'no-ar' | 'a-seguir' }): Rea
  * leitura para lá — o mesmo salto de capítulo que já existe em outro lugar.
  */
 export function Rundown({ segments, currentIndex, ppm, onSeek }: Props): React.JSX.Element {
+  const { t } = useT()
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div
@@ -39,17 +42,17 @@ export function Rundown({ segments, currentIndex, ppm, onSeek }: Props): React.J
         style={{ gridTemplateColumns: COLUNAS }}
       >
         <span>#</span>
-        <span>Bloco</span>
-        <span className="text-right">Palavras</span>
-        <span className="text-right">Duração</span>
-        <span>Status</span>
+        <span>{t('deck.block')}</span>
+        <span className="text-right">{t('deck.words')}</span>
+        <span className="text-right">{t('deck.duration')}</span>
+        <span>{t('deck.status')}</span>
         <span />
       </div>
 
       <div data-rundown className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {segments.length === 0 ? (
           <div className="flex flex-1 items-center justify-center px-4 text-[12px] text-[var(--color-fog-2)]">
-            Nada para mostrar ainda — escreva o roteiro no Split.
+            {t('deck.empty')}
           </div>
         ) : (
           segments.map((segment, index) => {
@@ -68,7 +71,7 @@ export function Rundown({ segments, currentIndex, ppm, onSeek }: Props): React.J
               >
                 <span className="font-mono text-[11px] text-[var(--color-fog-2)]">{index + 1}</span>
                 <span className="truncate text-[13px] text-[var(--color-fog-0)]">
-                  {segment.title || 'Sem capítulo'}
+                  {segment.title || t('deck.noChapter')}
                 </span>
                 <span className="font-mono text-[11px] text-[var(--color-fog-2)] text-right">
                   {segment.spokenWords}

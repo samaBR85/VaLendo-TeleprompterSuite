@@ -1,4 +1,5 @@
 import type { Action, HistoryInfo } from './actions'
+import type { Lang } from './i18n/types'
 import type { Appearance, AppState, Block, DisplayInfo, Transport } from './types'
 
 export interface StateSnapshot {
@@ -66,6 +67,8 @@ export interface ProjectResult {
  * posição da leitura sairia completamente fora do lugar.
  */
 export interface WebviewFrame {
+  /** idioma da interface, para os avisos da página falarem a mesma língua */
+  language: Lang
   blocks: Block[]
   appearance: Appearance
   transport: Transport
