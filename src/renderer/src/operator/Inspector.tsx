@@ -96,10 +96,16 @@ function Toggle({
   onClick: () => void
 }): React.JSX.Element {
   return (
+    // `w-full` não é redundante: num <button>, `width:auto` encolhe no
+    // conteúdo (controles de formulário se dimensionam assim), e `flex` não
+    // muda isso. Os toggles soltos no grupo só pareciam inteiros porque o
+    // `flex-col` de fora os esticava; dentro das linhas dos relógios, cada um
+    // fica num div comum e saía com a largura do próprio rótulo — dois botões
+    // de tamanhos diferentes, com as bolinhas em colunas diferentes
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-[11px] transition-colors ${
+      className={`flex w-full items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-[11px] transition-colors ${
         active
           ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
           : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
