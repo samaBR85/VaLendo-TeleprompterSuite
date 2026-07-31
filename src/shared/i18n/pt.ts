@@ -306,6 +306,31 @@ export const pt = {
    * Traduzido só quando o app cria a coisa pela primeira vez. Projeto já
    * salvo não é renomeado: o nome que está lá é do operador, não nosso.
    */
+
+  /* ---------------------------------------------------------------- cartoes */
+  'cards.title': 'Cartões',
+  'cards.hint': 'Mostra uma imagem ou um recado na tela do apresentador, no lugar do roteiro.',
+  'cards.toolbar': 'Cartões na tela do apresentador',
+  'cards.empty': 'Nenhum cartão ainda. Junte as artes de standby e os recados que você usa sempre.',
+  'cards.addImage': 'Adicionar imagem',
+  'cards.addText': 'Adicionar recado',
+  'cards.pickTitle': 'Escolher imagem do cartão',
+  'cards.imageFilter': 'Imagens',
+  'cards.name': 'Nome',
+  'cards.message': 'Recado',
+  'cards.messagePlaceholder': 'CORTA · FALTAM 2 MIN',
+  'cards.show': 'Mostrar',
+  'cards.hide': 'Tirar da tela',
+  'cards.remove': 'Remover cartão',
+  'cards.onAir': 'na tela',
+  'cards.missing': 'A imagem deste cartão não foi encontrada.',
+  'cards.fit': 'Cabe inteira',
+  'cards.fill': 'Preenche',
+  'cards.blackoutWins': 'A tela preta está ligada e cobre o cartão.',
+  'cards.max': 'São seis cartões, o número de atalhos.',
+  'cmd.card.hide': 'Tirar o cartão da tela',
+  'cmd.card.show': 'Mostrar o cartão {n}',
+
   'content.firstTab': 'Abertura',
   'content.preset.classic': 'Clássico',
   'content.preset.paper': 'Papel',

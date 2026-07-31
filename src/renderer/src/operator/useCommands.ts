@@ -68,6 +68,14 @@ export function useCommands(
         return
       }
 
+      // o cartão é do programa, não da aba: por isso sai de `state.cards`
+      const cardShow = /^card\.show\.(\d+)$/.exec(commandId)
+      if (cardShow) {
+        const card = state.cards[Number(cardShow[1]) - 1]
+        if (card) dispatch({ type: 'card/show', cardId: card.id })
+        return
+      }
+
       const markerGoto = /^marker\.goto\.(\d+)$/.exec(commandId)
       if (markerGoto) {
         const marker = tab.markers[Number(markerGoto[1]) - 1]
@@ -170,6 +178,10 @@ export function useCommands(
           break
         case 'colors.invert':
           dispatch({ type: 'appearance/invert', tabId: tab.id })
+          break
+
+        case 'card.hide':
+          dispatch({ type: 'card/show', cardId: null })
           break
 
         case 'output.blackout':

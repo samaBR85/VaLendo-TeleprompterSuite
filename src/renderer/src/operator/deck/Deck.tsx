@@ -3,7 +3,7 @@ import type { Action } from '@shared/actions'
 import { composeLines, totalWords } from '@shared/anchor'
 import { wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
-import type { Tab, Transport } from '@shared/types'
+import type { Cartao, Tab, Transport } from '@shared/types'
 import type { PrompterMetrics, Viewport } from '../../prompter/PrompterCanvas'
 import { PrompterStage } from '../../prompter/PrompterStage'
 import { useT } from '../../i18n'
@@ -14,6 +14,8 @@ import { Timeline } from './Timeline'
 interface Props {
   tab: Tab
   transport: Transport
+  /** o cartão no ar, para a prévia compacta mostrar o mesmo que a transmissão */
+  card?: Cartao | null
   rows: number[]
   viewport: Viewport
   dispatch: (action: Action) => void
@@ -51,7 +53,7 @@ const RUNDOWN_MIN = 320
 // texto de longe, lista ainda com espaço para os números não apertarem.
 const PREVIEW_DEFAULT_RATIO = 0.58
 
-export function Deck({ tab, transport, rows, viewport, dispatch, onMetrics }: Props): React.JSX.Element {
+export function Deck({ tab, transport, rows, viewport, card = null, dispatch, onMetrics }: Props): React.JSX.Element {
   const { t } = useT()
   const now = useNow()
   const corpoRef = useRef<HTMLDivElement>(null)
@@ -123,6 +125,8 @@ export function Deck({ tab, transport, rows, viewport, dispatch, onMetrics }: Pr
             transport={transport}
             viewport={viewport}
             rows={rows}
+            card={card}
+            onSpeed={(delta) => dispatch({ type: 'transport/nudgePpm', delta })}
             onMetrics={onMetrics}
           />
         </div>

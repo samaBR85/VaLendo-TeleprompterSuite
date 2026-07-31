@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { canvasBox } from '@shared/output'
 import { PrompterCanvas, type PrompterMetrics, type Viewport } from './PrompterCanvas'
-import type { Appearance, Block, Transport } from '@shared/types'
+import type { Appearance, Block, Cartao, Transport } from '@shared/types'
 
 interface Props {
   blocks: Block[]
@@ -11,6 +11,15 @@ interface Props {
   rows?: number[]
   /** linhas do limite da margem; só a prévia do operador as mostra */
   marginGuides?: boolean
+  /** o cartão no ar, se houver */
+  card?: Cartao | null
+  /**
+   * Roda do mouse sobre a prévia muda o ritmo: para cima acelera.
+   *
+   * Só aqui e na régua, e não na janela inteira — sobre o editor a roda tem de
+   * continuar rolando o texto, que é o que ela faz em qualquer editor.
+   */
+  onSpeed?: (delta: 1 | -1) => void
   onMetrics?: (metrics: PrompterMetrics) => void
 }
 
@@ -20,6 +29,9 @@ interface Props {
  * prévia siga sendo o mesmo desenho da transmissão.
  */
 export function PrompterStage(props: Props): React.JSX.Element {
+  // `onSpeed` é da moldura, não do desenho: repassar sujaria o canvas com uma
+  // prop que ele não usa
+  const { onSpeed: _roda, ...semRoda } = props
   const boxRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(0.1)
 
@@ -48,7 +60,18 @@ export function PrompterStage(props: Props): React.JSX.Element {
   // mas não o tamanho de layout, então um canvas de 1920px em fluxo normal
   // estouraria a largura da janela e empurraria o inspetor para fora
   return (
-    <div ref={boxRef} className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
+    <div
+      ref={boxRef}
+      onWheel={
+        props.onSpeed
+          ? (event) => {
+              event.preventDefault()
+              props.onSpeed?.(event.deltaY < 0 ? 1 : -1)
+            }
+          : undefined
+      }
+      className="relative min-h-0 min-w-0 flex-1 overflow-hidden"
+    >
       <div
         style={{
           position: 'absolute',
@@ -64,7 +87,7 @@ export function PrompterStage(props: Props): React.JSX.Element {
         {/* na prévia a marca aparece sempre: é dela que o operador tira a
             referência de onde a leitura está, e escondê-la aqui seria esconder
             a informação de quem precisa dela */}
-        <PrompterCanvas {...props} readingMark />
+        <PrompterCanvas {...semRoda} readingMark />
       </div>
     </div>
   )

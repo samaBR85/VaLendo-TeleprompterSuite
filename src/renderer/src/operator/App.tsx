@@ -2,12 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { InsertKind } from '@shared/insertBlock'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { PrompterStage } from '../prompter/PrompterStage'
+import { cartaoNoAr } from '@shared/cards'
 import { LANGS, type Lang } from '@shared/i18n'
 import { ProvedorDeIdioma, useT } from '../i18n'
 import { activeTabOf, useAppState } from '../state/useAppState'
 import { Icon, type IconName } from '../ui/Icon'
 import { Wordmark } from '../ui/Wordmark'
 import { CloseConfirm } from './CloseConfirm'
+import { CardsPanel } from './CardsPanel'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
 import { Deck } from './deck/Deck'
@@ -207,6 +209,7 @@ function AppConteudo({
 }: ReturnType<typeof useAppState>): React.JSX.Element {
   const { t } = useT()
   const [webviewOpen, setWebviewOpen] = useState(false)
+  const [cardsOpen, setCardsOpen] = useState(false)
   const [palette, setPalette] = useState(false)
   const [keymapOpen, setKeymapOpen] = useState(false)
   const [split, setSplit] = useState(0.46)
@@ -340,6 +343,8 @@ function AppConteudo({
       viewport={viewport}
       rows={rows}
       marginGuides
+      card={cartaoNoAr(state)}
+      onSpeed={(delta) => dispatch({ type: 'transport/nudgePpm', delta })}
       onMetrics={handleMetrics}
     />
   )
@@ -485,6 +490,7 @@ function AppConteudo({
         onImport={importDocument}
         webviewLive={state.webview.enabled && webview.running && !webview.error}
         onOpenWebview={() => setWebviewOpen(true)}
+        onOpenCards={() => setCardsOpen(true)}
       />
 
       {state.layoutMode === 'deck' ? (
@@ -493,6 +499,7 @@ function AppConteudo({
           transport={state.transport}
           rows={rows}
           viewport={viewport}
+          card={cartaoNoAr(state)}
           dispatch={dispatch}
           onMetrics={handleMetrics}
         />
@@ -612,6 +619,15 @@ function AppConteudo({
           enabled={state.webview.enabled}
           dispatch={dispatch}
           onClose={() => setWebviewOpen(false)}
+        />
+      ) : null}
+      {cardsOpen ? (
+        <CardsPanel
+          cards={state.cards}
+          noAr={state.transport.card}
+          blackout={state.transport.blackout}
+          dispatch={dispatch}
+          onClose={() => setCardsOpen(false)}
         />
       ) : null}
       {credits ? <Credits onClose={() => setCredits(false)} /> : null}

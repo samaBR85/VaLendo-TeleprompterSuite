@@ -142,6 +142,7 @@ export function loadState(defaults: UserDefaults, locale = 'pt-BR'): AppState {
       ...state.transport,
       playing: false,
       blackout: false,
+      card: null,
       frozen: false,
       startedAt: 0
     }

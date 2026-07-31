@@ -35,6 +35,7 @@ export type IconName =
   | 'text'
   | 'readingLine'
   | 'globe'
+  | 'card'
 
 const PATHS: Record<IconName, string> = {
   play: 'M8 5l11 7-11 7z',
@@ -83,7 +84,9 @@ const PATHS: Record<IconName, string> = {
   text: 'M4 6h16M4 12h11M4 18h14',
   // linhas de texto atravessadas pela marca de leitura, com as cunhas das pontas
   readingLine: 'M7 6h10M7 18h10M2 12h20M4 10l2 2-2 2M20 10l-2 2 2 2',
-  globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18'
+  globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18',
+  // um quadro com uma montanha dentro: a arte que entra no lugar do texto
+  card: 'M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6'
 }
 
 interface Props {

@@ -144,6 +144,26 @@ export interface Tab {
   rev: number
 }
 
+/**
+ * Um cartão é o que o operador põe na tela do apresentador no lugar do
+ * roteiro: uma imagem preparada antes (standby, logo, "voltamos já") ou um
+ * recado escrito na hora ("CORTA", "FALTAM 2 MIN").
+ *
+ * Diferente da tela preta, que é ausência, o cartão é mensagem — por isso
+ * acompanha o espelho e o giro da saída, senão o apresentador lê ao contrário
+ * através do vidro.
+ */
+export type Cartao =
+  | {
+      id: string
+      kind: 'image'
+      /** como o operador chama, para achar na lista e no atalho */
+      nome: string
+      /** nome do arquivo dentro de userData/cartoes — nunca o caminho de origem */
+      arquivo: string
+    }
+  | { id: string; kind: 'text'; nome: string; texto: string }
+
 export interface Transport {
   playing: boolean
   /** palavras por minuto */
@@ -156,6 +176,14 @@ export interface Transport {
   blackout: boolean
   /** congela a saída enquanto o operador reescreve */
   frozen: boolean
+  /**
+   * Cartão no ar, ou nada.
+   *
+   * Mora no transporte, e não em `cards`, porque é estado de momento: abrir um
+   * projeto não pode subir um cartão na cara do apresentador, do mesmo jeito
+   * que não sobe a transmissão.
+   */
+  card: string | null
 }
 
 export interface OutputConfig {
@@ -187,6 +215,11 @@ export interface AppState {
   transport: Transport
   output: OutputConfig
   presets: ColorPreset[]
+  /**
+   * Os cartões do programa. Do projeto, não da aba: são mobília do estúdio, e
+   * o mesmo standby serve para qualquer roteiro aberto.
+   */
+  cards: Cartao[]
   /** commandId -> binding, sobrepondo o padrão do registro */
   keymap: Record<string, string>
   /**

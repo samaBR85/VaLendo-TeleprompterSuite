@@ -1,13 +1,23 @@
 import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from 'electron'
+import { basename, extname } from 'node:path'
 import { CHANNELS, type Action } from '@shared/actions'
-import type { ExportResult, ImportResult, ProjectResult, StateSnapshot } from '@shared/api'
+import type { CardPickResult, ExportResult, ImportResult, ProjectResult, StateSnapshot } from '@shared/api'
 import type { AppState } from '@shared/types'
 import { IMPORT_FILTERS, importFile } from './import'
 import { EXPORT_FILTERS, defaultFileName, exportScript } from './export'
 import { PROJECT_FILTERS, openProject, projectFileName, saveProject } from './project'
 import { onWebviewChange, publish, startWebview, stopWebview, webviewInfo } from './webview'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
+import { cartaoNoAr } from '@shared/cards'
 import { traduzir } from '@shared/i18n'
+import {
+  deleteCardImage,
+  IMAGE_EXTENSIONS,
+  importCardImage,
+  pruneCardImages,
+  registerCardProtocol,
+  registerCardScheme
+} from './cards'
 import { Store } from './state'
 import { flushState, onStorageHealth, storageHealth } from './storage'
 import { buildBroadcastMenu } from './broadcastMenu'
@@ -77,6 +87,7 @@ function syncWebview(state: AppState): void {
   const tab = state.tabs.find((t) => t.id === state.activeTabId) ?? state.tabs[0]
   publish({
     language: state.language,
+    card: cartaoNoAr(state),
     blocks: tab.blocks,
     appearance: tab.appearance,
     transport: state.transport,
@@ -88,7 +99,15 @@ function syncWebview(state: AppState): void {
 
 function registerIpc(): void {
   ipcMain.handle(CHANNELS.stateGet, () => snapshot())
-  ipcMain.on(CHANNELS.stateAction, (_event, action: Action) => store.dispatch(action))
+  ipcMain.on(CHANNELS.stateAction, (_event, action: Action) => {
+    // a imagem some do disco junto com o cartão; precisa ser lida ANTES do
+    // despacho, porque depois o cartão já não está na lista
+    if (action.type === 'card/remove') {
+      const alvo = store.getState().cards.find((c) => c.id === action.cardId)
+      if (alvo?.kind === 'image') deleteCardImage(alvo.arquivo)
+    }
+    store.dispatch(action)
+  })
   ipcMain.handle(CHANNELS.displaysList, () => listDisplays())
   ipcMain.on(CHANNELS.displaysIdentify, () => identifyDisplays())
 
@@ -183,6 +202,8 @@ function registerIpc(): void {
     if (!state) return { ok: false, path: caminho, error: error ?? idioma('project.cantOpen') }
 
     store.dispatch({ type: 'project/replace', state })
+    // as artes do programa anterior não servem mais a ninguém
+    pruneCardImages(store.getState().cards)
     return { ok: true, path: caminho }
   })
 
@@ -195,6 +216,27 @@ function registerIpc(): void {
   ipcMain.handle(CHANNELS.broadcastCoversOperator, () => broadcastCoversOperator())
 
   ipcMain.on(CHANNELS.confirmCloseResponse, (_event, confirmed: boolean) => respondToCloseConfirm(confirmed))
+
+  ipcMain.handle(CHANNELS.cardPick, async (_event, cardId: string): Promise<CardPickResult | null> => {
+    const owner = getOperatorWindow()
+    const options = {
+      title: idioma('cards.pickTitle'),
+      properties: ['openFile' as const],
+      filters: [{ name: idioma('cards.imageFilter'), extensions: IMAGE_EXTENSIONS }]
+    }
+    const picked = owner ? await dialog.showOpenDialog(owner, options) : await dialog.showOpenDialog(options)
+    if (picked.canceled || picked.filePaths.length === 0) return null
+
+    const origem = picked.filePaths[0]
+    try {
+      return {
+        arquivo: importCardImage(origem, cardId),
+        sugestao: basename(origem, extname(origem)).slice(0, 30)
+      }
+    } catch {
+      return null
+    }
+  })
 }
 
 /**
@@ -227,6 +269,7 @@ function showBroadcastMenu(): void {
 }
 
 function bootstrap(): void {
+  registerCardProtocol()
   registerIpc()
   onBroadcastContextMenu(showBroadcastMenu)
 
@@ -263,6 +306,10 @@ function bootstrap(): void {
 
 // uma instância só: duas janelas de operador brigando pelo mesmo workspace.json
 // é receita para perder texto
+// precisa acontecer antes de o app ficar pronto, senão o esquema não conta
+// como seguro e a janela recusa carregar a imagem
+registerCardScheme()
+
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {

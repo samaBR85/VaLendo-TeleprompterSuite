@@ -1,5 +1,5 @@
 import type { Lang } from './i18n/types'
-import type { Anchor, Appearance, AppState, LayoutMode } from './types'
+import type { Anchor, Appearance, AppState, Cartao, LayoutMode } from './types'
 
 /**
  * Tudo que muda estado passa por aqui. O renderer nunca escreve direto: manda
@@ -20,6 +20,12 @@ export type Action =
   | { type: 'transport/nudgePpm'; delta: number }
   | { type: 'transport/blackout' }
   | { type: 'transport/freeze' }
+  | { type: 'card/add'; card: Cartao }
+  | { type: 'card/remove'; cardId: string }
+  | { type: 'card/rename'; cardId: string; nome: string }
+  | { type: 'card/text'; cardId: string; texto: string }
+  /** mostra o cartão; passar o que já está no ar tira ele da tela */
+  | { type: 'card/show'; cardId: string | null }
   | { type: 'marker/add'; tabId: string; blockId: string; label: string }
   | { type: 'marker/remove'; tabId: string; markerId: string }
   | { type: 'tab/add' }
@@ -64,5 +70,6 @@ export const CHANNELS = {
   openExternal: 'app:openExternal',
   broadcastCoversOperator: 'broadcast:coversOperator',
   confirmCloseRequest: 'app:confirmCloseRequest',
-  confirmCloseResponse: 'app:confirmCloseResponse'
+  confirmCloseResponse: 'app:confirmCloseResponse',
+  cardPick: 'card:pick'
 } as const

@@ -90,6 +90,13 @@ export function SpeedRuler({ ppm, onChange }: Props): React.JSX.Element {
         // sem captura, o ponteiro que sai da régua não volta a mandar eventos
         if (!event.currentTarget.hasPointerCapture(event.pointerId)) arrastando.current = false
       }}
+      onWheel={(event) => {
+        // roda para cima acelera. `deltaY` é negativo subindo, e um passo por
+        // entalhe deixa a roda igual às setas — nada de dois ritmos diferentes
+        // para a mesma intenção
+        event.preventDefault()
+        onChange(clampPpm(ppm + (event.deltaY < 0 ? PPM_STEP : -PPM_STEP)))
+      }}
       onKeyDown={onKeyDown}
       className="flex cursor-pointer touch-none items-end gap-[3px] rounded py-1 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-go)]"
     >

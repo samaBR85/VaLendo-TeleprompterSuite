@@ -80,3 +80,59 @@ describe('atalhos', () => {
     expect(keymap.get('transport.playPause')).toBe('Space')
   })
 })
+
+describe('a semântica das teclas', () => {
+  const tecla = (id: string): string => COMMANDS_BY_ID.get(id)?.defaultBinding ?? ''
+
+  it('o projeto é o salvar principal, e o roteiro é a variante', () => {
+    // o projeto contém o roteiro; quem aperta o atalho "cru" quer guardar tudo
+    expect(tecla('project.save')).toBe('Mod+S')
+    expect(tecla('document.save')).toBe('Mod+Shift+S')
+  })
+
+  it('e salvar casa com abrir: os dois falam de projeto', () => {
+    expect(tecla('project.open')).toBe('Mod+O')
+    expect(tecla('project.save')).toBe('Mod+S')
+  })
+
+  it('marcador e capítulo são a mesma família: seta, e seta com Shift', () => {
+    expect(tecla('marker.next')).toBe('Mod+ArrowDown')
+    expect(tecla('chapter.next')).toBe('Mod+Shift+ArrowDown')
+    expect(tecla('marker.prev')).toBe('Mod+ArrowUp')
+    expect(tecla('chapter.prev')).toBe('Mod+Shift+ArrowUp')
+  })
+
+  it('nenhum Shift promete parentesco que não existe', () => {
+    /*
+     * A regra: se `Mod+X` e `Mod+Shift+X` existem, os dois têm de ser a mesma
+     * família. Era aqui que doía — `Mod+M` criava marcador e `Mod+Shift+M`
+     * espelhava a saída; `Mod+O` abria projeto e `Mod+Shift+O` ligava a
+     * transmissão. O Shift dizia "variante disto" e entregava outra coisa.
+     */
+    // a família é o grupo do próprio comando, e não o prefixo do id: salvar o
+    // projeto e salvar o roteiro têm ids diferentes e são a mesma coisa, e
+    // marcador e capítulo também — os dois navegam para um ponto do texto
+    const porTecla = new Map(COMMANDS.map((c) => [c.defaultBinding, c]))
+
+    const mentirosos: string[] = []
+    let examinados = 0
+    for (const [binding, comando] of porTecla) {
+      if (!binding.startsWith('Mod+Shift+')) continue
+      const base = binding.replace('Mod+Shift+', 'Mod+')
+      const irmao = porTecla.get(base)
+      if (!irmao) continue
+      // números são seletores de lista (aba, cartão): ali o modificador diz de
+      // QUAL lista, e isso é intencional
+      if (/^Mod\+\d$/.test(base)) continue
+      examinados += 1
+      if (irmao.group !== comando.group) {
+        mentirosos.push(`${base}=${irmao.id} (${irmao.group}) vs ${binding}=${comando.id} (${comando.group})`)
+      }
+    }
+
+    // sem isto o teste passaria de graça no dia em que alguém desfizesse todos
+    // os pares — nenhum par para conferir também dá lista vazia
+    expect(examinados).toBeGreaterThanOrEqual(5)
+    expect(mentirosos).toEqual([])
+  })
+})

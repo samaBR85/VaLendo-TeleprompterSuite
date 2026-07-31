@@ -1,6 +1,6 @@
 import type { Action, HistoryInfo } from './actions'
 import type { Lang } from './i18n/types'
-import type { Appearance, AppState, Block, DisplayInfo, Transport } from './types'
+import type { Appearance, AppState, Block, Cartao, DisplayInfo, Transport } from './types'
 
 export interface StateSnapshot {
   state: AppState
@@ -69,6 +69,8 @@ export interface ProjectResult {
 export interface WebviewFrame {
   /** idioma da interface, para os avisos da página falarem a mesma língua */
   language: Lang
+  /** o cartão no ar, para quem confere ver o que o apresentador vê */
+  card: Cartao | null
   blocks: Block[]
   appearance: Appearance
   transport: Transport
@@ -84,6 +86,14 @@ export interface WebviewInfo {
   /** endereços em que a página responde, prontos para digitar no telefone */
   addresses: string[]
   error: string | null
+}
+
+/** O que volta ao escolher uma imagem de cartão. Nulo quando o operador desistiu. */
+export interface CardPickResult {
+  /** nome do arquivo já copiado para a pasta do app */
+  arquivo: string
+  /** nome do arquivo de origem, sem extensão, como sugestão de nome */
+  sugestao: string
 }
 
 export interface ImportResult {
@@ -123,4 +133,6 @@ export interface ValendoApi {
   onConfirmClose(callback: () => void): () => void
   /** resposta ao pedido acima — confirma que pode fechar, ou cancela. */
   respondToClose(confirmed: boolean): void
+  /** abre o seletor de imagem e já copia o arquivo para dentro do app */
+  pickCardImage(cardId: string): Promise<CardPickResult | null>
 }

@@ -70,5 +70,8 @@ export function rotuloDoComando(lang: Lang, id: string): string {
   const marcador = /^marker\.goto\.(\d+)$/.exec(id)
   if (marcador) return traduzir(lang, 'cmd.marker.goto', { n: marcador[1] })
 
+  const cartao = /^card\.show\.(\d+)$/.exec(id)
+  if (cartao) return traduzir(lang, 'cmd.card.show', { n: cartao[1] })
+
   return traduzir(lang, `cmd.${id}` as Chave)
 }

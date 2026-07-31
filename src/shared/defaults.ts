@@ -127,10 +127,12 @@ export function createInitialState(
       wordsAtStart: 0,
       startedAt: 0,
       blackout: false,
-      frozen: false
+      frozen: false,
+      card: null
     },
     output: { displayId: null, enabled: false, viewport: null },
     presets: presetsPadrao(lang),
+    cards: [],
     keymap: {},
     customDefaults: false,
     webview: { enabled: false }

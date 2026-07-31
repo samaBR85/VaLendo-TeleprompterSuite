@@ -21,6 +21,7 @@ interface Props {
   /** a página da rede está mesmo no ar, e não só pedida */
   webviewLive: boolean
   onOpenWebview: () => void
+  onOpenCards: () => void
 }
 
 /**
@@ -182,7 +183,8 @@ export function Toolbar({
   run,
   onImport,
   webviewLive,
-  onOpenWebview
+  onOpenWebview,
+  onOpenCards
 }: Props): React.JSX.Element {
   const { t } = useT()
   const { transport, output } = state
@@ -263,6 +265,13 @@ export function Toolbar({
                 {/* aceso pelo que está acontecendo, não pelo que foi pedido:
                     com a porta ocupada, o ícone verde diria que há uma página
                     no ar quando não há */}
+                <Tool
+                  icon="card"
+                  label={t('cards.toolbar')}
+                  active={state.transport.card !== null}
+                  tint="#EF9F27"
+                  onClick={onOpenCards}
+                />
                 <Tool
                   icon="webview"
                   label={

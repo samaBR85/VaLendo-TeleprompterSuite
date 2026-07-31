@@ -334,6 +334,51 @@ export class Store {
         }
         break
 
+      case 'card/add':
+        this.state = { ...this.state, cards: [...this.state.cards, action.card] }
+        break
+
+      case 'card/remove': {
+        // se era ele que estava no ar, a tela do apresentador volta ao roteiro
+        // no mesmo passo — senão ficaria apontando para um cartão que não existe
+        const noAr = this.state.transport.card === action.cardId
+        this.state = {
+          ...this.state,
+          cards: this.state.cards.filter((c) => c.id !== action.cardId),
+          transport: noAr ? { ...this.state.transport, card: null } : this.state.transport
+        }
+        break
+      }
+
+      case 'card/rename':
+        this.state = {
+          ...this.state,
+          cards: this.state.cards.map((c) => (c.id === action.cardId ? { ...c, nome: action.nome } : c))
+        }
+        break
+
+      case 'card/text':
+        this.state = {
+          ...this.state,
+          cards: this.state.cards.map((c) =>
+            c.id === action.cardId && c.kind === 'text' ? { ...c, texto: action.texto } : c
+          )
+        }
+        break
+
+      case 'card/show': {
+        // pedir de novo o que já está no ar tira da tela: um atalho só serve
+        // para mostrar e esconder, como a tela preta faz
+        const igual = this.state.transport.card === action.cardId
+        const alvo = igual ? null : action.cardId
+        const existe = alvo === null || this.state.cards.some((c) => c.id === alvo)
+        this.state = {
+          ...this.state,
+          transport: { ...this.state.transport, card: existe ? alvo : null }
+        }
+        break
+      }
+
       case 'marker/add': {
         this.mutateTab(action.tabId, `marcador:${Date.now()}`, (draft) => {
           if (draft.markers.some((m) => m.blockId === action.blockId)) return

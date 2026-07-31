@@ -32,6 +32,13 @@ export interface Binding {
 /**
  * Registro único de comandos. Dele saem, de graça, os atalhos, a paleta Ctrl+K
  * e o editor de teclas — em vez de `keydown` espalhado pela interface.
+ *
+ * A regra das teclas: a base é a coisa principal, e o Shift é a VARIANTE DELA.
+ * `Mod+S` salva o projeto e `Mod+Shift+S` salva só o roteiro, porque o projeto
+ * contém o roteiro — e casa com `Mod+O`, que já abre projeto. Onde a base e o
+ * Shift eram famílias diferentes (marcador e espelho dividindo o M, abrir
+ * projeto e ligar transmissão dividindo o O), a segunda saiu para `Mod+Alt` ou
+ * para uma tecla própria: o Shift prometia parentesco que não existia.
  */
 export const COMMANDS: CommandSpec[] = [
   { id: 'transport.playPause', group: 'Transporte', defaultBinding: 'Space' },
@@ -49,8 +56,8 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'marker.create', group: 'Marcadores', defaultBinding: 'Mod+M' },
   { id: 'marker.next', group: 'Marcadores', defaultBinding: 'Mod+ArrowDown' },
   { id: 'marker.prev', group: 'Marcadores', defaultBinding: 'Mod+ArrowUp' },
-  { id: 'chapter.next', group: 'Marcadores', defaultBinding: 'Mod+PageDown' },
-  { id: 'chapter.prev', group: 'Marcadores', defaultBinding: 'Mod+PageUp' },
+  { id: 'chapter.next', group: 'Marcadores', defaultBinding: 'Mod+Shift+ArrowDown' },
+  { id: 'chapter.prev', group: 'Marcadores', defaultBinding: 'Mod+Shift+ArrowUp' },
 
   { id: 'font.increase', group: 'Aparência', defaultBinding: 'Mod+=' },
   { id: 'font.decrease', group: 'Aparência', defaultBinding: 'Mod+-' },
@@ -61,13 +68,14 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'colors.invert', group: 'Aparência', defaultBinding: 'Mod+I' },
 
   { id: 'output.blackout', group: 'Saída', defaultBinding: 'Mod+B' },
-  { id: 'output.mirror', group: 'Saída', defaultBinding: 'Mod+Shift+M' },
-  { id: 'output.rotate', group: 'Saída', defaultBinding: 'Mod+Shift+R' },
-  { id: 'output.toggle', group: 'Saída', defaultBinding: 'Mod+Shift+O' },
+  { id: 'output.mirror', group: 'Saída', defaultBinding: 'Mod+Alt+M' },
+  { id: 'output.rotate', group: 'Saída', defaultBinding: 'Mod+Alt+R' },
+  { id: 'output.toggle', group: 'Saída', defaultBinding: 'Mod+Enter' },
+  { id: 'card.hide', group: 'Saída', defaultBinding: 'Mod+Shift+0' },
 
-  { id: 'document.save', group: 'Documento', defaultBinding: 'Mod+S' },
-  { id: 'document.saveAs', group: 'Documento', defaultBinding: 'Mod+Shift+S' },
-  { id: 'project.save', group: 'Documento', defaultBinding: 'Mod+Shift+P' },
+  { id: 'document.save', group: 'Documento', defaultBinding: 'Mod+Shift+S' },
+  { id: 'document.saveAs', group: 'Documento', defaultBinding: 'Mod+Alt+S' },
+  { id: 'project.save', group: 'Documento', defaultBinding: 'Mod+S' },
   { id: 'project.open', group: 'Documento', defaultBinding: 'Mod+O' },
   { id: 'insert.chapter', group: 'Documento', defaultBinding: 'Mod+Shift+C' },
   { id: 'insert.direction', group: 'Documento', defaultBinding: 'Mod+Shift+D' },
@@ -90,6 +98,16 @@ for (let n = 1; n <= 10; n += 1) {
     id: `tab.switch.${n}`,
     group: 'Documento',
     defaultBinding: `Mod+${n === 10 ? 0 : n}`,
+    hidden: true
+  })
+}
+
+// um por cartão: seis é o que cabe no painel e o que a mão alcança sem olhar
+for (let n = 1; n <= 6; n += 1) {
+  COMMANDS.push({
+    id: `card.show.${n}`,
+    group: 'Saída',
+    defaultBinding: `Mod+Shift+${n}`,
     hidden: true
   })
 }

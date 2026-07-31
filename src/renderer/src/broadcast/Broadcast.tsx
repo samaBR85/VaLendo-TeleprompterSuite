@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { PrompterCanvas } from '../prompter/PrompterCanvas'
+import { cartaoNoAr } from '@shared/cards'
 import { activeTabOf, useAppState } from '../state/useAppState'
 
 /** A janela que o apresentador vê. Nada de interface: só o texto. */
@@ -49,6 +50,7 @@ export function Broadcast(): React.JSX.Element {
         viewport={viewport}
         rows={rows}
         readingMark={tab.appearance.readingMarkOnOutput}
+        card={cartaoNoAr(state)}
         // esta é a única janela que alimenta o vidro do teleprompter, e a
         // única que espelha e gira para compensá-lo
         outputTransforms

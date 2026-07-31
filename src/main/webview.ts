@@ -1,8 +1,9 @@
 import { createReadStream, existsSync } from 'node:fs'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import { networkInterfaces } from 'node:os'
-import { extname, join, normalize } from 'node:path'
+import { basename, extname, join, normalize } from 'node:path'
 import type { WebviewFrame, WebviewInfo } from '@shared/api'
+import { cardMimeType, cardPath } from './cards'
 
 export const WEBVIEW_PORT = 7777
 
@@ -108,6 +109,20 @@ function atender(req: IncomingMessage, res: ServerResponse): void {
     servirArquivo('webview.html', res)
     return
   }
+  // as imagens dos cartões: quem confere pela rede precisa ver o mesmo
+  // standby que está na tela do apresentador
+  if (caminho.startsWith('/cartao/')) {
+    const arquivo = basename(decodeURIComponent(caminho.slice('/cartao/'.length)))
+    const alvo = cardPath(arquivo)
+    if (!arquivo || !existsSync(alvo)) {
+      res.writeHead(404).end('não encontrado')
+      return
+    }
+    res.writeHead(200, { 'Content-Type': cardMimeType(arquivo), 'Cache-Control': 'no-store' })
+    createReadStream(alvo).pipe(res)
+    return
+  }
+
   if (caminho === '/favicon.ico') {
     res.writeHead(204).end()
     return

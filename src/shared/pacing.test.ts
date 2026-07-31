@@ -10,7 +10,8 @@ const stopped: Transport = {
   wordsAtStart: 12,
   startedAt: 1_000,
   blackout: false,
-  frozen: false
+  frozen: false,
+  card: null
 }
 
 describe('relógio de rolagem', () => {

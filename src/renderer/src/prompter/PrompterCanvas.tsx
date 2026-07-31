@@ -3,7 +3,7 @@ import { anchorFromWordIndex, composeLines, pixelFromAnchor, totalWords, type La
 import { canvasBox, stageSize } from '@shared/output'
 import { timerReading, wordIndexAt } from '@shared/pacing'
 import { chapterTitle } from '@shared/text'
-import { timerCell, type Appearance, type Block, type TimerPosition, type Transport } from '@shared/types'
+import { timerCell, type Appearance, type Block, type Cartao, type TimerPosition, type Transport } from '@shared/types'
 
 export interface Viewport {
   width: number
@@ -66,6 +66,19 @@ interface Props {
    */
   readingMark: boolean
   /**
+   * O cartão no ar, se houver.
+   *
+   * Vem pronto em vez de o canvas procurar na lista: a página da rede recebe
+   * um quadro, não o estado inteiro, e assim as duas superfícies desenham a
+   * partir da mesma coisa.
+   */
+  card?: Cartao | null
+  /**
+   * De onde a imagem é carregada. `valendo://cartao/` nas janelas do app,
+   * `/cartao/` na página servida pela rede — a mesma imagem, dois caminhos.
+   */
+  cardBaseUrl?: string
+  /**
    * Aplicar espelho e giro.
    *
    * Só a janela que alimenta o vidro do teleprompter liga isto. Espelhar e
@@ -98,6 +111,8 @@ export function PrompterCanvas({
   marginGuides = false,
   readingMark,
   outputTransforms = false,
+  card = null,
+  cardBaseUrl = 'valendo://cartao/',
   onMetrics
 }: Props): React.JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -434,6 +449,53 @@ export function PrompterCanvas({
               />
             ))}
           </>
+        ) : null}
+
+        {/* o cartão fica DENTRO do rotador, com o texto: ao contrário da tela
+            preta, que é ausência e espelhada continua igual, um cartão carrega
+            logo e palavra — sem acompanhar o espelho do vidro, o apresentador
+            leria tudo ao contrário. E como a prévia e a página da rede não
+            aplicam a compensação, ali ele sai legível de graça */}
+        {card ? (
+          <div
+            data-card={card.id}
+            data-card-kind={card.kind}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: '#000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden'
+            }}
+          >
+            {card.kind === 'image' ? (
+              <img
+                src={`${cardBaseUrl}${encodeURIComponent(card.arquivo)}`}
+                alt=""
+                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
+              />
+            ) : (
+              <div
+                data-card-text
+                style={{
+                  padding: `0 ${appearance.marginPct}%`,
+                  fontFamily: appearance.fontFamily,
+                  // acompanha o corpo do roteiro, mas bem maior: recado é para
+                  // ser lido de relance, não lido linha a linha
+                  fontSize: appearance.fontSize * 1.6,
+                  fontWeight: 600,
+                  lineHeight: 1.15,
+                  textAlign: 'center',
+                  color: appearance.textColor,
+                  overflowWrap: 'break-word'
+                }}
+              >
+                {card.texto}
+              </div>
+            )}
+          </div>
         ) : null}
       </div>
 
