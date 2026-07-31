@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { MAX_CARTOES, novoCartaoId } from '@shared/cards'
 import type { Cartao } from '@shared/types'
@@ -28,6 +28,61 @@ export function CardsPanel({ cards, noAr, blackout, dispatch, onClose }: Props):
   const [ocupado, setOcupado] = useState(false)
   const cheio = cards.length >= MAX_CARTOES
 
+  /*
+   * O painel arrasta pelo cabeçalho porque ele tapa justamente a prévia: com o
+   * cartão no ar, o operador quer ver o que foi para a tela do apresentador
+   * enquanto escreve o próximo recado. Fechar e reabrir a cada conferida seria
+   * pior que arrastar uma vez.
+   */
+  const [posicao, setPosicao] = useState<{ x: number; y: number } | null>(null)
+  const arrasto = useRef<{ dx: number; dy: number } | null>(null)
+  const caixaRef = useRef<HTMLDivElement>(null)
+  /**
+   * Um arrasto acabou de terminar fora do painel.
+   *
+   * O clique nasce no ancestral comum entre onde o botão desceu e onde subiu:
+   * começando no cabeçalho e soltando sobre o fundo, ele nasce no FUNDO — que
+   * é o que fecha o painel. Sem esta trava, todo arrasto um pouco largo
+   * fechava os cartões no fim do gesto.
+   */
+  const arrastouAgora = useRef(false)
+
+  const comecarArrasto = (event: React.MouseEvent): void => {
+    const box = caixaRef.current?.getBoundingClientRect()
+    if (!box) return
+    arrasto.current = { dx: event.clientX - box.left, dy: event.clientY - box.top }
+
+    const mover = (e: MouseEvent): void => {
+      const a = arrasto.current
+      const caixa = caixaRef.current
+      if (!a || !caixa) return
+      arrastouAgora.current = true
+      // prende na janela: arrastar para fora deixaria o painel inalcançável,
+      // e o cabeçalho é a única alça de volta
+      const largura = caixa.offsetWidth
+      const altura = caixa.offsetHeight
+      setPosicao({
+        x: Math.min(Math.max(0, e.clientX - a.dx), window.innerWidth - largura),
+        y: Math.min(Math.max(0, e.clientY - a.dy), window.innerHeight - altura)
+      })
+    }
+    const soltar = (): void => {
+      arrasto.current = null
+      window.removeEventListener('mousemove', mover)
+      window.removeEventListener('mouseup', soltar)
+    }
+    window.addEventListener('mousemove', mover)
+    window.addEventListener('mouseup', soltar)
+  }
+
+  const fecharPeloFundo = (): void => {
+    if (arrastouAgora.current) {
+      arrastouAgora.current = false
+      return
+    }
+    onClose()
+  }
+
   const adicionarImagem = async (): Promise<void> => {
     if (cheio || ocupado) return
     setOcupado(true)
@@ -53,15 +108,21 @@ export function CardsPanel({ cards, noAr, blackout, dispatch, onClose }: Props):
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6"
-      onClick={onClose}
+      onClick={fecharPeloFundo}
       role="presentation"
     >
       <div
+        ref={caixaRef}
         data-cards-panel
         onClick={(event) => event.stopPropagation()}
+        style={posicao ? { position: 'fixed', left: posicao.x, top: posicao.y, margin: 0 } : undefined}
         className="flex max-h-[80vh] w-[480px] flex-col rounded-xl border border-[var(--color-line)] bg-[var(--color-ink-1)]"
       >
-        <div className="flex flex-none items-center gap-2 border-b border-[var(--color-line)] px-5 py-3.5">
+        <div
+          data-cards-drag
+          onMouseDown={comecarArrasto}
+          className="flex flex-none cursor-grab items-center gap-2 border-b border-[var(--color-line)] px-5 py-3.5 active:cursor-grabbing"
+        >
           <Icon name="card" size={18} />
           <h2 className="text-[15px] text-[var(--color-fog-0)]">{t('cards.title')}</h2>
           <button
@@ -161,7 +222,9 @@ function Linha({
             className="max-h-full max-w-full object-contain"
           />
         ) : (
-          <span className="truncate px-1 text-[10px] text-[var(--color-fog-1)]">{card.texto || '—'}</span>
+          <span className="line-clamp-3 px-1 text-center text-[9px] leading-tight whitespace-pre-wrap text-[var(--color-fog-1)]">
+            {card.texto || '—'}
+          </span>
         )}
       </div>
 
@@ -179,12 +242,21 @@ function Linha({
         </div>
 
         {card.kind === 'text' ? (
-          <input
+          <textarea
             value={card.texto}
             aria-label={t('cards.message')}
             placeholder={t('cards.messagePlaceholder')}
+            rows={1}
             onChange={(event) => dispatch({ type: 'card/text', cardId: card.id, texto: event.target.value })}
-            className="rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1 text-[12px] outline-none"
+            // cresce com o texto em vez de rolar dentro de uma caixa de uma
+            // linha: o recado vai para a tela como foi escrito, e onde o
+            // operador apertou Enter é onde ele quebra lá também
+            ref={(el) => {
+              if (!el) return
+              el.style.height = 'auto'
+              el.style.height = `${el.scrollHeight}px`
+            }}
+            className="resize-none overflow-hidden rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1 text-[12px] leading-snug outline-none"
           />
         ) : null}
 

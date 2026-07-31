@@ -250,28 +250,22 @@ export function Toolbar({
                   onClick={() => run('output.blackout')}
                 />
                 <Tool
-                  icon="freeze"
-                  label={`${t('toolbar.freeze')}${hint(keymap, 'transport.freeze')}`}
-                  active={transport.frozen}
-                  tint="#378ADD"
-                  onClick={() => run('transport.freeze')}
-                />
-                <Tool
-                  icon="monitor"
-                  label={t('toolbar.identify')}
-                  tint="#7F77DD"
-                  onClick={() => window.valendo.identifyDisplays()}
-                />
-                {/* aceso pelo que está acontecendo, não pelo que foi pedido:
-                    com a porta ocupada, o ícone verde diria que há uma página
-                    no ar quando não há */}
-                <Tool
                   icon="card"
                   label={t('cards.toolbar')}
                   active={state.transport.card !== null}
                   tint="#EF9F27"
                   onClick={onOpenCards}
                 />
+                <Tool
+                  icon="freeze"
+                  label={`${t('toolbar.freeze')}${hint(keymap, 'transport.freeze')}`}
+                  active={transport.frozen}
+                  tint="#378ADD"
+                  onClick={() => run('transport.freeze')}
+                />
+                {/* aceso pelo que está acontecendo, não pelo que foi pedido:
+                    com a porta ocupada, o ícone verde diria que há uma página
+                    no ar quando não há */}
                 <Tool
                   icon="webview"
                   label={
@@ -282,6 +276,12 @@ export function Toolbar({
                   active={webviewLive}
                   tint="#1D9E75"
                   onClick={onOpenWebview}
+                />
+                <Tool
+                  icon="monitor"
+                  label={t('toolbar.identify')}
+                  tint="#7F77DD"
+                  onClick={() => window.valendo.identifyDisplays()}
                 />
               </Grupo>
             </Pill>

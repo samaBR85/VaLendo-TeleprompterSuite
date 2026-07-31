@@ -489,7 +489,10 @@ export function PrompterCanvas({
                   lineHeight: 1.15,
                   textAlign: 'center',
                   color: appearance.textColor,
-                  overflowWrap: 'break-word'
+                  overflowWrap: 'break-word',
+                  // onde o operador apertou Enter é onde quebra aqui também:
+                  // um recado de duas linhas foi escrito em duas de propósito
+                  whiteSpace: 'pre-wrap'
                 }}
               >
                 {card.texto}
