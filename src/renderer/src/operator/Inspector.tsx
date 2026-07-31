@@ -3,7 +3,7 @@ import type { Action } from '@shared/actions'
 import { FONT_OPTIONS } from '@shared/defaults'
 import { TIMER_POSITIONS, type Appearance, type ColorPreset, type Tab } from '@shared/types'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
-import { Icon } from '../ui/Icon'
+import { Icon, type IconName } from '../ui/Icon'
 
 interface Props {
   tab: Tab
@@ -14,14 +14,36 @@ interface Props {
   dispatch: (action: Action) => void
 }
 
-function Group({ label, children }: { label: string; children: React.ReactNode }): React.JSX.Element {
+/**
+ * Bloco de ajustes. Sem `label` quando o nome da aba já diz o que é ali —
+ * repetir o nome logo abaixo da própria aba só gasta altura.
+ */
+function Group({ label, children }: { label?: string; children: React.ReactNode }): React.JSX.Element {
   return (
-    <div className="border-b border-[var(--color-line)]/60 px-3 py-3">
-      <div className="mb-2 text-[11px] font-medium tracking-wide text-[var(--color-fog-2)]">{label}</div>
-      <div className="flex flex-col gap-2.5">{children}</div>
+    <div className="border-b border-[var(--color-line)]/60 px-3 py-2.5">
+      {label ? (
+        <div className="mb-1.5 text-[11px] font-medium tracking-wide text-[var(--color-fog-2)]">{label}</div>
+      ) : null}
+      <div className="flex flex-col gap-2">{children}</div>
     </div>
   )
 }
+
+type AbaId = 'texto' | 'leitura' | 'saida'
+
+/**
+ * Três abas em vez de uma pilha de 1500px.
+ *
+ * O corte é por assunto, não por tipo de controle: "Texto" é a cara do texto
+ * (fonte e cor juntas — trocar o corpo e trocar o fundo é a mesma decisão de
+ * legibilidade); "Leitura" é como ele se comporta enquanto sobe; "Saída" é o
+ * que só existe na tela do apresentador — relógios, espelho e giro.
+ */
+const ABAS: { id: AbaId; label: string; icon: IconName; hint: string }[] = [
+  { id: 'texto', label: 'Texto', icon: 'text', hint: 'fonte, corpo, alinhamento e cores' },
+  { id: 'leitura', label: 'Leitura', icon: 'readingLine', hint: 'margem, palavras por linha, marca de leitura e ritmo' },
+  { id: 'saida', label: 'Saída', icon: 'monitor', hint: 'relógios, espelho e giro da tela do apresentador' }
+]
 
 function Slider({
   label,
@@ -105,12 +127,16 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
     return () => clearTimeout(timer)
   }, [salvou])
 
+  const [aba, setAba] = useState<AbaId>('texto')
+
   return (
-    <aside className="flex w-[214px] flex-none flex-col overflow-y-auto border-l border-[var(--color-line)] bg-[var(--color-ink-1)]">
-      {/* dobra de linha é silenciosa e estraga a leitura: o apresentador
+    <aside className="flex w-[214px] flex-none flex-col border-l border-[var(--color-line)] bg-[var(--color-ink-1)]">
+      {/* o aviso fica FORA das abas, fixo: ele fala do estado de agora, e numa
+          aba qualquer ele passaria despercebido justamente quando importa.
+          Dobra de linha é silenciosa e estraga a leitura — o apresentador
           combinou 7 palavras por linha e recebe 4 e 3 */}
       {metrics?.wrapping ? (
-        <div className="border-b border-[var(--color-line)]/60 bg-[var(--color-warn)]/10 px-3 py-2.5">
+        <div className="flex-none border-b border-[var(--color-line)]/60 bg-[var(--color-warn)]/10 px-3 py-2.5">
           <div className="text-[11px] text-[var(--color-warn)]">As linhas estão dobrando</div>
           <div className="mt-0.5 text-[11px] text-[var(--color-fog-2)]">
             Não cabem {a.maxWords} palavras na largura desta saída com {a.fontSize}px.
@@ -125,7 +151,31 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
         </div>
       ) : null}
 
-      <Group label="Tipografia">
+      <div data-inspector-abas className="flex flex-none border-b border-[var(--color-line)] bg-[var(--color-ink-2)]">
+        {ABAS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            data-aba={item.id}
+            aria-pressed={aba === item.id}
+            title={`${item.label} — ${item.hint}`}
+            onClick={() => setAba(item.id)}
+            className={`flex flex-1 flex-col items-center gap-1 border-b-2 px-1 pt-2 pb-1.5 text-[10px] transition-colors ${
+              aba === item.id
+                ? 'border-[var(--color-go)] bg-[var(--color-ink-1)] text-[var(--color-fog-0)]'
+                : 'border-transparent text-[var(--color-fog-2)] hover:text-[var(--color-fog-1)]'
+            }`}
+          >
+            <Icon name={item.icon} size={15} />
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      <div data-inspector-corpo className="min-h-0 flex-1 overflow-y-auto">
+      {aba === 'texto' ? (
+        <>
+      <Group>
         <select
           value={a.fontFamily}
           onChange={(event) => patch({ fontFamily: event.target.value })}
@@ -149,47 +199,6 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
           suffix="em"
           onChange={(letterSpacing) => patch({ letterSpacing })}
         />
-      </Group>
-
-      <Group label="Ritmo">
-        <Toggle
-          label="Velocidade constante"
-          active={a.uniformSpeed}
-          onClick={() => patch({ uniformSpeed: !a.uniformSpeed })}
-        />
-        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
-          {a.uniformSpeed
-            ? 'O texto sobe sempre no mesmo ritmo, do começo ao fim.'
-            : 'A velocidade oscila: linha com mais palavras demora mais para passar.'}
-        </div>
-      </Group>
-
-      <Group label="Composição">
-        <Slider label="Margem" value={a.marginPct} min={0} max={35} suffix="%" onChange={(marginPct) => patch({ marginPct })} />
-        <Slider label="Mínimo por linha" value={a.minWords} min={1} max={a.maxWords} onChange={(minWords) => patch({ minWords })} />
-        <Slider label="Máximo por linha" value={a.maxWords} min={a.minWords} max={16} onChange={(maxWords) => patch({ maxWords })} />
-        <Slider
-          label="Marca de leitura"
-          value={a.readingLinePct * 100}
-          min={10}
-          max={70}
-          suffix="%"
-          onChange={(value) => patch({ readingLinePct: value / 100 })}
-        />
-        {/* na prévia a linha aparece sempre; isto decide só a transmissão */}
-        {/* rótulo curto porque o painel tem 214px: "Mostrar a linha na
-            transmissão" ficava cortado no meio, e rótulo cortado é rótulo que
-            não informa */}
-        <Toggle
-          label="Linha na transmissão"
-          active={a.readingMarkOnOutput}
-          onClick={() => patch({ readingMarkOnOutput: !a.readingMarkOnOutput })}
-        />
-        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
-          {a.readingMarkOnOutput
-            ? 'O apresentador também vê a linha atravessando o texto.'
-            : 'A linha fica só aqui na sua prévia. O apresentador vê o texto limpo.'}
-        </div>
         <div className="flex gap-1.5">
           {(['left', 'center'] as const).map((align) => (
             <button
@@ -206,9 +215,10 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
             </button>
           ))}
         </div>
-        <Toggle label="Esmaecer bordas" active={a.focusDim} onClick={() => patch({ focusDim: !a.focusDim })} />
       </Group>
 
+      {/* cor mora junto da fonte: trocar o corpo e trocar o fundo são a mesma
+          decisão de legibilidade, e separá-las obrigava a ir e voltar */}
       <Group label="Cores">
         <div className="flex items-center gap-2 text-[11px]">
           <label className="flex flex-1 items-center gap-1.5">
@@ -255,8 +265,58 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
           Inverter cores
         </button>
       </Group>
+        </>
+      ) : null}
 
-      <Group label="Relógios na transmissão">
+      {aba === 'leitura' ? (
+        <>
+      <Group>
+        <Slider label="Margem" value={a.marginPct} min={0} max={35} suffix="%" onChange={(marginPct) => patch({ marginPct })} />
+        <Slider label="Mínimo por linha" value={a.minWords} min={1} max={a.maxWords} onChange={(minWords) => patch({ minWords })} />
+        <Slider label="Máximo por linha" value={a.maxWords} min={a.minWords} max={16} onChange={(maxWords) => patch({ maxWords })} />
+        <Slider
+          label="Marca de leitura"
+          value={a.readingLinePct * 100}
+          min={10}
+          max={70}
+          suffix="%"
+          onChange={(value) => patch({ readingLinePct: value / 100 })}
+        />
+        {/* na prévia a linha aparece sempre; isto decide só a transmissão */}
+        {/* rótulo curto porque o painel tem 214px: "Mostrar a linha na
+            transmissão" ficava cortado no meio, e rótulo cortado é rótulo que
+            não informa */}
+        <Toggle
+          label="Linha na transmissão"
+          active={a.readingMarkOnOutput}
+          onClick={() => patch({ readingMarkOnOutput: !a.readingMarkOnOutput })}
+        />
+        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
+          {a.readingMarkOnOutput ? 'O apresentador também vê a linha.' : 'A linha fica só na sua prévia.'}
+        </div>
+        <Toggle label="Esmaecer bordas" active={a.focusDim} onClick={() => patch({ focusDim: !a.focusDim })} />
+      </Group>
+
+      <Group label="Ritmo">
+        <Toggle
+          label="Velocidade constante"
+          active={a.uniformSpeed}
+          onClick={() => patch({ uniformSpeed: !a.uniformSpeed })}
+        />
+        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
+          {a.uniformSpeed
+            ? 'Mesmo ritmo do começo ao fim.'
+            : 'Linha com mais palavras demora mais para passar.'}
+        </div>
+      </Group>
+        </>
+      ) : null}
+
+      {aba === 'saida' ? (
+        <>
+      {/* relógio é coisa que só existe na tela do apresentador, como o espelho
+          e o giro — por isso mora aqui, e não junto das cores do texto */}
+      <Group label="Relógios">
         {/* a cor fica junto do próprio relógio: separada, dava para trocar a
             do decorrido achando que era a do restante */}
         <div className="flex items-center gap-1.5">
@@ -299,7 +359,10 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
                 relógio fica apontando o lugar é mais direto que ler rótulos */}
             <div>
               <div className="mb-1.5 text-[11px] text-[var(--color-fog-1)]">Posição</div>
-              <div className="grid grid-cols-3 gap-1 rounded-md border border-[var(--color-line)] p-1">
+              {/* estreita de propósito: as células são quadradas, então ocupar
+                  a largura toda do painel custava ~190px de altura só para
+                  apontar um canto */}
+              <div className="grid w-[104px] grid-cols-3 gap-1 rounded-md border border-[var(--color-line)] p-1">
                 {TIMER_POSITIONS.flat().map((position) => (
                   <button
                     key={position}
@@ -331,47 +394,12 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
         ) : null}
       </Group>
 
-      <Group label="Padrão">
-        <button
-          type="button"
-          data-save-defaults
-          onClick={() => {
-            dispatch({ type: 'defaults/save' })
-            setSalvou(true)
-          }}
-          className={`rounded-md border py-1.5 text-[11px] transition-colors ${
-            salvou
-              ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
-              : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
-          }`}
-        >
-          {salvou ? 'Guardado' : 'Salvar estes ajustes como padrão'}
-        </button>
-
-        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
-          {customDefaults
-            ? 'Aba nova nasce com os seus ajustes e a sua velocidade.'
-            : 'Aba nova nasce com o padrão de fábrica. As outras abas não mudam.'}
-        </div>
-
-        {customDefaults ? (
-          <button
-            type="button"
-            data-reset-defaults
-            onClick={() => dispatch({ type: 'defaults/reset' })}
-            className="rounded-md border border-[var(--color-line)] py-1.5 text-[11px] text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]"
-          >
-            Voltar ao padrão de fábrica
-          </button>
-        ) : null}
-      </Group>
-
-      <Group label="Saída">
+      <Group label="Compensação do vidro">
         {/* sem este aviso, ligar espelhar e ver a prévia não mudar parece
-            defeito — quando é justamente o certo acontecendo */}
+            defeito — quando é justamente o certo acontecendo. O rótulo do
+            grupo já diz o "porquê", então aqui basta o "onde vale" */}
         <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
-          Compensação do vidro do teleprompter. Vale só para a tela do apresentador — a prévia aqui
-          e a página da rede seguem sem espelho e sem giro, para dar leitura.
+          Só na tela do apresentador. A prévia e a rede seguem sem espelho, para dar leitura.
         </div>
         <Toggle label="Espelhar horizontal" active={a.mirrorX} onClick={() => patch({ mirrorX: !a.mirrorX })} />
         <Toggle label="Espelhar vertical" active={a.mirrorY} onClick={() => patch({ mirrorY: !a.mirrorY })} />
@@ -392,6 +420,47 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
           ))}
         </div>
       </Group>
+        </>
+      ) : null}
+      </div>
+
+      {/* fora das abas, no rodapé: guardar o padrão vale para o painel inteiro,
+          não para a aba que está aberta — dentro de uma delas, pareceria
+          guardar só aquele pedaço */}
+      <div className="flex flex-none items-center gap-2 border-t border-[var(--color-line)] px-3 py-2">
+        <button
+          type="button"
+          data-save-defaults
+          title={
+            customDefaults
+              ? 'Aba nova nasce com os seus ajustes e a sua velocidade.'
+              : 'Aba nova nasce com o padrão de fábrica. As outras abas não mudam.'
+          }
+          onClick={() => {
+            dispatch({ type: 'defaults/save' })
+            setSalvou(true)
+          }}
+          className={`min-w-0 flex-1 truncate rounded-md border py-1.5 text-[11px] transition-colors ${
+            salvou
+              ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
+              : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
+          }`}
+        >
+          {salvou ? 'Guardado' : 'Salvar como padrão'}
+        </button>
+        {customDefaults ? (
+          <button
+            type="button"
+            data-reset-defaults
+            title="Voltar ao padrão de fábrica"
+            aria-label="Voltar ao padrão de fábrica"
+            onClick={() => dispatch({ type: 'defaults/reset' })}
+            className="flex-none rounded-md border border-[var(--color-line)] p-1.5 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+          >
+            <Icon name="restart" size={13} />
+          </button>
+        ) : null}
+      </div>
     </aside>
   )
 }

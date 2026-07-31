@@ -32,6 +32,8 @@ export type IconName =
   | 'layoutSplit'
   | 'layoutFocus'
   | 'layoutDeck'
+  | 'text'
+  | 'readingLine'
 
 const PATHS: Record<IconName, string> = {
   play: 'M8 5l11 7-11 7z',
@@ -76,7 +78,10 @@ const PATHS: Record<IconName, string> = {
   // cima de linhas de lista — a mesma leitura visual do que cada um mostra
   layoutSplit: 'M3 5h8v14H3zM13 5h8v14H13z',
   layoutFocus: 'M3 5h18v10H3zM7 19h10',
-  layoutDeck: 'M3 4h18v5H3zM3 13h8M3 17h8M13 13h8M13 17h5'
+  layoutDeck: 'M3 4h18v5H3zM3 13h8M3 17h8M13 13h8M13 17h5',
+  text: 'M4 6h16M4 12h11M4 18h14',
+  // linhas de texto atravessadas pela marca de leitura, com as cunhas das pontas
+  readingLine: 'M7 6h10M7 18h10M2 12h20M4 10l2 2-2 2M20 10l-2 2 2 2'
 }
 
 interface Props {
