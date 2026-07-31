@@ -5,7 +5,7 @@ import { buildProject, readProject, serializeProject } from './project'
 import type { AppState, Cartao } from './types'
 
 const IMAGEM: Cartao = { id: 'c1', kind: 'image', nome: 'Standby', arquivo: 'c1.png' }
-const RECADO: Cartao = { id: 'c2', kind: 'text', nome: 'Corta', texto: 'CORTA' }
+const RECADO: Cartao = { id: 'c2', kind: 'text', texto: 'CORTA' }
 
 function comCartoes(cards: Cartao[], noAr: string | null = null): AppState {
   const base = createInitialState()
@@ -25,6 +25,15 @@ describe('qual cartão está na tela', () => {
     // o reducer limpa isso, mas um workspace gravado no meio de uma versão
     // antiga pode chegar assim — e apontar para o vazio não pode quebrar a tela
     expect(cartaoNoAr(comCartoes([IMAGEM], 'sumiu'))).toBeNull()
+  })
+})
+
+describe('só a imagem tem nome', () => {
+  it('o recado não carrega um rótulo à parte da mensagem', () => {
+    // dois campos pediriam escrever "Corta" em cima de "CORTA": a mensagem já
+    // é o rótulo legível, e o segundo campo só dava trabalho
+    expect('nome' in RECADO).toBe(false)
+    expect('nome' in IMAGEM).toBe(true)
   })
 })
 

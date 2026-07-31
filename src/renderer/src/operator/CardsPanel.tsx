@@ -102,7 +102,7 @@ export function CardsPanel({ cards, noAr, blackout, dispatch, onClose }: Props):
   const adicionarRecado = (): void => {
     if (cheio) return
     const id = novoCartaoId(Date.now(), cards.length)
-    dispatch({ type: 'card/add', card: { id, kind: 'text', nome: t('cards.message'), texto: '' } })
+    dispatch({ type: 'card/add', card: { id, kind: 'text', texto: '' } })
   }
 
   return (
@@ -229,36 +229,39 @@ function Linha({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <div className="flex items-center gap-2">
-          <input
-            value={card.nome}
-            aria-label={t('cards.name')}
-            onChange={(event) => dispatch({ type: 'card/rename', cardId: card.id, nome: event.target.value })}
-            className="min-w-0 flex-1 rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1 text-[12px] outline-none"
-          />
-          <kbd className="flex-none rounded border border-[var(--color-line)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--color-fog-2)]">
+        {/* a imagem precisa de um nome porque a miniatura sozinha não se
+            explica na lista; o recado não, porque ele já é o próprio rótulo */}
+        <div className="flex items-start gap-2">
+          {card.kind === 'image' ? (
+            <input
+              value={card.nome}
+              aria-label={t('cards.name')}
+              onChange={(event) => dispatch({ type: 'card/rename', cardId: card.id, nome: event.target.value })}
+              className="min-w-0 flex-1 rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1 text-[12px] outline-none"
+            />
+          ) : (
+            <textarea
+              value={card.texto}
+              aria-label={t('cards.message')}
+              placeholder={t('cards.messagePlaceholder')}
+              rows={1}
+              autoFocus={card.texto === ''}
+              onChange={(event) => dispatch({ type: 'card/text', cardId: card.id, texto: event.target.value })}
+              // cresce com o texto em vez de rolar dentro de uma caixa de uma
+              // linha: o recado vai para a tela como foi escrito, e onde o
+              // operador apertou Enter é onde ele quebra lá também
+              ref={(el) => {
+                if (!el) return
+                el.style.height = 'auto'
+                el.style.height = `${el.scrollHeight}px`
+              }}
+              className="min-w-0 flex-1 resize-none overflow-hidden rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1 text-[12px] leading-snug outline-none"
+            />
+          )}
+          <kbd className="mt-0.5 flex-none rounded border border-[var(--color-line)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--color-fog-2)]">
             Ctrl+Shift+{atalho}
           </kbd>
         </div>
-
-        {card.kind === 'text' ? (
-          <textarea
-            value={card.texto}
-            aria-label={t('cards.message')}
-            placeholder={t('cards.messagePlaceholder')}
-            rows={1}
-            onChange={(event) => dispatch({ type: 'card/text', cardId: card.id, texto: event.target.value })}
-            // cresce com o texto em vez de rolar dentro de uma caixa de uma
-            // linha: o recado vai para a tela como foi escrito, e onde o
-            // operador apertou Enter é onde ele quebra lá também
-            ref={(el) => {
-              if (!el) return
-              el.style.height = 'auto'
-              el.style.height = `${el.scrollHeight}px`
-            }}
-            className="resize-none overflow-hidden rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1 text-[12px] leading-snug outline-none"
-          />
-        ) : null}
 
         <div className="flex items-center gap-1.5">
           <button

@@ -353,7 +353,10 @@ export class Store {
       case 'card/rename':
         this.state = {
           ...this.state,
-          cards: this.state.cards.map((c) => (c.id === action.cardId ? { ...c, nome: action.nome } : c))
+          // só a imagem tem nome; no recado o rótulo é a própria mensagem
+          cards: this.state.cards.map((c) =>
+            c.id === action.cardId && c.kind === 'image' ? { ...c, nome: action.nome } : c
+          )
         }
         break
 

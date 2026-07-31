@@ -157,12 +157,18 @@ export type Cartao =
   | {
       id: string
       kind: 'image'
-      /** como o operador chama, para achar na lista e no atalho */
+      /**
+       * Como o operador chama, para achar na lista.
+       *
+       * Só a imagem tem: no recado, a própria mensagem já é o rótulo legível,
+       * e um segundo campo seria pedir para escrever "Corta" em cima de
+       * "CORTA".
+       */
       nome: string
       /** nome do arquivo dentro de userData/cartoes — nunca o caminho de origem */
       arquivo: string
     }
-  | { id: string; kind: 'text'; nome: string; texto: string }
+  | { id: string; kind: 'text'; texto: string }
 
 export interface Transport {
   playing: boolean
