@@ -5,6 +5,7 @@ import { PrompterStage } from '../prompter/PrompterStage'
 import { activeTabOf, useAppState } from '../state/useAppState'
 import { Icon, type IconName } from '../ui/Icon'
 import { Wordmark } from '../ui/Wordmark'
+import { CloseConfirm } from './CloseConfirm'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
 import { Deck } from './deck/Deck'
@@ -113,6 +114,7 @@ export function App(): React.JSX.Element {
   const [metrics, setMetrics] = useState<PrompterMetrics | null>(null)
   const [credits, setCredits] = useState(false)
   const [notice, setNotice] = useState<Notice | null>(null)
+  const [closeConfirm, setCloseConfirm] = useState(false)
   const mainRef = useRef<HTMLElement>(null)
   const editorRef = useRef<EditorHandle>(null)
 
@@ -121,6 +123,17 @@ export function App(): React.JSX.Element {
     const timer = setTimeout(() => setNotice(null), 9_000)
     return () => clearTimeout(timer)
   }, [notice])
+
+  // o main pede confirmação ao fechar com a transmissão no ar; a resposta
+  // sempre volta por IPC, mesmo quando o operador cancela — sem isso o main
+  // fica esperando para sempre e a janela nunca mais fecha
+  useEffect(() => window.valendo.onConfirmClose(() => setCloseConfirm(true)), [])
+
+  const respondToClose = useCallback((confirmed: boolean) => {
+    if (confirmed) editorRef.current?.flush()
+    setCloseConfirm(false)
+    window.valendo.respondToClose(confirmed)
+  }, [])
 
   /**
    * Salva a aba ativa num arquivo.
@@ -513,6 +526,9 @@ export function App(): React.JSX.Element {
           dispatch={dispatch}
           onClose={() => setKeymapOpen(false)}
         />
+      ) : null}
+      {closeConfirm ? (
+        <CloseConfirm onCancel={() => respondToClose(false)} onConfirm={() => respondToClose(true)} />
       ) : null}
     </div>
   )

@@ -1,5 +1,6 @@
-import { BrowserWindow, Menu, dialog, powerSaveBlocker, screen } from 'electron'
+import { BrowserWindow, Menu, powerSaveBlocker, screen } from 'electron'
 import { join } from 'node:path'
+import { CHANNELS } from '@shared/actions'
 import { findDisplay } from './displays'
 
 const isMac = process.platform === 'darwin'
@@ -36,6 +37,8 @@ function loadPage(window: BrowserWindow, page: 'operator' | 'broadcast'): void {
 let operatorWindow: BrowserWindow | null = null
 let broadcastWindow: BrowserWindow | null = null
 let sleepBlockerId: number | null = null
+/** true assim que o operador confirmou "Encerrar a transmissão" no modal, para o 'close' seguinte não pedir de novo. */
+let closeConfirmed = false
 
 export function getOperatorWindow(): BrowserWindow | null {
   return operatorWindow
@@ -72,22 +75,19 @@ export function createOperatorWindow(): BrowserWindow {
 
   operatorWindow.on('ready-to-show', () => operatorWindow?.show())
 
-  // fechar a janela do operador derruba a transmissão: confirma primeiro
+  // fechar a janela do operador derruba a transmissão: confirma primeiro, com
+  // um modal do próprio app em vez do diálogo nativo do sistema — pede para o
+  // renderer perguntar e espera a resposta chegar por IPC antes de decidir
   operatorWindow.on('close', (event) => {
+    if (closeConfirmed) return
     if (!broadcastWindow || broadcastWindow.isDestroyed() || !operatorWindow) return
-    const choice = dialog.showMessageBoxSync(operatorWindow, {
-      type: 'warning',
-      buttons: ['Cancelar', 'Encerrar a transmissão'],
-      defaultId: 0,
-      cancelId: 0,
-      message: 'A transmissão está no ar.',
-      detail: 'Fechar o app agora apaga o texto na tela do apresentador.'
-    })
-    if (choice === 0) event.preventDefault()
+    event.preventDefault()
+    operatorWindow.webContents.send(CHANNELS.confirmCloseRequest)
   })
 
   operatorWindow.on('closed', () => {
     operatorWindow = null
+    closeConfirmed = false
   })
 
   loadPage(operatorWindow, 'operator')
@@ -147,6 +147,20 @@ export function openBroadcastWindow(displayId: number | null): boolean {
 
   loadPage(broadcastWindow, 'broadcast')
   return true
+}
+
+/**
+ * Resposta do modal de confirmação ao fechar com a transmissão no ar.
+ *
+ * Encerra a transmissão ANTES de deixar a janela do operador fechar de
+ * verdade — sem isto, a janela do operador some mas a transmissão continua
+ * exibindo no outro monitor, órfã, e sem interface nenhuma para desligá-la.
+ */
+export function respondToCloseConfirm(confirmed: boolean): void {
+  if (!confirmed || !operatorWindow) return
+  closeBroadcastWindow()
+  closeConfirmed = true
+  operatorWindow.close()
 }
 
 export function closeBroadcastWindow(): void {

@@ -230,6 +230,18 @@ export function useCommands(
         case 'view.focusMode':
           ui.toggleFocusMode()
           break
+        case 'view.inspector':
+          dispatch({ type: 'layout/inspector', visible: !state.inspectorVisible })
+          break
+        case 'view.split':
+          dispatch({ type: 'layout/mode', mode: 'split' })
+          break
+        case 'view.focus':
+          dispatch({ type: 'layout/mode', mode: 'focus' })
+          break
+        case 'view.deck':
+          dispatch({ type: 'layout/mode', mode: 'deck' })
+          break
         case 'palette.open':
           ui.openPalette()
           break

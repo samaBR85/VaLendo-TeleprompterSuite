@@ -72,6 +72,10 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'tab.close', label: 'Fechar aba', group: 'Documento', defaultBinding: 'Mod+W' },
 
   { id: 'view.focusMode', label: 'Alternar modo foco', group: 'Visão', defaultBinding: 'F11' },
+  { id: 'view.inspector', label: 'Abrir ou fechar os ajustes', group: 'Visão', defaultBinding: 'F5' },
+  { id: 'view.split', label: 'Ir para o modo Split', group: 'Visão', defaultBinding: 'F6' },
+  { id: 'view.focus', label: 'Ir para o modo Foco', group: 'Visão', defaultBinding: 'F7' },
+  { id: 'view.deck', label: 'Ir para a Mesa de comando', group: 'Visão', defaultBinding: 'F8' },
   { id: 'palette.open', label: 'Paleta de comandos', group: 'Visão', defaultBinding: 'Mod+K' },
   { id: 'keymap.open', label: 'Editar atalhos', group: 'Visão', defaultBinding: 'Mod+,' }
 ]

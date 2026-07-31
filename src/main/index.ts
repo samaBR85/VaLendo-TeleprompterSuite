@@ -19,6 +19,7 @@ import {
   getOperatorWindow,
   onBroadcastContextMenu,
   openBroadcastWindow,
+  respondToCloseConfirm,
   sendToAll
 } from './windows'
 
@@ -185,6 +186,8 @@ function registerIpc(): void {
   })
 
   ipcMain.handle(CHANNELS.broadcastCoversOperator, () => broadcastCoversOperator())
+
+  ipcMain.on(CHANNELS.confirmCloseResponse, (_event, confirmed: boolean) => respondToCloseConfirm(confirmed))
 }
 
 /**

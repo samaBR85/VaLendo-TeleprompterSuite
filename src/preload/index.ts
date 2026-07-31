@@ -23,7 +23,9 @@ const api: ValendoApi = {
   openExternal: (url: string) => ipcRenderer.send(CHANNELS.openExternal, url),
   coversOperator: () => ipcRenderer.invoke(CHANNELS.broadcastCoversOperator) as Promise<boolean>,
   onState: (callback) => subscribe<StateSnapshot>(CHANNELS.stateChanged, callback),
-  onDisplays: (callback) => subscribe<DisplayInfo[]>(CHANNELS.displaysChanged, callback)
+  onDisplays: (callback) => subscribe<DisplayInfo[]>(CHANNELS.displaysChanged, callback),
+  onConfirmClose: (callback) => subscribe<void>(CHANNELS.confirmCloseRequest, callback),
+  respondToClose: (confirmed: boolean) => ipcRenderer.send(CHANNELS.confirmCloseResponse, confirmed)
 }
 
 contextBridge.exposeInMainWorld('valendo', api)

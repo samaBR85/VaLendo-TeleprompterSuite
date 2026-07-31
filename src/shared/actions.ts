@@ -60,5 +60,7 @@ export const CHANNELS = {
   projectSave: 'project:save',
   projectOpen: 'project:open',
   openExternal: 'app:openExternal',
-  broadcastCoversOperator: 'broadcast:coversOperator'
+  broadcastCoversOperator: 'broadcast:coversOperator',
+  confirmCloseRequest: 'app:confirmCloseRequest',
+  confirmCloseResponse: 'app:confirmCloseResponse'
 } as const

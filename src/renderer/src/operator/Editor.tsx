@@ -184,13 +184,18 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
     })
   }, [draft])
 
+  // `scrollbar-gutter: stable` nos dois: sem isso, um roteiro comprido o
+  // bastante para precisar de rolagem reserva os 13px da barra só no textarea
+  // (que rola de verdade) e não no <pre> (que só é panorâmico por baixo dele)
+  // — os dois passam a quebrar linha em pontos diferentes, e selecionar texto
+  // revela o textarea real desalinhado por baixo do texto colorido.
   return (
     <div className="relative min-h-0 flex-1 overflow-hidden">
       <pre
         ref={preRef}
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 overflow-hidden"
-        style={TYPE_SETTINGS}
+        className="pointer-events-none absolute inset-0 overflow-x-hidden overflow-y-auto"
+        style={{ ...TYPE_SETTINGS, scrollbarGutter: 'stable' }}
       >
         {highlighted}
         {'\n'}
@@ -206,7 +211,13 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
         spellCheck={false}
         placeholder="Cole ou digite o roteiro. Onde você quebrar a linha, ela quebra na tela do apresentador. [colchetes] marcam direções, § abre capítulo."
         className="absolute inset-0 resize-none bg-transparent outline-none"
-        style={{ ...TYPE_SETTINGS, color: 'transparent', caretColor: 'var(--color-fog-0)', userSelect: 'text' }}
+        style={{
+          ...TYPE_SETTINGS,
+          color: 'transparent',
+          caretColor: 'var(--color-fog-0)',
+          userSelect: 'text',
+          scrollbarGutter: 'stable'
+        }}
       />
     </div>
   )

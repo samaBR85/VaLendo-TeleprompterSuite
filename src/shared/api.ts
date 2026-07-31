@@ -113,4 +113,11 @@ export interface ValendoApi {
   coversOperator(): Promise<boolean>
   onState(callback: (snapshot: StateSnapshot) => void): () => void
   onDisplays(callback: (displays: DisplayInfo[]) => void): () => void
+  /**
+   * O main pediu confirmação antes de fechar: a transmissão está no ar.
+   * Substitui o diálogo nativo do sistema por um modal do próprio app.
+   */
+  onConfirmClose(callback: () => void): () => void
+  /** resposta ao pedido acima — confirma que pode fechar, ou cancela. */
+  respondToClose(confirmed: boolean): void
 }
