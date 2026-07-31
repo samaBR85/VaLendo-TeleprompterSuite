@@ -15,86 +15,97 @@
   --color-link: #6fa8f0;
 }
 
-* {
-  box-sizing: border-box;
-}
+/*
+ * Tudo daqui para baixo é base, e precisa estar dentro de `@layer base`.
+ *
+ * Fora de camada, uma regra ganha de qualquer utilitário em camada — sem
+ * disputa de especificidade, é a ordem das camadas que decide. Enquanto este
+ * bloco esteve solto, `button { color: inherit }` anulou toda cor de texto de
+ * todo botão do app: o iniciar nunca ficou verde, o "tela preta" nunca ficou
+ * vermelho, e ninguém viu porque a cor de fundo, essa sim, funcionava.
+ */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
 
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-}
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+  }
 
-body {
-  background: var(--color-ink-0);
-  color: var(--color-fog-0);
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  font-size: 13px;
-  overflow: hidden;
-  user-select: none;
-  -webkit-font-smoothing: antialiased;
-}
+  body {
+    background: var(--color-ink-0);
+    color: var(--color-fog-0);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+    overflow: hidden;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
 
-input,
-textarea,
-select,
-button {
-  font: inherit;
-  color: inherit;
-}
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
+  }
 
-/* o textarea do editor tem cor transparente (o realce vem do <pre> atrás),
-   então o placeholder precisa de cor própria ou fica invisível */
-textarea::placeholder {
-  color: var(--color-fog-2);
-  opacity: 1;
-}
+  /* o textarea do editor tem cor transparente (o realce vem do <pre> atrás),
+     então o placeholder precisa de cor própria ou fica invisível */
+  textarea::placeholder {
+    color: var(--color-fog-2);
+    opacity: 1;
+  }
 
-input[type='range'] {
-  appearance: none;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--color-ink-3);
-  outline: none;
-}
+  input[type='range'] {
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--color-ink-3);
+    outline: none;
+  }
 
-input[type='range']::-webkit-slider-thumb {
-  appearance: none;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: var(--color-fog-0);
-  cursor: pointer;
-}
+  input[type='range']::-webkit-slider-thumb {
+    appearance: none;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--color-fog-0);
+    cursor: pointer;
+  }
 
-input[type='color'] {
-  appearance: none;
-  border: none;
-  padding: 0;
-  background: none;
-  cursor: pointer;
-}
+  input[type='color'] {
+    appearance: none;
+    border: none;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+  }
 
-input[type='color']::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
+  input[type='color']::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
 
-input[type='color']::-webkit-color-swatch {
-  border: 1px solid var(--color-line);
-  border-radius: 4px;
-}
+  input[type='color']::-webkit-color-swatch {
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+  }
 
-::-webkit-scrollbar {
-  width: 9px;
-  height: 9px;
-}
+  ::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-ink-3);
-  border-radius: 5px;
-}
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-3);
+    border-radius: 5px;
+  }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
