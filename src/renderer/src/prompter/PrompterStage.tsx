@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { canvasBox } from '@shared/output'
 import { PrompterCanvas, type PrompterMetrics, type Viewport } from './PrompterCanvas'
 import type { Appearance, Block, Transport } from '@shared/types'
 
@@ -22,6 +23,11 @@ export function PrompterStage(props: Props): React.JSX.Element {
   const boxRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(0.1)
 
+  // a prévia não gira, então a caixa que ela desenha é o palco em pé, e não a
+  // forma do monitor: encaixar pela forma do monitor deixaria o texto girado
+  // transbordando a moldura
+  const desenho = canvasBox(props.appearance.rotation, props.viewport, false)
+
   useEffect(() => {
     const box = boxRef.current
     if (!box) return
@@ -29,14 +35,14 @@ export function PrompterStage(props: Props): React.JSX.Element {
     const fit = (): void => {
       const { width, height } = box.getBoundingClientRect()
       if (width === 0 || height === 0) return
-      setScale(Math.min(width / props.viewport.width, height / props.viewport.height))
+      setScale(Math.min(width / desenho.width, height / desenho.height))
     }
 
     fit()
     const observer = new ResizeObserver(fit)
     observer.observe(box)
     return () => observer.disconnect()
-  }, [props.viewport.width, props.viewport.height])
+  }, [desenho.width, desenho.height])
 
   // o canvas fica em posição absoluta de propósito: `scale()` encolhe o desenho
   // mas não o tamanho de layout, então um canvas de 1920px em fluxo normal

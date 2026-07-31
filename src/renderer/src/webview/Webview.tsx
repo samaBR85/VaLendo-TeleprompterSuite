@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { WebviewFrame } from '@shared/api'
+import { canvasBox } from '@shared/output'
 import { PrompterCanvas } from '../prompter/PrompterCanvas'
 
 const PADRAO = { width: 1_920, height: 1_080 }
@@ -64,7 +65,11 @@ export function Webview(): React.JSX.Element {
   }
 
   const viewport = quadro.viewport ?? PADRAO
-  const escala = Math.min(tela.width / viewport.width, tela.height / viewport.height)
+  // esta página é de conferência: quem acompanha pelo celular lê direto da
+  // tela, sem o vidro do teleprompter no caminho, então nada de girar nem
+  // espelhar aqui — e a caixa a encaixar é o palco em pé, não o monitor
+  const desenho = canvasBox(quadro.appearance.rotation, viewport, false)
+  const escala = Math.min(tela.width / desenho.width, tela.height / desenho.height)
 
   // o relógio da rolagem é absoluto; corrigido, o texto sobe aqui no mesmo
   // instante em que sobe na tela do apresentador

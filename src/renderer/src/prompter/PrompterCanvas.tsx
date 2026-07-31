@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { anchorFromWordIndex, composeLines, pixelFromAnchor, totalWords, type Layout } from '@shared/anchor'
+import { canvasBox, stageSize } from '@shared/output'
 import { timerReading, wordIndexAt } from '@shared/pacing'
 import { chapterTitle } from '@shared/text'
 import { timerCell, type Appearance, type Block, type TimerPosition, type Transport } from '@shared/types'
@@ -64,6 +65,20 @@ interface Props {
    * escolheu nos ajustes.
    */
   readingMark: boolean
+  /**
+   * Aplicar espelho e giro.
+   *
+   * Só a janela que alimenta o vidro do teleprompter liga isto. Espelhar e
+   * girar existem para compensar o vidro semiespelhado do equipamento — e
+   * cada rig monta esse vidro de um jeito. Na prévia do operador e na página
+   * de conferência da rede local não há vidro nenhum no caminho: ali o mesmo
+   * giro só deixaria o texto ilegível para quem lê direto da tela.
+   *
+   * Note que isto não mexe em `stageSize`: a prévia continua compondo as
+   * linhas na mesma largura da transmissão, então a quebra de linha e a
+   * palavra sob a marca de leitura seguem batendo com o que vai ao ar.
+   */
+  outputTransforms?: boolean
   onMetrics?: (metrics: PrompterMetrics) => void
 }
 
@@ -82,6 +97,7 @@ export function PrompterCanvas({
   rows,
   marginGuides = false,
   readingMark,
+  outputTransforms = false,
   onMetrics
 }: Props): React.JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -90,10 +106,11 @@ export function PrompterCanvas({
   const elapsedRef = useRef<HTMLSpanElement>(null)
   const remainingRef = useRef<HTMLSpanElement>(null)
 
-  const rotated = appearance.rotation === 90 || appearance.rotation === 270
-  const stage = rotated
-    ? { width: viewport.height, height: viewport.width }
-    : { width: viewport.width, height: viewport.height }
+  // o palco é onde o texto é composto, e não muda com a superfície: é o que
+  // mantém a quebra de linha da prévia igual à da transmissão. A caixa é o
+  // que se desenha na tela, e essa sim acompanha o giro ser aplicado ou não
+  const stage = stageSize(appearance.rotation, viewport)
+  const box = canvasBox(appearance.rotation, viewport, outputTransforms)
 
   const readingLineY = stage.height * appearance.readingLinePct
 
@@ -207,12 +224,14 @@ export function PrompterCanvas({
   }, [transport, readingLineY, appearance.timers.elapsed, appearance.timers.remaining])
 
   const mirror = `${appearance.mirrorX ? ' scaleX(-1)' : ''}${appearance.mirrorY ? ' scaleY(-1)' : ''}`
+  const compensacao = outputTransforms ? ` rotate(${appearance.rotation}deg)${mirror}` : ''
 
   return (
     <div
+      data-prompter-surface={outputTransforms ? 'broadcast' : 'preview'}
       style={{
-        width: viewport.width,
-        height: viewport.height,
+        width: box.width,
+        height: box.height,
         background: appearance.bgColor,
         position: 'relative',
         overflow: 'hidden',
@@ -227,7 +246,7 @@ export function PrompterCanvas({
           width: stage.width,
           height: stage.height,
           overflow: 'hidden',
-          transform: `translate(-50%, -50%) rotate(${appearance.rotation}deg)${mirror}`
+          transform: `translate(-50%, -50%)${compensacao}`
         }}
       >
         <div
@@ -427,7 +446,7 @@ export function PrompterCanvas({
           style={{
             position: 'absolute',
             inset: 0,
-            border: `${Math.max(3, viewport.height * 0.006)}px solid ${appearance.directionColor}`,
+            border: `${Math.max(3, box.height * 0.006)}px solid ${appearance.directionColor}`,
             pointerEvents: 'none',
             opacity: 0.7
           }}

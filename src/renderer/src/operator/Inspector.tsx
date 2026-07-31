@@ -367,6 +367,12 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
       </Group>
 
       <Group label="Saída">
+        {/* sem este aviso, ligar espelhar e ver a prévia não mudar parece
+            defeito — quando é justamente o certo acontecendo */}
+        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
+          Compensação do vidro do teleprompter. Vale só para a tela do apresentador — a prévia aqui
+          e a página da rede seguem sem espelho e sem giro, para dar leitura.
+        </div>
         <Toggle label="Espelhar horizontal" active={a.mirrorX} onClick={() => patch({ mirrorX: !a.mirrorX })} />
         <Toggle label="Espelhar vertical" active={a.mirrorY} onClick={() => patch({ mirrorY: !a.mirrorY })} />
         <div className="flex gap-1.5">

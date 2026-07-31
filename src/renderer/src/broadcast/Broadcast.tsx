@@ -49,6 +49,9 @@ export function Broadcast(): React.JSX.Element {
         viewport={viewport}
         rows={rows}
         readingMark={tab.appearance.readingMarkOnOutput}
+        // esta é a única janela que alimenta o vidro do teleprompter, e a
+        // única que espelha e gira para compensá-lo
+        outputTransforms
       />
 
       {covering ? (
