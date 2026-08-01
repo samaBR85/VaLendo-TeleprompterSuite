@@ -6,6 +6,114 @@ import { PrompterCanvas } from '../prompter/PrompterCanvas'
 
 const PADRAO = { width: 1_920, height: 1_080 }
 
+/** Bandeiras no fim do endereço: `#video`, `#diag`, ou `#video-diag`. */
+function bandeiras(): Set<string> {
+  return new Set(window.location.hash.replace('#', '').split(/[^a-z]+/i).filter(Boolean))
+}
+
+/**
+ * Números do aparelho de quem está assistindo, na tela dele.
+ *
+ * Existe porque um engasgo relatado por telefone não se investiga: no meu
+ * computador nada reproduz, e o Chrome do iPhone não se deixa inspeccionar de
+ * um Windows. Então o aparelho vira o instrumento — e a comparação entre
+ * `#video-diag` e `#diag` diz, com número, se o gargalo é o meu desenho em
+ * volta ou o vídeo em si.
+ *
+ * Escreve direto no DOM, sem passar por estado do React: um medidor que
+ * provoca redesenho mede o próprio medidor.
+ */
+function Medidor(): React.JSX.Element {
+  const caixa = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    let quadrosDoVideo = 0
+    let piorIntervalo = 0
+    let anterior = performance.now()
+    let vivo = true
+
+    const contarQuadro = (): void => {
+      const v = document.querySelector('video')
+      if (!v) return
+      const vv = v as HTMLVideoElement & {
+        requestVideoFrameCallback?: (cb: () => void) => number
+      }
+      if (!vv.requestVideoFrameCallback) return
+      vv.requestVideoFrameCallback(() => {
+        quadrosDoVideo += 1
+        if (vivo) contarQuadro()
+      })
+    }
+    contarQuadro()
+
+    // o maior intervalo entre quadros da PÁGINA denuncia travada de thread
+    // principal; o vídeo pode estar liso e a página engasgada, ou o contrário
+    const passo = (): void => {
+      if (!vivo) return
+      const agora = performance.now()
+      piorIntervalo = Math.max(piorIntervalo, agora - anterior)
+      anterior = agora
+      requestAnimationFrame(passo)
+    }
+    requestAnimationFrame(passo)
+
+    const id = setInterval(() => {
+      const alvo = caixa.current
+      if (!alvo) return
+
+      /*
+       * Zero pode ser um resultado ou pode ser nada.
+       *
+       * Com a aba em segundo plano — trocar de app no celular, apagar a tela —
+       * o navegador congela `requestAnimationFrame` e a contagem de quadros,
+       * mas o relógio deste intervalo continua. Sem esta ressalva, os
+       * contadores mostrariam zero e alguém leria como "perfeito".
+       */
+      if (document.visibilityState !== 'visible') {
+        alvo.textContent = 'em segundo plano — os números só valem com a tela à frente'
+        quadrosDoVideo = 0
+        piorIntervalo = 0
+        return
+      }
+
+      const v = document.querySelector('video')
+      const q = v?.getVideoPlaybackQuality?.()
+      const buffer = v && v.buffered.length ? v.buffered.end(v.buffered.length - 1) - v.currentTime : 0
+      const semContagem = !(v as { requestVideoFrameCallback?: unknown } | null)?.requestVideoFrameCallback
+      alvo.textContent =
+        `${semContagem ? '—' : quadrosDoVideo} q/s · perdidos ${q?.droppedVideoFrames ?? '?'}` +
+        ` · pior pausa ${Math.round(piorIntervalo)}ms · buffer ${buffer.toFixed(0)}s`
+      quadrosDoVideo = 0
+      piorIntervalo = 0
+    }, 1000)
+
+    return () => {
+      vivo = false
+      clearInterval(id)
+    }
+  }, [])
+
+  return (
+    <div
+      ref={caixa}
+      data-web-medidor
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 99,
+        background: 'rgba(0,0,0,0.72)',
+        color: '#7fe0b0',
+        fontFamily: 'ui-monospace, Menlo, monospace',
+        fontSize: 13,
+        padding: '6px 8px',
+        textAlign: 'center'
+      }}
+    />
+  )
+}
+
 /**
  * A mesma leitura, para quem está na gravação.
  *
@@ -90,10 +198,14 @@ export function Webview(): React.JSX.Element {
    * normal trava, o problema é meu. Se trava nos dois, é o arquivo, o wi-fi ou
    * a tela — e nenhum deles se conserta mexendo no app.
    */
-  if (window.location.hash === '#video') {
+  const modo = bandeiras()
+  const medindo = modo.has('diag')
+
+  if (modo.has('video')) {
     const video = quadro.card?.kind === 'video' ? quadro.card : null
     return (
       <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        {medindo ? <Medidor /> : null}
         {video ? (
           <video
             data-web-video-cru
@@ -134,6 +246,7 @@ export function Webview(): React.JSX.Element {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+      {medindo ? <Medidor /> : null}
       <div
         style={{
           position: 'absolute',
