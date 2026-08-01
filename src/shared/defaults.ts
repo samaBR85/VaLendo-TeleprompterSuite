@@ -3,6 +3,17 @@ import type { Appearance, AppState, ColorPreset, Tab } from './types'
 import { blocksFromText } from './text'
 import { VIDEO_PARADO } from './video'
 
+/**
+ * Altura de nascença da gaveta de cartões, e os limites do arrasto.
+ *
+ * O padrão mostra a fileira de miniaturas inteira sem comer a prévia: cartão
+ * é para bater o olho e disparar, e uma gaveta que nasce alta demais rouba
+ * justo a tela que o operador precisa ver.
+ */
+export const CARDS_HEIGHT_DEFAULT = 172
+export const CARDS_HEIGHT_MIN = 108
+export const CARDS_HEIGHT_MAX = 420
+
 export const FONT_OPTIONS: { label: string; value: string }[] = [
   { label: 'Sistema', value: 'system-ui, sans-serif' },
   { label: 'Sem serifa larga', value: '"Segoe UI", "Helvetica Neue", Arial, sans-serif' },
@@ -122,6 +133,8 @@ export function createInitialState(
     language: lang,
     layoutMode: 'split',
     inspectorVisible: true,
+    cardsVisible: false,
+    cardsHeight: CARDS_HEIGHT_DEFAULT,
     transport: {
       playing: false,
       ppm: defaults.ppm,

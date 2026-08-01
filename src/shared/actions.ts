@@ -40,6 +40,8 @@ export type Action =
   | { type: 'card/videoPoster'; cardId: string; poster: string }
   /** o operador reapontou o arquivo, ou o main descobriu que ele sumiu */
   | { type: 'card/videoLink'; cardId: string; caminho?: string; arquivoNome?: string; vinculado: boolean }
+  | { type: 'layout/cards'; visible: boolean }
+  | { type: 'layout/cardsHeight'; height: number }
   | { type: 'marker/add'; tabId: string; blockId: string; label: string }
   | { type: 'marker/remove'; tabId: string; markerId: string }
   | { type: 'tab/add' }

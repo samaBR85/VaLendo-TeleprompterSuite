@@ -278,6 +278,16 @@ export interface AppState {
   layoutMode: LayoutMode
   /** painel de ajustes da direita */
   inspectorVisible: boolean
+  /**
+   * A gaveta de cartões, embaixo.
+   *
+   * Mora aqui e não no renderer, ao lado de `inspectorVisible`, porque é
+   * painel fixo e não janela de passagem: quem deixou a gaveta aberta com as
+   * artes do programa quer encontrá-la aberta amanhã.
+   */
+  cardsVisible: boolean
+  /** altura da gaveta em pixels, ajustada pelo operador na divisória */
+  cardsHeight: number
   transport: Transport
   output: OutputConfig
   presets: ColorPreset[]

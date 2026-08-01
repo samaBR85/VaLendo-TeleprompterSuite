@@ -36,8 +36,10 @@ export type IconName =
   | 'readingLine'
   | 'globe'
   | 'card'
+  | 'volume'
 
 const PATHS: Record<IconName, string> = {
+  volume: 'M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6',
   play: 'M8 5l11 7-11 7z',
   pause: 'M9 5v14M15 5v14',
   restart: 'M4 12a8 8 0 1 0 8-8M4 12V6M4 12h6',

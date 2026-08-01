@@ -10,7 +10,7 @@ import {
 import { cartaoNoAr } from '@shared/cards'
 import { COMMANDS_BY_ID } from '@shared/commands'
 import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
-import { TAB_COLORS, createTab } from '@shared/defaults'
+import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN, TAB_COLORS, createTab } from '@shared/defaults'
 import { History } from '@shared/history'
 import { reconcileBlocks } from '@shared/text'
 import type { Anchor, Appearance, AppState, PacingRule, Tab } from '@shared/types'
@@ -568,6 +568,20 @@ export class Store {
 
       case 'layout/inspector':
         this.state = { ...this.state, inspectorVisible: action.visible }
+        break
+
+      case 'layout/cards':
+        this.state = { ...this.state, cardsVisible: action.visible }
+        break
+
+      case 'layout/cardsHeight':
+        // preso entre o mínimo e o máximo aqui, e não só na divisória: um
+        // workspace gravado por uma versão futura não pode deixar a gaveta
+        // ocupando a janela inteira sem alça para voltar
+        this.state = {
+          ...this.state,
+          cardsHeight: Math.min(CARDS_HEIGHT_MAX, Math.max(CARDS_HEIGHT_MIN, Math.round(action.height)))
+        }
         break
 
       case 'layout/rows': {

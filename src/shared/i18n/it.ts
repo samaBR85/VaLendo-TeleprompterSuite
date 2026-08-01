@@ -307,6 +307,8 @@ export const it: Dicionario = {
   'cards.fit': 'Intera',
   'cards.fill': 'Riempie',
   'cards.addVideo': 'Aggiungi video',
+  'cards.edit': 'Modifica cartello',
+  'cards.namePlaceholderVideo': 'Sigla',
   'cards.pickVideoTitle': 'Scegli il video del cartello',
   'cards.videoFilter': 'Video',
   'cards.videoPlay': 'Riproduci',

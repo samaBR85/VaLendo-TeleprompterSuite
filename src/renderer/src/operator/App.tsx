@@ -9,7 +9,7 @@ import { activeTabOf, useAppState } from '../state/useAppState'
 import { Icon, type IconName } from '../ui/Icon'
 import { Wordmark } from '../ui/Wordmark'
 import { CloseConfirm } from './CloseConfirm'
-import { CardsPanel } from './CardsPanel'
+import { CardsDrawer } from './CardsDrawer'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
 import { Deck } from './deck/Deck'
@@ -209,7 +209,6 @@ function AppConteudo({
 }: ReturnType<typeof useAppState>): React.JSX.Element {
   const { t } = useT()
   const [webviewOpen, setWebviewOpen] = useState(false)
-  const [cardsOpen, setCardsOpen] = useState(false)
   const [palette, setPalette] = useState(false)
   const [keymapOpen, setKeymapOpen] = useState(false)
   const [split, setSplit] = useState(0.46)
@@ -490,7 +489,7 @@ function AppConteudo({
         onImport={importDocument}
         webviewLive={state.webview.enabled && webview.running && !webview.error}
         onOpenWebview={() => setWebviewOpen(true)}
-        onOpenCards={() => setCardsOpen(true)}
+        onOpenCards={() => dispatch({ type: 'layout/cards', visible: !state.cardsVisible })}
       />
 
       {state.layoutMode === 'deck' ? (
@@ -571,6 +570,21 @@ function AppConteudo({
         </main>
       )}
 
+      {/* fora dos três modos, e não dentro de cada um: a gaveta é a mesma no
+          Split, no Foco e na Mesa, e trocar de modo não pode fazer as artes
+          do programa sumirem da tela */}
+      {state.cardsVisible ? (
+        <CardsDrawer
+          cards={state.cards}
+          noAr={state.transport.card}
+          blackout={state.transport.blackout}
+          clock={state.transport.video}
+          altura={state.cardsHeight}
+          dispatch={dispatch}
+          onClose={() => dispatch({ type: 'layout/cards', visible: false })}
+        />
+      ) : null}
+
       <StatusBar
         state={state}
         tab={tab}
@@ -619,16 +633,6 @@ function AppConteudo({
           enabled={state.webview.enabled}
           dispatch={dispatch}
           onClose={() => setWebviewOpen(false)}
-        />
-      ) : null}
-      {cardsOpen ? (
-        <CardsPanel
-          cards={state.cards}
-          noAr={state.transport.card}
-          blackout={state.transport.blackout}
-          clock={state.transport.video}
-          dispatch={dispatch}
-          onClose={() => setCardsOpen(false)}
         />
       ) : null}
       {credits ? <Credits onClose={() => setCredits(false)} /> : null}

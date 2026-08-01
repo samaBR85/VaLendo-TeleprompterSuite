@@ -307,6 +307,8 @@ export const de: Dicionario = {
   'cards.fit': 'Ganz sichtbar',
   'cards.fill': 'Ausfüllen',
   'cards.addVideo': 'Video hinzufügen',
+  'cards.edit': 'Karte bearbeiten',
+  'cards.namePlaceholderVideo': 'Trenner',
   'cards.pickVideoTitle': 'Video für die Karte wählen',
   'cards.videoFilter': 'Videos',
   'cards.videoPlay': 'Abspielen',

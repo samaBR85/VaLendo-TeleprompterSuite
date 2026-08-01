@@ -307,6 +307,8 @@ export const fr: Dicionario = {
   'cards.fit': 'Entière',
   'cards.fill': 'Remplit',
   'cards.addVideo': 'Ajouter une vidéo',
+  'cards.edit': 'Modifier le carton',
+  'cards.namePlaceholderVideo': 'Habillage',
   'cards.pickVideoTitle': 'Choisir la vidéo du carton',
   'cards.videoFilter': 'Vidéos',
   'cards.videoPlay': 'Lire',

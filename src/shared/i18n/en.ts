@@ -303,6 +303,8 @@ export const en: Dicionario = {
   'cards.fit': 'Fit whole',
   'cards.fill': 'Fill',
   'cards.addVideo': 'Add video',
+  'cards.edit': 'Edit card',
+  'cards.namePlaceholderVideo': 'Sting',
   'cards.pickVideoTitle': 'Choose card video',
   'cards.videoFilter': 'Videos',
   'cards.videoPlay': 'Play',

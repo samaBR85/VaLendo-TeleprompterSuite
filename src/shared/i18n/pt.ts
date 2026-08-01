@@ -330,6 +330,8 @@ export const pt = {
   'cards.fit': 'Cabe inteira',
   'cards.fill': 'Preenche',
   'cards.addVideo': 'Adicionar vídeo',
+  'cards.edit': 'Editar cartão',
+  'cards.namePlaceholderVideo': 'Vinheta',
   'cards.pickVideoTitle': 'Escolher vídeo do cartão',
   'cards.videoFilter': 'Vídeos',
   'cards.videoPlay': 'Tocar',
