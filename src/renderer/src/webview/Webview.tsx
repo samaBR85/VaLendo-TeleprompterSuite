@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { WebviewFrame } from '@shared/api'
 import { canvasBox } from '@shared/output'
 import { idiomaDoSistema, traduzir } from '@shared/i18n'
-import { PrompterCanvas } from '../prompter/PrompterCanvas'
+import { PrompterCanvas, VideoCartao } from '../prompter/PrompterCanvas'
 
 const PADRAO = { width: 1_920, height: 1_080 }
 
@@ -115,6 +115,65 @@ function Medidor(): React.JSX.Element {
 }
 
 /**
+ * Liga o som, e desmuta dentro do próprio clique.
+ *
+ * O navegador só libera som logo depois de um toque, e o iPhone é o mais
+ * rigoroso: esperar o React redesenhar pode ser tarde demais, e o pedido seria
+ * recusado sem dizer nada. Mexer no elemento aqui é o caminho que ele aceita.
+ */
+function BotaoDeSom({ onLigar, rotulo }: { onLigar: () => void; rotulo: string }): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      data-web-som
+      onClick={() => {
+        onLigar()
+        const video = document.querySelector('video')
+        if (!video) return
+        video.muted = false
+        void video.play().catch(() => undefined)
+      }}
+      style={{
+        position: 'absolute',
+        bottom: 16,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        padding: '10px 18px',
+        borderRadius: 999,
+        border: 'none',
+        background: 'rgba(255,255,255,0.92)',
+        color: '#14171a',
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: 14,
+        cursor: 'pointer'
+      }}
+    >
+      {rotulo}
+    </button>
+  )
+}
+
+function AvisoDeQueda({ texto }: { texto: string }): React.JSX.Element {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 12,
+        left: 12,
+        padding: '5px 12px',
+        borderRadius: 6,
+        background: 'rgba(226,75,74,0.9)',
+        color: '#fff',
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: 13
+      }}
+    >
+      {texto}
+    </div>
+  )
+}
+
+/**
  * A mesma leitura, para quem está na gravação.
  *
  * Desenha com o mesmo `PrompterCanvas` da transmissão, no viewport real da
@@ -201,6 +260,16 @@ export function Webview(): React.JSX.Element {
   const modo = bandeiras()
   const medindo = modo.has('diag')
 
+  // o relógio da rolagem é absoluto; corrigido, o texto sobe aqui no mesmo
+  // instante em que sobe na tela do apresentador. O do vídeo é da mesma
+  // natureza e precisa do mesmo acerto — sem ele o vídeo tocaria neste
+  // aparelho no ponto errado, tanto quanto o relógio dele estiver adiantado
+  const transport = {
+    ...quadro.transport,
+    startedAt: quadro.transport.startedAt - desvio.current,
+    video: { ...quadro.transport.video, comecouEm: quadro.transport.video.comecouEm - desvio.current }
+  }
+
   if (modo.has('video')) {
     const video = quadro.card?.kind === 'video' ? quadro.card : null
     return (
@@ -225,6 +294,40 @@ export function Webview(): React.JSX.Element {
     )
   }
 
+  /*
+   * Vídeo no ar: fora do palco, direto na tela.
+   *
+   * Medido no aparelho de quem relatou o engasgo: dentro do palco, 2 quadros
+   * por segundo e 38 perdidos, com o arquivo inteiro já baixado (58s de
+   * buffer) e a página sem travar (pior pausa de 43ms). Ou seja: nem rede, nem
+   * processador — o vídeo estava sendo composto no caminho lento por causa das
+   * transformações em volta. No modo `#video`, sem nada disso, o mesmo arquivo
+   * toca liso no mesmo aparelho.
+   *
+   * Aqui não se perde nada ao sair do palco: esta página nunca espelha nem
+   * gira, o cartão cobre o texto de qualquer forma, e um vídeo encaixado por
+   * `object-fit` no mesmo retângulo dá exatamente a mesma imagem. O relógio
+   * compartilhado continua mandando, então play, pausa e arrasto do operador
+   * seguem valendo aqui.
+   */
+  if (quadro.card?.kind === 'video') {
+    const video = quadro.card
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '100%', background: '#000' }}>
+        {medindo ? <Medidor /> : null}
+        <VideoCartao
+          card={video}
+          clock={transport.video}
+          src={`/video/${encodeURIComponent(video.id)}?v=${encodeURIComponent(video.convertido ?? 'orig')}`}
+          comSom={som}
+          previaDoOperador={false}
+        />
+        {!som ? <BotaoDeSom onLigar={() => setSom(true)} rotulo={traduzir(idioma, 'web.enableSound')} /> : null}
+        {!ligado ? <AvisoDeQueda texto={traduzir(idioma, 'web.offline')} /> : null}
+      </div>
+    )
+  }
+
   const viewport = quadro.viewport ?? PADRAO
   // esta página é de conferência: quem acompanha pelo celular lê direto da
   // tela, sem o vidro do teleprompter no caminho, então nada de girar nem
@@ -232,17 +335,6 @@ export function Webview(): React.JSX.Element {
   const desenho = canvasBox(quadro.appearance.rotation, viewport, false)
   const escala = Math.min(tela.width / desenho.width, tela.height / desenho.height)
 
-  // o relógio da rolagem é absoluto; corrigido, o texto sobe aqui no mesmo
-  // instante em que sobe na tela do apresentador. O do vídeo é da mesma
-  // natureza e precisa do mesmo acerto — sem ele o vídeo tocaria neste
-  // aparelho no ponto errado, tanto quanto o relógio dele estiver adiantado
-  const transport = {
-    ...quadro.transport,
-    startedAt: quadro.transport.startedAt - desvio.current,
-    video: { ...quadro.transport.video, comecouEm: quadro.transport.video.comecouEm - desvio.current }
-  }
-
-  const temVideoNoAr = quadro.card?.kind === 'video'
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
@@ -271,61 +363,7 @@ export function Webview(): React.JSX.Element {
         />
       </div>
 
-      {temVideoNoAr && !som ? (
-        <button
-          type="button"
-          data-web-som
-          onClick={() => {
-            setSom(true)
-            /*
-             * Desmutar aqui dentro, na mão, e não só pelo estado.
-             *
-             * O navegador só libera som logo depois de um toque, e o iPhone é
-             * o mais rigoroso: esperar o React redesenhar pode ser tarde
-             * demais, e o pedido seria recusado sem dizer nada. Mexer no
-             * elemento dentro do próprio clique é o caminho que ele aceita.
-             */
-            const video = document.querySelector('video')
-            if (!video) return
-            video.muted = false
-            void video.play().catch(() => undefined)
-          }}
-          style={{
-            position: 'absolute',
-            bottom: 16,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            padding: '10px 18px',
-            borderRadius: 999,
-            border: 'none',
-            background: 'rgba(255,255,255,0.92)',
-            color: '#14171a',
-            fontFamily: 'system-ui, sans-serif',
-            fontSize: 14,
-            cursor: 'pointer'
-          }}
-        >
-          {traduzir(idioma, 'web.enableSound')}
-        </button>
-      ) : null}
-
-      {!ligado ? (
-        <div
-          style={{
-            position: 'absolute',
-            top: 12,
-            left: 12,
-            padding: '5px 12px',
-            borderRadius: 6,
-            background: 'rgba(226,75,74,0.9)',
-            color: '#fff',
-            fontFamily: 'system-ui, sans-serif',
-            fontSize: 13
-          }}
-        >
-          {traduzir(idioma, 'web.offline')}
-        </div>
-      ) : null}
+      {!ligado ? <AvisoDeQueda texto={traduzir(idioma, 'web.offline')} /> : null}
     </div>
   )
 }

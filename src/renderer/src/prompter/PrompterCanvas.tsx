@@ -142,7 +142,7 @@ interface Props {
  * que chega aqui é sempre estado — nunca um player que o vidro do teleprompter
  * pudesse acabar mostrando.
  */
-function VideoCartao({
+export function VideoCartao({
   card,
   clock,
   src,
