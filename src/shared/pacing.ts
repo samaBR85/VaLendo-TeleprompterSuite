@@ -1,4 +1,4 @@
-import type { FreeClock, StopwatchClock, Transport } from './types'
+import type { StopwatchClock, Transport } from './types'
 
 /**
  * Posição do relógio de rolagem, em índice global de palavras.
@@ -96,25 +96,23 @@ export function stopwatchReading(clock: StopwatchClock, playing: boolean, agora:
   return leituraDoAlvo(segundosDoCronometro(clock, playing, agora), targetSeconds)
 }
 
-/** Relógio independente parado, que é como ele nasce. */
-export const RELOGIO_LIVRE_PARADO: FreeClock = { tocando: false, base: 0, comecouEm: 0 }
-
 /**
  * Em que segundo o relógio independente está agora.
  *
- * Mesmo desenho de `posicaoDoVideo`: o clock guarda de onde partiu e quando,
- * e cada janela calcula sozinha. Diferente de `segundosDoCronometro`, não
- * recebe `playing` de fora — `tocando` é do próprio relógio, porque é
- * justamente isso que o torna independente do texto.
+ * Nasce com o primeiro play, do mesmo jeito que o cronômetro — a diferença é
+ * que, uma vez começado, nada o pausa. `startedAt` é `0` até o primeiro play
+ * (decorrido fica em zero); depois disso é fixo até o próximo reiniciar ou
+ * troca de aba, e o decorrido é só `agora - startedAt`, sem nenhum `if
+ * (playing)`. Pausar o texto vira invisível para ele de propósito.
  */
-export function segundosDoRelogioLivre(clock: FreeClock, agora: number): number {
-  if (!clock.tocando) return clock.base
-  return clock.base + Math.max(0, agora - clock.comecouEm) / 1000
+export function segundosDoRelogioIndependente(startedAt: number, agora: number): number {
+  if (startedAt === 0) return 0
+  return Math.max(0, agora - startedAt) / 1000
 }
 
-/** O que os relógios mostram no modo independente — decorrido segue o play do relógio, não o do texto. */
-export function relogioLivreReading(clock: FreeClock, agora: number, targetSeconds: number): StopwatchReading {
-  return leituraDoAlvo(segundosDoRelogioLivre(clock, agora), targetSeconds)
+/** O que os relógios mostram no modo independente — decorrido não pausa com o texto. */
+export function relogioIndependenteReading(startedAt: number, agora: number, targetSeconds: number): StopwatchReading {
+  return leituraDoAlvo(segundosDoRelogioIndependente(startedAt, agora), targetSeconds)
 }
 
 /**

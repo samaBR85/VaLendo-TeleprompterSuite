@@ -7,11 +7,10 @@ import {
   formatAlvo,
   formatClock,
   ppmForTarget,
-  RELOGIO_LIVRE_PARADO,
-  relogioLivreReading,
+  relogioIndependenteReading,
   secondsForWords,
   segundosDoCronometro,
-  segundosDoRelogioLivre,
+  segundosDoRelogioIndependente,
   segundosParaBufferDoAlvo,
   stopwatchReading,
   timerReading,
@@ -32,7 +31,7 @@ const stopped: Transport = {
   card: null,
   video: VIDEO_PARADO,
   stopwatch: CRONOMETRO_PARADO,
-  freeClock: RELOGIO_LIVRE_PARADO
+  independentStartedAt: 0
 }
 
 describe('relógio de rolagem', () => {
@@ -128,20 +127,33 @@ describe('cronômetro', () => {
 })
 
 describe('relógio independente', () => {
-  it('tem o próprio play/pausa — não recebe de fora, como o cronômetro recebe', () => {
-    expect(segundosDoRelogioLivre({ tocando: false, base: 42, comecouEm: 999 }, 999_999)).toBe(42)
-    expect(segundosDoRelogioLivre({ tocando: true, base: 10, comecouEm: 1_000 }, 21_000)).toBe(30)
+  it('fica em zero antes do primeiro play', () => {
+    expect(segundosDoRelogioIndependente(0, 999_999)).toBe(0)
+  })
+
+  it('conta o tempo real desde que começou, sem nenhum "pausado"', () => {
+    expect(segundosDoRelogioIndependente(1_000, 21_000)).toBe(20)
+  })
+
+  it('é justamente isto que o diferencia do cronômetro: não existe estado de pausa', () => {
+    // o cronômetro (segundosDoCronometro) recebe `playing` e para de contar
+    // quando é `false`; este nem aceita esse parâmetro — o tempo real é tudo
+    // o que importa, dado que o texto pode pausar no meio sem afetar nada
+    const comecouAs1000 = 1_000
+    const dezSegundosDepois = 11_000
+    const trintaSegundosDepois = 31_000
+    expect(segundosDoRelogioIndependente(comecouAs1000, dezSegundosDepois)).toBe(10)
+    expect(segundosDoRelogioIndependente(comecouAs1000, trintaSegundosDepois)).toBe(30)
   })
 
   it('conta contra o alvo do mesmo jeito que o cronômetro', () => {
-    const estourado = relogioLivreReading({ tocando: true, base: 0, comecouEm: 0 }, 225_000, 180)
+    // startedAt=1_000 (não zero) — zero é o sentinela de "ainda não começou"
+    const estourado = relogioIndependenteReading(1_000, 226_000, 180)
     expect(estourado).toEqual({ elapsed: '3:45', remaining: '0:45', estourou: true })
   })
 
-  it('pausado, não avança mesmo que o tempo real passe', () => {
-    const parado = { tocando: false, base: 90, comecouEm: 0 }
-    expect(segundosDoRelogioLivre(parado, 0)).toBe(90)
-    expect(segundosDoRelogioLivre(parado, 999_999_999)).toBe(90)
+  it('startedAt=0 é "ainda não começou", não "começou no instante zero"', () => {
+    expect(relogioIndependenteReading(0, 999_999, 180).elapsed).toBe('0:00')
   })
 })
 

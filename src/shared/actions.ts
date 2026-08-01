@@ -21,10 +21,6 @@ export type Action =
   | { type: 'transport/nudgePpm'; delta: number }
   | { type: 'transport/blackout' }
   | { type: 'transport/freeze' }
-  /** liga/pausa o relógio independente — nunca o texto, nunca o cronômetro do modo `cronometro` */
-  | { type: 'clock/freeToggle' }
-  /** zera o relógio independente; continua correndo se já estava correndo */
-  | { type: 'clock/freeRestart' }
   | { type: 'card/add'; card: Cartao }
   | { type: 'card/remove'; cardId: string }
   | { type: 'card/rename'; cardId: string; nome: string }

@@ -184,12 +184,8 @@
       order: 3;
     }
 
-    .toolbar-grp-relogio-livre {
-      order: 4;
-    }
-
     .toolbar-grp-ar {
-      order: 5;
+      order: 4;
     }
   }
 }

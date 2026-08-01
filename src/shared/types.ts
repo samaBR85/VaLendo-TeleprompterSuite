@@ -122,10 +122,13 @@ export interface TimerOverlay {
    * alvo" e, se o alvo estourar, passa a contar "quanto já passou do alvo" em
    * vez de ficar preso em zero.
    *
-   * `livre`: mesma conta do cronômetro, mas com o play/pausa **dele mesmo**
-   * — o `freeClock` do transporte, ligado só pelo botão próprio na barra de
-   * ferramentas. Pausar ou reiniciar o texto não encosta nele: é para o
-   * programa que abre com vídeo e só depois corta para quem lê.
+   * `livre`: decorrido nunca congela, nem quando o texto pausa — é só o
+   * tempo real desde que a leitura desta aba começou (`independentStartedAt`
+   * do transporte). Sem play/pausa próprio, sem botão novo: nasce com o
+   * primeiro play e some ao reiniciar, do mesmo jeito que o cronômetro já
+   * faz — a única diferença é que pausar o texto não pausa ele. É para o
+   * programa que abre com vídeo e só depois corta para quem lê: o tempo do
+   * vídeo já entra na conta.
    */
   mode: 'palavras' | 'cronometro' | 'livre'
   /** o alvo do modo cronômetro, em segundos */
@@ -301,27 +304,22 @@ export interface Transport {
    */
   stopwatch: StopwatchClock
   /**
-   * O relógio independente, para quem escolheu o modo `livre`.
+   * Date.now() de quando a leitura desta aba começou a contar, para quem
+   * escolheu o modo `livre` no relógio da saída.
    *
-   * Diferente de `stopwatch`, que segue o play/pausa do texto, este tem o
-   * próprio `tocando` — do mesmo formato de `video`. Nada além do botão dele
-   * mesmo, na barra de ferramentas, mexe aqui: nem tocar/pausar o texto, nem
-   * reiniciar a leitura. Só troca de aba reinicia (cada roteiro tem o seu).
+   * A diferença para `stopwatch`: aquele congela quando o texto pausa, este
+   * nunca congela — decorrido é só `agora - independentStartedAt`, sem
+   * nenhum `if (tocando)`. É o relógio para quando o programa abre com
+   * vídeo e só depois corta para quem lê: o tempo do vídeo já entra na
+   * conta, e pausar o texto no meio (por qualquer motivo) não pára nada.
+   * Só reiniciar a leitura ou trocar de aba zera — o mesmo gatilho que já
+   * zera `stopwatch` hoje.
    */
-  freeClock: FreeClock
+  independentStartedAt: number
 }
 
 /** De onde o cronômetro partiu e quando — nunca em que segundo ele está. */
 export interface StopwatchClock {
-  /** segundos acumulados enquanto pausado */
-  base: number
-  /** Date.now() de quando a corrida atual começou; 0 enquanto pausado */
-  comecouEm: number
-}
-
-/** Mesmo formato de `VideoClock`: tem o próprio play/pausa, não empresta o de ninguém. */
-export interface FreeClock {
-  tocando: boolean
   /** segundos acumulados enquanto pausado */
   base: number
   /** Date.now() de quando a corrida atual começou; 0 enquanto pausado */

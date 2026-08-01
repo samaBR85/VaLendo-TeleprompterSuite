@@ -1,5 +1,5 @@
 import type { AppState } from './types'
-import { CRONOMETRO_PARADO, RELOGIO_LIVRE_PARADO } from './pacing'
+import { CRONOMETRO_PARADO } from './pacing'
 import { VIDEO_PARADO } from './video'
 
 export const PROJECT_EXTENSION = 'valendo'
@@ -43,7 +43,7 @@ function semTransitorio(state: AppState): AppState {
       startedAt: 0,
       video: VIDEO_PARADO,
       stopwatch: CRONOMETRO_PARADO,
-      freeClock: RELOGIO_LIVRE_PARADO
+      independentStartedAt: 0
     },
     // o monitor escolhido viaja, mas a transmissão nunca sobe sozinha ao abrir:
     // abrir um projeto não pode jogar texto na tela do apresentador
