@@ -190,6 +190,7 @@ export const pt = {
   'web.waiting': 'Esperando o VaLendo…',
   'web.offline': 'Sem conexão com o VaLendo',
   'web.enableSound': 'Ativar som',
+  'web.rawVideoEmpty': 'Ponha um cartão de vídeo no ar para testar o tocador sozinho.',
   'web.videoWeight': 'Peso do vídeo na rede',
   'web.videoWeightDetail': 'até {tamanho} · cerca de {mb} MB por minuto. A tela do apresentador recebe sempre o original.',
   'web.videoOriginalHint': 'O arquivo vai como está. Pesado no wi-fi, mas sem espera para preparar.',

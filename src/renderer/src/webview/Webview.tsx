@@ -78,6 +78,41 @@ export function Webview(): React.JSX.Element {
     )
   }
 
+  /*
+   * Modo de diagnóstico: `#video` no fim do endereço.
+   *
+   * Mostra só o vídeo do cartão no ar, num tocador comum, sem o palco do
+   * prompter, sem o `scale()` que encaixa a saída na tela, sem o quadro que
+   * chega de dois em dois segundos e sem React redesenhando nada.
+   *
+   * Existe para separar as culpas quando alguém relata engasgo: o mesmo
+   * arquivo, na mesma rede, no mesmo aparelho. Se aqui está liso e na página
+   * normal trava, o problema é meu. Se trava nos dois, é o arquivo, o wi-fi ou
+   * a tela — e nenhum deles se conserta mexendo no app.
+   */
+  if (window.location.hash === '#video') {
+    const video = quadro.card?.kind === 'video' ? quadro.card : null
+    return (
+      <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        {video ? (
+          <video
+            data-web-video-cru
+            src={`/video/${encodeURIComponent(video.id)}`}
+            controls
+            autoPlay
+            playsInline
+            loop={video.loop ?? false}
+            style={{ width: '100%', maxHeight: '100%' }}
+          />
+        ) : (
+          <p style={{ color: '#7e858d', fontFamily: 'system-ui, sans-serif', fontSize: 15, padding: 24 }}>
+            {traduzir(idioma, 'web.rawVideoEmpty')}
+          </p>
+        )}
+      </div>
+    )
+  }
+
   const viewport = quadro.viewport ?? PADRAO
   // esta página é de conferência: quem acompanha pelo celular lê direto da
   // tela, sem o vidro do teleprompter no caminho, então nada de girar nem

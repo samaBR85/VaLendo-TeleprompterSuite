@@ -172,6 +172,7 @@ export const en: Dicionario = {
   'web.waiting': 'Waiting for VaLendo…',
   'web.offline': 'No connection to VaLendo',
   'web.enableSound': 'Turn on sound',
+  'web.rawVideoEmpty': 'Put a video card on air to test the plain player.',
   'web.videoWeight': 'Video weight on the network',
   'web.videoWeightDetail': 'up to {tamanho} · about {mb} MB per minute. The presenter’s screen always gets the original.',
   'web.videoOriginalHint': 'The file goes as it is. Heavy on wi-fi, but nothing to prepare.',

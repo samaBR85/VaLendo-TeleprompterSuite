@@ -174,6 +174,7 @@ export const es: Dicionario = {
   'web.waiting': 'Esperando a VaLendo…',
   'web.offline': 'Sin conexión con VaLendo',
   'web.enableSound': 'Activar sonido',
+  'web.rawVideoEmpty': 'Pon una tarjeta de vídeo al aire para probar el reproductor solo.',
   'web.videoWeight': 'Peso del vídeo en la red',
   'web.videoWeightDetail': 'hasta {tamanho} · unos {mb} MB por minuto. La pantalla del presentador recibe siempre el original.',
   'web.videoOriginalHint': 'El archivo va tal cual. Pesado en el wifi, pero sin espera para prepararlo.',
