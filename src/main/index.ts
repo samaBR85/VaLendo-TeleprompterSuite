@@ -39,7 +39,7 @@ import { converterParaMp4, gerarProxy, temFfmpeg } from './ffmpeg'
 import { ehVideo, VIDEO_EXTENSIONS } from '@shared/video'
 import { perfilPorId } from '@shared/proxy'
 import { Store } from './state'
-import { flushState, onStorageHealth, storageHealth } from './storage'
+import { flushState, onStorageHealth, storageHealth, workspaceIntegro } from './storage'
 import { buildBroadcastMenu } from './broadcastMenu'
 import {
   broadcastCoversOperator,
@@ -489,6 +489,18 @@ function bootstrap(): void {
   })
   registerCardProtocol()
   registerIpc()
+  /*
+   * Varredura na abertura, contra os cartões do workspace.
+   *
+   * Antes ela só rodava ao abrir um `.valendo`, e quem trabalha direto no
+   * workspace podia nunca abrir um. Aí um arquivo pela metade — queda de
+   * energia no meio de uma conversão — ficava para sempre, sem dono e sem
+   * ninguém sabendo. Aqui toda abertura do app começa limpa.
+   */
+  if (workspaceIntegro()) {
+    pruneCardImages(store.getState().cards)
+    pruneVideoConversions(store.getState().cards)
+  }
   revalidarVideos()
   /*
    * Uma passada na abertura, e não só a cada mudança.

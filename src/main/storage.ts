@@ -100,6 +100,20 @@ function stamp(): string {
 /* ---------------------------------------------------------------- leitura */
 
 /**
+ * O trabalho gravado foi lido inteiro, sem cair no estado novo.
+ *
+ * Quem limpa arquivo por não achar dono precisa saber disto. Com o workspace
+ * ilegível o app abre sem cartão nenhum — e uma varredura ingênua concluiria
+ * que todas as artes de standby estão órfãs e as apagaria, justamente na
+ * abertura em que o operador mais precisa delas de volta.
+ */
+let integro = true
+
+export function workspaceIntegro(): boolean {
+  return integro
+}
+
+/**
  * Carrega o workspace, e nunca descarta em silêncio o que não conseguiu ler.
  *
  * Começar do zero é indistinguível, para quem está olhando, de "o app abriu
@@ -127,10 +141,16 @@ export function loadState(defaults: UserDefaults, locale = 'pt-BR'): AppState {
     reportStorageNotice(
       `Não deu para ler o trabalho gravado (${describe(error)}). Abri um roteiro novo e guardei o anterior em ${backup}.`
     )
+    integro = false
     return fresh()
   }
 
-  if (!Array.isArray(saved.tabs) || saved.tabs.length === 0) return fresh()
+  if (!Array.isArray(saved.tabs) || saved.tabs.length === 0) {
+    // o arquivo existe e foi lido, mas não tem aba nenhuma: não dá para
+    // afirmar que os cartões dele eram os que estão no disco
+    integro = false
+    return fresh()
+  }
 
   try {
     // completa por cima dos padrões: um workspace gravado por versão anterior
@@ -168,6 +188,7 @@ export function loadState(defaults: UserDefaults, locale = 'pt-BR'): AppState {
     return state
   } catch (error) {
     reportStorageNotice(`O trabalho gravado veio quebrado (${describe(error)}). Abri um roteiro novo.`)
+    integro = false
     return fresh()
   }
 }
