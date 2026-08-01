@@ -698,7 +698,20 @@ export class Store {
       }
 
       case 'webview/set':
-        this.state = { ...this.state, webview: { enabled: action.enabled } }
+        this.state = { ...this.state, webview: { ...this.state.webview, enabled: action.enabled } }
+        break
+
+      case 'webview/videoPerfil':
+        this.state = { ...this.state, webview: { ...this.state.webview, videoPerfil: action.perfil } }
+        break
+
+      case 'card/videoProxy':
+        this.state = {
+          ...this.state,
+          cards: this.state.cards.map((c) =>
+            c.id === action.cardId && c.kind === 'video' ? { ...c, proxy: action.proxy ?? undefined } : c
+          )
+        }
         break
 
       case 'storage/dismissNotice':

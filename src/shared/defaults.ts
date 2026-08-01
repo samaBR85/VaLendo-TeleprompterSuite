@@ -150,6 +150,6 @@ export function createInitialState(
     cards: [],
     keymap: {},
     customDefaults: false,
-    webview: { enabled: false }
+    webview: { enabled: false, videoPerfil: 'leve' }
   }
 }

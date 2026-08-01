@@ -163,7 +163,9 @@ export function deleteVideoConversion(arquivo: string): void {
 /** Apaga conversões que nenhum cartão do projeto aberto referencia. */
 export function pruneVideoConversions(cards: Cartao[]): void {
   const usados = new Set(
-    cards.flatMap((c) => (c.kind === 'video' && c.convertido ? [c.convertido] : []))
+    cards.flatMap((c) =>
+      c.kind === 'video' ? [c.convertido, c.proxy?.arquivo].filter((n): n is string => Boolean(n)) : []
+    )
   )
   for (const nome of readdirSync(convertidosDir())) {
     if (!usados.has(nome)) deleteVideoConversion(nome)
@@ -178,10 +180,11 @@ export function pruneVideoConversions(cards: Cartao[]): void {
  * ser forjada para ler outro arquivo, nem caminho de disco vazando para a
  * página que a rede local serve.
  */
-let resolverVideo: (cardId: string) => { caminho: string; convertido?: string } | null = () => null
+let resolverVideo: (cardId: string) => { caminho: string; convertido?: string; proxy?: string } | null = () =>
+  null
 
 export function registerVideoResolver(
-  fn: (cardId: string) => { caminho: string; convertido?: string } | null
+  fn: (cardId: string) => { caminho: string; convertido?: string; proxy?: string } | null
 ): void {
   resolverVideo = fn
 }
@@ -203,6 +206,25 @@ export function caminhoDoVideo(cardId: string): string | null {
     return existsSync(convertido) ? convertido : null
   }
   return existsSync(card.caminho) ? card.caminho : null
+}
+
+/**
+ * O arquivo que a REDE deve receber.
+ *
+ * Separado de `caminhoDoVideo` de propósito: a tela do apresentador recebe
+ * sempre o original, porque ali não há rede no caminho. Só a página de
+ * conferência ganha a cópia leve — e enquanto ela não existe, a rede recebe o
+ * original, que é pesado mas funciona. Nunca deixar de servir por causa disso.
+ */
+export function caminhoDoVideoNaRede(cardId: string): string | null {
+  const card = resolverVideo(cardId)
+  if (!card || !videoAutorizado(card.caminho)) return null
+
+  if (card.proxy) {
+    const leve = convertidoPath(card.proxy)
+    if (existsSync(leve)) return leve
+  }
+  return caminhoDoVideo(cardId)
 }
 
 /** O cartão tem um arquivo tocável agora, aqui. */

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { Action } from '@shared/actions'
 import type { WebviewInfo } from '@shared/api'
+import { mbPorMinuto, perfilPorId, PERFIS_DA_REDE, type PerfilDeRede } from '@shared/proxy'
+import type { Chave } from '@shared/i18n'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
 import { QrCode } from '../ui/QrCode'
@@ -8,6 +10,8 @@ import { QrCode } from '../ui/QrCode'
 interface Props {
   info: WebviewInfo
   enabled: boolean
+  /** peso do vídeo servido à rede — a tela do apresentador não é afetada */
+  videoPerfil: PerfilDeRede
   dispatch: (action: Action) => void
   onClose: () => void
 }
@@ -16,9 +20,10 @@ interface Props {
  * A página da rede local: quem está na gravação acompanha a leitura pelo
  * próprio telefone, sem nenhum programa instalado.
  */
-export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React.JSX.Element {
+export function WebviewPanel({ info, enabled, videoPerfil, dispatch, onClose }: Props): React.JSX.Element {
   const { t } = useT()
   const [copiado, setCopiado] = useState<string | null>(null)
+  const perfilAtual = perfilPorId(videoPerfil)
 
   // "no ar" é o que está acontecendo, não o que foi pedido: com a porta
   // ocupada, o botão verde seria mentira
@@ -76,6 +81,46 @@ export function WebviewPanel({ info, enabled, dispatch, onClose }: Props): React
             }`}
           />
         </button>
+
+        {/* o peso do vídeo mora aqui, e não nos ajustes de saída, porque é
+            assunto da rede: a tela do apresentador recebe sempre o original */}
+        <div className="mb-4">
+          <div className="mb-1.5 text-[11px] text-[var(--color-fog-2)]">{t('web.videoWeight')}</div>
+          <div className="flex flex-wrap gap-1.5">
+            {PERFIS_DA_REDE.map((id) => {
+              const perfil = perfilPorId(id)
+              const escolhido = videoPerfil === id
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  data-web-perfil={id}
+                  title={
+                    perfil
+                      ? `${perfil.largura}×${perfil.altura} · ${perfil.kbps} kbps · ${mbPorMinuto(perfil).toFixed(1)} MB/min`
+                      : t('web.videoOriginalHint')
+                  }
+                  onClick={() => dispatch({ type: 'webview/videoPerfil', perfil: id })}
+                  className={`rounded-md border px-2.5 py-1 text-[11px] ${
+                    escolhido
+                      ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
+                      : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
+                  }`}
+                >
+                  {t(`web.quality.${id}` as Chave)}
+                </button>
+              )
+            })}
+          </div>
+          <p className="mt-1.5 text-[11px] text-[var(--color-fog-2)]">
+            {perfilAtual
+              ? t('web.videoWeightDetail', {
+                  tamanho: `${perfilAtual.largura}×${perfilAtual.altura}`,
+                  mb: mbPorMinuto(perfilAtual).toFixed(1)
+                })
+              : t('web.videoOriginalHint')}
+          </p>
+        </div>
 
         {info.error ? (
           <p className="mb-3 rounded-md border border-[var(--color-warn)]/40 bg-[var(--color-warn)]/10 px-3 py-2 text-[11px] text-[var(--color-warn)]">

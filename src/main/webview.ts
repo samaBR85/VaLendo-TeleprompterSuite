@@ -5,7 +5,7 @@ import { basename, extname, join, normalize } from 'node:path'
 import type { WebviewFrame, WebviewInfo } from '@shared/api'
 import { conteudoDaFaixa, faixaPedida, tamanhoDaFaixa } from '@shared/range'
 import { tipoDoVideo } from '@shared/video'
-import { cardMimeType, cardPath, caminhoDoVideo } from './cards'
+import { cardMimeType, cardPath, caminhoDoVideoNaRede } from './cards'
 
 export const WEBVIEW_PORT = 7777
 
@@ -155,7 +155,7 @@ function atender(req: IncomingMessage, res: ServerResponse): void {
   // o vídeo do cartão, pelo id — nunca pelo caminho no disco, que não sai
   // daqui. Só o que o operador autorizou nesta máquina chega até a rede.
   if (caminho.startsWith('/video/')) {
-    const alvo = caminhoDoVideo(basename(decodeURIComponent(caminho.slice('/video/'.length))))
+    const alvo = caminhoDoVideoNaRede(basename(decodeURIComponent(caminho.slice('/video/'.length))))
     if (!alvo) {
       res.writeHead(404).end('não encontrado')
       return

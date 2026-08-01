@@ -156,7 +156,8 @@ export function loadState(defaults: UserDefaults, locale = 'pt-BR'): AppState {
 
     // e o roteiro não vai para a rede sozinho, pelo mesmo motivo: pôr o texto
     // ao alcance de quem estiver no wi-fi é uma decisão do operador
-    state.webview = { enabled: false }
+    // o perfil de peso é preferência, não estado de momento: sobrevive
+    state.webview = { enabled: false, videoPerfil: state.webview?.videoPerfil ?? 'leve' }
     if (!state.tabs.some((t) => t.id === state.activeTabId)) state.activeTabId = state.tabs[0].id
 
     state.tabs = state.tabs.map((tab) => ({

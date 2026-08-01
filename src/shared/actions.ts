@@ -1,5 +1,6 @@
 import type { Lang } from './i18n/types'
 import type { Anchor, Appearance, AppState, Cartao, LayoutMode } from './types'
+import type { PerfilDeRede } from './proxy'
 
 /**
  * Tudo que muda estado passa por aqui. O renderer nunca escreve direto: manda
@@ -69,6 +70,9 @@ export type Action =
   | { type: 'document/exportedTo'; tabId: string; path: string }
   | { type: 'project/replace'; state: AppState }
   | { type: 'webview/set'; enabled: boolean }
+  | { type: 'webview/videoPerfil'; perfil: PerfilDeRede }
+  /** a cópia leve ficou pronta (ou foi descartada, com `null`) */
+  | { type: 'card/videoProxy'; cardId: string; proxy: { arquivo: string; perfil: PerfilDeRede } | null }
   | { type: 'history/undo'; tabId: string }
   | { type: 'history/redo'; tabId: string }
   | { type: 'document/import'; title: string; text: string; intoNewTab: boolean }

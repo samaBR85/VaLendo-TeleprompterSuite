@@ -1,4 +1,5 @@
 import type { Lang } from './i18n/types'
+import type { PerfilDeRede } from './proxy'
 
 /** Bloco de texto. `direction` são anotações em [colchetes], que não contam tempo. */
 export type BlockKind = 'speech' | 'direction' | 'chapter'
@@ -191,6 +192,14 @@ export type Cartao =
        * para a rede. Some junto com o cartão.
        */
       convertido?: string
+      /**
+       * Cópia leve para a rede local, e o perfil com que foi gerada.
+       *
+       * Guardar o perfil é o que permite refazer quando o operador muda de
+       * ideia: sem isso, trocar de "leve" para "alta" seguiria servindo o
+       * arquivo antigo sem ninguém notar.
+       */
+      proxy?: { arquivo: string; perfil: PerfilDeRede }
       /** um quadro, em data: URL — viaja no projeto e mantém o cartão reconhecível mesmo desvinculado */
       poster?: string
       /** duração em segundos, medida quando o vídeo carrega */
@@ -322,7 +331,14 @@ export interface AppState {
    * rede é uma decisão, e decisão que o app toma por conta própria não é
    * decisão de ninguém.
    */
-  webview: { enabled: boolean }
+  webview: {
+    enabled: boolean
+    /**
+     * Peso do vídeo servido à rede local. `original` manda o arquivo como
+     * ele é; os outros mandam uma cópia recodificada, gerada uma vez.
+     */
+    videoPerfil: PerfilDeRede
+  }
 }
 
 export interface DisplayInfo {

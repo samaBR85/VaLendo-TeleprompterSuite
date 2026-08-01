@@ -21,6 +21,7 @@ import { cartaoNoAr } from '@shared/cards'
 import { traduzir } from '@shared/i18n'
 import {
   autorizarVideo,
+  caminhoDoVideo,
   convertidoPath,
   deleteCardImage,
   deleteVideoConversion,
@@ -33,8 +34,9 @@ import {
   registerVideoResolver,
   videoPronto
 } from './cards'
-import { converterParaMp4, temFfmpeg } from './ffmpeg'
+import { converterParaMp4, gerarProxy, temFfmpeg } from './ffmpeg'
 import { ehVideo, VIDEO_EXTENSIONS } from '@shared/video'
+import { perfilPorId } from '@shared/proxy'
 import { Store } from './state'
 import { flushState, onStorageHealth, storageHealth } from './storage'
 import { buildBroadcastMenu } from './broadcastMenu'
@@ -122,8 +124,11 @@ function registerIpc(): void {
     if (action.type === 'card/remove') {
       const alvo = store.getState().cards.find((c) => c.id === action.cardId)
       if (alvo?.kind === 'image') deleteCardImage(alvo.arquivo)
-      // a conversão é derivada do cartão e não sobrevive a ele
-      if (alvo?.kind === 'video' && alvo.convertido) deleteVideoConversion(alvo.convertido)
+      // conversão e cópia leve são derivadas do cartão e não sobrevivem a ele
+      if (alvo?.kind === 'video') {
+        if (alvo.convertido) deleteVideoConversion(alvo.convertido)
+        if (alvo.proxy) deleteVideoConversion(alvo.proxy.arquivo)
+      }
     }
     store.dispatch(action)
   })
@@ -339,6 +344,81 @@ function registerIpc(): void {
  * renomeada, HD externo fora, ou um projeto que veio de outra máquina e cujos
  * caminhos nunca foram autorizados aqui.
  */
+/**
+ * Mantém as cópias leves em dia com o perfil escolhido.
+ *
+ * Uma de cada vez, e nunca duas ao mesmo tempo: recodificar é a coisa mais
+ * pesada que este app faz, e é para ficar em segundo plano enquanto o operador
+ * prepara o programa — não para disputar processador com a leitura no ar.
+ *
+ * Enquanto a cópia não existe, a rede recebe o original. Pesado, mas
+ * funcionando: melhor do que um cartão que não aparece para quem confere.
+ */
+let gerandoProxy = false
+
+async function garantirProxies(): Promise<void> {
+  if (gerandoProxy) return
+  const state = store.getState()
+  const perfilId = state.webview.videoPerfil
+
+  // no original não há cópia a fazer, e as que existem devem sumir para não
+  // ficarem servindo uma qualidade que o operador deixou de querer
+  if (perfilId === 'original') {
+    for (const card of state.cards) {
+      if (card.kind === 'video' && card.proxy) {
+        deleteVideoConversion(card.proxy.arquivo)
+        store.dispatch({ type: 'card/videoProxy', cardId: card.id, proxy: null })
+      }
+    }
+    return
+  }
+
+  const perfil = perfilPorId(perfilId)
+  if (!perfil || !temFfmpeg()) return
+
+  const pendente = state.cards.find(
+    (c): c is Extract<typeof c, { kind: 'video' }> =>
+      c.kind === 'video' &&
+      c.vinculado !== false &&
+      c.proxy?.perfil !== perfilId &&
+      caminhoDoVideo(c.id) !== null
+  )
+  if (!pendente) return
+
+  gerandoProxy = true
+  try {
+    // a cópia velha, de outro perfil, sai antes: senão a pasta acumularia uma
+    // por qualidade já experimentada
+    if (pendente.proxy) deleteVideoConversion(pendente.proxy.arquivo)
+
+    const arquivo = `${pendente.id}-${perfilId}.mp4`
+    const origem = caminhoDoVideo(pendente.id)
+    if (!origem) return
+
+    const avisar = (fracao: number | null): void =>
+      sendToAll(CHANNELS.cardConvertProgress, {
+        arquivoNome: pendente.arquivoNome,
+        fracao,
+        recodificando: true
+      })
+
+    avisar(null)
+    const r = await gerarProxy(origem, convertidoPath(arquivo), perfil, (p) => avisar(p.fracao))
+    sendToAll(CHANNELS.cardConvertProgress, null)
+
+    if (r.ok) {
+      store.dispatch({ type: 'card/videoProxy', cardId: pendente.id, proxy: { arquivo, perfil: perfilId } })
+    } else {
+      deleteVideoConversion(arquivo)
+    }
+  } finally {
+    gerandoProxy = false
+  }
+
+  // pode haver outro cartão esperando a vez
+  void garantirProxies()
+}
+
 function revalidarVideos(): void {
   for (const card of store.getState().cards) {
     if (card.kind !== 'video') continue
@@ -386,7 +466,9 @@ function bootstrap(): void {
   // nenhuma URL carrega caminho de disco, e não há URL a forjar
   registerVideoResolver((cardId) => {
     const card = store.getState().cards.find((c) => c.id === cardId)
-    return card?.kind === 'video' ? { caminho: card.caminho, convertido: card.convertido } : null
+    return card?.kind === 'video'
+      ? { caminho: card.caminho, convertido: card.convertido, proxy: card.proxy?.arquivo }
+      : null
   })
   registerCardProtocol()
   registerIpc()
@@ -394,6 +476,7 @@ function bootstrap(): void {
   onBroadcastContextMenu(showBroadcastMenu)
 
   store.subscribe(() => {
+    void garantirProxies()
     syncWebview(store.getState())
     sendToAll(CHANNELS.stateChanged, snapshot())
     syncOutput(store.getState())
