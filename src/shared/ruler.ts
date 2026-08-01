@@ -43,8 +43,8 @@ export function filledSegments(ppm: number): number {
  * medidor de áudio: calmo à esquerda, quente à direita, e o vermelho onde
  * quase ninguém acompanha lendo.
  */
-const CALMO = { h: 160, s: 51, l: 58 } // #5DCAA5, o verde-ciano do iniciar
-const QUENTE = { h: 1, s: 72, l: 59 } // #E24B4A, o vermelho do no ar
+const CALMO = { h: 145, s: 60, l: 55 } // #46D17F, o mesmo verde do iniciar
+const QUENTE = { h: 0, s: 100, l: 65 } // #FF4D4D, o mesmo vermelho do no ar
 
 export function segmentColor(index: number): string {
   const fracao = SEGMENT_COUNT > 1 ? Math.min(1, Math.max(0, index / (SEGMENT_COUNT - 1))) : 0

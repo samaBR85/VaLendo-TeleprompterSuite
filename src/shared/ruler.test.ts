@@ -55,8 +55,8 @@ describe('a cor da régua', () => {
   it('vai do ciano do iniciar ao vermelho do no ar', () => {
     // as pontas são as cores do app, e não cores novas: o mesmo verde-ciano do
     // botão de iniciar e o mesmo vermelho do no ar
-    expect(segmentColor(0)).toBe('hsl(160 51% 58%)')
-    expect(segmentColor(SEGMENT_COUNT - 1)).toBe('hsl(1 72% 59%)')
+    expect(segmentColor(0)).toBe('hsl(145 60% 55%)')
+    expect(segmentColor(SEGMENT_COUNT - 1)).toBe('hsl(0 100% 65%)')
   })
 
   it('atravessa a roda de cor em vez de passar pelo cinza', () => {

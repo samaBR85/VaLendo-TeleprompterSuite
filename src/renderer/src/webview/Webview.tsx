@@ -104,7 +104,7 @@ function Medidor(): React.JSX.Element {
         right: 0,
         zIndex: 99,
         background: 'rgba(0,0,0,0.72)',
-        color: '#7fe0b0',
+        color: '#46d17f',
         fontFamily: 'ui-monospace, Menlo, monospace',
         fontSize: 13,
         padding: '6px 8px',
@@ -162,7 +162,7 @@ function AvisoDeQueda({ texto }: { texto: string }): React.JSX.Element {
         left: 12,
         padding: '5px 12px',
         borderRadius: 6,
-        background: 'rgba(226,75,74,0.9)',
+        background: 'rgba(255,77,77,0.9)',
         color: '#fff',
         fontFamily: 'system-ui, sans-serif',
         fontSize: 13
@@ -254,7 +254,7 @@ export function Webview(): React.JSX.Element {
           height: '100%',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#7e858d',
+          color: '#9a9aa2',
           fontFamily: 'system-ui, sans-serif',
           fontSize: 15
         }}
@@ -305,7 +305,7 @@ export function Webview(): React.JSX.Element {
             style={{ width: '100%', maxHeight: '100%' }}
           />
         ) : (
-          <p style={{ color: '#7e858d', fontFamily: 'system-ui, sans-serif', fontSize: 15, padding: 24 }}>
+          <p style={{ color: '#9a9aa2', fontFamily: 'system-ui, sans-serif', fontSize: 15, padding: 24 }}>
             {traduzir(idioma, 'web.rawVideoEmpty')}
           </p>
         )}

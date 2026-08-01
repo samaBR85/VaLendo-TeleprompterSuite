@@ -18,7 +18,7 @@ interface Props {
  * contrário do verde e do vermelho que o resto do app reserva para "pode ir" e
  * "no ar". São as mesmas quatro cores já usadas para identificar aba.
  */
-const SEGMENT_COLORS = ['#378ADD', '#7F77DD', '#D4537E', '#1D9E75']
+const SEGMENT_COLORS = ['#6AA8FF', '#C07BF0', '#EE7AB4', '#46D17F']
 
 /** Marcação de tempo com um passo "redondo", para não empilhar números demais numa régua curta. */
 const STEP_CANDIDATES = [15, 30, 60, 120, 300, 600, 900, 1800]
@@ -106,7 +106,7 @@ export function Timeline({ segments, totalRuler, currentRuler, currentIndex, ppm
         {totalRuler > 0 ? (
           <div
             data-playhead
-            className="pointer-events-none absolute top-0 bottom-0 w-0.5 bg-[var(--color-go)] shadow-[0_0_8px_rgba(93,202,165,0.7)] transition-[left] duration-200 ease-linear"
+            className="pointer-events-none absolute top-0 bottom-0 w-0.5 bg-[var(--color-go)] shadow-[0_0_8px_rgba(70,209,127,0.7)] transition-[left] duration-200 ease-linear"
             style={{ left: pct(currentRuler, totalRuler) }}
           />
         ) : null}

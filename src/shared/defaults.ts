@@ -48,9 +48,11 @@ export const DEFAULT_APPEARANCE: Appearance = {
   minWords: 4,
   maxWords: 7,
   uniformSpeed: true,
+  // branco no preto é o que um teleprompter deve ser, e não acompanha o tema
+  // do app: isto é o que o apresentador lê, não o cromo em volta
   textColor: '#FFFFFF',
   bgColor: '#000000',
-  directionColor: '#7FB2FF',
+  directionColor: '#6AA8FF',
   align: 'left',
   readingLinePct: 0.38,
   readingMarkOnOutput: false,
@@ -66,8 +68,8 @@ export const DEFAULT_APPEARANCE: Appearance = {
     elapsed: false,
     remaining: false,
     position: 'topRight',
-    elapsedColor: '#5DCAA5',
-    remainingColor: '#E24B4A',
+    elapsedColor: '#46D17F',
+    remainingColor: '#FF6B5E',
     sizePct: 3.5,
     mode: 'palavras',
     targetSeconds: 180
@@ -132,7 +134,15 @@ export function createTab(
   }
 }
 
-export const TAB_COLORS = ['#E24B4A', '#378ADD', '#1D9E75', '#EF9F27', '#7F77DD', '#D4537E']
+/**
+ * O pontinho que identifica cada aba.
+ *
+ * Seis cores distinguíveis de relance — é assim que o operador acha a aba
+ * certa no meio de dez sem ler o nome. Ficam aqui em hex, e não como tokens
+ * de tema, porque são identidade de conteúdo: a aba "Encerramento" continua
+ * verde independentemente da cor que o app usar para "está rolando".
+ */
+export const TAB_COLORS = ['#EE7AB4', '#C07BF0', '#F0B429', '#46D17F', '#6AA8FF', '#FF4D4D']
 
 export function createInitialState(
   defaults: { appearance: Appearance; ppm: number } = { appearance: DEFAULT_APPEARANCE, ppm: SPEED_PRESETS[1] },

@@ -1,18 +1,49 @@
 @import 'tailwindcss';
 
+/*
+ * A paleta inteira do app sai daqui.
+ *
+ * Os neutros são cinza puro, não azulados: num app que fica horas aberto ao
+ * lado de uma prévia preta, qualquer viés de cor no cromo compete com a
+ * imagem que está no ar. `ink` sobe do fundo da janela para as superfícies
+ * elevadas; `fog` desce do texto forte para o rótulo apagado.
+ */
 @theme {
-  --color-ink-0: #0d0e10;
-  --color-ink-1: #15171a;
-  --color-ink-2: #1d2024;
-  --color-ink-3: #282c31;
-  --color-line: #33383e;
-  --color-fog-0: #f2f3f5;
-  --color-fog-1: #b9bfc6;
-  --color-fog-2: #7e858d;
-  --color-live: #e24b4a;
-  --color-go: #5dcaa5;
-  --color-warn: #ef9f27;
-  --color-link: #6fa8f0;
+  --color-ink-0: #0e0e10;
+  --color-ink-1: #141416;
+  --color-ink-2: #1a1a1d;
+  --color-ink-3: #212124;
+  /* superfície acima de ink-3: chip, botão em repouso, hover */
+  --color-ink-4: #2a2a2f;
+  --color-line: #333338;
+
+  --color-fog-0: #f0f0f2;
+  --color-fog-1: #b9bac2;
+  --color-fog-2: #9a9aa2;
+  /* rótulo em maiúsculas, unidade do mostrador — texto que se lê uma vez e esquece */
+  --color-fog-3: #6f6f77;
+
+  /*
+   * Cores que SIGNIFICAM alguma coisa, e por isso não são intercambiáveis:
+   * verde é "está rolando", vermelho é "está no ar", âmbar é "atenção".
+   * Trocar uma pela outra troca o recado no meio de um programa ao vivo.
+   */
+  --color-go: #46d17f;
+  --color-live: #ff4d4d;
+  /* o relógio "restante" é coral, não o vermelho de alarme: ele conta sempre,
+     e piscar alarme o programa inteiro treina o olho a ignorar o alarme */
+  --color-live-soft: #ff6b5e;
+  --color-warn: #f0b429;
+  --color-link: #6aa8ff;
+
+  /*
+   * Acento de interface — não significa estado, só marca o que está ativo.
+   * Fica separado das cores acima de propósito: se o rosa virasse "ligado" em
+   * algum lugar, ele começaria a competir com o verde do "está rolando".
+   */
+  --color-accent: #ee7ab4;
+  --color-accent-soft: #f5a8ce;
+  --color-accent-2: #c07bf0;
 }
 
 /*
@@ -61,20 +92,27 @@
     opacity: 1;
   }
 
+  /*
+   * Range nativo, de propósito.
+   *
+   * A versão anterior usava `appearance: none` com polegar desenhado à mão —
+   * o que também apagava o preenchimento do trilho, porque `accent-color` só
+   * vale no controle nativo. Como aqui só existe um motor de renderização
+   * (Chromium, nos dois sistemas), o nativo é previsível: dá o trilho
+   * preenchido até o polegar de graça, que é o desenho que a interface pede.
+   * Quem precisa de outra cor troca com a classe `accent-*` no próprio campo.
+   */
   input[type='range'] {
-    appearance: none;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--color-ink-3);
+    accent-color: var(--color-accent);
+    height: 14px;
+    cursor: pointer;
     outline: none;
   }
 
-  input[type='range']::-webkit-slider-thumb {
-    appearance: none;
-    width: 13px;
-    height: 13px;
-    border-radius: 50%;
-    background: var(--color-fog-0);
+  /* sem isto o quadrinho marcado sai no azul do sistema operacional, que é a
+     única cor da tela que não pertence ao app */
+  input[type='checkbox'] {
+    accent-color: var(--color-accent);
     cursor: pointer;
   }
 

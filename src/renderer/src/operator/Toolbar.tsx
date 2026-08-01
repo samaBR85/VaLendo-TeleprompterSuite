@@ -253,14 +253,14 @@ export function Toolbar({
                   icon="card"
                   label={t('cards.toolbar')}
                   active={state.transport.card !== null}
-                  tint="#EF9F27"
+                  tint="var(--color-warn)"
                   onClick={onOpenCards}
                 />
                 <Tool
                   icon="freeze"
                   label={`${t('toolbar.freeze')}${hint(keymap, 'transport.freeze')}`}
                   active={transport.frozen}
-                  tint="#378ADD"
+                  tint="var(--color-link)"
                   onClick={() => run('transport.freeze')}
                 />
                 {/* aceso pelo que está acontecendo, não pelo que foi pedido:
@@ -274,13 +274,13 @@ export function Toolbar({
                       : t('toolbar.webviewOff')
                   }
                   active={webviewLive}
-                  tint="#1D9E75"
+                  tint="var(--color-go)"
                   onClick={onOpenWebview}
                 />
                 <Tool
                   icon="monitor"
                   label={t('toolbar.identify')}
-                  tint="#7F77DD"
+                  tint="var(--color-accent-2)"
                   onClick={() => window.valendo.identifyDisplays()}
                 />
               </Grupo>

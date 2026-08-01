@@ -61,7 +61,7 @@ export function identifyDisplays(durationMs = 2_600): void {
       height: display.bounds.height,
       frame: false,
       transparent: false,
-      backgroundColor: '#0b0b0b',
+      backgroundColor: '#0e0e10',
       alwaysOnTop: true,
       skipTaskbar: true,
       focusable: false,
@@ -81,12 +81,12 @@ export function identifyDisplays(durationMs = 2_600): void {
 
 function identifyMarkup(info: DisplayInfo): string {
   return `<!doctype html><meta charset="utf-8"><style>
-    html,body{margin:0;height:100%;background:#0b0b0b;color:#fff;
+    html,body{margin:0;height:100%;background:#0e0e10;color:#f0f0f2;
       font-family:system-ui,sans-serif;display:flex;align-items:center;
       justify-content:center;flex-direction:column;gap:2vh;overflow:hidden}
     .n{font-size:38vh;line-height:1;font-weight:600}
-    .d{font-size:3vh;color:#8a8a86}
-    .p{font-size:2.4vh;color:#5DCAA5}
+    .d{font-size:3vh;color:#9a9aa2}
+    .p{font-size:2.4vh;color:#46d17f}
   </style>
   <div class="n">${info.label.match(/\d+/)?.[0] ?? '?'}</div>
   <div class="d">${info.size.width} × ${info.size.height} · ${info.scaleFactor}x</div>

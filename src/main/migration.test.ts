@@ -117,7 +117,7 @@ describe('padrões dos relógios', () => {
   })
 
   it('verde para o decorrido e vermelho para o restante', () => {
-    expect(DEFAULT_APPEARANCE.timers.elapsedColor.toUpperCase()).toBe('#5DCAA5')
-    expect(DEFAULT_APPEARANCE.timers.remainingColor.toUpperCase()).toBe('#E24B4A')
+    expect(DEFAULT_APPEARANCE.timers.elapsedColor.toUpperCase()).toBe('#46D17F')
+    expect(DEFAULT_APPEARANCE.timers.remainingColor.toUpperCase()).toBe('#FF6B5E')
   })
 })
