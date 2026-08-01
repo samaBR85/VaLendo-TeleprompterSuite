@@ -258,6 +258,12 @@ export function useCommands(
         case 'view.deck':
           dispatch({ type: 'layout/mode', mode: 'deck' })
           break
+        case 'view.transportPosition':
+          dispatch({
+            type: 'layout/transportPosition',
+            position: state.transportPosition === 'topo' ? 'regua' : 'topo'
+          })
+          break
         case 'palette.open':
           ui.openPalette()
           break

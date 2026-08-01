@@ -1,5 +1,5 @@
 import type { Lang } from './i18n/types'
-import type { Anchor, Appearance, AppState, Cartao, LayoutMode } from './types'
+import type { Anchor, Appearance, AppState, Cartao, LayoutMode, TransportPosition } from './types'
 import type { PerfilDeRede } from './proxy'
 
 /**
@@ -66,6 +66,7 @@ export type Action =
   | { type: 'tab/rename'; tabId: string; title: string }
   | { type: 'app/language'; language: Lang }
   | { type: 'layout/mode'; mode: LayoutMode }
+  | { type: 'layout/transportPosition'; position: TransportPosition }
   | { type: 'layout/inspector'; visible: boolean }
   | { type: 'layout/rows'; tabId: string; rows: number[] }
   | { type: 'output/set'; displayId: number | null; enabled: boolean }

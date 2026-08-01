@@ -91,6 +91,9 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'view.split', group: 'Visão', defaultBinding: 'F6' },
   { id: 'view.focus', group: 'Visão', defaultBinding: 'F7' },
   { id: 'view.deck', group: 'Visão', defaultBinding: 'F8' },
+  /* alterna o transporte entre a barra de cima e a régua do rodapé — segue a
+     fila F5..F8 dos outros comandos de arrumação da tela */
+  { id: 'view.transportPosition', group: 'Visão', defaultBinding: 'F9' },
   /*
    * `Shift+C`, e não `C` sozinho.
    *

@@ -3,7 +3,7 @@ import type { Action } from '@shared/actions'
 import { composeLines, totalWords } from '@shared/anchor'
 import { formatBinding, parseBinding } from '@shared/commands'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
-import type { AppState, DisplayInfo, Tab } from '@shared/types'
+import type { AppState, DisplayInfo, Tab, TransportPosition } from '@shared/types'
 import { Icon, type IconName } from '../ui/Icon'
 import { useT } from '../i18n'
 import { SpeedRuler } from './SpeedRuler'
@@ -39,7 +39,8 @@ function useNow(intervalMs = 500): number {
   return now
 }
 
-function hint(keymap: Map<string, string>, commandId: string): string {
+/** " · Ctrl+K" para colar no fim de um rótulo, ou nada se o comando não tem tecla. */
+export function hint(keymap: Map<string, string>, commandId: string): string {
   const binding = parseBinding(keymap.get(commandId) ?? '')
   if (!binding) return ''
   return ` · ${formatBinding(binding, window.valendo.platform === 'darwin')}`
@@ -166,37 +167,27 @@ function Campo({
 }
 
 /**
- * A barra de comando, arrumada como um console: documento à esquerda, o
- * transporte e o mostrador no centro, o ar à direita.
+ * A barra de preparação: arquivo à esquerda, o ar à direita.
  *
- * O que está aqui é o que se usa com a transmissão correndo. Aparência —
- * inverter, espelhar, girar — mora nos ajustes, e as ferramentas de texto no
- * cabeçalho do editor, que é onde elas agem.
+ * É o que se mexe ANTES e DEPOIS do programa — abrir, salvar, escolher o
+ * monitor, subir a transmissão. Fica separada do transporte de propósito:
+ * nas duas arrumações que o app oferece, esta continua sempre no topo,
+ * enquanto o transporte é o que muda de lugar.
  */
-export function Toolbar({
+export function BarraDeArquivo({
   state,
   tab,
   displays,
   keymap,
-  rows,
   dispatch,
   run,
   onImport,
   webviewLive,
   onOpenWebview,
   onOpenCards
-}: Props): React.JSX.Element {
+}: Omit<Props, 'rows'>): React.JSX.Element {
   const { t } = useT()
   const { transport, output } = state
-  const now = useNow()
-
-  const ruler = useMemo(
-    () => totalWords(composeLines(tab.blocks, tab.appearance, rows)),
-    [tab.blocks, tab.appearance.minWords, tab.appearance.maxWords, tab.appearance.uniformSpeed, rows]
-  )
-  const lidas = Math.min(ruler, Math.max(0, wordIndexAt(transport, now)))
-  const total = secondsForWords(ruler, transport.ppm)
-  const elapsed = secondsForWords(lidas, transport.ppm)
 
   return (
     <div className="toolbar-mesa border-b border-[var(--color-line)]">
@@ -326,8 +317,52 @@ export function Toolbar({
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
 
-        {/* fila do que se toca a cada segundo com a transmissão correndo */}
+/**
+ * A barra de transporte: o que se toca a cada segundo com o programa correndo.
+ *
+ * Vive sozinha porque muda de lugar — no topo, logo abaixo da barra de
+ * arquivo; ou na régua do rodapé, entre o roteiro e os cartões. O conteúdo é
+ * exatamente o mesmo nos dois casos; só a moldura muda, e é por isso que ela
+ * é um componente e não duas cópias.
+ */
+export function BarraDeTransporte({
+  state,
+  tab,
+  keymap,
+  rows,
+  dispatch,
+  run,
+  position
+}: Pick<Props, 'state' | 'tab' | 'keymap' | 'rows' | 'dispatch' | 'run'> & {
+  position: TransportPosition
+}): React.JSX.Element {
+  const { t } = useT()
+  const { transport } = state
+  const now = useNow()
+
+  const ruler = useMemo(
+    () => totalWords(composeLines(tab.blocks, tab.appearance, rows)),
+    [tab.blocks, tab.appearance.minWords, tab.appearance.maxWords, tab.appearance.uniformSpeed, rows]
+  )
+  const lidas = Math.min(ruler, Math.max(0, wordIndexAt(transport, now)))
+  const total = secondsForWords(ruler, transport.ppm)
+  const elapsed = secondsForWords(lidas, transport.ppm)
+
+  return (
+    <div
+      data-transporte={position}
+      className={`toolbar-mesa ${
+        position === 'regua'
+          ? 'flex-none border-t border-[var(--color-line)] bg-[var(--color-ink-1)]'
+          : 'border-b border-[var(--color-line)]'
+      }`}
+    >
+      <div className="toolbar-linhas">
         <div className="toolbar-fila">
           <div className="toolbar-grp-transporte flex flex-none items-center gap-1.5">
             <Tool icon="restart" label={`${t('toolbar.restart')}${hint(keymap, 'transport.restart')}`} size="grande" onClick={() => run('transport.restart')} />

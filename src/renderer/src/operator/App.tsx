@@ -18,7 +18,7 @@ import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
 import { StatusBar } from './StatusBar'
 import { Tabs } from './Tabs'
-import { Toolbar } from './Toolbar'
+import { BarraDeArquivo, BarraDeTransporte, hint } from './Toolbar'
 import { WebviewPanel } from './WebviewPanel'
 import { useCommands } from './useCommands'
 
@@ -412,6 +412,32 @@ function AppConteudo({
           <Tabs state={state} dispatch={dispatch} />
         </div>
         <div className="flex flex-none items-center gap-3 text-[13px]">
+          {/* onde o transporte mora. Dois botões em vez de um alternador,
+              porque o operador precisa ver qual das duas está valendo sem
+              ter que lembrar o que o ícone significa quando está apagado */}
+          <div
+            data-paineis
+            className="flex flex-none items-center gap-0.5 rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1"
+          >
+            {(['topo', 'regua'] as const).map((posicao) => (
+              <button
+                key={posicao}
+                type="button"
+                data-transport-position={posicao}
+                title={`${t(posicao === 'topo' ? 'app.transportTop' : 'app.transportStrip')}${hint(keymap, 'view.transportPosition')}`}
+                aria-pressed={state.transportPosition === posicao}
+                onClick={() => dispatch({ type: 'layout/transportPosition', position: posicao })}
+                className={`rounded-md p-1.5 transition-colors ${
+                  state.transportPosition === posicao
+                    ? 'bg-[var(--color-accent)]/16 text-[var(--color-accent)]'
+                    : 'text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-1)]'
+                }`}
+              >
+                <Icon name={posicao === 'topo' ? 'layoutSplit' : 'layoutDeck'} size={20} />
+              </button>
+            ))}
+          </div>
+
           <LanguagePicker
             lang={state.language}
             onChange={(language) => dispatch({ type: 'app/language', language })}
@@ -478,12 +504,11 @@ function AppConteudo({
         />
       ) : null}
 
-      <Toolbar
+      <BarraDeArquivo
         state={state}
         tab={tab}
         displays={displays}
         keymap={keymap}
-        rows={rows}
         dispatch={dispatch}
         run={run}
         onImport={importDocument}
@@ -491,6 +516,20 @@ function AppConteudo({
         onOpenWebview={() => setWebviewOpen(true)}
         onOpenCards={() => dispatch({ type: 'layout/cards', visible: !state.cardsVisible })}
       />
+
+      {/* no topo, o transporte vem logo abaixo do arquivo e as duas barras
+          leem como uma só. Na régua, ele desce para depois do roteiro */}
+      {state.transportPosition === 'topo' ? (
+        <BarraDeTransporte
+          state={state}
+          tab={tab}
+          keymap={keymap}
+          rows={rows}
+          dispatch={dispatch}
+          run={run}
+          position="topo"
+        />
+      ) : null}
 
       {state.layoutMode === 'deck' ? (
         <Deck
@@ -566,6 +605,21 @@ function AppConteudo({
           ) : null}
         </main>
       )}
+
+      {/* a régua: entre o roteiro e os cartões, que é onde o olho já está
+          durante o programa. Fica fora dos três modos pelo mesmo motivo da
+          gaveta — trocar de modo não pode fazer o play sumir da tela */}
+      {state.transportPosition === 'regua' ? (
+        <BarraDeTransporte
+          state={state}
+          tab={tab}
+          keymap={keymap}
+          rows={rows}
+          dispatch={dispatch}
+          run={run}
+          position="regua"
+        />
+      ) : null}
 
       {/* fora dos três modos, e não dentro de cada um: a gaveta é a mesma no
           Split, no Foco e na Mesa, e trocar de modo não pode fazer as artes

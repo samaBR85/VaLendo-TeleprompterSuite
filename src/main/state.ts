@@ -661,6 +661,10 @@ export class Store {
         this.state = { ...this.state, layoutMode: action.mode }
         break
 
+      case 'layout/transportPosition':
+        this.state = { ...this.state, transportPosition: action.position }
+        break
+
       case 'layout/inspector':
         this.state = { ...this.state, inspectorVisible: action.visible }
         break

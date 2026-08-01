@@ -9,6 +9,8 @@
 export const pt = {
   /* ---------------------------------------------------------- app e janelas */
   'app.settings': 'Ajustes',
+  'app.transportTop': 'Transporte na barra de cima',
+  'app.transportStrip': 'Transporte na régua do rodapé',
   'app.shortcuts': 'Editar atalhos',
   'app.palette': 'Paleta de comandos',
   'app.credits': 'Créditos',
@@ -314,6 +316,7 @@ export const pt = {
   'cmd.view.split': 'Ir para o modo Split',
   'cmd.view.focus': 'Ir para o modo Foco',
   'cmd.view.deck': 'Ir para a Mesa de comando',
+  'cmd.view.transportPosition': 'Transporte no topo ou na régua do rodapé',
   'cmd.view.cards': 'Abrir ou fechar a gaveta de cartões',
   'cmd.palette.open': 'Paleta de comandos',
   'cmd.keymap.open': 'Editar atalhos',

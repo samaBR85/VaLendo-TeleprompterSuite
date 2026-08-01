@@ -351,6 +351,19 @@ export interface OutputConfig {
 
 export type LayoutMode = 'split' | 'focus' | 'deck'
 
+/**
+ * Onde mora o transporte — o play, os relógios e a régua de velocidade.
+ *
+ * `topo`: tudo na barra de cima, como sempre foi.
+ * `regua`: a barra de cima fica só com arquivo e saída, e o transporte vira
+ * uma faixa no rodapé, entre o roteiro e os cartões — mais perto de onde o
+ * olho já está durante o programa, e devolvendo altura ao editor e à prévia.
+ *
+ * É preferência de operação, não de aparência: cada operador acha uma das
+ * duas mais rápida para a mão dele, e a escolha fica gravada.
+ */
+export type TransportPosition = 'topo' | 'regua'
+
 export interface AppState {
   tabs: Tab[]
   activeTabId: string
@@ -360,6 +373,7 @@ export interface AppState {
    */
   language: Lang
   layoutMode: LayoutMode
+  transportPosition: TransportPosition
   /** painel de ajustes da direita */
   inspectorVisible: boolean
   /**

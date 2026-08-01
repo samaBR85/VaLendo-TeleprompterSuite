@@ -2,6 +2,8 @@ import type { Dicionario } from './index'
 
 export const it: Dicionario = {
   'app.settings': 'Impostazioni',
+  'app.transportTop': 'Trasporto nella barra in alto',
+  'app.transportStrip': 'Trasporto nella barra in basso',
   'app.shortcuts': 'Modifica le scorciatoie',
   'app.palette': 'Palette dei comandi',
   'app.credits': 'Crediti',
@@ -295,6 +297,7 @@ export const it: Dicionario = {
   'cmd.view.split': 'Vai al modo Split',
   'cmd.view.focus': 'Vai al modo Focus',
   'cmd.view.deck': 'Vai alla Regia',
+  'cmd.view.transportPosition': 'Trasporto nella barra in alto o in basso',
   'cmd.view.cards': 'Apri o chiudi il cassetto dei cartelli',
   'cmd.palette.open': 'Palette dei comandi',
   'cmd.keymap.open': 'Modifica le scorciatoie',

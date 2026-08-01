@@ -159,6 +159,7 @@ export function createInitialState(
     activeTabId: tab.id,
     language: lang,
     layoutMode: 'split',
+    transportPosition: 'topo',
     inspectorVisible: true,
     cardsVisible: false,
     cardsHeight: CARDS_HEIGHT_DEFAULT,
