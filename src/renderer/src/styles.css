@@ -18,6 +18,9 @@
   --color-line: #333338;
 
   --color-fog-0: #f0f0f2;
+  /* meio passo abaixo do branco: título de seção, nome de arquivo, corpo de
+     texto — a maquete quase nunca usa o branco cheio fora do prompter */
+  --color-fog-05: #d8d8de;
   --color-fog-1: #b9bac2;
   --color-fog-2: #9a9aa2;
   /* rótulo em maiúsculas, unidade do mostrador — texto que se lê uma vez e esquece */
@@ -44,6 +47,22 @@
   --color-accent: #ee7ab4;
   --color-accent-soft: #f5a8ce;
   --color-accent-2: #c07bf0;
+
+  /*
+   * A pele de console (maquete do Claude Design) desenha relevo, e relevo
+   * precisa de aresta PRETA: `--color-line` é a linha fina entre superfícies
+   * planas, mas numa tecla com gradiente + brilho interno a borda cinza mata a
+   * ilusão de profundidade. Por isso um token próprio, e não `#000` solto.
+   */
+  --color-edge: #000;
+
+  /* o vidro dos mostradores: mais escuro que ink-0 e levemente esverdeado,
+     como um LCD desligado — e as legendas dele acompanham esse tom */
+  --color-lcd: #0b0d0c;
+  --color-lcd-label: #5b6a63;
+  --color-lcd-caption: #4a5450;
+  --color-lcd-line: #1c1f1d;
+  --color-lcd-track: #161a18;
 }
 
 /*
@@ -93,14 +112,16 @@
   }
 
   /*
-   * Range nativo, de propósito.
+   * Range nativo como base, console por cima.
    *
-   * A versão anterior usava `appearance: none` com polegar desenhado à mão —
-   * o que também apagava o preenchimento do trilho, porque `accent-color` só
-   * vale no controle nativo. Como aqui só existe um motor de renderização
-   * (Chromium, nos dois sistemas), o nativo é previsível: dá o trilho
-   * preenchido até o polegar de graça, que é o desenho que a interface pede.
-   * Quem precisa de outra cor troca com a classe `accent-*` no próprio campo.
+   * O nativo com `accent-color` dá trilho preenchido de graça e segue valendo
+   * para qualquer campo que ainda não migrou. Mas o slider da maquete tem
+   * polegar PRATEADO sobre trilho rosa — combinação que `accent-color` não
+   * produz (ele pinta trilho e polegar da mesma cor). Para esses, a classe
+   * `.k-slider` (em @layer components) redesenha as duas partes; o
+   * preenchimento vem da variável `--fill`, que o componente React calcula do
+   * valor. Só funciona porque aqui só existe um motor (Chromium): os seletores
+   * `::-webkit-*` são a via oficial, não um hack por navegador.
    */
   input[type='range'] {
     accent-color: var(--color-accent);
@@ -225,5 +246,202 @@
     .toolbar-grp-ar {
       order: 4;
     }
+  }
+
+  /*
+   * O kit de console — os MATERIAIS da maquete, escritos uma única vez.
+   *
+   * A maquete não é "o app com outras cores": é um console de hardware, e o
+   * que o faz parecer hardware são quatro materiais que se repetem em toda
+   * peça — tecla em relevo, poço afundado, vidro de LCD e moldura de painel.
+   * Cada um vive aqui como classe, e os componentes em `ui/console.tsx` só
+   * compõem por cima. Se um relevo precisar mudar, muda num lugar só.
+   *
+   * Estados coloridos usam a variável `--k-cor`: a MESMA regra acende uma
+   * tecla de rosa (PAINÉIS), de vermelho (tela preta) ou de verde (rede no
+   * ar) — quem decide a cor é o ponto de uso, quem decide o desenho é o kit.
+   */
+
+  /* tecla: gradiente + aresta preta + fio de luz na borda de cima. O hover
+     clareia por filter, e não trocando o gradiente: vale para qualquer
+     variante colorida sem uma regra de hover por cor */
+  .k-tecla {
+    display: grid;
+    place-items: center;
+    background: linear-gradient(#333338, #26262a);
+    border: 1px solid var(--color-edge);
+    border-radius: 5px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    color: var(--color-fog-1);
+    transition: filter 0.1s;
+    cursor: pointer;
+  }
+
+  .k-tecla:hover:not(:disabled) {
+    filter: brightness(1.15);
+  }
+
+  /* afundar de leve ao apertar — é o que faz a tecla parecer tecla */
+  .k-tecla:active:not(:disabled) {
+    filter: brightness(0.92);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  .k-tecla:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .k-tecla-acesa {
+    background: linear-gradient(
+      color-mix(in srgb, var(--k-cor, var(--color-accent)) 30%, #232327),
+      color-mix(in srgb, var(--k-cor, var(--color-accent)) 15%, #1c1c1f)
+    );
+    color: var(--k-cor, var(--color-accent));
+  }
+
+  /* o play: a única tecla viva da mesa — verde, com brilho vazando. O texto
+     escuro em cima do verde é da maquete: dígito claro sumia no clarão */
+  .k-tecla-play {
+    background: linear-gradient(#3ddb84, #22a95e);
+    border-color: #0d4527;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 0 20px rgba(70, 209, 127, 0.4);
+    color: #0a2b18;
+  }
+
+  /* poço: a cama afundada onde as teclas assentam */
+  .k-poco {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px;
+    background: var(--color-ink-1);
+    border: 1px solid var(--color-edge);
+    border-radius: 7px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+  }
+
+  /* a variante do rodapé e do teclado de transporte: mais funda e mais escura,
+     porque as teclas dentro dela são maiores e precisam de mais contraste */
+  .k-poco-fundo {
+    background: #101012;
+    border-radius: 10px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.7);
+  }
+
+  /* rótulo de grupo: micro-caps mono espaçado — PROJETO, ROTEIRO, SAÍDA */
+  .k-microcaps {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /* vidro de LCD: mais fundo que qualquer poço; o conteúdo desenha as
+     próprias divisórias com --color-lcd-line */
+  .k-lcd {
+    display: flex;
+    align-items: stretch;
+    background: var(--color-lcd);
+    border: 1px solid var(--color-edge);
+    border-radius: 8px;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+  }
+
+  /* ficha: o chip plano de escolher — aba do inspetor, Esquerda/Centro,
+     "+ Imagem". Sem relevo de propósito: ficha não é tecla, é opção */
+  .k-ficha {
+    background: #212126;
+    border: 1px solid var(--color-edge);
+    border-radius: 6px;
+    color: var(--color-fog-2);
+    cursor: pointer;
+    transition: filter 0.1s;
+  }
+
+  .k-ficha:hover:not(:disabled) {
+    filter: brightness(1.15);
+  }
+
+  .k-ficha-ativa {
+    background: color-mix(in srgb, var(--k-cor, var(--color-accent)) 16%, transparent);
+    border-color: var(--k-cor, var(--color-accent));
+    color: color-mix(in srgb, var(--k-cor, var(--color-accent)) 65%, white);
+  }
+
+  /*
+   * Moldura de painel: cabeçalho em gradiente com filete colorido no topo.
+   * O filete é a assinatura da seção — âmbar=Edição, vermelho=Saída,
+   * roxo=Cards, rosa=Ajustes — e o gradiente e o título são TINGIDOS da
+   * mesma `--k-cor` por color-mix, para o cabeçalho inteiro pertencer à cor
+   * sem precisar de uma paleta por seção.
+   */
+  .k-cabecalho {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 10px;
+    height: 28px;
+    padding: 0 10px;
+    background: linear-gradient(
+      color-mix(in srgb, var(--k-cor, transparent) 7%, #212125),
+      color-mix(in srgb, var(--k-cor, transparent) 4%, #1a1a1d)
+    );
+    border-bottom: 1px solid var(--color-edge);
+    border-top: 2px solid var(--k-cor, transparent);
+  }
+
+  .k-cabecalho-titulo {
+    font-size: 11px;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--k-cor, var(--color-fog-1)) 55%, var(--color-fog-0));
+  }
+
+  /*
+   * O slider do console: trilho de 4px preenchido até `--fill`, polegar
+   * prateado de 14px. O preenchimento é um gradiente de duas paradas — não há
+   * outra via em CSS puro para pintar "até o valor" num range com
+   * `appearance:none`; a variável vem do componente React.
+   */
+  input[type='range'].k-slider {
+    appearance: none;
+    height: 14px;
+    background: transparent;
+  }
+
+  input[type='range'].k-slider::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(
+      to right,
+      var(--k-cor, var(--color-accent)) var(--fill, 50%),
+      var(--color-ink-0) var(--fill, 50%)
+    );
+    box-shadow: inset 0 1px 2px var(--color-edge);
+  }
+
+  input[type='range'].k-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: linear-gradient(#f0f0f2, #c2c2c8);
+    border: 1px solid var(--color-edge);
+  }
+
+  /* a miniatura para dentro do card de vídeo: mesmo desenho, escala menor */
+  input[type='range'].k-slider-mini::-webkit-slider-runnable-track {
+    height: 3px;
+  }
+
+  input[type='range'].k-slider-mini::-webkit-slider-thumb {
+    width: 9px;
+    height: 9px;
+    margin-top: -3px;
   }
 }
