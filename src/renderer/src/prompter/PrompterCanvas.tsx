@@ -413,14 +413,33 @@ export function PrompterCanvas({
           transform: `translate(-50%, -50%)${compensacao}`
         }}
       >
+        {/*
+          Coberto pelo cartão, este bloco inteiro sai de vista — e o que
+          importa é que ele sai do compositor.
+
+          Aqui moram duas coisas caras: uma máscara de gradiente do tamanho da
+          saída, que obriga o navegador a uma passada de composição própria, e
+          logo dentro uma camada promovida com `will-change`. No computador
+          isso não custa nada visível. No celular, um vídeo desenhado ao lado
+          desse arranjo perde o caminho rápido do hardware e passa a ser
+          recomposto quadro a quadro — que foi o engasgo relatado, e que o
+          modo `#video`, sem nada disto em volta, não tinha.
+
+          `visibility` e não `display`: escondido assim o texto continua tendo
+          layout, então a medição das linhas segue válida. Com `display: none`
+          ela mediria zeros — e trocar a fonte com um cartão no ar deixaria a
+          leitura no lugar errado quando ele saísse.
+        */}
         <div
           style={{
             position: 'absolute',
             inset: 0,
             overflow: 'hidden',
-            maskImage: appearance.focusDim
-              ? 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.35) 12%, #000 30%, #000 52%, rgba(0,0,0,0.4) 78%, transparent 100%)'
-              : undefined
+            visibility: palcoCoberto ? 'hidden' : undefined,
+            maskImage:
+              appearance.focusDim && !palcoCoberto
+                ? 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.35) 12%, #000 30%, #000 52%, rgba(0,0,0,0.4) 78%, transparent 100%)'
+                : undefined
           }}
         >
           <div
@@ -433,7 +452,10 @@ export function PrompterCanvas({
               paddingLeft: `${appearance.marginPct}%`,
               paddingRight: `${appearance.marginPct}%`,
               paddingBottom: stage.height,
-              willChange: 'transform',
+              // a promoção só vale enquanto há rolagem para promover; com o
+              // palco coberto ela seria uma camada guardada na GPU à toa,
+              // disputando espaço com o vídeo do cartão
+              willChange: palcoCoberto ? undefined : 'transform',
               fontFamily: appearance.fontFamily,
               fontSize: appearance.fontSize,
               fontWeight: appearance.fontWeight,
