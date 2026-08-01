@@ -307,6 +307,30 @@ function CartaoNaGaveta({
    * a miniatura também precisa saber.
    */
   const [arrastando, setArrastando] = useState<number | null>(null)
+  const previaRef = useRef<HTMLVideoElement>(null)
+
+  /**
+   * Ao soltar a barra, o quadro em que o arrasto parou vira a miniatura —
+   * não só a posição de partida, o retrato do cartão também. Sem isso o
+   * operador escolhia o ponto certo e via a gaveta inteira voltar a mostrar
+   * o quadro antigo, como se a escolha não tivesse ficado.
+   */
+  const capturarQuadroDoArrasto = (): void => {
+    const video = previaRef.current
+    // < HAVE_CURRENT_DATA: ainda não há quadro decodificado neste ponto —
+    // desenhar agora pegaria um frame preto ou o de antes do pulo
+    if (!video || card.kind !== 'video' || video.readyState < 2) return
+    try {
+      const canvas = document.createElement('canvas')
+      canvas.width = 192
+      canvas.height = Math.max(1, Math.round((192 * video.videoHeight) / (video.videoWidth || 1)))
+      canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height)
+      dispatch({ type: 'card/videoPoster', cardId: card.id, poster: canvas.toDataURL('image/jpeg', 0.6) })
+    } catch {
+      // sem miniatura nova não é motivo para travar nada — a antiga continua valendo
+    }
+  }
+
   const reimportarImagem = async (): Promise<void> => {
     const escolhido = await window.valendo.pickCardImage(card.id)
     if (!escolhido) return
@@ -349,7 +373,7 @@ function CartaoNaGaveta({
           )
         ) : card.kind === 'video' ? (
           arrastando !== null ? (
-            <PreviaDoArrasto card={card} segundo={arrastando} />
+            <PreviaDoArrasto card={card} segundo={arrastando} videoRef={previaRef} />
           ) : card.poster ? (
             <img src={card.poster} alt="" className="max-h-full max-w-full object-contain" />
           ) : (
@@ -415,6 +439,7 @@ function CartaoNaGaveta({
             dispatch={dispatch}
             arrastando={arrastando}
             onArrastar={setArrastando}
+            onSoltarArrasto={capturarQuadroDoArrasto}
           />
         ) : null}
       </div>
@@ -463,20 +488,32 @@ function CartaoNaGaveta({
  * o mesmo arquivo do player de verdade (mesma URL, mesma faixa de bytes),
  * então o quadro que aparece aqui é o quadro que vai para a tela ao soltar.
  */
-function PreviaDoArrasto({ card, segundo }: { card: CartaoVideo; segundo: number }): React.JSX.Element {
-  const ref = useRef<HTMLVideoElement>(null)
-
+function PreviaDoArrasto({
+  card,
+  segundo,
+  videoRef
+}: {
+  card: CartaoVideo
+  segundo: number
+  /** exposto para fora: é dele que se tira o quadro final, ao soltar a barra */
+  videoRef: React.RefObject<HTMLVideoElement | null>
+}): React.JSX.Element {
   useEffect(() => {
-    const video = ref.current
+    const video = videoRef.current
     if (video && Number.isFinite(video.duration)) video.currentTime = segundo
-  }, [segundo])
+  }, [segundo, videoRef])
 
   return (
     <video
-      ref={ref}
+      ref={videoRef}
       muted
       playsInline
       preload="auto"
+      // sem isto, tirar o quadro para virar miniatura (mais abaixo, num
+      // canvas) falha calado: o navegador marca o vídeo como de outra
+      // origem e recusa devolver os pixels — o mesmo motivo pelo qual o
+      // vídeo escondido de `PreparaVideo` também precisa disto
+      crossOrigin="anonymous"
       src={`valendo://video/${encodeURIComponent(card.id)}?v=${encodeURIComponent(card.convertido ?? 'orig')}`}
       onLoadedMetadata={(event) => {
         event.currentTarget.currentTime = segundo
@@ -501,7 +538,8 @@ function PlayerDoCartao({
   videoPerfil,
   dispatch,
   arrastando,
-  onArrastar
+  onArrastar,
+  onSoltarArrasto
 }: {
   card: CartaoVideo
   clock: VideoClock
@@ -511,6 +549,8 @@ function PlayerDoCartao({
   /** a barra na mão do operador; mora no cartão, não aqui, porque a miniatura também precisa */
   arrastando: number | null
   onArrastar: (segundo: number | null) => void
+  /** tira o quadro do arrasto e vira a miniatura nova do cartão */
+  onSoltarArrasto: () => void
 }): React.JSX.Element {
   const { t } = useT()
   const [agora, setAgora] = useState(() => Date.now())
@@ -586,6 +626,9 @@ function PlayerDoCartao({
     // arrasto ao vivo mandaria um borrão para o ar. Fora do ar não há para
     // quem mandar nada — só grava a posição no próprio cartão
     dispatch({ type: 'card/videoSeek', cardId: card.id, segundo: arrastando, arrastando: false })
+    // antes de tirar a prévia de cena: o <video> do arrasto ainda existe
+    // neste instante, e é dele que sai o quadro novo da miniatura
+    onSoltarArrasto()
     onArrastar(null)
   }
 
