@@ -160,6 +160,18 @@ export function deleteVideoConversion(arquivo: string): void {
   }
 }
 
+/**
+ * O arquivo convertido existe mesmo no disco.
+ *
+ * O cartão guarda o NOME da cópia, e nome não é prova: o operador pode ter
+ * limpado a pasta, ou o projeto pode ter vindo de outra máquina com o nome
+ * escrito e nada por trás. Sem conferir o disco, a fila olhava só o perfil
+ * anotado, concluía "já está feita" e nunca refazia.
+ */
+export function conversaoExiste(arquivo: string): boolean {
+  return existsSync(convertidoPath(arquivo))
+}
+
 /** Apaga conversões que nenhum cartão do projeto aberto referencia. */
 export function pruneVideoConversions(cards: Cartao[]): void {
   const usados = new Set(

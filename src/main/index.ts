@@ -22,6 +22,7 @@ import { traduzir } from '@shared/i18n'
 import {
   autorizarVideo,
   caminhoDoVideo,
+  conversaoExiste,
   convertidoPath,
   deleteCardImage,
   deleteVideoConversion,
@@ -373,14 +374,30 @@ async function garantirProxies(): Promise<void> {
     return
   }
 
+  /*
+   * Sem a rede ligada não há para quem servir cópia leve.
+   *
+   * Antes a fila rodava assim que existisse um cartão de vídeo, mesmo num dia
+   * em que o operador nunca publicasse nada: um programa com cinco VTs pesados
+   * gerava cinco arquivos que ninguém abriria, gastando processador e disco.
+   *
+   * O preço de prender é que ligar a rede começa a recodificação naquele
+   * instante. Não trava nada — enquanto a cópia não fica pronta, a rede recebe
+   * o original —, mas quem quiser tudo adiantado liga a rede na preparação, e
+   * não no meio do programa.
+   */
+  if (!state.webview.enabled) return
+
   const perfil = perfilPorId(perfilId)
   if (!perfil || !temFfmpeg()) return
 
+  // "já feita" é perfil certo E arquivo no lugar: o nome anotado no cartão não
+  // é prova de que a cópia sobreviveu a uma limpeza de pasta
   const pendente = state.cards.find(
     (c): c is Extract<typeof c, { kind: 'video' }> =>
       c.kind === 'video' &&
       c.vinculado !== false &&
-      c.proxy?.perfil !== perfilId &&
+      !(c.proxy?.perfil === perfilId && conversaoExiste(c.proxy.arquivo)) &&
       caminhoDoVideo(c.id) !== null
   )
   if (!pendente) return
@@ -473,6 +490,16 @@ function bootstrap(): void {
   registerCardProtocol()
   registerIpc()
   revalidarVideos()
+  /*
+   * Uma passada na abertura, e não só a cada mudança.
+   *
+   * A fila é acionada por mudança de estado, então um app que abre e fica
+   * parado nunca a acionaria — e o projeto pode ter voltado de outra máquina,
+   * ou a pasta das cópias pode ter sido limpa. Aqui ela vale sobretudo para
+   * descartar cópias que sobraram de um perfil que o operador já abandonou;
+   * gerar mesmo só acontece com a rede ligada, e a rede nunca sobe sozinha.
+   */
+  void garantirProxies()
   onBroadcastContextMenu(showBroadcastMenu)
 
   store.subscribe(() => {
