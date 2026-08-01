@@ -162,21 +162,47 @@ export function VideoCartao({
   // tela do apresentador segura o quadro e pula uma vez, quando ele solta
   const congelado = clock.arrastando && !previaDoOperador
 
+  /**
+   * O que realmente identifica uma ordem do operador.
+   *
+   * `clock` chega como objeto novo a cada atualização de estado — e na página
+   * da rede isso é de dois em dois segundos, mesmo sem ninguém tocar em nada.
+   * Reagir à identidade do objeto fazia o vídeo ser reposicionado o tempo
+   * todo; reagir a estes três valores faz reagir a play, pausa e pulo.
+   */
+  const ordem = `${clock.tocando}|${clock.base}|${clock.comecouEm}`
+  const ultimaOrdem = useRef('')
+
   useEffect(() => {
     const video = ref.current
     if (!video || congelado) return
+    if (ordem === ultimaOrdem.current) return
+    ultimaOrdem.current = ordem
 
+    /*
+     * Meio segundo de tolerância, e não um quarto.
+     *
+     * Mexer em `currentTime` é pedir um salto ao decodificador, e no iPhone
+     * isso trava a página por dezenas de milissegundos e derruba quadros.
+     * Medido no aparelho de quem relatou: pausas de 43 a 99 ms, constantes, a
+     * cada acerto. Como o acerto de fuso da rede balança com a latência do
+     * wi-fi, o alvo oscilava sozinho e o salto disparava sem que nada tivesse
+     * mudado de verdade — o vídeo se reposicionava para corrigir o meu próprio
+     * ruído de medição.
+     *
+     * Dois tocadores do mesmo arquivo derivam 6 ms em 5 segundos (medido), e
+     * meio segundo de folga não se percebe numa página de conferência.
+     */
     const alvo = posicaoDoVideo(clock, Date.now(), card.duracao, loop)
-    if (Math.abs(video.currentTime - alvo) > 0.25) video.currentTime = alvo
+    if (Math.abs(video.currentTime - alvo) > 0.5) video.currentTime = alvo
 
     if (clock.tocando) {
-      // pode ser recusado quando o Chromium não vê gesto do usuário; a
-      // transmissão é muda, então passa — e a prévia nasce de um clique
-      void video.play().catch(() => undefined)
-    } else {
+      // só quando está parado: chamar `play` no que já toca é churn à toa
+      if (video.paused) void video.play().catch(() => undefined)
+    } else if (!video.paused) {
       video.pause()
     }
-  }, [clock, card.duracao, loop, congelado])
+  }, [ordem, clock, card.duracao, loop, congelado])
 
   /*
    * O volume do painel é do monitor do operador, e só dele.
@@ -204,9 +230,12 @@ export function VideoCartao({
     const id = setInterval(() => {
       const video = ref.current
       if (!video) return
+      // rede larga de propósito: esta ronda existe para o engasgo de verdade,
+      // não para perseguir o ruído do acerto de fuso. Corrigir de menos
+      // ninguém vê; corrigir de mais é o salto que engasga a imagem
       const alvo = posicaoDoVideo(clock, Date.now(), card.duracao, loop)
-      if (Math.abs(video.currentTime - alvo) > 0.4) video.currentTime = alvo
-    }, 2000)
+      if (Math.abs(video.currentTime - alvo) > 1.5) video.currentTime = alvo
+    }, 5000)
     return () => clearInterval(id)
   }, [clock, card.duracao, loop, congelado])
 

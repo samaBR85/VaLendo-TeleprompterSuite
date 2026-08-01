@@ -199,14 +199,33 @@ export function Webview(): React.JSX.Element {
    * rolagem é uma hora absoluta, então sem esse acerto a leitura apareceria em
    * outro ponto do roteiro.
    */
-  const desvio = useRef(0)
+  const desvio = useRef<number | null>(null)
 
   useEffect(() => {
     const fonte = new EventSource('/estado')
 
     fonte.onmessage = (evento) => {
       const recebido = JSON.parse(evento.data) as WebviewFrame
-      desvio.current = recebido.now - Date.now()
+
+      /*
+       * O acerto de fuso é medido uma vez, não a cada quadro.
+       *
+       * `recebido.now - Date.now()` não mede só a diferença entre os relógios:
+       * carrega junto o tempo que o quadro levou para atravessar o wi-fi, que
+       * varia de dezenas de milissegundos a cada envio. Recalculando sempre, o
+       * alvo do vídeo balançava com essa latência, e o app mandava o tocador
+       * pular para corrigir o próprio ruído de medição — cada pulo travando a
+       * página e derrubando quadros no celular.
+       *
+       * A menor diferença observada é a melhor estimativa: é a amostra que
+       * pegou o caminho mais rápido, logo a menos contaminada. E um salto
+       * grande de verdade — alguém acertou a hora do aparelho — passa pela
+       * porta de baixo e reajusta tudo.
+       */
+      const bruto = recebido.now - Date.now()
+      if (desvio.current === null || Math.abs(bruto - desvio.current) > 5_000) desvio.current = bruto
+      else desvio.current = Math.min(desvio.current, bruto)
+
       setQuadro(recebido)
       setLigado(true)
     }
@@ -266,8 +285,8 @@ export function Webview(): React.JSX.Element {
   // aparelho no ponto errado, tanto quanto o relógio dele estiver adiantado
   const transport = {
     ...quadro.transport,
-    startedAt: quadro.transport.startedAt - desvio.current,
-    video: { ...quadro.transport.video, comecouEm: quadro.transport.video.comecouEm - desvio.current }
+    startedAt: quadro.transport.startedAt - (desvio.current ?? 0),
+    video: { ...quadro.transport.video, comecouEm: quadro.transport.video.comecouEm - (desvio.current ?? 0) }
   }
 
   if (modo.has('video')) {
