@@ -457,6 +457,19 @@ function CartaoNaGaveta({
           </span>
         )}
 
+        {/* o número do atalho vira etiqueta sobre a arte: é por ele que o
+            operador dispara o cartão no meio do programa, e no canto do
+            campo de nome ele disputava atenção com o texto que se digita */}
+        {atalho ? (
+          <kbd
+            data-card-atalho={card.id}
+            title={`Ctrl+Shift+${atalho}`}
+            className="absolute top-1 left-1 rounded bg-[var(--color-accent-2)]/85 px-1.5 font-mono text-[10px] leading-[1.5] text-black"
+          >
+            {atalho}
+          </kbd>
+        ) : null}
+
         {desvinculado ? (
           <span className="absolute inset-x-0 bottom-0 bg-[var(--color-warn)]/85 py-0.5 text-[9px] text-black">
             {t('cards.videoMissing')}
@@ -478,14 +491,6 @@ function CartaoNaGaveta({
           onChange={(event) => dispatch({ type: 'card/rename', cardId: card.id, nome: event.target.value })}
           className="min-w-0 flex-1 rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-1.5 py-0.5 text-[11px] outline-none placeholder:text-[var(--color-fog-2)]/70"
         />
-        {atalho ? (
-          <kbd
-            title={`Ctrl+Shift+${atalho}`}
-            className="flex-none rounded border border-[var(--color-line)] px-1 font-mono text-[9px] text-[var(--color-fog-2)]"
-          >
-            {atalho}
-          </kbd>
-        ) : null}
       </div>
 
       {/* o miolo cresce com a gaveta: puxar a divisória dá mais linha ao
