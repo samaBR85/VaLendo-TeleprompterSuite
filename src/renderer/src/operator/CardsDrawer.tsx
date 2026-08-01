@@ -3,6 +3,7 @@ import type { Action } from '@shared/actions'
 import { CARTOES_COM_ATALHO, novoCartaoId } from '@shared/cards'
 import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN } from '@shared/defaults'
 import type { CardConvertProgress } from '@shared/api'
+import { perfilPorId, type PerfilDeRede } from '@shared/proxy'
 import type { Cartao, VideoClock } from '@shared/types'
 import { posicaoDoVideo, tempoDeVideo } from '@shared/video'
 import { useT } from '../i18n'
@@ -18,6 +19,8 @@ interface Props {
   blackout: boolean
   /** o relógio do vídeo no ar — o player do cartão manda nele */
   clock: VideoClock
+  /** peso escolhido para a rede, para o cartão dizer o que está sendo servido */
+  videoPerfil: PerfilDeRede
   altura: number
   dispatch: (action: Action) => void
   onClose: () => void
@@ -41,6 +44,7 @@ export function CardsDrawer({
   noAr,
   blackout,
   clock,
+  videoPerfil,
   altura,
   dispatch,
   onClose
@@ -217,6 +221,7 @@ export function CardsDrawer({
                 atalho={index < CARTOES_COM_ATALHO ? index + 1 : null}
                 noAr={noAr === card.id}
                 clock={clock}
+                videoPerfil={videoPerfil}
                 dispatch={dispatch}
                 onFalha={setRecusa}
               />
@@ -267,6 +272,7 @@ function CartaoNaGaveta({
   atalho,
   noAr,
   clock,
+  videoPerfil,
   dispatch,
   onFalha
 }: {
@@ -274,6 +280,7 @@ function CartaoNaGaveta({
   atalho: number | null
   noAr: boolean
   clock: VideoClock
+  videoPerfil: PerfilDeRede
   dispatch: (action: Action) => void
   onFalha: (mensagem: string) => void
 }): React.JSX.Element {
@@ -361,7 +368,9 @@ function CartaoNaGaveta({
           />
         ) : null}
 
-        {card.kind === 'video' ? <PlayerDoCartao card={card} clock={clock} noAr={noAr} dispatch={dispatch} /> : null}
+        {card.kind === 'video' ? (
+          <PlayerDoCartao card={card} clock={clock} noAr={noAr} videoPerfil={videoPerfil} dispatch={dispatch} />
+        ) : null}
       </div>
 
       <div className="flex flex-none items-center gap-1.5">
@@ -393,11 +402,13 @@ function PlayerDoCartao({
   card,
   clock,
   noAr,
+  videoPerfil,
   dispatch
 }: {
   card: CartaoVideo
   clock: VideoClock
   noAr: boolean
+  videoPerfil: PerfilDeRede
   dispatch: (action: Action) => void
 }): React.JSX.Element {
   const { t } = useT()
@@ -416,6 +427,24 @@ function PlayerDoCartao({
   const duracao = card.duracao ?? 0
   const posicao = noAr ? (arrastando ?? posicaoDoVideo(clock, agora, card.duracao, card.loop ?? false)) : 0
   const tocando = noAr && clock.tocando
+
+  /**
+   * O que a rede recebe deste cartão, em três estados.
+   *
+   * "original" pode ser escolha do operador ou consequência de a cópia ainda
+   * não existir, e as duas coisas têm o mesmo efeito no wi-fi mas significados
+   * opostos — por isso a segunda vem em amarelo.
+   */
+  const perfilDaRede = perfilPorId(videoPerfil)
+  const naRede = !perfilDaRede
+    ? { leve: true, rotulo: t('cards.netOriginal'), titulo: t('cards.netOriginalHint') }
+    : card.proxy?.perfil === videoPerfil
+      ? {
+          leve: true,
+          rotulo: `${perfilDaRede.altura}p`,
+          titulo: t('cards.netLightHint', { tamanho: `${perfilDaRede.largura}×${perfilDaRede.altura}` })
+        }
+      : { leve: false, rotulo: t('cards.netHeavy'), titulo: t('cards.netHeavyHint') }
 
   const relinkar = async (): Promise<void> => {
     const escolhido = await window.valendo.pickCardVideo(card.id)
@@ -498,6 +527,21 @@ function PlayerDoCartao({
       <div className="flex items-center gap-1.5">
         <span className="flex-none font-mono text-[9px] text-[var(--color-fog-2)]">
           {tempoDeVideo(posicao)} / {tempoDeVideo(duracao)}
+        </span>
+
+        {/* o que a rede está recebendo AGORA.
+            A rede nunca deixa de servir: enquanto a cópia leve não existe, ela
+            manda o original. Isso é bom, e era silencioso — o painel prometia
+            "3 MB por minuto" e o celular podia estar puxando o master inteiro,
+            engasgando, sem nada na tela explicando. */}
+        <span
+          data-card-rede={card.id}
+          title={naRede.titulo}
+          className={`flex-none rounded px-1 text-[9px] ${
+            naRede.leve ? 'text-[var(--color-fog-2)]' : 'bg-[var(--color-warn)]/15 text-[var(--color-warn)]'
+          }`}
+        >
+          {naRede.rotulo}
         </span>
 
         <label

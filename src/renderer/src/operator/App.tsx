@@ -576,6 +576,7 @@ function AppConteudo({
           noAr={state.transport.card}
           blackout={state.transport.blackout}
           clock={state.transport.video}
+          videoPerfil={state.webview.videoPerfil}
           altura={state.cardsHeight}
           dispatch={dispatch}
           onClose={() => dispatch({ type: 'layout/cards', visible: false })}
