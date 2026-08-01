@@ -1,4 +1,4 @@
-import type { StopwatchClock, Transport } from './types'
+import type { FreeClock, StopwatchClock, Transport } from './types'
 
 /**
  * Posição do relógio de rolagem, em índice global de palavras.
@@ -73,21 +73,48 @@ export interface StopwatchReading extends TimerReading {
 }
 
 /**
- * O que os relógios mostram no modo cronômetro.
+ * Decorrido/restante/estourou a partir de um segundo corrido já calculado.
  *
- * Decorrido é o segundo corrido, sem limite — o cronômetro não pára sozinho
- * no fim do roteiro, porque ele não sabe onde o roteiro termina, só quanto
- * tempo passou desde o play. Restante é a distância até o alvo, nos dois
+ * Base comum do modo Cronômetro e do modo Independente — os dois só diferem
+ * em COMO chegam ao "quanto passou" (um segue o play do texto, o outro tem o
+ * play próprio); a partir daí a conta contra o alvo é idêntica. Decorrido não
+ * tem limite — nenhum dos dois modos sabe onde o roteiro termina, só quanto
+ * tempo passou desde que ligaram. Restante é a distância até o alvo, nos dois
  * sentidos: antes de estourar conta para baixo, depois conta para cima.
  */
-export function stopwatchReading(clock: StopwatchClock, playing: boolean, agora: number, targetSeconds: number): StopwatchReading {
-  const elapsedSeconds = segundosDoCronometro(clock, playing, agora)
+export function leituraDoAlvo(elapsedSeconds: number, targetSeconds: number): StopwatchReading {
   const diff = Math.max(0, targetSeconds) - elapsedSeconds
   return {
     elapsed: formatClock(elapsedSeconds),
     remaining: formatClock(Math.abs(diff)),
     estourou: diff < 0
   }
+}
+
+/** O que os relógios mostram no modo cronômetro — decorrido segue o play do texto. */
+export function stopwatchReading(clock: StopwatchClock, playing: boolean, agora: number, targetSeconds: number): StopwatchReading {
+  return leituraDoAlvo(segundosDoCronometro(clock, playing, agora), targetSeconds)
+}
+
+/** Relógio independente parado, que é como ele nasce. */
+export const RELOGIO_LIVRE_PARADO: FreeClock = { tocando: false, base: 0, comecouEm: 0 }
+
+/**
+ * Em que segundo o relógio independente está agora.
+ *
+ * Mesmo desenho de `posicaoDoVideo`: o clock guarda de onde partiu e quando,
+ * e cada janela calcula sozinha. Diferente de `segundosDoCronometro`, não
+ * recebe `playing` de fora — `tocando` é do próprio relógio, porque é
+ * justamente isso que o torna independente do texto.
+ */
+export function segundosDoRelogioLivre(clock: FreeClock, agora: number): number {
+  if (!clock.tocando) return clock.base
+  return clock.base + Math.max(0, agora - clock.comecouEm) / 1000
+}
+
+/** O que os relógios mostram no modo independente — decorrido segue o play do relógio, não o do texto. */
+export function relogioLivreReading(clock: FreeClock, agora: number, targetSeconds: number): StopwatchReading {
+  return leituraDoAlvo(segundosDoRelogioLivre(clock, agora), targetSeconds)
 }
 
 /**

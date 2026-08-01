@@ -76,6 +76,10 @@ export const pt = {
   'toolbar.ppm': 'ppm',
   'toolbar.elapsed': 'decorrido',
   'toolbar.remaining': 'restante',
+  'toolbar.freeClock.play': 'Ligar o relógio independente',
+  'toolbar.freeClock.pause': 'Pausar o relógio independente',
+  'toolbar.freeClock.restart': 'Zerar o relógio independente',
+  'toolbar.freeClock.label': 'à parte',
 
   /* ---------------------------------------------------------------- ajustes */
   'insp.tab.text': 'Texto',
@@ -125,8 +129,10 @@ export const pt = {
   'insp.clock.size': 'Tamanho',
   'insp.clock.modeWords': 'Fórmula',
   'insp.clock.modeStopwatch': 'Cronômetro',
+  'insp.clock.modeFree': 'Independente',
   'insp.clock.modeWords.hint': 'Calculado pelo índice de palavras e pelo ritmo — muda com a velocidade e a edição.',
-  'insp.clock.modeStopwatch.hint': 'Cronômetro de verdade: só o play mexe nele. Restante conta até o alvo, e depois para cima.',
+  'insp.clock.modeStopwatch.hint': 'Cronômetro de verdade: só o play do texto mexe nele. Restante conta até o alvo, e depois para cima.',
+  'insp.clock.modeFree.hint': 'Cronômetro à parte, com o play/pausa dele mesmo na barra de ferramentas. Pausar ou reiniciar o texto não mexe nele.',
   'insp.clock.target': 'Alvo',
 
   'insp.glass': 'Compensação do vidro',
@@ -272,6 +278,7 @@ export const pt = {
   'group.Visão': 'Visão',
 
   'cmd.transport.playPause': 'Iniciar ou pausar a rolagem',
+  'cmd.transport.pauseOnly': 'Pausar só a rolagem (o relógio independente segue)',
   'cmd.transport.restart': 'Voltar ao início',
   'cmd.transport.jumpBack': 'Recuar algumas palavras',
   'cmd.transport.jumpForward': 'Avançar algumas palavras',
@@ -294,6 +301,8 @@ export const pt = {
   'cmd.words.decrease': 'Menos palavras por linha',
   'cmd.colors.invert': 'Inverter cores',
   'cmd.output.blackout': 'Tela preta na saída',
+  'cmd.clock.freeToggle': 'Ligar ou pausar o relógio independente',
+  'cmd.clock.freeRestart': 'Zerar o relógio independente',
   'cmd.output.mirror': 'Espelhar horizontalmente',
   'cmd.output.rotate': 'Rotacionar a saída',
   'cmd.output.toggle': 'Abrir ou fechar a transmissão',

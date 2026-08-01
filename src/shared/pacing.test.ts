@@ -7,8 +7,11 @@ import {
   formatAlvo,
   formatClock,
   ppmForTarget,
+  RELOGIO_LIVRE_PARADO,
+  relogioLivreReading,
   secondsForWords,
   segundosDoCronometro,
+  segundosDoRelogioLivre,
   segundosParaBufferDoAlvo,
   stopwatchReading,
   timerReading,
@@ -28,7 +31,8 @@ const stopped: Transport = {
   frozen: false,
   card: null,
   video: VIDEO_PARADO,
-  stopwatch: CRONOMETRO_PARADO
+  stopwatch: CRONOMETRO_PARADO,
+  freeClock: RELOGIO_LIVRE_PARADO
 }
 
 describe('relógio de rolagem', () => {
@@ -120,6 +124,24 @@ describe('cronômetro', () => {
     const muitoDepois = stopwatchReading({ base: 0, comecouEm: 0 }, true, 600_000, 180)
     expect(muitoDepois.elapsed).toBe('10:00')
     expect(muitoDepois.estourou).toBe(true)
+  })
+})
+
+describe('relógio independente', () => {
+  it('tem o próprio play/pausa — não recebe de fora, como o cronômetro recebe', () => {
+    expect(segundosDoRelogioLivre({ tocando: false, base: 42, comecouEm: 999 }, 999_999)).toBe(42)
+    expect(segundosDoRelogioLivre({ tocando: true, base: 10, comecouEm: 1_000 }, 21_000)).toBe(30)
+  })
+
+  it('conta contra o alvo do mesmo jeito que o cronômetro', () => {
+    const estourado = relogioLivreReading({ tocando: true, base: 0, comecouEm: 0 }, 225_000, 180)
+    expect(estourado).toEqual({ elapsed: '3:45', remaining: '0:45', estourou: true })
+  })
+
+  it('pausado, não avança mesmo que o tempo real passe', () => {
+    const parado = { tocando: false, base: 90, comecouEm: 0 }
+    expect(segundosDoRelogioLivre(parado, 0)).toBe(90)
+    expect(segundosDoRelogioLivre(parado, 999_999_999)).toBe(90)
   })
 })
 

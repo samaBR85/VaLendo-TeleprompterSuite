@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { anchorFromWordIndex, composeLines, pixelFromAnchor, totalWords, type Layout } from '@shared/anchor'
 import { canvasBox, stageSize } from '@shared/output'
-import { stopwatchReading, timerReading, wordIndexAt } from '@shared/pacing'
+import { relogioLivreReading, stopwatchReading, timerReading, wordIndexAt } from '@shared/pacing'
 import { chapterTitle } from '@shared/text'
 import {
   timerCell,
@@ -397,13 +397,16 @@ export function PrompterCanvas({
       const elapsed = elapsedRef.current
       const remaining = remainingRef.current
       if (elapsed || remaining) {
-        // decorrido/restante têm duas fórmulas possíveis: a de sempre, que sai
-        // da posição de leitura, e o cronômetro de verdade, que sai só do
-        // play/pausa — nunca do índice de palavras
+        // decorrido/restante têm três fórmulas possíveis: a de sempre, que
+        // sai da posição de leitura; o cronômetro, que sai do play/pausa do
+        // texto; e o independente, que sai do play/pausa dele mesmo — nunca
+        // do índice de palavras nos dois últimos casos
         const reading =
           appearance.timers.mode === 'cronometro'
             ? stopwatchReading(transport.stopwatch, transport.playing, Date.now(), appearance.timers.targetSeconds)
-            : { ...timerReading(wordIndex, totalWords(geometry.current), transport.ppm), estourou: false }
+            : appearance.timers.mode === 'livre'
+              ? relogioLivreReading(transport.freeClock, Date.now(), appearance.timers.targetSeconds)
+              : { ...timerReading(wordIndex, totalWords(geometry.current), transport.ppm), estourou: false }
         if (elapsed && elapsed.textContent !== reading.elapsed) elapsed.textContent = reading.elapsed
         // "-" contando para o fim, "+" contando o quanto já passou dele —
         // sem o sinal trocar, "quanto falta" e "quanto passou" pareceriam a

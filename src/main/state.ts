@@ -13,8 +13,8 @@ import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
 import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN, TAB_COLORS, createTab } from '@shared/defaults'
 import { History } from '@shared/history'
 import { reconcileBlocks } from '@shared/text'
-import type { Anchor, Appearance, AppState, PacingRule, StopwatchClock, Tab, Transport } from '@shared/types'
-import { CRONOMETRO_PARADO, segundosDoCronometro, wordIndexAt } from '@shared/pacing'
+import type { Anchor, Appearance, AppState, FreeClock, PacingRule, StopwatchClock, Tab, Transport } from '@shared/types'
+import { CRONOMETRO_PARADO, RELOGIO_LIVRE_PARADO, segundosDoCronometro, segundosDoRelogioLivre, wordIndexAt } from '@shared/pacing'
 // a régua da tela e o passo do atalho saem da mesma constante: o degrau que se
 // vê tem que ser o degrau que a tecla anda
 import { PPM_MAX, PPM_MIN, PPM_STEP } from '@shared/ruler'
@@ -131,6 +131,21 @@ export class Store {
 
   private cronometroRetomado(transport: Transport): StopwatchClock {
     return { base: transport.stopwatch.base, comecouEm: Date.now() }
+  }
+
+  /**
+   * O relógio independente no instante da pausa/retomada.
+   *
+   * Só `clock/freeToggle` e `clock/freeRestart` mexem aqui — `transport/toggle`,
+   * `transport/pause` e `transport/restart` (o play/pausa/reiniciar do
+   * *texto*) nunca tocam neste relógio, de propósito.
+   */
+  private relogioLivrePausado(freeClock: FreeClock): FreeClock {
+    return { tocando: false, base: segundosDoRelogioLivre(freeClock, Date.now()), comecouEm: 0 }
+  }
+
+  private relogioLivreRetomado(freeClock: FreeClock): FreeClock {
+    return { tocando: true, base: freeClock.base, comecouEm: Date.now() }
   }
 
   private setState(next: AppState): void {
@@ -331,6 +346,33 @@ export class Store {
           }
         }
         this.seekWordIndex(0)
+        break
+
+      case 'clock/freeToggle': {
+        const freeClock = this.state.transport.freeClock
+        this.state = {
+          ...this.state,
+          transport: {
+            ...this.state.transport,
+            freeClock: freeClock.tocando
+              ? this.relogioLivrePausado(freeClock)
+              : this.relogioLivreRetomado(freeClock)
+          }
+        }
+        break
+      }
+
+      case 'clock/freeRestart':
+        // continua correndo se já estava correndo — "zerar" não é "pausar"
+        this.state = {
+          ...this.state,
+          transport: {
+            ...this.state.transport,
+            freeClock: this.state.transport.freeClock.tocando
+              ? { tocando: true, base: 0, comecouEm: Date.now() }
+              : RELOGIO_LIVRE_PARADO
+          }
+        }
         break
 
       case 'transport/seekWords':
@@ -608,7 +650,8 @@ export class Store {
             wordsAtStart: tab.anchor ? wordIndexFromAnchor(lines, tab.anchor) : 0,
             startedAt: Date.now(),
             // outra aba é outra leitura: o cronômetro desta não conta para ela
-            stopwatch: CRONOMETRO_PARADO
+            stopwatch: CRONOMETRO_PARADO,
+            freeClock: RELOGIO_LIVRE_PARADO
           }
         }
         break

@@ -94,6 +94,9 @@ export function useCommands(
         case 'transport.playPause':
           dispatch({ type: 'transport/toggle' })
           break
+        case 'transport.pauseOnly':
+          dispatch({ type: 'transport/pause' })
+          break
         case 'transport.restart':
           dispatch({ type: 'transport/restart' })
           break
@@ -190,6 +193,12 @@ export function useCommands(
 
         case 'output.blackout':
           dispatch({ type: 'transport/blackout' })
+          break
+        case 'clock.freeToggle':
+          dispatch({ type: 'clock/freeToggle' })
+          break
+        case 'clock.freeRestart':
+          dispatch({ type: 'clock/freeRestart' })
           break
         case 'output.mirror':
           dispatch({ type: 'appearance/patch', tabId: tab.id, patch: { mirrorX: !tab.appearance.mirrorX } })

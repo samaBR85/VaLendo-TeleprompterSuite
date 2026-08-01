@@ -482,15 +482,22 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
 
         {a.timers.elapsed || a.timers.remaining ? (
           <>
-            {/* fórmula ou cronômetro: a escolha muda o que "decorrido" e
-                "restante" significam, então vem antes de tudo o resto */}
+            {/* fórmula, cronômetro ou independente: a escolha muda o que
+                "decorrido" e "restante" significam, então vem antes de tudo o
+                resto */}
             <div className="flex gap-1.5">
-              {(['palavras', 'cronometro'] as const).map((mode) => (
+              {(
+                [
+                  ['palavras', t('insp.clock.modeWords'), t('insp.clock.modeWords.hint')],
+                  ['cronometro', t('insp.clock.modeStopwatch'), t('insp.clock.modeStopwatch.hint')],
+                  ['livre', t('insp.clock.modeFree'), t('insp.clock.modeFree.hint')]
+                ] as const
+              ).map(([mode, rotulo, dica]) => (
                 <button
                   key={mode}
                   type="button"
                   data-clock-mode={mode}
-                  title={mode === 'palavras' ? t('insp.clock.modeWords.hint') : t('insp.clock.modeStopwatch.hint')}
+                  title={dica}
                   onClick={() => patch({ timers: { ...a.timers, mode } })}
                   className={`flex-1 rounded-md border px-2 py-1.5 text-[11px] ${
                     a.timers.mode === mode
@@ -498,12 +505,12 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
                       : 'border-[var(--color-line)] text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]'
                   }`}
                 >
-                  {mode === 'palavras' ? t('insp.clock.modeWords') : t('insp.clock.modeStopwatch')}
+                  {rotulo}
                 </button>
               ))}
             </div>
 
-            {a.timers.mode === 'cronometro' ? (
+            {a.timers.mode === 'cronometro' || a.timers.mode === 'livre' ? (
               <label className="block">
                 <div className="mb-1 text-[11px] text-[var(--color-fog-1)]">{t('insp.clock.target')}</div>
                 <AlvoField

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { composeLines, totalWords } from '@shared/anchor'
 import { formatBinding, parseBinding } from '@shared/commands'
-import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
+import { formatClock, secondsForWords, segundosDoRelogioLivre, wordIndexAt } from '@shared/pacing'
 import type { AppState, DisplayInfo, Tab } from '@shared/types'
 import { Icon, type IconName } from '../ui/Icon'
 import { useT } from '../i18n'
@@ -356,6 +356,29 @@ export function Toolbar({
             <Campo value={formatClock(elapsed)} unit={t('toolbar.elapsed')} tone="var(--color-go)" />
             <Campo value={`−${formatClock(Math.max(0, total - elapsed))}`} unit={t('toolbar.remaining')} tone="var(--color-live)" />
           </div>
+
+          {/* relógio independente: sempre à vista, porque liga antes de o
+              texto entrar no ar (o programa que abre com vídeo) e continua
+              contando com o texto pausado — pausar/tocar/reiniciar o texto
+              nunca mexe aqui, só o botão dele mesmo */}
+          <Pill name="relogio-livre" className="toolbar-grp-relogio-livre">
+            <Tool
+              icon={transport.freeClock.tocando ? 'pause' : 'play'}
+              label={`${transport.freeClock.tocando ? t('toolbar.freeClock.pause') : t('toolbar.freeClock.play')}${hint(keymap, 'clock.freeToggle')}`}
+              active={transport.freeClock.tocando}
+              go={transport.freeClock.tocando}
+              onClick={() => run('clock.freeToggle')}
+            />
+            <Campo
+              value={formatClock(segundosDoRelogioLivre(transport.freeClock, now))}
+              unit={t('toolbar.freeClock.label')}
+            />
+            <Tool
+              icon="restart"
+              label={`${t('toolbar.freeClock.restart')}${hint(keymap, 'clock.freeRestart')}`}
+              onClick={() => run('clock.freeRestart')}
+            />
+          </Pill>
         </div>
       </div>
     </div>

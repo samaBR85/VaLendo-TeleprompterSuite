@@ -117,12 +117,17 @@ export interface TimerOverlay {
    * palavras e do ritmo, então mudar a velocidade ou editar o texto muda o
    * que os relógios mostram na hora.
    *
-   * `cronometro`: um cronômetro de verdade. Decorrido só anda com o play,
-   * ponto — nada recalcula ele. Restante vira "quanto falta para o alvo" e,
-   * se o alvo estourar, passa a contar "quanto já passou do alvo" em vez de
-   * ficar preso em zero.
+   * `cronometro`: um cronômetro de verdade. Decorrido só anda com o play do
+   * *texto*, ponto — nada recalcula ele. Restante vira "quanto falta para o
+   * alvo" e, se o alvo estourar, passa a contar "quanto já passou do alvo" em
+   * vez de ficar preso em zero.
+   *
+   * `livre`: mesma conta do cronômetro, mas com o play/pausa **dele mesmo**
+   * — o `freeClock` do transporte, ligado só pelo botão próprio na barra de
+   * ferramentas. Pausar ou reiniciar o texto não encosta nele: é para o
+   * programa que abre com vídeo e só depois corta para quem lê.
    */
-  mode: 'palavras' | 'cronometro'
+  mode: 'palavras' | 'cronometro' | 'livre'
   /** o alvo do modo cronômetro, em segundos */
   targetSeconds: number
 }
@@ -295,10 +300,28 @@ export interface Transport {
    * cronômetro. Só o play/pausa e o reiniciar tocam aqui.
    */
   stopwatch: StopwatchClock
+  /**
+   * O relógio independente, para quem escolheu o modo `livre`.
+   *
+   * Diferente de `stopwatch`, que segue o play/pausa do texto, este tem o
+   * próprio `tocando` — do mesmo formato de `video`. Nada além do botão dele
+   * mesmo, na barra de ferramentas, mexe aqui: nem tocar/pausar o texto, nem
+   * reiniciar a leitura. Só troca de aba reinicia (cada roteiro tem o seu).
+   */
+  freeClock: FreeClock
 }
 
 /** De onde o cronômetro partiu e quando — nunca em que segundo ele está. */
 export interface StopwatchClock {
+  /** segundos acumulados enquanto pausado */
+  base: number
+  /** Date.now() de quando a corrida atual começou; 0 enquanto pausado */
+  comecouEm: number
+}
+
+/** Mesmo formato de `VideoClock`: tem o próprio play/pausa, não empresta o de ninguém. */
+export interface FreeClock {
+  tocando: boolean
   /** segundos acumulados enquanto pausado */
   base: number
   /** Date.now() de quando a corrida atual começou; 0 enquanto pausado */

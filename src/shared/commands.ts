@@ -44,10 +44,21 @@ export interface Binding {
  */
 export const COMMANDS: CommandSpec[] = [
   { id: 'transport.playPause', group: 'Transporte', defaultBinding: 'Space' },
+  /*
+   * `Shift+Space`, par do play/pausa — mas não é o mesmo toggle. É sempre
+   * PAUSAR, nunca tocar: o botão para o operador acionar sem olhar, com uma
+   * mão no vídeo e outra no teclado, sem risco de dar play em vez de pausa
+   * por engano. Só o texto pára; o relógio independente (se estiver
+   * correndo) não percebe nada, porque nunca esteve ligado a isto.
+   */
+  { id: 'transport.pauseOnly', group: 'Transporte', defaultBinding: 'Shift+Space' },
   { id: 'transport.restart', group: 'Transporte', defaultBinding: 'Mod+Home' },
   { id: 'transport.jumpBack', group: 'Transporte', defaultBinding: 'ArrowUp' },
   { id: 'transport.jumpForward', group: 'Transporte', defaultBinding: 'ArrowDown' },
   { id: 'transport.freeze', group: 'Transporte', defaultBinding: 'Mod+Shift+F' },
+  /** o botão na barra de ferramentas é o jeito principal; o atalho é bônus, como em todo comando daqui */
+  { id: 'clock.freeToggle', group: 'Saída', defaultBinding: 'Mod+Alt+C' },
+  { id: 'clock.freeRestart', group: 'Saída', defaultBinding: 'Mod+Alt+Shift+C' },
 
   { id: 'speed.increase', group: 'Ritmo', defaultBinding: 'ArrowRight' },
   { id: 'speed.decrease', group: 'Ritmo', defaultBinding: 'ArrowLeft' },

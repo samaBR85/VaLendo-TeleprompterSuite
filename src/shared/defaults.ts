@@ -1,7 +1,7 @@
 import { traduzir, type Lang } from './i18n'
 import type { Appearance, AppState, ColorPreset, Tab } from './types'
 import { blocksFromText } from './text'
-import { CRONOMETRO_PARADO } from './pacing'
+import { CRONOMETRO_PARADO, RELOGIO_LIVRE_PARADO } from './pacing'
 import { VIDEO_PARADO } from './video'
 
 /**
@@ -161,7 +161,8 @@ export function createInitialState(
       frozen: false,
       card: null,
       video: VIDEO_PARADO,
-      stopwatch: CRONOMETRO_PARADO
+      stopwatch: CRONOMETRO_PARADO,
+      freeClock: RELOGIO_LIVRE_PARADO
     },
     output: { displayId: null, enabled: false, viewport: null },
     presets: presetsPadrao(lang),
