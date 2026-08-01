@@ -220,7 +220,7 @@ function VideoCartao({
       playsInline
       // sem `controls` em lugar nenhum: a barra do player nativo na tela do
       // apresentador seria a pior coisa que este recurso poderia fazer
-      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
+      style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
     />
   )
 }
@@ -607,7 +607,7 @@ export function PrompterCanvas({
               <img
                 src={`${cardBaseUrl}${encodeURIComponent(card.arquivo)}`}
                 alt=""
-                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
               />
             ) : card.kind === 'video' ? (
               <VideoCartao

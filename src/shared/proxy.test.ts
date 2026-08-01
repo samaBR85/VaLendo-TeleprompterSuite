@@ -20,13 +20,22 @@ describe('perfis de peso da rede', () => {
     }
   })
 
-  it('ficam em ordem decrescente de peso e de tamanho', () => {
+  it('descem em peso a cada degrau', () => {
     // a lista da tela promete uma escada; se ela desandar, "média" poderia
     // pesar mais que "alta" e ninguém entenderia a escolha
     for (let i = 1; i < PERFIS.length; i += 1) {
-      expect(PERFIS[i].kbps).toBeLessThan(PERFIS[i - 1].kbps)
-      expect(PERFIS[i].largura).toBeLessThan(PERFIS[i - 1].largura)
+      expect(PERFIS[i].kbps, PERFIS[i].id).toBeLessThan(PERFIS[i - 1].kbps)
+      // o tamanho pode repetir entre degraus, e repete de propósito: o que
+      // desce é o peso. Encolher a imagem borra o que está escrito na arte,
+      // que é justamente o que quem confere pelo celular precisa ler
+      expect(PERFIS[i].largura, PERFIS[i].id).toBeLessThanOrEqual(PERFIS[i - 1].largura)
     }
+  })
+
+  it('nenhum degrau desce abaixo de 720p', () => {
+    // foi o erro da primeira versão: a 432p a arte fica ilegível no celular,
+    // por mais bitrate que se dê
+    for (const p of PERFIS) expect(p.altura, p.id).toBeGreaterThanOrEqual(720)
   })
 
   it('a lista da tela tem o original e todos os perfis, sem sobra', () => {
@@ -43,7 +52,7 @@ describe('perfis de peso da rede', () => {
     // é este número que o operador lê antes de escolher; errar aqui é
     // prometer um peso e entregar outro
     const leve = perfilPorId('leve')!
-    expect(mbPorMinuto(leve)).toBeCloseTo(((700 + 96) * 60) / 8 / 1024, 3)
+    expect(mbPorMinuto(leve)).toBeCloseTo(((800 + 96) * 60) / 8 / 1024, 3)
     expect(mbPorMinuto(leve)).toBeGreaterThan(mbPorMinuto(perfilPorId('minima')!))
   })
 })
