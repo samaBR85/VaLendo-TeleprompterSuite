@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { MAX_CARTOES, novoCartaoId } from '@shared/cards'
-import type { Cartao } from '@shared/types'
+import type { Cartao, VideoClock } from '@shared/types'
+import { posicaoDoVideo, tempoDeVideo } from '@shared/video'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
 
@@ -11,6 +12,8 @@ interface Props {
   noAr: string | null
   /** a tela preta cobre o cartão; vale avisar em vez de deixar parecer defeito */
   blackout: boolean
+  /** o relógio do vídeo no ar — o controle daqui manda nele */
+  clock: VideoClock
   dispatch: (action: Action) => void
   onClose: () => void
 }
@@ -23,7 +26,7 @@ interface Props {
  * quando é preciso dizer alguma coisa ao apresentador, digitar é mais rápido
  * que preparar uma arte.
  */
-export function CardsPanel({ cards, noAr, blackout, dispatch, onClose }: Props): React.JSX.Element {
+export function CardsPanel({ cards, noAr, blackout, clock, dispatch, onClose }: Props): React.JSX.Element {
   const { t } = useT()
   const [ocupado, setOcupado] = useState(false)
   const cheio = cards.length >= MAX_CARTOES
@@ -99,6 +102,35 @@ export function CardsPanel({ cards, noAr, blackout, dispatch, onClose }: Props):
     }
   }
 
+  /**
+   * Sobe um vídeo — sem copiar nada.
+   *
+   * O arquivo fica onde está e o cartão guarda onde é esse lugar. Escolher
+   * aqui é também o que autoriza o app a servir aquele arquivo: é a única
+   * porta por onde um caminho entra na lista de autorizados.
+   */
+  const adicionarVideo = async (): Promise<void> => {
+    if (cheio || ocupado) return
+    setOcupado(true)
+    try {
+      const escolhido = await window.valendo.pickCardVideo()
+      if (!escolhido) return
+      dispatch({
+        type: 'card/add',
+        card: {
+          id: novoCartaoId(Date.now(), cards.length),
+          kind: 'video',
+          nome: escolhido.sugestao || t('cards.addVideo'),
+          caminho: escolhido.caminho,
+          arquivoNome: escolhido.arquivoNome,
+          vinculado: true
+        }
+      })
+    } finally {
+      setOcupado(false)
+    }
+  }
+
   const adicionarRecado = (): void => {
     if (cheio) return
     const id = novoCartaoId(Date.now(), cards.length)
@@ -138,6 +170,14 @@ export function CardsPanel({ cards, noAr, blackout, dispatch, onClose }: Props):
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           <p className="mb-3 text-[12px] leading-relaxed text-[var(--color-fog-1)]">{t('cards.hint')}</p>
 
+          {/* só quando há vídeo: são as duas coisas que surpreendem quem sobe
+              um — que o arquivo não foi copiado, e por onde sai o som */}
+          {cards.some((c) => c.kind === 'video') ? (
+            <p className="mb-3 text-[11px] leading-relaxed text-[var(--color-fog-2)]">
+              {t('cards.videoHint')} {t('cards.videoSound')}
+            </p>
+          ) : null}
+
           {blackout && noAr ? (
             <p className="mb-3 rounded-md border border-[var(--color-warn)]/40 bg-[var(--color-warn)]/10 px-3 py-2 text-[11px] text-[var(--color-warn)]">
               {t('cards.blackoutWins')}
@@ -156,6 +196,7 @@ export function CardsPanel({ cards, noAr, blackout, dispatch, onClose }: Props):
                   card={card}
                   atalho={index + 1}
                   noAr={noAr === card.id}
+                  clock={clock}
                   dispatch={dispatch}
                 />
               ))}
@@ -176,6 +217,16 @@ export function CardsPanel({ cards, noAr, blackout, dispatch, onClose }: Props):
           </button>
           <button
             type="button"
+            data-card-add-video
+            disabled={cheio || ocupado}
+            onClick={() => void adicionarVideo()}
+            className="flex items-center gap-1.5 rounded-md border border-[var(--color-line)] px-3 py-1.5 text-[12px] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] disabled:opacity-30"
+          >
+            <Icon name="play" size={13} />
+            {t('cards.addVideo')}
+          </button>
+          <button
+            type="button"
             data-card-add-text
             disabled={cheio}
             onClick={adicionarRecado}
@@ -191,15 +242,253 @@ export function CardsPanel({ cards, noAr, blackout, dispatch, onClose }: Props):
   )
 }
 
+type CartaoVideo = Extract<Cartao, { kind: 'video' }>
+
+/**
+ * O que um cartão de vídeo mostra abaixo do nome.
+ *
+ * Fora do ar, o arquivo e o loop. No ar, o controle — e é aqui que o controle
+ * vive, nunca na saída: barra de player aparecendo no vidro do teleprompter é
+ * a pior coisa que este recurso poderia fazer.
+ */
+function BlocoVideo({
+  card,
+  clock,
+  noAr,
+  dispatch
+}: {
+  card: CartaoVideo
+  clock: VideoClock
+  noAr: boolean
+  dispatch: (action: Action) => void
+}): React.JSX.Element {
+  const { t } = useT()
+
+  const relinkar = async (): Promise<void> => {
+    const escolhido = await window.valendo.pickCardVideo()
+    if (!escolhido) return
+    dispatch({
+      type: 'card/videoLink',
+      cardId: card.id,
+      caminho: escolhido.caminho,
+      arquivoNome: escolhido.arquivoNome,
+      vinculado: true
+    })
+  }
+
+  if (card.vinculado === false) {
+    return (
+      <div className="flex items-center gap-2 rounded-md border border-[var(--color-warn)]/40 bg-[var(--color-warn)]/10 px-2 py-1.5">
+        <span className="min-w-0 flex-1 truncate text-[11px] text-[var(--color-warn)]" title={card.caminho}>
+          {t('cards.videoMissing')} — {card.arquivoNome}
+        </span>
+        <button
+          type="button"
+          data-card-relink={card.id}
+          onClick={() => void relinkar()}
+          className="flex-none rounded border border-[var(--color-warn)]/50 px-2 py-0.5 text-[11px] text-[var(--color-warn)] hover:bg-[var(--color-warn)]/15"
+        >
+          {t('cards.videoRelink')}
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <PreparaVideo card={card} dispatch={dispatch} />
+      {noAr ? <ControleVideo card={card} clock={clock} dispatch={dispatch} /> : null}
+      <div className="flex items-center gap-2">
+        <span className="min-w-0 flex-1 truncate text-[10px] text-[var(--color-fog-2)]" title={card.caminho}>
+          {card.arquivoNome}
+          {card.duracao ? ` · ${tempoDeVideo(card.duracao)}` : ''}
+        </span>
+        <label className="flex flex-none items-center gap-1 text-[10px] text-[var(--color-fog-2)]">
+          <input
+            type="checkbox"
+            data-card-loop={card.id}
+            checked={card.loop ?? false}
+            onChange={(event) => dispatch({ type: 'card/videoLoop', cardId: card.id, loop: event.target.checked })}
+          />
+          {t('cards.videoLoop')}
+        </label>
+      </div>
+    </>
+  )
+}
+
+/**
+ * Play, barra e volume — para o relógio compartilhado, não para um tocador daqui.
+ *
+ * O painel não tem vídeo nenhum: ele manda comando, e quem desenha são as
+ * superfícies. É o mesmo desenho do resto do app, e é o que faz a prévia e a
+ * transmissão nunca discordarem sobre onde o vídeo está.
+ */
+function ControleVideo({
+  card,
+  clock,
+  dispatch
+}: {
+  card: CartaoVideo
+  clock: VideoClock
+  dispatch: (action: Action) => void
+}): React.JSX.Element {
+  const { t } = useT()
+  const [agora, setAgora] = useState(() => Date.now())
+  const [arrastando, setArrastando] = useState<number | null>(null)
+
+  // a barra precisa andar sozinha enquanto toca; dez vezes por segundo é
+  // suave o bastante para o olho e barato o bastante para não disputar
+  // quadro com o vídeo em si
+  useEffect(() => {
+    if (!clock.tocando) return
+    const id = setInterval(() => setAgora(Date.now()), 100)
+    return () => clearInterval(id)
+  }, [clock.tocando])
+
+  const duracao = card.duracao ?? 0
+  const posicao = arrastando ?? posicaoDoVideo(clock, agora, card.duracao, card.loop ?? false)
+
+  const soltar = (): void => {
+    if (arrastando === null) return
+    // o pulo só chega à tela do apresentador agora, no soltar: acompanhar o
+    // arrasto ao vivo mandaria um borrão para o ar
+    dispatch({ type: 'card/videoSeek', segundo: arrastando, arrastando: false })
+    setArrastando(null)
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        data-card-video-play={card.id}
+        aria-label={clock.tocando ? t('cards.videoPause') : t('cards.videoPlay')}
+        onClick={() => dispatch({ type: 'card/videoPlay', tocando: !clock.tocando })}
+        className="flex-none rounded border border-[var(--color-line)] p-1 text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]"
+      >
+        <Icon name={clock.tocando ? 'pause' : 'play'} size={12} />
+      </button>
+
+      <input
+        type="range"
+        data-card-video-seek={card.id}
+        min={0}
+        max={duracao || 1}
+        step={0.05}
+        value={Math.min(posicao, duracao || 1)}
+        disabled={!duracao}
+        aria-label={t('cards.videoSeek')}
+        onChange={(event) => {
+          const segundo = Number(event.target.value)
+          setArrastando(segundo)
+          dispatch({ type: 'card/videoSeek', segundo, arrastando: true })
+        }}
+        onPointerUp={soltar}
+        onKeyUp={soltar}
+        onBlur={soltar}
+        className="min-w-0 flex-1 accent-[var(--color-go)]"
+      />
+
+      <span className="flex-none font-mono text-[10px] text-[var(--color-fog-2)]">
+        {tempoDeVideo(posicao)} / {tempoDeVideo(duracao)}
+      </span>
+
+      <input
+        type="range"
+        data-card-video-volume={card.id}
+        min={0}
+        max={1}
+        step={0.05}
+        value={clock.volume}
+        aria-label={t('cards.videoVolume')}
+        onChange={(event) => dispatch({ type: 'card/videoVolume', volume: Number(event.target.value) })}
+        className="w-14 flex-none accent-[var(--color-fog-1)]"
+      />
+    </div>
+  )
+}
+
+/**
+ * Tira um quadro do vídeo para servir de miniatura, e mede quanto ele dura.
+ *
+ * Roda uma vez por cartão, escondido. A miniatura é o que viaja no projeto —
+ * o vídeo não vai junto, e sem um quadro guardado um cartão desvinculado
+ * viraria um retângulo preto que ninguém reconhece na lista.
+ */
+function PreparaVideo({
+  card,
+  dispatch
+}: {
+  card: CartaoVideo
+  dispatch: (action: Action) => void
+}): React.JSX.Element | null {
+  const ref = useRef<HTMLVideoElement>(null)
+  const feito = useRef(false)
+  const falta = !card.poster || !card.duracao
+
+  useEffect(() => {
+    if (!falta || feito.current) return
+    const video = ref.current
+    if (!video) return
+
+    const medir = (): void => {
+      if (!Number.isFinite(video.duration) || video.duration <= 0) return
+      dispatch({ type: 'card/videoDuration', cardId: card.id, duracao: video.duration })
+      // um pouco adiante do zero: muitos vídeos abrem em preto, e uma
+      // miniatura preta não distingue um cartão do outro
+      video.currentTime = Math.min(1, video.duration / 2)
+    }
+
+    const desenhar = (): void => {
+      if (feito.current) return
+      feito.current = true
+      try {
+        const canvas = document.createElement('canvas')
+        canvas.width = 192
+        canvas.height = Math.max(1, Math.round((192 * video.videoHeight) / (video.videoWidth || 1)))
+        canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height)
+        dispatch({ type: 'card/videoPoster', cardId: card.id, poster: canvas.toDataURL('image/jpeg', 0.6) })
+      } catch {
+        // sem miniatura o cartão continua funcionando: cai no ícone de play,
+        // e não vale travar a subida de um vídeo por causa disso
+      }
+    }
+
+    video.addEventListener('loadedmetadata', medir)
+    video.addEventListener('seeked', desenhar)
+    return () => {
+      video.removeEventListener('loadedmetadata', medir)
+      video.removeEventListener('seeked', desenhar)
+    }
+  }, [falta, card.id, dispatch])
+
+  if (!falta) return null
+
+  return (
+    <video
+      ref={ref}
+      src={`valendo://video/${encodeURIComponent(card.id)}`}
+      // sem isto o desenho no canvas conta como de outra origem e ler os
+      // pixels de volta vira erro de segurança — não haveria miniatura
+      crossOrigin="anonymous"
+      muted
+      preload="metadata"
+      style={{ display: 'none' }}
+    />
+  )
+}
+
 function Linha({
   card,
   atalho,
   noAr,
+  clock,
   dispatch
 }: {
   card: Cartao
   atalho: number
   noAr: boolean
+  clock: VideoClock
   dispatch: (action: Action) => void
 }): React.JSX.Element {
   const { t } = useT()
@@ -221,6 +510,14 @@ function Linha({
             alt=""
             className="max-h-full max-w-full object-contain"
           />
+        ) : card.kind === 'video' ? (
+          // o quadro guardado, e não o vídeo: a miniatura precisa continuar
+          // reconhecível mesmo com o arquivo fora do ar ou desvinculado
+          card.poster ? (
+            <img src={card.poster} alt="" className="max-h-full max-w-full object-contain" />
+          ) : (
+            <Icon name="play" size={16} />
+          )
         ) : (
           <span className="line-clamp-3 px-1 text-center text-[9px] leading-tight whitespace-pre-wrap text-[var(--color-fog-1)]">
             {card.texto || '—'}
@@ -243,6 +540,10 @@ function Linha({
             Ctrl+Shift+{atalho}
           </kbd>
         </div>
+
+        {card.kind === 'video' ? (
+          <BlocoVideo card={card} clock={clock} noAr={noAr} dispatch={dispatch} />
+        ) : null}
 
         {card.kind === 'text' ? (
           <textarea

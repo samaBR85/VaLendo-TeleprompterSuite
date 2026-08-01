@@ -26,6 +26,20 @@ export type Action =
   | { type: 'card/text'; cardId: string; texto: string }
   /** mostra o cartão; passar o que já está no ar tira ele da tela */
   | { type: 'card/show'; cardId: string | null }
+  | { type: 'card/videoPlay'; tocando: boolean }
+  /**
+   * `arrastando` distingue a barra na mão do operador de um pulo já decidido:
+   * com ela na mão, as saídas seguram o quadro e só acompanham no soltar.
+   */
+  | { type: 'card/videoSeek'; segundo: number; arrastando: boolean }
+  | { type: 'card/videoVolume'; volume: number }
+  | { type: 'card/videoLoop'; cardId: string; loop: boolean }
+  /** o vídeo carregou e informou quanto dura — a barra precisa saber o fim */
+  | { type: 'card/videoDuration'; cardId: string; duracao: number }
+  /** um quadro do vídeo virou miniatura; é o que viaja no projeto */
+  | { type: 'card/videoPoster'; cardId: string; poster: string }
+  /** o operador reapontou o arquivo, ou o main descobriu que ele sumiu */
+  | { type: 'card/videoLink'; cardId: string; caminho?: string; arquivoNome?: string; vinculado: boolean }
   | { type: 'marker/add'; tabId: string; blockId: string; label: string }
   | { type: 'marker/remove'; tabId: string; markerId: string }
   | { type: 'tab/add' }
@@ -71,5 +85,6 @@ export const CHANNELS = {
   broadcastCoversOperator: 'broadcast:coversOperator',
   confirmCloseRequest: 'app:confirmCloseRequest',
   confirmCloseResponse: 'app:confirmCloseResponse',
-  cardPick: 'card:pick'
+  cardPick: 'card:pick',
+  cardPickVideo: 'card:pickVideo'
 } as const

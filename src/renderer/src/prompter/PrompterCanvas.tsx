@@ -3,7 +3,16 @@ import { anchorFromWordIndex, composeLines, pixelFromAnchor, totalWords, type La
 import { canvasBox, stageSize } from '@shared/output'
 import { timerReading, wordIndexAt } from '@shared/pacing'
 import { chapterTitle } from '@shared/text'
-import { timerCell, type Appearance, type Block, type Cartao, type TimerPosition, type Transport } from '@shared/types'
+import {
+  timerCell,
+  type Appearance,
+  type Block,
+  type Cartao,
+  type TimerPosition,
+  type Transport,
+  type VideoClock
+} from '@shared/types'
+import { posicaoDoVideo } from '@shared/video'
 
 export interface Viewport {
   width: number
@@ -79,6 +88,21 @@ interface Props {
    */
   cardBaseUrl?: string
   /**
+   * De onde o vídeo é carregado — por id de cartão, nunca por caminho de
+   * arquivo: quem traduz id em disco é o main, e assim não existe URL que
+   * possa ser forjada para servir outra coisa.
+   */
+  videoBaseUrl?: string
+  /**
+   * Esta é a prévia do operador, e não uma saída.
+   *
+   * Duas consequências, as duas só dela: é a única superfície com som — a
+   * transmissão é sempre muda porque o vidro do teleprompter não tem
+   * alto-falante e o som sairia dobrado na mesma máquina —, e é a única que
+   * acompanha a barra ao vivo enquanto o operador arrasta.
+   */
+  previaDoOperador?: boolean
+  /**
    * Aplicar espelho e giro.
    *
    * Só a janela que alimenta o vidro do teleprompter liga isto. Espelhar e
@@ -93,6 +117,95 @@ interface Props {
    */
   outputTransforms?: boolean
   onMetrics?: (metrics: PrompterMetrics) => void
+}
+
+/**
+ * O vídeo do cartão, seguindo o relógio compartilhado.
+ *
+ * Cada superfície tem o seu `<video>` e nenhuma manda quadro para a outra: as
+ * duas derivam o segundo atual de `{base, comecouEm}`, do mesmo jeito que a
+ * rolagem do texto. Medido, dois tocadores do mesmo arquivo na mesma máquina
+ * ficam a 6 ms um do outro em 5 segundos — a correção abaixo existe só para o
+ * caso raro de um deles engasgar, e por isso o limite é generoso: corrigir de
+ * menos ninguém vê, corrigir de mais é um pulo na tela do apresentador.
+ *
+ * Sem controles em superfície nenhuma. A barra vive no painel de cartões, e o
+ * que chega aqui é sempre estado — nunca um player que o vidro do teleprompter
+ * pudesse acabar mostrando.
+ */
+function VideoCartao({
+  card,
+  clock,
+  src,
+  comSom,
+  segueArrasto
+}: {
+  card: Extract<Cartao, { kind: 'video' }>
+  clock: VideoClock
+  src: string
+  comSom: boolean
+  segueArrasto: boolean
+}): React.JSX.Element {
+  const ref = useRef<HTMLVideoElement>(null)
+  const loop = card.loop ?? false
+
+  // com a barra na mão do operador, só a prévia dele acompanha ao vivo: a
+  // tela do apresentador segura o quadro e pula uma vez, quando ele solta
+  const congelado = clock.arrastando && !segueArrasto
+
+  useEffect(() => {
+    const video = ref.current
+    if (!video || congelado) return
+
+    const alvo = posicaoDoVideo(clock, Date.now(), card.duracao, loop)
+    if (Math.abs(video.currentTime - alvo) > 0.25) video.currentTime = alvo
+
+    if (clock.tocando) {
+      // pode ser recusado quando o Chromium não vê gesto do usuário; a
+      // transmissão é muda, então passa — e a prévia nasce de um clique
+      void video.play().catch(() => undefined)
+    } else {
+      video.pause()
+    }
+  }, [clock, card.duracao, loop, congelado])
+
+  useEffect(() => {
+    const video = ref.current
+    if (!video) return
+    video.volume = clock.volume
+  }, [clock.volume])
+
+  /*
+   * Reencontro periódico.
+   *
+   * Um engasgo de decodificação — disco ocupado, quadro pesado — deixa este
+   * tocador para trás sem que nada no estado mude, então não há efeito que
+   * dispare. Sem esta ronda, ele ficaria atrasado até o próximo comando.
+   */
+  useEffect(() => {
+    if (!clock.tocando || congelado) return
+    const id = setInterval(() => {
+      const video = ref.current
+      if (!video) return
+      const alvo = posicaoDoVideo(clock, Date.now(), card.duracao, loop)
+      if (Math.abs(video.currentTime - alvo) > 0.4) video.currentTime = alvo
+    }, 2000)
+    return () => clearInterval(id)
+  }, [clock, card.duracao, loop, congelado])
+
+  return (
+    <video
+      ref={ref}
+      data-card-video={card.id}
+      src={src}
+      loop={loop}
+      muted={!comSom}
+      playsInline
+      // sem `controls` em lugar nenhum: a barra do player nativo na tela do
+      // apresentador seria a pior coisa que este recurso poderia fazer
+      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
+    />
+  )
 }
 
 /**
@@ -113,6 +226,8 @@ export function PrompterCanvas({
   outputTransforms = false,
   card = null,
   cardBaseUrl = 'valendo://cartao/',
+  videoBaseUrl = 'valendo://video/',
+  previaDoOperador = false,
   onMetrics
 }: Props): React.JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -475,6 +590,14 @@ export function PrompterCanvas({
                 src={`${cardBaseUrl}${encodeURIComponent(card.arquivo)}`}
                 alt=""
                 style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
+              />
+            ) : card.kind === 'video' ? (
+              <VideoCartao
+                card={card}
+                clock={transport.video}
+                src={`${videoBaseUrl}${encodeURIComponent(card.id)}`}
+                comSom={previaDoOperador}
+                segueArrasto={previaDoOperador}
               />
             ) : (
               <div

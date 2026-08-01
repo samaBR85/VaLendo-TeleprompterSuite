@@ -3,6 +3,7 @@ import { formatClock, ppmForTarget, secondsForWords, timerReading, wordIndexAt }
 import { totalWordCount } from './text'
 import { blocksFromText } from './text'
 import type { Transport } from './types'
+import { VIDEO_PARADO } from './video'
 
 const stopped: Transport = {
   playing: false,
@@ -11,7 +12,8 @@ const stopped: Transport = {
   startedAt: 1_000,
   blackout: false,
   frozen: false,
-  card: null
+  card: null,
+  video: VIDEO_PARADO
 }
 
 describe('relógio de rolagem', () => {

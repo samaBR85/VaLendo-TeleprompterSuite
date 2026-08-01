@@ -14,6 +14,7 @@ import type { HistoryStep } from '@shared/history'
 import { parseHistoryLines } from '@shared/history'
 import { createInitialState } from '@shared/defaults'
 import { idiomaDoSistema } from '@shared/i18n'
+import { VIDEO_PARADO } from '@shared/video'
 import { mergeAppearance } from './mergeAppearance'
 import type { UserDefaults } from './userDefaults'
 import type { AppState } from '@shared/types'
@@ -144,7 +145,8 @@ export function loadState(defaults: UserDefaults, locale = 'pt-BR'): AppState {
       blackout: false,
       card: null,
       frozen: false,
-      startedAt: 0
+      startedAt: 0,
+      video: VIDEO_PARADO
     }
 
     // o monitor escolhido é lembrado, mas a transmissão nunca sobe sozinha:

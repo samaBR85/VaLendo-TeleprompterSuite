@@ -100,6 +100,7 @@ export function Webview(): React.JSX.Element {
           rows={quadro.rows}
           card={quadro.card}
           cardBaseUrl="/cartao/"
+          videoBaseUrl="/video/"
           // quem assiste vê o que o apresentador vê, marca inclusive
           readingMark={quadro.appearance.readingMarkOnOutput}
         />

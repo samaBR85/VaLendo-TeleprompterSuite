@@ -1,6 +1,14 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import { CHANNELS, type Action } from '@shared/actions'
-import type { CardPickResult, ExportResult, ImportResult, ProjectResult, StateSnapshot, ValendoApi } from '@shared/api'
+import type {
+  CardPickResult,
+  CardVideoPickResult,
+  ExportResult,
+  ImportResult,
+  ProjectResult,
+  StateSnapshot,
+  ValendoApi
+} from '@shared/api'
 import type { DisplayInfo } from '@shared/types'
 
 function subscribe<T>(channel: string, callback: (payload: T) => void): () => void {
@@ -27,7 +35,8 @@ const api: ValendoApi = {
   onConfirmClose: (callback) => subscribe<void>(CHANNELS.confirmCloseRequest, callback),
   respondToClose: (confirmed: boolean) => ipcRenderer.send(CHANNELS.confirmCloseResponse, confirmed),
   pickCardImage: (cardId: string) =>
-    ipcRenderer.invoke(CHANNELS.cardPick, cardId) as Promise<CardPickResult | null>
+    ipcRenderer.invoke(CHANNELS.cardPick, cardId) as Promise<CardPickResult | null>,
+  pickCardVideo: () => ipcRenderer.invoke(CHANNELS.cardPickVideo) as Promise<CardVideoPickResult | null>
 }
 
 contextBridge.exposeInMainWorld('valendo', api)

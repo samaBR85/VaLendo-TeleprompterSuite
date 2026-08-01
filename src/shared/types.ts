@@ -167,7 +167,61 @@ export type Cartao =
       /** nome do arquivo dentro de userData/cartoes — nunca o caminho de origem */
       arquivo: string
     }
+  | {
+      id: string
+      kind: 'video'
+      nome: string
+      /**
+       * Onde o arquivo está, e é lá que ele fica.
+       *
+       * Vídeo não é copiado para dentro do app como a foto é: um programa de
+       * meia hora encheria a pasta do usuário, e o projeto que o carregasse
+       * junto viraria um arquivo que ninguém manda por e-mail. O preço é o
+       * vínculo poder quebrar — daí `vinculado` e o relink.
+       */
+      caminho: string
+      /** o nome que o arquivo tinha, para o operador saber o que reapontar */
+      arquivoNome: string
+      /** um quadro, em data: URL — viaja no projeto e mantém o cartão reconhecível mesmo desvinculado */
+      poster?: string
+      /** duração em segundos, medida quando o vídeo carrega */
+      duracao?: number
+      /** repete ao chegar no fim, em vez de segurar o último quadro */
+      loop?: boolean
+      /**
+       * O arquivo existe e está autorizado nesta máquina.
+       *
+       * `false` é o estado de "relinkar". Só o main sabe dizer, porque só ele
+       * enxerga o disco; nasce indefinido e é preenchido a cada abertura.
+       */
+      vinculado?: boolean
+    }
   | { id: string; kind: 'text'; nome: string; texto: string }
+
+/**
+ * De onde o vídeo partiu e quando — não em que segundo ele está.
+ *
+ * O mesmo desenho do relógio de rolagem, e pela mesma razão: com a posição
+ * guardada, manter duas janelas juntas exigiria mandar o segundo atual a cada
+ * quadro. Guardando a partida, cada superfície calcula sozinha.
+ */
+export interface VideoClock {
+  tocando: boolean
+  /** segundo do vídeo no instante em que deu play */
+  base: number
+  /** Date.now() do play */
+  comecouEm: number
+  /**
+   * O operador está com a barra na mão.
+   *
+   * Enquanto está, as saídas seguram o quadro onde estava e só pulam uma vez,
+   * quando ele solta: um arrasto que a tela do apresentador acompanha ao vivo
+   * vira um borrão no ar.
+   */
+  arrastando: boolean
+  /** volume da prévia do operador, 0 a 1 — a transmissão é sempre muda */
+  volume: number
+}
 
 export interface Transport {
   playing: boolean
@@ -189,6 +243,13 @@ export interface Transport {
    * que não sobe a transmissão.
    */
   card: string | null
+  /**
+   * O relógio do vídeo no ar.
+   *
+   * Mora no transporte junto com `card` porque é da mesma natureza: estado de
+   * momento. Abrir um projeto não retoma um vídeo no meio.
+   */
+  video: VideoClock
 }
 
 export interface OutputConfig {

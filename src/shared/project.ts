@@ -1,4 +1,5 @@
 import type { AppState } from './types'
+import { VIDEO_PARADO } from './video'
 
 export const PROJECT_EXTENSION = 'valendo'
 const MARCA = 'VaLendo'
@@ -32,7 +33,15 @@ export interface ProjectFile {
 function semTransitorio(state: AppState): AppState {
   return {
     ...state,
-    transport: { ...state.transport, playing: false, blackout: false, frozen: false, card: null, startedAt: 0 },
+    transport: {
+      ...state.transport,
+      playing: false,
+      blackout: false,
+      frozen: false,
+      card: null,
+      startedAt: 0,
+      video: VIDEO_PARADO
+    },
     // o monitor escolhido viaja, mas a transmissão nunca sobe sozinha ao abrir:
     // abrir um projeto não pode jogar texto na tela do apresentador
     output: { ...state.output, enabled: false, viewport: null }

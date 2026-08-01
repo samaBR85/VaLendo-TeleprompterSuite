@@ -86,8 +86,13 @@ export function PrompterStage(props: Props): React.JSX.Element {
       >
         {/* na prévia a marca aparece sempre: é dela que o operador tira a
             referência de onde a leitura está, e escondê-la aqui seria esconder
-            a informação de quem precisa dela */}
-        <PrompterCanvas {...semRoda} readingMark />
+            a informação de quem precisa dela.
+
+            `previaDoOperador` fica aqui e não em quem chama porque este
+            componente É a prévia — só o Split e a Mesa o usam, e nunca os dois
+            ao mesmo tempo. Deixar a cargo de quem chama seria abrir a porta
+            para um dia a transmissão herdar som. */}
+        <PrompterCanvas {...semRoda} readingMark previaDoOperador />
       </div>
     </div>
   )

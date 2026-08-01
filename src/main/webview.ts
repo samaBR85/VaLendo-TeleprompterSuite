@@ -1,9 +1,11 @@
-import { createReadStream, existsSync } from 'node:fs'
+import { createReadStream, existsSync, statSync } from 'node:fs'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import { networkInterfaces } from 'node:os'
 import { basename, extname, join, normalize } from 'node:path'
 import type { WebviewFrame, WebviewInfo } from '@shared/api'
-import { cardMimeType, cardPath } from './cards'
+import { conteudoDaFaixa, faixaPedida, tamanhoDaFaixa } from '@shared/range'
+import { tipoDoVideo } from '@shared/video'
+import { cardMimeType, cardPath, caminhoDoVideo } from './cards'
 
 export const WEBVIEW_PORT = 7777
 
@@ -98,6 +100,34 @@ export function publish(quadro: WebviewFrame): void {
   for (const cliente of clientes) enviar(cliente, quadro)
 }
 
+/**
+ * Entrega o arquivo, ou só o pedaço pedido.
+ *
+ * Sem responder a pedido de faixa, o celular que abre a página não consegue
+ * arrastar a barra do vídeo — o tocador precisa poder pedir o trecho do meio e
+ * receber justamente aquele trecho, com a conta de quanto é de quanto.
+ */
+function servirComFaixa(alvo: string, tipo: string, req: IncomingMessage, res: ServerResponse): void {
+  const tamanho = statSync(alvo).size
+  const faixa = faixaPedida(req.headers.range, tamanho)
+
+  if (faixa === 'invalida') {
+    res.writeHead(416, { 'Content-Range': `bytes */${tamanho}`, 'Accept-Ranges': 'bytes' }).end()
+    return
+  }
+
+  const inicio = faixa ? faixa.inicio : 0
+  const fim = faixa ? faixa.fim : tamanho - 1
+  res.writeHead(faixa ? 206 : 200, {
+    'Content-Type': tipo,
+    'Accept-Ranges': 'bytes',
+    'Cache-Control': 'no-store',
+    'Content-Length': String(faixa ? tamanhoDaFaixa(faixa) : tamanho),
+    ...(faixa ? { 'Content-Range': conteudoDaFaixa(faixa, tamanho) } : {})
+  })
+  createReadStream(alvo, { start: inicio, end: fim }).pipe(res)
+}
+
 function atender(req: IncomingMessage, res: ServerResponse): void {
   const caminho = (req.url ?? '/').split('?')[0]
 
@@ -118,8 +148,19 @@ function atender(req: IncomingMessage, res: ServerResponse): void {
       res.writeHead(404).end('não encontrado')
       return
     }
-    res.writeHead(200, { 'Content-Type': cardMimeType(arquivo), 'Cache-Control': 'no-store' })
-    createReadStream(alvo).pipe(res)
+    servirComFaixa(alvo, cardMimeType(arquivo), req, res)
+    return
+  }
+
+  // o vídeo do cartão, pelo id — nunca pelo caminho no disco, que não sai
+  // daqui. Só o que o operador autorizou nesta máquina chega até a rede.
+  if (caminho.startsWith('/video/')) {
+    const alvo = caminhoDoVideo(basename(decodeURIComponent(caminho.slice('/video/'.length))))
+    if (!alvo) {
+      res.writeHead(404).end('não encontrado')
+      return
+    }
+    servirComFaixa(alvo, tipoDoVideo(alvo), req, res)
     return
   }
 

@@ -626,6 +626,7 @@ function AppConteudo({
           cards={state.cards}
           noAr={state.transport.card}
           blackout={state.transport.blackout}
+          clock={state.transport.video}
           dispatch={dispatch}
           onClose={() => setCardsOpen(false)}
         />

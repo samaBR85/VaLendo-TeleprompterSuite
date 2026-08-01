@@ -1,6 +1,7 @@
 import { traduzir, type Lang } from './i18n'
 import type { Appearance, AppState, ColorPreset, Tab } from './types'
 import { blocksFromText } from './text'
+import { VIDEO_PARADO } from './video'
 
 export const FONT_OPTIONS: { label: string; value: string }[] = [
   { label: 'Sistema', value: 'system-ui, sans-serif' },
@@ -128,7 +129,8 @@ export function createInitialState(
       startedAt: 0,
       blackout: false,
       frozen: false,
-      card: null
+      card: null,
+      video: VIDEO_PARADO
     },
     output: { displayId: null, enabled: false, viewport: null },
     presets: presetsPadrao(lang),

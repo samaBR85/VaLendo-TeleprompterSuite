@@ -7,7 +7,9 @@ import {
   totalWords,
   wordIndexFromAnchor
 } from '@shared/anchor'
+import { cartaoNoAr } from '@shared/cards'
 import { COMMANDS_BY_ID } from '@shared/commands'
+import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
 import { TAB_COLORS, createTab } from '@shared/defaults'
 import { History } from '@shared/history'
 import { reconcileBlocks } from '@shared/text'
@@ -371,10 +373,125 @@ export class Store {
         // para mostrar e esconder, como a tela preta faz
         const igual = this.state.transport.card === action.cardId
         const alvo = igual ? null : action.cardId
-        const existe = alvo === null || this.state.cards.some((c) => c.id === alvo)
+        const escolhido = alvo === null ? null : (this.state.cards.find((c) => c.id === alvo) ?? null)
+
+        // um vídeo desvinculado não sobe: o atalho não faz nada em vez de
+        // mandar um retângulo preto para a tela do apresentador
+        if (alvo !== null && (!escolhido || !podeIrAoAr(escolhido))) break
+
         this.state = {
           ...this.state,
-          transport: { ...this.state.transport, card: existe ? alvo : null }
+          transport: {
+            ...this.state.transport,
+            card: alvo,
+            // entrar no ar já toca: um standby que precisa de um segundo
+            // clique para animar seria uma pegadinha no meio do programa
+            video:
+              escolhido?.kind === 'video'
+                ? { ...this.state.transport.video, tocando: true, base: 0, comecouEm: Date.now(), arrastando: false }
+                : { ...this.state.transport.video, tocando: false, base: 0, comecouEm: 0, arrastando: false }
+          }
+        }
+        break
+      }
+
+      case 'card/videoPlay': {
+        const video = this.state.transport.video
+        const noAr = cartaoNoAr(this.state)
+        const duracao = noAr?.kind === 'video' ? noAr.duracao : undefined
+        const loop = noAr?.kind === 'video' ? (noAr.loop ?? false) : false
+
+        // parar guarda o segundo em que parou; tocar parte de onde estava —
+        // e, se o vídeo já tinha acabado, recomeça em vez de dar play num
+        // ponto onde não há mais nada
+        const acabou = Boolean(duracao) && !loop && video.base >= (duracao ?? 0) - 0.05
+        const base = action.tocando
+          ? acabou
+            ? 0
+            : video.base
+          : posicaoDoVideo(video, Date.now(), duracao, loop)
+
+        this.state = {
+          ...this.state,
+          transport: {
+            ...this.state.transport,
+            video: { ...video, tocando: action.tocando, base, comecouEm: Date.now() }
+          }
+        }
+        break
+      }
+
+      case 'card/videoSeek': {
+        const video = this.state.transport.video
+        this.state = {
+          ...this.state,
+          transport: {
+            ...this.state.transport,
+            video: {
+              ...video,
+              base: Math.max(0, action.segundo),
+              comecouEm: Date.now(),
+              arrastando: action.arrastando
+            }
+          }
+        }
+        break
+      }
+
+      case 'card/videoVolume':
+        this.state = {
+          ...this.state,
+          transport: {
+            ...this.state.transport,
+            video: { ...this.state.transport.video, volume: Math.min(1, Math.max(0, action.volume)) }
+          }
+        }
+        break
+
+      case 'card/videoLoop':
+        this.state = {
+          ...this.state,
+          cards: this.state.cards.map((c) =>
+            c.id === action.cardId && c.kind === 'video' ? { ...c, loop: action.loop } : c
+          )
+        }
+        break
+
+      case 'card/videoDuration':
+        this.state = {
+          ...this.state,
+          cards: this.state.cards.map((c) =>
+            c.id === action.cardId && c.kind === 'video' ? { ...c, duracao: action.duracao } : c
+          )
+        }
+        break
+
+      case 'card/videoPoster':
+        this.state = {
+          ...this.state,
+          cards: this.state.cards.map((c) =>
+            c.id === action.cardId && c.kind === 'video' ? { ...c, poster: action.poster } : c
+          )
+        }
+        break
+
+      case 'card/videoLink': {
+        const tiraDoAr = !action.vinculado && this.state.transport.card === action.cardId
+        this.state = {
+          ...this.state,
+          cards: this.state.cards.map((c) =>
+            c.id === action.cardId && c.kind === 'video'
+              ? {
+                  ...c,
+                  vinculado: action.vinculado,
+                  ...(action.caminho ? { caminho: action.caminho } : {}),
+                  ...(action.arquivoNome ? { arquivoNome: action.arquivoNome } : {})
+                }
+              : c
+          ),
+          // se o arquivo sumiu com ele no ar, a tela volta ao roteiro em vez
+          // de segurar um quadro que não existe mais
+          transport: tiraDoAr ? { ...this.state.transport, card: null } : this.state.transport
         }
         break
       }

@@ -96,6 +96,21 @@ export interface CardPickResult {
   sugestao: string
 }
 
+/**
+ * O que volta ao escolher um vídeo de cartão.
+ *
+ * Sem `arquivo`, ao contrário da imagem: o vídeo não é copiado para dentro do
+ * app. O que viaja é onde ele mora — e escolher aqui é o que autoriza o app a
+ * servir aquele arquivo.
+ */
+export interface CardVideoPickResult {
+  caminho: string
+  /** nome do arquivo com extensão, para o operador reconhecer no relink */
+  arquivoNome: string
+  /** nome sem extensão, como sugestão de nome do cartão */
+  sugestao: string
+}
+
 export interface ImportResult {
   title: string
   text: string
@@ -135,4 +150,9 @@ export interface ValendoApi {
   respondToClose(confirmed: boolean): void
   /** abre o seletor de imagem e já copia o arquivo para dentro do app */
   pickCardImage(cardId: string): Promise<CardPickResult | null>
+  /**
+   * Abre o seletor de vídeo. Não copia nada — devolve onde o arquivo está e
+   * autoriza o app a servi-lo. Serve tanto para subir quanto para relinkar.
+   */
+  pickCardVideo(): Promise<CardVideoPickResult | null>
 }

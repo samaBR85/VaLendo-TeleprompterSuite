@@ -1,7 +1,14 @@
 import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from 'electron'
 import { basename, extname } from 'node:path'
 import { CHANNELS, type Action } from '@shared/actions'
-import type { CardPickResult, ExportResult, ImportResult, ProjectResult, StateSnapshot } from '@shared/api'
+import type {
+  CardPickResult,
+  CardVideoPickResult,
+  ExportResult,
+  ImportResult,
+  ProjectResult,
+  StateSnapshot
+} from '@shared/api'
 import type { AppState } from '@shared/types'
 import { IMPORT_FILTERS, importFile } from './import'
 import { EXPORT_FILTERS, defaultFileName, exportScript } from './export'
@@ -11,13 +18,17 @@ import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } f
 import { cartaoNoAr } from '@shared/cards'
 import { traduzir } from '@shared/i18n'
 import {
+  autorizarVideo,
   deleteCardImage,
   IMAGE_EXTENSIONS,
   importCardImage,
   pruneCardImages,
   registerCardProtocol,
-  registerCardScheme
+  registerCardScheme,
+  registerVideoResolver,
+  videoVinculado
 } from './cards'
+import { VIDEO_EXTENSIONS } from '@shared/video'
 import { Store } from './state'
 import { flushState, onStorageHealth, storageHealth } from './storage'
 import { buildBroadcastMenu } from './broadcastMenu'
@@ -204,6 +215,9 @@ function registerIpc(): void {
     store.dispatch({ type: 'project/replace', state })
     // as artes do programa anterior não servem mais a ninguém
     pruneCardImages(store.getState().cards)
+    // os vídeos não vêm dentro do projeto: os caminhos podem apontar para
+    // arquivos que não existem nesta máquina, e o cartão precisa dizer isso
+    revalidarVideos()
     return { ok: true, path: caminho }
   })
 
@@ -237,6 +251,51 @@ function registerIpc(): void {
       return null
     }
   })
+
+  /**
+   * Escolher o vídeo — e é a escolha que autoriza o arquivo.
+   *
+   * Nada é copiado: fica onde está, e o que o app guarda é o caminho mais a
+   * permissão de servi-lo. Esta é a única porta por onde um caminho entra na
+   * lista de autorizados, e é por isso que um projeto vindo de fora não
+   * consegue publicar arquivo nenhum sozinho.
+   */
+  ipcMain.handle(CHANNELS.cardPickVideo, async (): Promise<CardVideoPickResult | null> => {
+    const owner = getOperatorWindow()
+    const options = {
+      title: idioma('cards.pickVideoTitle'),
+      properties: ['openFile' as const],
+      filters: [{ name: idioma('cards.videoFilter'), extensions: VIDEO_EXTENSIONS }]
+    }
+    const picked = owner ? await dialog.showOpenDialog(owner, options) : await dialog.showOpenDialog(options)
+    if (picked.canceled || picked.filePaths.length === 0) return null
+
+    const origem = picked.filePaths[0]
+    autorizarVideo(origem)
+    return {
+      caminho: origem,
+      arquivoNome: basename(origem),
+      sugestao: basename(origem, extname(origem)).slice(0, 30)
+    }
+  })
+}
+
+/**
+ * Confere se cada vídeo ainda está no lugar.
+ *
+ * Roda ao abrir o app e ao abrir um projeto, que são os dois momentos em que o
+ * disco pode ter mudado sem o app estar olhando: arquivo movido, pasta
+ * renomeada, HD externo fora, ou um projeto que veio de outra máquina e cujos
+ * caminhos nunca foram autorizados aqui.
+ */
+function revalidarVideos(): void {
+  for (const card of store.getState().cards) {
+    if (card.kind !== 'video') continue
+    const vinculado = videoVinculado(card.caminho)
+    if (card.vinculado !== vinculado) {
+      store.dispatch({ type: 'card/videoLink', cardId: card.id, vinculado })
+    }
+  }
 }
 
 /**
@@ -269,8 +328,15 @@ function showBroadcastMenu(): void {
 }
 
 function bootstrap(): void {
+  // o protocolo pergunta ao estado onde o vídeo daquele cartão mora: assim
+  // nenhuma URL carrega caminho de disco, e não há URL a forjar
+  registerVideoResolver((cardId) => {
+    const card = store.getState().cards.find((c) => c.id === cardId)
+    return card?.kind === 'video' ? card.caminho : null
+  })
   registerCardProtocol()
   registerIpc()
+  revalidarVideos()
   onBroadcastContextMenu(showBroadcastMenu)
 
   store.subscribe(() => {
