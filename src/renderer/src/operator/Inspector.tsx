@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { FONT_OPTIONS } from '@shared/defaults'
-import { formatClock } from '@shared/pacing'
+import {
+  apagarDigitoDoAlvo,
+  bufferDoAlvoParaSegundos,
+  empurrarDigitoDoAlvo,
+  formatAlvo,
+  segundosParaBufferDoAlvo
+} from '@shared/pacing'
 import { TIMER_POSITIONS, type Appearance, type ColorPreset, type Tab } from '@shared/types'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { larguraDoPainel, type Chave } from '@shared/i18n'
@@ -96,6 +102,56 @@ function Slider({
         onChange={(event) => onChange(Number(event.target.value))}
       />
     </label>
+  )
+}
+
+/**
+ * Campo de horário digitado como numa calculadora: cada dígito entra pela
+ * direita e empurra os que já estavam lá, com os ":" no lugar certo sozinhos.
+ * Arrastar um slider para achar "3 minutos e 20" é lento e impreciso demais
+ * para um número que o operador já sabe de cabeça — aqui ele só digita
+ * "320" e o campo vira "03:20".
+ *
+ * O buffer de dígitos (não o valor já calculado) é o que edita: assim
+ * apagar remove o último dígito que a pessoa digitou, e não a última casa
+ * numérica do valor arredondado.
+ */
+function AlvoField({ value, onChange }: { value: number; onChange: (seconds: number) => void }): React.JSX.Element {
+  const [buffer, setBuffer] = useState<string | null>(null)
+  const digitos = buffer ?? segundosParaBufferDoAlvo(value)
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (/^[0-9]$/.test(event.key)) {
+      event.preventDefault()
+      const proximo = empurrarDigitoDoAlvo(digitos, event.key)
+      setBuffer(proximo)
+      onChange(bufferDoAlvoParaSegundos(proximo))
+    } else if (event.key === 'Backspace' || event.key === 'Delete') {
+      event.preventDefault()
+      const proximo = apagarDigitoDoAlvo(digitos)
+      setBuffer(proximo)
+      onChange(bufferDoAlvoParaSegundos(proximo))
+    } else if (event.key === 'Enter') {
+      event.currentTarget.blur()
+    } else if (event.key !== 'Tab') {
+      // nenhuma outra tecla escreve no campo — letra, ponto, colar: só dígito
+      // e apagar mexem no buffer, o resto é ignorado em silêncio
+      event.preventDefault()
+    }
+  }
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      data-clock-target
+      value={formatAlvo(bufferDoAlvoParaSegundos(digitos))}
+      onChange={() => {}}
+      onKeyDown={onKeyDown}
+      onFocus={() => setBuffer(segundosParaBufferDoAlvo(value))}
+      onBlur={() => setBuffer(null)}
+      className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1 text-right text-[13px] tabular-nums text-[var(--color-fog-0)] outline-none focus:border-[var(--color-fog-1)]"
+    />
   )
 }
 
@@ -448,24 +504,13 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
             </div>
 
             {a.timers.mode === 'cronometro' ? (
-              <div>
-                <div className="mb-1 flex items-baseline justify-between text-[11px]">
-                  <span className="text-[var(--color-fog-1)]">{t('insp.clock.target')}</span>
-                  <span className="text-[var(--color-fog-0)]">{formatClock(a.timers.targetSeconds)}</span>
-                </div>
-                <input
-                  type="range"
-                  data-clock-target
-                  className="w-full"
-                  min={10}
-                  max={1800}
-                  step={5}
+              <label className="block">
+                <div className="mb-1 text-[11px] text-[var(--color-fog-1)]">{t('insp.clock.target')}</div>
+                <AlvoField
                   value={a.timers.targetSeconds}
-                  onChange={(event) =>
-                    patch({ timers: { ...a.timers, targetSeconds: Number(event.target.value) } })
-                  }
+                  onChange={(targetSeconds) => patch({ timers: { ...a.timers, targetSeconds } })}
                 />
-              </div>
+              </label>
             ) : null}
 
             {/* grade de 3x3 com a forma da própria saída: escolher onde o

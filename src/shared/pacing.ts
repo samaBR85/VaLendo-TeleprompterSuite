@@ -89,3 +89,55 @@ export function stopwatchReading(clock: StopwatchClock, playing: boolean, agora:
     estourou: diff < 0
   }
 }
+
+/**
+ * O alvo do cronômetro, digitado como numa calculadora de horário.
+ *
+ * Seis casas — HHMMSS — preenchidas da direita para a esquerda: cada dígito
+ * novo empurra os anteriores para a esquerda, e o que passar da sexta casa
+ * cai fora. É por isso que digitar "50" vira 0:00:50 e não 50:00:00 — o
+ * dígito entra na casa dos segundos, não na das horas.
+ */
+export function empurrarDigitoDoAlvo(buffer: string, digito: string): string {
+  return `${buffer}${digito}`.slice(-6)
+}
+
+export function apagarDigitoDoAlvo(buffer: string): string {
+  return buffer.slice(0, -1)
+}
+
+/** De segundos totais para as seis casas do buffer, para o campo nascer com o valor que já estava salvo. */
+export function segundosParaBufferDoAlvo(seconds: number): string {
+  const safe = Math.max(0, Math.round(seconds))
+  const h = Math.floor(safe / 3600)
+  const m = Math.floor((safe % 3600) / 60)
+  const s = safe % 60
+  return `${String(h).padStart(2, '0')}${String(m).padStart(2, '0')}${String(s).padStart(2, '0')}`.slice(-6)
+}
+
+/** Do buffer de seis casas para segundos totais — completa com zeros à esquerda. */
+export function bufferDoAlvoParaSegundos(buffer: string): number {
+  const seis = buffer.padStart(6, '0')
+  const h = Number(seis.slice(0, 2))
+  const m = Number(seis.slice(2, 4))
+  const s = Number(seis.slice(4, 6))
+  return h * 3600 + m * 60 + s
+}
+
+/**
+ * H:MM:SS quando há hora, MM:SS quando não há.
+ *
+ * Diferente de `formatClock` (usado nos relógios da transmissão, que nunca
+ * passam de minutos): aqui os minutos vêm sempre com dois dígitos mesmo sem
+ * hora — "00:50", não "0:50" — porque é o valor que a pessoa acabou de
+ * digitar, e cada casa precisa continuar no lugar em que foi digitada.
+ */
+export function formatAlvo(seconds: number): string {
+  const safe = Math.max(0, Math.round(seconds))
+  const h = Math.floor(safe / 3600)
+  const m = Math.floor((safe % 3600) / 60)
+  const s = safe % 60
+  const mm = String(m).padStart(2, '0')
+  const ss = String(s).padStart(2, '0')
+  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
+}

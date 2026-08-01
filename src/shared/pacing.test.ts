@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import {
+  apagarDigitoDoAlvo,
+  bufferDoAlvoParaSegundos,
   CRONOMETRO_PARADO,
+  empurrarDigitoDoAlvo,
+  formatAlvo,
   formatClock,
   ppmForTarget,
   secondsForWords,
   segundosDoCronometro,
+  segundosParaBufferDoAlvo,
   stopwatchReading,
   timerReading,
   wordIndexAt
@@ -115,5 +120,45 @@ describe('cronômetro', () => {
     const muitoDepois = stopwatchReading({ base: 0, comecouEm: 0 }, true, 600_000, 180)
     expect(muitoDepois.elapsed).toBe('10:00')
     expect(muitoDepois.estourou).toBe(true)
+  })
+})
+
+describe('campo digitável do alvo', () => {
+  const digitar = (texto: string): string =>
+    [...texto].reduce((buffer, digito) => empurrarDigitoDoAlvo(buffer, digito), '')
+
+  it('digitar "50" vira 0:00:50, mostrado como 00:50', () => {
+    const buffer = digitar('50')
+    expect(bufferDoAlvoParaSegundos(buffer)).toBe(50)
+    expect(formatAlvo(bufferDoAlvoParaSegundos(buffer))).toBe('00:50')
+  })
+
+  it('digitar "140" vira 0:01:40, mostrado como 01:40', () => {
+    const buffer = digitar('140')
+    expect(bufferDoAlvoParaSegundos(buffer)).toBe(100)
+    expect(formatAlvo(bufferDoAlvoParaSegundos(buffer))).toBe('01:40')
+  })
+
+  it('digitar "14500" vira 1:45:00, mostrado sem zero à esquerda na hora', () => {
+    const buffer = digitar('14500')
+    expect(bufferDoAlvoParaSegundos(buffer)).toBe(6300)
+    expect(formatAlvo(bufferDoAlvoParaSegundos(buffer))).toBe('1:45:00')
+  })
+
+  it('o dígito mais antigo cai fora depois da sexta casa', () => {
+    // sete dígitos: o primeiro "1" é empurrado para fora, sobra "234567"
+    const buffer = digitar('1234567')
+    expect(buffer).toBe('234567')
+  })
+
+  it('apagar remove o último dígito digitado, não o primeiro', () => {
+    const cheio = digitar('14500')
+    expect(apagarDigitoDoAlvo(cheio)).toBe('1450')
+    expect(bufferDoAlvoParaSegundos(apagarDigitoDoAlvo(cheio))).toBe(890) // 0:14:50
+  })
+
+  it('o buffer nasce do valor já salvo, para editar em cima dele', () => {
+    expect(segundosParaBufferDoAlvo(180)).toBe('000300')
+    expect(segundosParaBufferDoAlvo(6300)).toBe('014500')
   })
 })
