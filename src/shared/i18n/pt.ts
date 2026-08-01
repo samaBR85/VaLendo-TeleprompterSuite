@@ -102,6 +102,7 @@ export const pt = {
   'insp.textColor': 'Texto',
   'insp.bgColor': 'Fundo',
   'insp.invert': 'Inverter cores',
+  'insp.contrast': 'Contraste de leitura',
 
   'insp.margin': 'Margem',
   'insp.minWords': 'Mínimo por linha',

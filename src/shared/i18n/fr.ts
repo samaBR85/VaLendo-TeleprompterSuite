@@ -89,6 +89,7 @@ export const fr: Dicionario = {
   'insp.textColor': 'Texte',
   'insp.bgColor': 'Fond',
   'insp.invert': 'Inverser les couleurs',
+  'insp.contrast': 'Contraste de lecture',
 
   'insp.margin': 'Marge',
   'insp.minWords': 'Minimum par ligne',

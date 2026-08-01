@@ -343,19 +343,37 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
           </label>
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
-          {presets.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              title={preset.name}
-              onClick={() => dispatch({ type: 'appearance/preset', tabId: tab.id, presetId: preset.id })}
-              className="h-7 w-7 rounded-md border border-[var(--color-line)]"
-              style={{ background: preset.bgColor, color: preset.textColor }}
-            >
-              <span className="text-[11px]">Aa</span>
-            </button>
-          ))}
+        <div>
+          <div className="mb-1.5 text-[10px] tracking-[0.14em] text-[var(--color-fog-3)] uppercase">
+            {t('insp.contrast')}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {presets.map((preset) => {
+              /* qual paleta está valendo agora — comparado pelo par de cores,
+                 e não por um id guardado: o operador pode ter mexido no
+                 seletor de cor à mão depois de escolher um preset, e aí
+                 nenhum deles está valendo mesmo */
+              const valendo =
+                preset.textColor.toUpperCase() === a.textColor.toUpperCase() &&
+                preset.bgColor.toUpperCase() === a.bgColor.toUpperCase()
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  data-preset={preset.id}
+                  aria-pressed={valendo}
+                  title={preset.name}
+                  onClick={() => dispatch({ type: 'appearance/preset', tabId: tab.id, presetId: preset.id })}
+                  className={`h-9 w-11 rounded-md border transition-colors ${
+                    valendo ? 'border-[var(--color-accent)]' : 'border-[var(--color-line)]'
+                  }`}
+                  style={{ background: preset.bgColor, color: preset.textColor }}
+                >
+                  <span className="text-[13px] font-medium">Aa</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         <button
