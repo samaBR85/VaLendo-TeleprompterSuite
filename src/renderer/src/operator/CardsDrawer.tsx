@@ -498,10 +498,45 @@ function PreviaDoArrasto({
   /** exposto para fora: é dele que se tira o quadro final, ao soltar a barra */
   videoRef: React.RefObject<HTMLVideoElement | null>
 }): React.JSX.Element {
+  /**
+   * Um arrasto rápido manda dezenas de segundos por segundo, mas buscar
+   * (`currentTime = x`) num vídeo H.264 não é instantâneo — o navegador
+   * precisa decodificar a partir do quadro-chave anterior. Escrever um
+   * segundo novo por cima de uma busca ainda em andamento não cancela a de
+   * antes: as duas ficam competindo, e o que aparece na tela é sobra de
+   * quadros fora de ordem — o "engasgo" preso numa imagem de trás.
+   *
+   * Por isso só um pedido corre por vez: se já tem busca em voo, o pedido
+   * novo só fica guardado (`pendente`, sempre sobrescrito pelo mais
+   * recente) e é disparado quando `onSeeked` avisar que a anterior terminou.
+   * O quadro final sempre é o do último ponto pedido, nunca um do meio do
+   * caminho.
+   */
+  const buscando = useRef(false)
+  const pendente = useRef<number | null>(null)
+
   useEffect(() => {
     const video = videoRef.current
-    if (video && Number.isFinite(video.duration)) video.currentTime = segundo
-  }, [segundo, videoRef])
+    if (!video || !Number.isFinite(video.duration)) return
+    if (buscando.current) {
+      pendente.current = segundo
+      return
+    }
+    buscando.current = true
+    video.currentTime = segundo
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [segundo])
+
+  const aoTerminarBusca = (): void => {
+    const proximo = pendente.current
+    pendente.current = null
+    const video = videoRef.current
+    if (proximo === null || !video) {
+      buscando.current = false
+      return
+    }
+    video.currentTime = proximo
+  }
 
   return (
     <video
@@ -516,8 +551,10 @@ function PreviaDoArrasto({
       crossOrigin="anonymous"
       src={`valendo://video/${encodeURIComponent(card.id)}?v=${encodeURIComponent(card.convertido ?? 'orig')}`}
       onLoadedMetadata={(event) => {
+        buscando.current = true
         event.currentTarget.currentTime = segundo
       }}
+      onSeeked={aoTerminarBusca}
       className="max-h-full max-w-full object-contain"
     />
   )
