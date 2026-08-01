@@ -132,6 +132,13 @@ export const en: Dicionario = {
   'insp.defaults.factory': 'A new tab starts with the factory default. Other tabs do not change.',
   'insp.defaults.reset': 'Back to the factory default',
 
+  'sidebar.chapters': 'Chapters',
+  'sidebar.cards': 'Block cards',
+  'sidebar.help': 'Quick help',
+  'sidebar.noChapters': 'No chapters yet — open one with § in the script.',
+  'sidebar.noCards': 'No cards yet.',
+  'sidebar.help.scroll': 'The scroll button is the biggest target on screen: pace to its left, time to its right. Space plays and pauses.',
+
   'status.words': 'Words',
   'status.duration': 'Duration',
   'status.target': 'Target duration',

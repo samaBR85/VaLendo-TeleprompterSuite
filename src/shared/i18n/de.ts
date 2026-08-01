@@ -133,6 +133,13 @@ export const de: Dicionario = {
   'insp.defaults.factory': 'Ein neuer Tab startet mit den Werkseinstellungen. Andere Tabs ändern sich nicht.',
   'insp.defaults.reset': 'Zurück zu den Werkseinstellungen',
 
+  'sidebar.chapters': 'Kapitel',
+  'sidebar.cards': 'Karten des Blocks',
+  'sidebar.help': 'Schnellhilfe',
+  'sidebar.noChapters': 'Noch keine Kapitel — eröffne eines mit § im Text.',
+  'sidebar.noCards': 'Noch keine Karten.',
+  'sidebar.help.scroll': 'Die Lauftaste ist das größte Ziel auf dem Schirm: links davon das Tempo, rechts die Zeit. Leertaste startet und pausiert.',
+
   'status.words': 'Wörter',
   'status.duration': 'Dauer',
   'status.target': 'Zieldauer',

@@ -133,6 +133,13 @@ export const it: Dicionario = {
   'insp.defaults.factory': 'Una scheda nuova parte dalle impostazioni di fabbrica. Le altre non cambiano.',
   'insp.defaults.reset': 'Torna alle impostazioni di fabbrica',
 
+  'sidebar.chapters': 'Capitoli',
+  'sidebar.cards': 'Cartelli del blocco',
+  'sidebar.help': 'Aiuto rapido',
+  'sidebar.noChapters': 'Nessun capitolo ancora — aprine uno con § nel testo.',
+  'sidebar.noCards': 'Nessun cartello ancora.',
+  'sidebar.help.scroll': 'Il pulsante di scorrimento è il bersaglio più grande dello schermo: a sinistra il ritmo, a destra il tempo. Spazio avvia e mette in pausa.',
+
   'status.words': 'Parole',
   'status.duration': 'Durata',
   'status.target': 'Durata obiettivo',

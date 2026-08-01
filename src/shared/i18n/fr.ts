@@ -133,6 +133,13 @@ export const fr: Dicionario = {
   'insp.defaults.factory': 'Un nouvel onglet démarre avec les réglages d’usine. Les autres onglets ne changent pas.',
   'insp.defaults.reset': 'Revenir aux réglages d’usine',
 
+  'sidebar.chapters': 'Chapitres',
+  'sidebar.cards': 'Cartons du bloc',
+  'sidebar.help': 'Aide rapide',
+  'sidebar.noChapters': 'Aucun chapitre pour l’instant — ouvrez-en un avec § dans le texte.',
+  'sidebar.noCards': 'Aucun carton pour l’instant.',
+  'sidebar.help.scroll': 'Le bouton de défilement est la plus grande cible de l’écran : à sa gauche le rythme, à sa droite le temps. Espace démarre et met en pause.',
+
   'status.words': 'Mots',
   'status.duration': 'Durée',
   'status.target': 'Durée visée',

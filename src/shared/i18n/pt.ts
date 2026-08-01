@@ -146,6 +146,13 @@ export const pt = {
   'insp.defaults.reset': 'Voltar ao padrão de fábrica',
 
   /* ------------------------------------------------------------ barra de baixo */
+  'sidebar.chapters': 'Capítulos',
+  'sidebar.cards': 'Cartões do bloco',
+  'sidebar.help': 'Ajuda rápida',
+  'sidebar.noChapters': 'Nenhum capítulo ainda — abra um com § no roteiro.',
+  'sidebar.noCards': 'Nenhum cartão ainda.',
+  'sidebar.help.scroll': 'O botão de rolagem é o maior alvo da tela: à esquerda dele o ritmo, à direita o tempo. Espaço toca e pausa.',
+
   'status.words': 'Palavras',
   'status.duration': 'Duração',
   'status.target': 'Duração-alvo',

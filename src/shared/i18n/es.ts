@@ -133,6 +133,13 @@ export const es: Dicionario = {
   'insp.defaults.factory': 'Una pestaña nueva nace con los ajustes de fábrica. Las demás no cambian.',
   'insp.defaults.reset': 'Volver a los ajustes de fábrica',
 
+  'sidebar.chapters': 'Capítulos',
+  'sidebar.cards': 'Tarjetas del bloque',
+  'sidebar.help': 'Ayuda rápida',
+  'sidebar.noChapters': 'Ningún capítulo todavía — abre uno con § en el guion.',
+  'sidebar.noCards': 'Ninguna tarjeta todavía.',
+  'sidebar.help.scroll': 'El botón de desplazamiento es el mayor objetivo de la pantalla: a su izquierda el ritmo, a su derecha el tiempo. Espacio inicia y pausa.',
+
   'status.words': 'Palabras',
   'status.duration': 'Duración',
   'status.target': 'Duración objetivo',

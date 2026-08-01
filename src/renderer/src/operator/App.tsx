@@ -16,6 +16,7 @@ import { Deck } from './deck/Deck'
 import { Editor, type EditorHandle } from './Editor'
 import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
+import { Sidebar } from './Sidebar'
 import { StatusBar } from './StatusBar'
 import { Tabs } from './Tabs'
 import { BarraDeArquivo, BarraDeTransporte, hint } from './Toolbar'
@@ -565,6 +566,17 @@ function AppConteudo({
         </main>
       ) : (
         <main ref={mainRef} className="flex min-h-0 flex-1">
+          {/* só no Split: no Foco a tela é do apresentador e na Mesa o rundown
+              já mostra os mesmos capítulos, em maior e com linha do tempo —
+              ter as duas coisas ao mesmo tempo seria dizer duas vezes */}
+          <Sidebar
+            tab={tab}
+            transport={state.transport}
+            cards={state.cards}
+            rows={rows}
+            dispatch={dispatch}
+          />
+
           <section className="flex min-w-0 flex-col" style={{ flex: `${split} 1 0` }}>
             <PanelHeader label={t('panel.edit')} detail={t('panel.edit.hint')} action={editorTools} />
             <Editor ref={editorRef} tab={tab} dispatch={dispatch} />

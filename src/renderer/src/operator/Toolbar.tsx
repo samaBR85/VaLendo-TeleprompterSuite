@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import type { Action } from '@shared/actions'
 import { composeLines, totalWords } from '@shared/anchor'
 import { formatBinding, parseBinding } from '@shared/commands'
@@ -6,6 +6,7 @@ import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import type { AppState, DisplayInfo, Tab, TransportPosition } from '@shared/types'
 import { Icon, type IconName } from '../ui/Icon'
 import { useT } from '../i18n'
+import { useNow } from '../ui/useNow'
 import { SpeedRuler } from './SpeedRuler'
 
 interface Props {
@@ -22,21 +23,6 @@ interface Props {
   webviewLive: boolean
   onOpenWebview: () => void
   onOpenCards: () => void
-}
-
-/**
- * O relógio do mostrador vive aqui dentro, e não no App.
- *
- * Se o App remarcasse a cada segundo, a prévia inteira remontaria junto — e ela
- * desenha o roteiro todo. Só a barra precisa piscar.
- */
-function useNow(intervalMs = 500): number {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), intervalMs)
-    return () => clearInterval(id)
-  }, [intervalMs])
-  return now
 }
 
 /** " · Ctrl+K" para colar no fim de um rótulo, ou nada se o comando não tem tecla. */
