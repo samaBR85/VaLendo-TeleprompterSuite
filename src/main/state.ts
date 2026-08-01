@@ -13,8 +13,8 @@ import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
 import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN, TAB_COLORS, createTab } from '@shared/defaults'
 import { History } from '@shared/history'
 import { reconcileBlocks } from '@shared/text'
-import type { Anchor, Appearance, AppState, PacingRule, Tab } from '@shared/types'
-import { wordIndexAt } from '@shared/pacing'
+import type { Anchor, Appearance, AppState, PacingRule, StopwatchClock, Tab, Transport } from '@shared/types'
+import { CRONOMETRO_PARADO, segundosDoCronometro, wordIndexAt } from '@shared/pacing'
 // a régua da tela e o passo do atalho saem da mesma constante: o degrau que se
 // vê tem que ser o degrau que a tecla anda
 import { PPM_MAX, PPM_MIN, PPM_STEP } from '@shared/ruler'
@@ -116,6 +116,21 @@ export class Store {
   /** Índice global de palavras da posição de leitura, agora. */
   private currentWordIndex(): number {
     return wordIndexAt(this.state.transport, Date.now())
+  }
+
+  /**
+   * O cronômetro no instante da pausa/retomada.
+   *
+   * Só quem chama `transport/toggle`, `transport/pause` e `transport/restart`
+   * mexe aqui — editar texto, trocar palavras-por-linha ou ritmo passa por
+   * `rebase()`, que nunca toca no cronômetro de propósito.
+   */
+  private cronometroPausado(transport: Transport): StopwatchClock {
+    return { base: segundosDoCronometro(transport.stopwatch, transport.playing, Date.now()), comecouEm: 0 }
+  }
+
+  private cronometroRetomado(transport: Transport): StopwatchClock {
+    return { base: transport.stopwatch.base, comecouEm: Date.now() }
   }
 
   private setState(next: AppState): void {
@@ -265,13 +280,24 @@ export class Store {
           const stopped = Math.max(0, this.currentWordIndex() - REWIND_ON_PAUSE)
           this.state = {
             ...this.state,
-            transport: { ...transport, playing: false, wordsAtStart: stopped, startedAt: Date.now() }
+            transport: {
+              ...transport,
+              playing: false,
+              wordsAtStart: stopped,
+              startedAt: Date.now(),
+              stopwatch: this.cronometroPausado(transport)
+            }
           }
           this.seekWordIndex(stopped)
         } else {
           this.state = {
             ...this.state,
-            transport: { ...transport, playing: true, startedAt: Date.now() }
+            transport: {
+              ...transport,
+              playing: true,
+              startedAt: Date.now(),
+              stopwatch: this.cronometroRetomado(transport)
+            }
           }
         }
         break
@@ -279,16 +305,31 @@ export class Store {
 
       case 'transport/pause': {
         if (!this.state.transport.playing) break
+        const transport = this.state.transport
         const stopped = Math.max(0, this.currentWordIndex() - REWIND_ON_PAUSE)
         this.state = {
           ...this.state,
-          transport: { ...this.state.transport, playing: false, startedAt: Date.now() }
+          transport: {
+            ...transport,
+            playing: false,
+            startedAt: Date.now(),
+            stopwatch: this.cronometroPausado(transport)
+          }
         }
         this.seekWordIndex(stopped)
         break
       }
 
       case 'transport/restart':
+        // o cronômetro reinicia junto: "voltar ao início" é recomeçar a
+        // leitura inteira, e o tempo que ela leva é parte disso
+        this.state = {
+          ...this.state,
+          transport: {
+            ...this.state.transport,
+            stopwatch: this.state.transport.playing ? { base: 0, comecouEm: Date.now() } : CRONOMETRO_PARADO
+          }
+        }
         this.seekWordIndex(0)
         break
 
@@ -364,6 +405,15 @@ export class Store {
           ...this.state,
           cards: this.state.cards.map((c) =>
             c.id === action.cardId && c.kind === 'text' ? { ...c, texto: action.texto } : c
+          )
+        }
+        break
+
+      case 'card/imageFile':
+        this.state = {
+          ...this.state,
+          cards: this.state.cards.map((c) =>
+            c.id === action.cardId && c.kind === 'image' ? { ...c, arquivo: action.arquivo } : c
           )
         }
         break
@@ -556,7 +606,9 @@ export class Store {
             ...this.state.transport,
             playing: false,
             wordsAtStart: tab.anchor ? wordIndexFromAnchor(lines, tab.anchor) : 0,
-            startedAt: Date.now()
+            startedAt: Date.now(),
+            // outra aba é outra leitura: o cronômetro desta não conta para ela
+            stopwatch: CRONOMETRO_PARADO
           }
         }
         break

@@ -110,6 +110,13 @@ export const en: Dicionario = {
   'insp.clock.position': 'Position',
   'insp.clock.positionOf': 'Position {pos}',
   'insp.clock.size': 'Size',
+  'insp.clock.modeWords': 'Formula',
+  'insp.clock.modeStopwatch': 'Stopwatch',
+  'insp.clock.modeWords.hint':
+    'Elapsed and remaining come from the word index and pace. Changing the speed or editing the text changes what the clocks show right away.',
+  'insp.clock.modeStopwatch.hint':
+    'Elapsed is a real stopwatch: it only moves with play, and nothing recalculates it. Remaining counts down to the target — and once it runs out, it counts up how far past it you are.',
+  'insp.clock.target': 'Target',
 
   'insp.glass': 'Glass compensation',
   'insp.glass.hint': 'Presenter’s screen only. The preview and the network page stay unmirrored, so they can be read.',
@@ -309,6 +316,7 @@ export const en: Dicionario = {
   'cards.remove': 'Remove card',
   'cards.onAir': 'on screen',
   'cards.missing': 'This card’s image was not found.',
+  'cards.imageRelink': 'Reimport',
   'cards.fit': 'Fit whole',
   'cards.fill': 'Fill',
   'cards.addVideo': 'Add video',

@@ -1,6 +1,7 @@
 import { traduzir, type Lang } from './i18n'
 import type { Appearance, AppState, ColorPreset, Tab } from './types'
 import { blocksFromText } from './text'
+import { CRONOMETRO_PARADO } from './pacing'
 import { VIDEO_PARADO } from './video'
 
 /**
@@ -67,7 +68,9 @@ export const DEFAULT_APPEARANCE: Appearance = {
     position: 'topRight',
     elapsedColor: '#5DCAA5',
     remainingColor: '#E24B4A',
-    sizePct: 3.5
+    sizePct: 3.5,
+    mode: 'palavras',
+    targetSeconds: 180
   }
 }
 
@@ -157,7 +160,8 @@ export function createInitialState(
       blackout: false,
       frozen: false,
       card: null,
-      video: VIDEO_PARADO
+      video: VIDEO_PARADO,
+      stopwatch: CRONOMETRO_PARADO
     },
     output: { displayId: null, enabled: false, viewport: null },
     presets: presetsPadrao(lang),

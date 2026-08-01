@@ -123,6 +123,13 @@ export const pt = {
   'insp.clock.position': 'Posição',
   'insp.clock.positionOf': 'Posição {pos}',
   'insp.clock.size': 'Tamanho',
+  'insp.clock.modeWords': 'Fórmula',
+  'insp.clock.modeStopwatch': 'Cronômetro',
+  'insp.clock.modeWords.hint':
+    'Decorrido e restante saem do índice de palavras e do ritmo. Mudar a velocidade ou editar o texto muda o que os relógios mostram na hora.',
+  'insp.clock.modeStopwatch.hint':
+    'Decorrido é um cronômetro de verdade: só anda com o play, e nada o recalcula. Restante conta até o alvo — e, se estourar, passa a contar quanto já passou dele.',
+  'insp.clock.target': 'Alvo',
 
   'insp.glass': 'Compensação do vidro',
   'insp.glass.hint': 'Só na tela do apresentador. A prévia e a rede seguem sem espelho, para dar leitura.',
@@ -336,6 +343,7 @@ export const pt = {
   'cards.remove': 'Remover cartão',
   'cards.onAir': 'na tela',
   'cards.missing': 'A imagem deste cartão não foi encontrada.',
+  'cards.imageRelink': 'Reimportar',
   'cards.fit': 'Cabe inteira',
   'cards.fill': 'Preenche',
   'cards.addVideo': 'Adicionar vídeo',

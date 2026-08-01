@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { formatClock, ppmForTarget, secondsForWords, timerReading, wordIndexAt } from './pacing'
+import {
+  CRONOMETRO_PARADO,
+  formatClock,
+  ppmForTarget,
+  secondsForWords,
+  segundosDoCronometro,
+  stopwatchReading,
+  timerReading,
+  wordIndexAt
+} from './pacing'
 import { totalWordCount } from './text'
 import { blocksFromText } from './text'
 import type { Transport } from './types'
@@ -13,7 +22,8 @@ const stopped: Transport = {
   blackout: false,
   frozen: false,
   card: null,
-  video: VIDEO_PARADO
+  video: VIDEO_PARADO,
+  stopwatch: CRONOMETRO_PARADO
 }
 
 describe('relógio de rolagem', () => {
@@ -78,5 +88,32 @@ describe('formatClock', () => {
     expect(formatClock(0)).toBe('0:00')
     expect(formatClock(74)).toBe('1:14')
     expect(formatClock(-5)).toBe('0:00')
+  })
+})
+
+describe('cronômetro', () => {
+  it('fica parado no que tinha acumulado quando não está tocando', () => {
+    expect(segundosDoCronometro({ base: 42, comecouEm: 0 }, false, 999_999)).toBe(42)
+  })
+
+  it('soma o tempo desde que a corrida atual começou', () => {
+    expect(segundosDoCronometro({ base: 10, comecouEm: 1_000 }, true, 21_000)).toBe(30)
+  })
+
+  it('conta para baixo até o alvo, e depois passa a contar para cima', () => {
+    const dentroDoAlvo = stopwatchReading({ base: 0, comecouEm: 0 }, true, 90_000, 180)
+    expect(dentroDoAlvo).toEqual({ elapsed: '1:30', remaining: '1:30', estourou: false })
+
+    const noAlvoExato = stopwatchReading({ base: 0, comecouEm: 0 }, true, 180_000, 180)
+    expect(noAlvoExato).toEqual({ elapsed: '3:00', remaining: '0:00', estourou: false })
+
+    const estourado = stopwatchReading({ base: 0, comecouEm: 0 }, true, 225_000, 180)
+    expect(estourado).toEqual({ elapsed: '3:45', remaining: '0:45', estourou: true })
+  })
+
+  it('decorrido não tem teto: passa do alvo e continua contando', () => {
+    const muitoDepois = stopwatchReading({ base: 0, comecouEm: 0 }, true, 600_000, 180)
+    expect(muitoDepois.elapsed).toBe('10:00')
+    expect(muitoDepois.estourou).toBe(true)
   })
 })

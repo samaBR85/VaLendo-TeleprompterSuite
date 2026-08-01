@@ -110,6 +110,21 @@ export interface TimerOverlay {
   remainingColor: string
   /** tamanho em % da altura da saída */
   sizePct: number
+  /**
+   * Como os dois relógios contam.
+   *
+   * `palavras`: a fórmula de sempre — decorrido e restante saem do índice de
+   * palavras e do ritmo, então mudar a velocidade ou editar o texto muda o
+   * que os relógios mostram na hora.
+   *
+   * `cronometro`: um cronômetro de verdade. Decorrido só anda com o play,
+   * ponto — nada recalcula ele. Restante vira "quanto falta para o alvo" e,
+   * se o alvo estourar, passa a contar "quanto já passou do alvo" em vez de
+   * ficar preso em zero.
+   */
+  mode: 'palavras' | 'cronometro'
+  /** o alvo do modo cronômetro, em segundos */
+  targetSeconds: number
 }
 
 export interface ColorPreset {
@@ -268,6 +283,26 @@ export interface Transport {
    * momento. Abrir um projeto não retoma um vídeo no meio.
    */
   video: VideoClock
+  /**
+   * O cronômetro de verdade, para quem escolheu o modo `cronometro` no
+   * relógio da saída.
+   *
+   * Guarda de onde partiu e quando, do mesmo jeito que `video` — cada janela
+   * calcula sozinha o segundo atual. A diferença para o relógio de rolagem
+   * (`wordsAtStart`/`startedAt`) é o que mexe nele: editar o texto, mudar
+   * palavras-por-linha ou o ritmo reancora a leitura o tempo todo, e um
+   * cronômetro que reiniciasse a cada uma dessas mudanças não seria um
+   * cronômetro. Só o play/pausa e o reiniciar tocam aqui.
+   */
+  stopwatch: StopwatchClock
+}
+
+/** De onde o cronômetro partiu e quando — nunca em que segundo ele está. */
+export interface StopwatchClock {
+  /** segundos acumulados enquanto pausado */
+  base: number
+  /** Date.now() de quando a corrida atual começou; 0 enquanto pausado */
+  comecouEm: number
 }
 
 export interface OutputConfig {

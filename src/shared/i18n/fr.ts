@@ -110,6 +110,13 @@ export const fr: Dicionario = {
   'insp.clock.position': 'Position',
   'insp.clock.positionOf': 'Position {pos}',
   'insp.clock.size': 'Taille',
+  'insp.clock.modeWords': 'Formule',
+  'insp.clock.modeStopwatch': 'Chronomètre',
+  'insp.clock.modeWords.hint':
+    'Écoulé et restant viennent de l’indice de mots et du rythme. Changer la vitesse ou modifier le texte change aussitôt ce que les horloges affichent.',
+  'insp.clock.modeStopwatch.hint':
+    'Écoulé est un vrai chronomètre : il n’avance qu’avec la lecture, et rien ne le recalcule. Restant décompte jusqu’à l’objectif — et une fois dépassé, il compte combien de temps a été dépassé.',
+  'insp.clock.target': 'Objectif',
 
   'insp.glass': 'Compensation du verre',
   'insp.glass.hint':
@@ -313,6 +320,7 @@ export const fr: Dicionario = {
   'cards.remove': 'Supprimer le carton',
   'cards.onAir': 'à l’écran',
   'cards.missing': 'L’image de ce carton est introuvable.',
+  'cards.imageRelink': 'Réimporter',
   'cards.fit': 'Entière',
   'cards.fill': 'Remplit',
   'cards.addVideo': 'Ajouter une vidéo',

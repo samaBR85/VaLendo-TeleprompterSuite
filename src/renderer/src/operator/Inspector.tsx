@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { FONT_OPTIONS } from '@shared/defaults'
+import { formatClock } from '@shared/pacing'
 import { TIMER_POSITIONS, type Appearance, type ColorPreset, type Tab } from '@shared/types'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { larguraDoPainel, type Chave } from '@shared/i18n'
@@ -394,6 +395,50 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
 
         {a.timers.elapsed || a.timers.remaining ? (
           <>
+            {/* fórmula ou cronômetro: a escolha muda o que "decorrido" e
+                "restante" significam, então vem antes de tudo o resto */}
+            <div className="flex gap-1.5">
+              {(['palavras', 'cronometro'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  data-clock-mode={mode}
+                  onClick={() => patch({ timers: { ...a.timers, mode } })}
+                  className={`flex-1 rounded-md border px-2 py-1.5 text-[11px] ${
+                    a.timers.mode === mode
+                      ? 'border-[var(--color-fog-1)] text-[var(--color-fog-0)]'
+                      : 'border-[var(--color-line)] text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]'
+                  }`}
+                >
+                  {mode === 'palavras' ? t('insp.clock.modeWords') : t('insp.clock.modeStopwatch')}
+                </button>
+              ))}
+            </div>
+            <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
+              {a.timers.mode === 'palavras' ? t('insp.clock.modeWords.hint') : t('insp.clock.modeStopwatch.hint')}
+            </div>
+
+            {a.timers.mode === 'cronometro' ? (
+              <div>
+                <div className="mb-1 flex items-baseline justify-between text-[11px]">
+                  <span className="text-[var(--color-fog-1)]">{t('insp.clock.target')}</span>
+                  <span className="text-[var(--color-fog-0)]">{formatClock(a.timers.targetSeconds)}</span>
+                </div>
+                <input
+                  type="range"
+                  data-clock-target
+                  className="w-full"
+                  min={10}
+                  max={1800}
+                  step={5}
+                  value={a.timers.targetSeconds}
+                  onChange={(event) =>
+                    patch({ timers: { ...a.timers, targetSeconds: Number(event.target.value) } })
+                  }
+                />
+              </div>
+            ) : null}
+
             {/* grade de 3x3 com a forma da própria saída: escolher onde o
                 relógio fica apontando o lugar é mais direto que ler rótulos */}
             <div>

@@ -287,6 +287,25 @@ function CartaoNaGaveta({
   const { t } = useT()
   const desvinculado = card.kind === 'video' && card.vinculado === false
 
+  /**
+   * A arte não carregou — o arquivo sumiu do disco.
+   *
+   * Sem isto o cartão ficava um retângulo preto mudo, indistinguível de um
+   * standby proposital, e o operador só descobria o problema ao vivo, quando
+   * pusesse no ar. Chave por `card.arquivo`: se o operador reimportar, o
+   * `<img>` nasce de novo com outra `src` e o aviso não gruda no cartão certo.
+   */
+  const [imagemQuebrada, setImagemQuebrada] = useState(false)
+  // reimportar troca `card.arquivo`: sem isto o aviso continuaria na tela
+  // mesmo com a arte nova já certa, porque o estado é do componente, não do
+  // arquivo
+  useEffect(() => setImagemQuebrada(false), [card.kind === 'image' ? card.arquivo : null])
+  const reimportarImagem = async (): Promise<void> => {
+    const escolhido = await window.valendo.pickCardImage(card.id)
+    if (!escolhido) return
+    dispatch({ type: 'card/imageFile', cardId: card.id, arquivo: escolhido.arquivo })
+  }
+
   return (
     <div
       data-card-tile={card.id}
@@ -303,11 +322,24 @@ function CartaoNaGaveta({
           perto acabava trocando o que estava na tela do apresentador. */}
       <div className="relative flex h-[72px] flex-none items-center justify-center overflow-hidden rounded border border-[var(--color-line)] bg-black">
         {card.kind === 'image' ? (
-          <img
-            src={`valendo://cartao/${encodeURIComponent(card.arquivo)}`}
-            alt=""
-            className="max-h-full max-w-full object-contain"
-          />
+          imagemQuebrada ? (
+            <button
+              type="button"
+              data-card-relink={card.id}
+              onClick={() => void reimportarImagem()}
+              className="flex items-center justify-center gap-1 px-2 text-center text-[10px] text-[var(--color-warn)] hover:underline"
+            >
+              {t('cards.imageRelink')}
+            </button>
+          ) : (
+            <img
+              key={card.arquivo}
+              src={`valendo://cartao/${encodeURIComponent(card.arquivo)}`}
+              alt=""
+              className="max-h-full max-w-full object-contain"
+              onError={() => setImagemQuebrada(true)}
+            />
+          )
         ) : card.kind === 'video' ? (
           card.poster ? (
             <img src={card.poster} alt="" className="max-h-full max-w-full object-contain" />

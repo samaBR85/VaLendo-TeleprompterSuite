@@ -110,6 +110,13 @@ export const it: Dicionario = {
   'insp.clock.position': 'Posizione',
   'insp.clock.positionOf': 'Posizione {pos}',
   'insp.clock.size': 'Dimensione',
+  'insp.clock.modeWords': 'Formula',
+  'insp.clock.modeStopwatch': 'Cronometro',
+  'insp.clock.modeWords.hint':
+    'Trascorso e restante derivano dall’indice di parole e dal ritmo. Cambiare la velocità o modificare il testo cambia subito quello che gli orologi mostrano.',
+  'insp.clock.modeStopwatch.hint':
+    'Trascorso è un cronometro vero: avanza solo con il play, e nulla lo ricalcola. Restante conta alla rovescia fino all’obiettivo — e, se lo supera, inizia a contare quanto tempo è passato oltre.',
+  'insp.clock.target': 'Obiettivo',
 
   'insp.glass': 'Compensazione del vetro',
   'insp.glass.hint':
@@ -313,6 +320,7 @@ export const it: Dicionario = {
   'cards.remove': 'Rimuovi cartello',
   'cards.onAir': 'sullo schermo',
   'cards.missing': 'L’immagine di questo cartello non è stata trovata.',
+  'cards.imageRelink': 'Reimporta',
   'cards.fit': 'Intera',
   'cards.fill': 'Riempie',
   'cards.addVideo': 'Aggiungi video',

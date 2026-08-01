@@ -110,6 +110,13 @@ export const es: Dicionario = {
   'insp.clock.position': 'Posición',
   'insp.clock.positionOf': 'Posición {pos}',
   'insp.clock.size': 'Tamaño',
+  'insp.clock.modeWords': 'Fórmula',
+  'insp.clock.modeStopwatch': 'Cronómetro',
+  'insp.clock.modeWords.hint':
+    'Transcurrido y restante salen del índice de palabras y del ritmo. Cambiar la velocidad o editar el texto cambia al instante lo que muestran los relojes.',
+  'insp.clock.modeStopwatch.hint':
+    'Transcurrido es un cronómetro de verdad: solo avanza con el play, y nada lo recalcula. Restante cuenta hasta la meta y, si se supera, pasa a contar cuánto se ha pasado de ella.',
+  'insp.clock.target': 'Meta',
 
   'insp.glass': 'Compensación del cristal',
   'insp.glass.hint':
@@ -311,6 +318,7 @@ export const es: Dicionario = {
   'cards.remove': 'Quitar tarjeta',
   'cards.onAir': 'en pantalla',
   'cards.missing': 'No se encontró la imagen de esta tarjeta.',
+  'cards.imageRelink': 'Reimportar',
   'cards.fit': 'Cabe entera',
   'cards.fill': 'Rellena',
   'cards.addVideo': 'Añadir vídeo',

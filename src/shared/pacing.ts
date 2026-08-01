@@ -1,4 +1,4 @@
-import type { Transport } from './types'
+import type { StopwatchClock, Transport } from './types'
 
 /**
  * Posição do relógio de rolagem, em índice global de palavras.
@@ -49,4 +49,43 @@ export function formatClock(seconds: number): string {
   const m = Math.floor(safe / 60)
   const s = safe % 60
   return `${m}:${String(s).padStart(2, '0')}`
+}
+
+/** Relógio parado, que é como todo cronômetro nasce. */
+export const CRONOMETRO_PARADO: StopwatchClock = { base: 0, comecouEm: 0 }
+
+/**
+ * Em que segundo o cronômetro está agora.
+ *
+ * Mesmo desenho do relógio do vídeo: o estado guarda de onde partiu e
+ * quando, e cada janela calcula sozinha — sem mandar o segundo quadro a
+ * quadro. `playing` é o mesmo play/pausa do transporte; o cronômetro não tem
+ * o seu próprio, porque os dois sempre andam juntos.
+ */
+export function segundosDoCronometro(clock: StopwatchClock, playing: boolean, agora: number): number {
+  if (!playing) return clock.base
+  return clock.base + Math.max(0, agora - clock.comecouEm) / 1000
+}
+
+export interface StopwatchReading extends TimerReading {
+  /** o alvo estourou: "remaining" passou a contar quanto já passou dele */
+  estourou: boolean
+}
+
+/**
+ * O que os relógios mostram no modo cronômetro.
+ *
+ * Decorrido é o segundo corrido, sem limite — o cronômetro não pára sozinho
+ * no fim do roteiro, porque ele não sabe onde o roteiro termina, só quanto
+ * tempo passou desde o play. Restante é a distância até o alvo, nos dois
+ * sentidos: antes de estourar conta para baixo, depois conta para cima.
+ */
+export function stopwatchReading(clock: StopwatchClock, playing: boolean, agora: number, targetSeconds: number): StopwatchReading {
+  const elapsedSeconds = segundosDoCronometro(clock, playing, agora)
+  const diff = Math.max(0, targetSeconds) - elapsedSeconds
+  return {
+    elapsed: formatClock(elapsedSeconds),
+    remaining: formatClock(Math.abs(diff)),
+    estourou: diff < 0
+  }
 }

@@ -110,6 +110,13 @@ export const de: Dicionario = {
   'insp.clock.position': 'Position',
   'insp.clock.positionOf': 'Position {pos}',
   'insp.clock.size': 'Größe',
+  'insp.clock.modeWords': 'Formel',
+  'insp.clock.modeStopwatch': 'Stoppuhr',
+  'insp.clock.modeWords.hint':
+    'Verstrichene und verbleibende Zeit ergeben sich aus dem Wortindex und dem Tempo. Eine Geschwindigkeitsänderung oder Textbearbeitung ändert sofort, was die Uhren anzeigen.',
+  'insp.clock.modeStopwatch.hint':
+    'Verstrichene Zeit ist eine echte Stoppuhr: Sie läuft nur mit Play, nichts berechnet sie neu. Verbleibende Zeit zählt bis zum Ziel herunter — und läuft sie ab, zählt sie hoch, wie weit das Ziel schon überschritten ist.',
+  'insp.clock.target': 'Ziel',
 
   'insp.glass': 'Ausgleich für das Glas',
   'insp.glass.hint':
@@ -313,6 +320,7 @@ export const de: Dicionario = {
   'cards.remove': 'Karte entfernen',
   'cards.onAir': 'auf dem Bildschirm',
   'cards.missing': 'Das Bild dieser Karte wurde nicht gefunden.',
+  'cards.imageRelink': 'Erneut importieren',
   'cards.fit': 'Ganz sichtbar',
   'cards.fill': 'Ausfüllen',
   'cards.addVideo': 'Video hinzufügen',

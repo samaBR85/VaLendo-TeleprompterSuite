@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { anchorFromWordIndex, composeLines, pixelFromAnchor, totalWords, type Layout } from '@shared/anchor'
 import { canvasBox, stageSize } from '@shared/output'
-import { timerReading, wordIndexAt } from '@shared/pacing'
+import { stopwatchReading, timerReading, wordIndexAt } from '@shared/pacing'
 import { chapterTitle } from '@shared/text'
 import {
   timerCell,
@@ -397,9 +397,18 @@ export function PrompterCanvas({
       const elapsed = elapsedRef.current
       const remaining = remainingRef.current
       if (elapsed || remaining) {
-        const reading = timerReading(wordIndex, totalWords(geometry.current), transport.ppm)
+        // decorrido/restante têm duas fórmulas possíveis: a de sempre, que sai
+        // da posição de leitura, e o cronômetro de verdade, que sai só do
+        // play/pausa — nunca do índice de palavras
+        const reading =
+          appearance.timers.mode === 'cronometro'
+            ? stopwatchReading(transport.stopwatch, transport.playing, Date.now(), appearance.timers.targetSeconds)
+            : { ...timerReading(wordIndex, totalWords(geometry.current), transport.ppm), estourou: false }
         if (elapsed && elapsed.textContent !== reading.elapsed) elapsed.textContent = reading.elapsed
-        const rest = `-${reading.remaining}`
+        // "-" contando para o fim, "+" contando o quanto já passou dele —
+        // sem o sinal trocar, "quanto falta" e "quanto passou" pareceriam a
+        // mesma coisa num relance
+        const rest = `${reading.estourou ? '+' : '-'}${reading.remaining}`
         if (remaining && remaining.textContent !== rest) remaining.textContent = rest
       }
 
@@ -414,7 +423,15 @@ export function PrompterCanvas({
 
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [transport, readingLineY, appearance.timers.elapsed, appearance.timers.remaining, palcoCoberto])
+  }, [
+    transport,
+    readingLineY,
+    appearance.timers.elapsed,
+    appearance.timers.remaining,
+    appearance.timers.mode,
+    appearance.timers.targetSeconds,
+    palcoCoberto
+  ])
 
   const mirror = `${appearance.mirrorX ? ' scaleX(-1)' : ''}${appearance.mirrorY ? ' scaleY(-1)' : ''}`
   const compensacao = outputTransforms ? ` rotate(${appearance.rotation}deg)${mirror}` : ''

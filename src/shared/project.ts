@@ -1,4 +1,5 @@
 import type { AppState } from './types'
+import { CRONOMETRO_PARADO } from './pacing'
 import { VIDEO_PARADO } from './video'
 
 export const PROJECT_EXTENSION = 'valendo'
@@ -40,7 +41,8 @@ function semTransitorio(state: AppState): AppState {
       frozen: false,
       card: null,
       startedAt: 0,
-      video: VIDEO_PARADO
+      video: VIDEO_PARADO,
+      stopwatch: CRONOMETRO_PARADO
     },
     // o monitor escolhido viaja, mas a transmissão nunca sobe sozinha ao abrir:
     // abrir um projeto não pode jogar texto na tela do apresentador

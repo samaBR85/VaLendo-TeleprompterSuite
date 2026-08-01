@@ -25,6 +25,8 @@ export type Action =
   | { type: 'card/remove'; cardId: string }
   | { type: 'card/rename'; cardId: string; nome: string }
   | { type: 'card/text'; cardId: string; texto: string }
+  /** o operador reimportou a arte de um cartão de imagem cujo arquivo sumiu */
+  | { type: 'card/imageFile'; cardId: string; arquivo: string }
   /** mostra o cartão; passar o que já está no ar tira ele da tela */
   | { type: 'card/show'; cardId: string | null }
   | { type: 'card/videoPlay'; tocando: boolean }
