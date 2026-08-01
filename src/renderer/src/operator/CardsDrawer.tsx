@@ -310,6 +310,43 @@ function CartaoNaGaveta({
   const previaRef = useRef<HTMLVideoElement>(null)
 
   /**
+   * A fila de busca do vídeo da prévia, e por que ela existe.
+   *
+   * Buscar um segundo num H.264 não é instantâneo — o navegador decodifica a
+   * partir do quadro-chave anterior. Um arrasto rápido manda pedidos mais
+   * rápido do que eles terminam; escrever um `currentTime` novo por cima de
+   * uma busca em andamento não cancela a de antes, as duas competem, e o que
+   * sobra na tela é um quadro fora de ordem. Por isso só uma busca corre por
+   * vez: um pedido novo enquanto há uma em andamento só fica guardado
+   * (`pendente`, sempre sobrescrito pelo mais recente) e dispara no
+   * `onSeeked`, quando a anterior realmente termina.
+   *
+   * É a mesma fila que garante a miniatura certa ao soltar: capturar direto
+   * no clique pegaria o quadro que está na tela NAQUELE instante, que pode
+   * ser de uma busca ainda em voo — `capturarAoAssentar` adia a captura para
+   * quando a fila esvaziar de verdade.
+   */
+  const buscando = useRef(false)
+  const pendente = useRef<number | null>(null)
+  const capturarAoAssentar = useRef(false)
+
+  const buscar = (segundo: number): void => {
+    const video = previaRef.current
+    if (!video) return
+    if (buscando.current) {
+      pendente.current = segundo
+      return
+    }
+    buscando.current = true
+    video.currentTime = segundo
+  }
+
+  useEffect(() => {
+    if (arrastando !== null) buscar(arrastando)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arrastando])
+
+  /**
    * Ao soltar a barra, o quadro em que o arrasto parou vira a miniatura —
    * não só a posição de partida, o retrato do cartão também. Sem isso o
    * operador escolhia o ponto certo e via a gaveta inteira voltar a mostrar
@@ -329,6 +366,41 @@ function CartaoNaGaveta({
     } catch {
       // sem miniatura nova não é motivo para travar nada — a antiga continua valendo
     }
+  }
+
+  const aoAssentarBusca = (): void => {
+    const proximo = pendente.current
+    pendente.current = null
+    const video = previaRef.current
+    if (proximo !== null && video) {
+      // ainda tem um pedido mais novo esperando — busca ele agora, e uma
+      // captura pedida continua adiada até ESTA assentar
+      video.currentTime = proximo
+      return
+    }
+    buscando.current = false
+    if (capturarAoAssentar.current) {
+      capturarAoAssentar.current = false
+      capturarQuadroDoArrasto()
+      // só agora a prévia pode sumir: soltar a barra não desmonta o <video>
+      // sozinho, porque desmontar cedo demais mata a busca em voo antes
+      // dela terminar, e o `onSeeked` que dispararia a captura nunca chega
+      setArrastando(null)
+    }
+  }
+
+  /**
+   * Chamado ao soltar a barra. Não desmonta a prévia por conta própria —
+   * quem faz isso é `aoAssentarBusca`, quando a captura (imediata ou
+   * adiada) realmente terminar.
+   */
+  const finalizarArrasto = (): void => {
+    if (buscando.current) {
+      capturarAoAssentar.current = true
+      return
+    }
+    capturarQuadroDoArrasto()
+    setArrastando(null)
   }
 
   const reimportarImagem = async (): Promise<void> => {
@@ -373,7 +445,7 @@ function CartaoNaGaveta({
           )
         ) : card.kind === 'video' ? (
           arrastando !== null ? (
-            <PreviaDoArrasto card={card} segundo={arrastando} videoRef={previaRef} />
+            <PreviaDoArrasto card={card} segundo={arrastando} videoRef={previaRef} buscar={buscar} onSeeked={aoAssentarBusca} />
           ) : card.poster ? (
             <img src={card.poster} alt="" className="max-h-full max-w-full object-contain" />
           ) : (
@@ -439,7 +511,7 @@ function CartaoNaGaveta({
             dispatch={dispatch}
             arrastando={arrastando}
             onArrastar={setArrastando}
-            onSoltarArrasto={capturarQuadroDoArrasto}
+            onSoltarArrasto={finalizarArrasto}
           />
         ) : null}
       </div>
@@ -488,56 +560,26 @@ function CartaoNaGaveta({
  * o mesmo arquivo do player de verdade (mesma URL, mesma faixa de bytes),
  * então o quadro que aparece aqui é o quadro que vai para a tela ao soltar.
  */
+/**
+ * Só a apresentação: quem decide QUANDO buscar (a fila de um pedido por vez,
+ * pra não engasgar num arrasto rápido) e quando capturar a miniatura mora em
+ * `CartaoNaGaveta` — a prévia e o player de verdade precisam do mesmo vídeo
+ * e da mesma fila, então a fila só pode morar num lugar que os dois alcancem.
+ */
 function PreviaDoArrasto({
   card,
   segundo,
-  videoRef
+  videoRef,
+  buscar,
+  onSeeked
 }: {
   card: CartaoVideo
   segundo: number
   /** exposto para fora: é dele que se tira o quadro final, ao soltar a barra */
   videoRef: React.RefObject<HTMLVideoElement | null>
+  buscar: (segundo: number) => void
+  onSeeked: () => void
 }): React.JSX.Element {
-  /**
-   * Um arrasto rápido manda dezenas de segundos por segundo, mas buscar
-   * (`currentTime = x`) num vídeo H.264 não é instantâneo — o navegador
-   * precisa decodificar a partir do quadro-chave anterior. Escrever um
-   * segundo novo por cima de uma busca ainda em andamento não cancela a de
-   * antes: as duas ficam competindo, e o que aparece na tela é sobra de
-   * quadros fora de ordem — o "engasgo" preso numa imagem de trás.
-   *
-   * Por isso só um pedido corre por vez: se já tem busca em voo, o pedido
-   * novo só fica guardado (`pendente`, sempre sobrescrito pelo mais
-   * recente) e é disparado quando `onSeeked` avisar que a anterior terminou.
-   * O quadro final sempre é o do último ponto pedido, nunca um do meio do
-   * caminho.
-   */
-  const buscando = useRef(false)
-  const pendente = useRef<number | null>(null)
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video || !Number.isFinite(video.duration)) return
-    if (buscando.current) {
-      pendente.current = segundo
-      return
-    }
-    buscando.current = true
-    video.currentTime = segundo
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [segundo])
-
-  const aoTerminarBusca = (): void => {
-    const proximo = pendente.current
-    pendente.current = null
-    const video = videoRef.current
-    if (proximo === null || !video) {
-      buscando.current = false
-      return
-    }
-    video.currentTime = proximo
-  }
-
   return (
     <video
       ref={videoRef}
@@ -550,11 +592,12 @@ function PreviaDoArrasto({
       // vídeo escondido de `PreparaVideo` também precisa disto
       crossOrigin="anonymous"
       src={`valendo://video/${encodeURIComponent(card.id)}?v=${encodeURIComponent(card.convertido ?? 'orig')}`}
-      onLoadedMetadata={(event) => {
-        buscando.current = true
-        event.currentTarget.currentTime = segundo
-      }}
-      onSeeked={aoTerminarBusca}
+      // o efeito que dispara a primeira busca já roda no mount (a mesma
+      // troca de estado que monta este vídeo já aciona o `useEffect` do
+      // pai) — isto aqui é só reforço para quando os metadados demoram e a
+      // primeira tentativa foi ignorada antes de o vídeo saber a duração
+      onLoadedMetadata={() => buscar(segundo)}
+      onSeeked={onSeeked}
       className="max-h-full max-w-full object-contain"
     />
   )
@@ -663,10 +706,10 @@ function PlayerDoCartao({
     // arrasto ao vivo mandaria um borrão para o ar. Fora do ar não há para
     // quem mandar nada — só grava a posição no próprio cartão
     dispatch({ type: 'card/videoSeek', cardId: card.id, segundo: arrastando, arrastando: false })
-    // antes de tirar a prévia de cena: o <video> do arrasto ainda existe
-    // neste instante, e é dele que sai o quadro novo da miniatura
+    // quem tira a prévia de cena é `onSoltarArrasto`, não aqui: se a busca
+    // do último ponto ainda estiver em voo, desmontar agora mataria ela
+    // antes de terminar, e a miniatura ficaria com um quadro velho
     onSoltarArrasto()
-    onArrastar(null)
   }
 
   return (
@@ -717,11 +760,14 @@ function PlayerDoCartao({
             A rede nunca deixa de servir: enquanto a cópia leve não existe, ela
             manda o original. Isso é bom, e era silencioso — o painel prometia
             "3 MB por minuto" e o celular podia estar puxando o master inteiro,
-            engasgando, sem nada na tela explicando. */}
+            engasgando, sem nada na tela explicando.
+            `min-w-0 truncate`: sem isso, um rótulo mais comprido (num idioma
+            diferente, ou "network: original") empurrava o "repetir" para fora
+            do cartão — a linha inteira não tinha para onde encolher. */}
         <span
           data-card-rede={card.id}
           title={naRede.titulo}
-          className={`flex-none rounded px-1 text-[9px] ${
+          className={`min-w-0 flex-1 truncate rounded px-1 text-right text-[9px] ${
             naRede.leve ? 'text-[var(--color-fog-2)]' : 'bg-[var(--color-warn)]/15 text-[var(--color-warn)]'
           }`}
         >
@@ -730,7 +776,7 @@ function PlayerDoCartao({
 
         <label
           title={t('cards.videoLoop')}
-          className="ml-auto flex flex-none items-center gap-1 text-[9px] text-[var(--color-fog-2)]"
+          className="flex flex-none items-center gap-1 text-[9px] text-[var(--color-fog-2)]"
         >
           <input
             type="checkbox"
