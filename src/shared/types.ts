@@ -230,6 +230,16 @@ export type Cartao =
       /** repete ao chegar no fim, em vez de segurar o último quadro */
       loop?: boolean
       /**
+       * Onde o operador deixou este vídeo — a última posição de um pausar ou
+       * um arrasto na barra, dentro ou fora do ar.
+       *
+       * É o que permite dar scrub fora do ar: sem um lugar para guardar o
+       * resultado, arrastar a barra de um cartão que não está na tela não
+       * levaria a nada. Quando o cartão sobe ao ar, é daqui que ele parte —
+       * pré-posicionar antes de mostrar é o ponto todo.
+       */
+      pausedAt?: number
+      /**
        * O arquivo existe e está autorizado nesta máquina.
        *
        * `false` é o estado de "relinkar". Só o main sabe dizer, porque só ele

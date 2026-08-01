@@ -441,10 +441,18 @@ export class Store {
             ...this.state.transport,
             card: alvo,
             // entrar no ar já toca: um standby que precisa de um segundo
-            // clique para animar seria uma pegadinha no meio do programa
+            // clique para animar seria uma pegadinha no meio do programa.
+            // Parte de onde o operador deixou — pré-posicionar fora do ar e
+            // só depois subir é o ponto de existir `pausedAt`
             video:
               escolhido?.kind === 'video'
-                ? { ...this.state.transport.video, tocando: true, base: 0, comecouEm: Date.now(), arrastando: false }
+                ? {
+                    ...this.state.transport.video,
+                    tocando: true,
+                    base: escolhido.pausedAt ?? 0,
+                    comecouEm: Date.now(),
+                    arrastando: false
+                  }
                 : { ...this.state.transport.video, tocando: false, base: 0, comecouEm: 0, arrastando: false }
           }
         }
@@ -472,24 +480,41 @@ export class Store {
           transport: {
             ...this.state.transport,
             video: { ...video, tocando: action.tocando, base, comecouEm: Date.now() }
-          }
+          },
+          // pausar guarda a posição no próprio cartão, não só no relógio
+          // compartilhado — é o que sobrevive a tirar o cartão do ar
+          cards:
+            action.tocando || noAr?.kind !== 'video'
+              ? this.state.cards
+              : this.state.cards.map((c) => (c.id === noAr.id ? { ...c, pausedAt: base } : c))
         }
         break
       }
 
       case 'card/videoSeek': {
         const video = this.state.transport.video
+        const noAr = this.state.transport.card === action.cardId
         this.state = {
           ...this.state,
-          transport: {
-            ...this.state.transport,
-            video: {
-              ...video,
-              base: Math.max(0, action.segundo),
-              comecouEm: Date.now(),
-              arrastando: action.arrastando
-            }
-          }
+          transport: noAr
+            ? {
+                ...this.state.transport,
+                video: {
+                  ...video,
+                  base: Math.max(0, action.segundo),
+                  comecouEm: Date.now(),
+                  arrastando: action.arrastando
+                }
+              }
+            : this.state.transport,
+          // a posição só é gravada no cartão ao soltar a barra — durante o
+          // arrasto seria um passo a mais que ninguém vê, já que o cartão
+          // não está desenhando o próprio vídeo em nenhuma superfície
+          cards: action.arrastando
+            ? this.state.cards
+            : this.state.cards.map((c) =>
+                c.id === action.cardId && c.kind === 'video' ? { ...c, pausedAt: Math.max(0, action.segundo) } : c
+              )
         }
         break
       }
@@ -550,8 +575,9 @@ export class Store {
                     : action.convertido === null
                       ? { convertido: undefined }
                       : { convertido: action.convertido }),
-                  // o novo arquivo tem outra duração e outro quadro
-                  ...(action.caminho ? { duracao: undefined, poster: undefined } : {})
+                  // o novo arquivo tem outra duração, outro quadro, e a
+                  // posição salva do antigo não significa nada nele
+                  ...(action.caminho ? { duracao: undefined, poster: undefined, pausedAt: undefined } : {})
                 }
               : c
           ),

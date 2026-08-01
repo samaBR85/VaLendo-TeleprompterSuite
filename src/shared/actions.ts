@@ -33,8 +33,13 @@ export type Action =
   /**
    * `arrastando` distingue a barra na mão do operador de um pulo já decidido:
    * com ela na mão, as saídas seguram o quadro e só acompanham no soltar.
+   *
+   * `cardId` é sempre o cartão da barra que o operador está mexendo — no ar
+   * ou não. Fora do ar, só a posição salva do cartão (`pausedAt`) muda; no
+   * ar, o relógio compartilhado muda também, porque é ele que as saídas
+   * seguem.
    */
-  | { type: 'card/videoSeek'; segundo: number; arrastando: boolean }
+  | { type: 'card/videoSeek'; cardId: string; segundo: number; arrastando: boolean }
   | { type: 'card/videoVolume'; volume: number }
   | { type: 'card/videoLoop'; cardId: string; loop: boolean }
   /** o vídeo carregou e informou quanto dura — a barra precisa saber o fim */

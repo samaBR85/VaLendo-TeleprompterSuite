@@ -471,7 +471,10 @@ function PlayerDoCartao({
   }, [clock.tocando, noAr])
 
   const duracao = card.duracao ?? 0
-  const posicao = noAr ? (arrastando ?? posicaoDoVideo(clock, agora, card.duracao, card.loop ?? false)) : 0
+  // fora do ar a barra mostra a última posição salva — dá para arrastar até
+  // um ponto específico antes de subir, e é dali que o vídeo parte quando sobe
+  const posicao =
+    arrastando ?? (noAr ? posicaoDoVideo(clock, agora, card.duracao, card.loop ?? false) : (card.pausedAt ?? 0))
   const tocando = noAr && clock.tocando
 
   /**
@@ -526,8 +529,9 @@ function PlayerDoCartao({
   const soltar = (): void => {
     if (arrastando === null) return
     // o pulo só chega à tela do apresentador agora, no soltar: acompanhar o
-    // arrasto ao vivo mandaria um borrão para o ar
-    dispatch({ type: 'card/videoSeek', segundo: arrastando, arrastando: false })
+    // arrasto ao vivo mandaria um borrão para o ar. Fora do ar não há para
+    // quem mandar nada — só grava a posição no próprio cartão
+    dispatch({ type: 'card/videoSeek', cardId: card.id, segundo: arrastando, arrastando: false })
     setArrastando(null)
   }
 
@@ -556,12 +560,12 @@ function PlayerDoCartao({
           max={duracao || 1}
           step={0.05}
           value={Math.min(posicao, duracao || 1)}
-          disabled={!duracao || !noAr}
+          disabled={!duracao}
           aria-label={t('cards.videoSeek')}
           onChange={(event) => {
             const segundo = Number(event.target.value)
             setArrastando(segundo)
-            dispatch({ type: 'card/videoSeek', segundo, arrastando: true })
+            dispatch({ type: 'card/videoSeek', cardId: card.id, segundo, arrastando: true })
           }}
           onPointerUp={soltar}
           onKeyUp={soltar}
