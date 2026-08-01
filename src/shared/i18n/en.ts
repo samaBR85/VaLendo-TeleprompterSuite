@@ -184,6 +184,8 @@ export const en: Dicionario = {
   'credits.repo': 'Repository',
   'credits.idea': 'Concept',
   'credits.dev': 'Development',
+  'credits.license': 'Licence',
+  'credits.freedom': 'Free to use, study, modify and redistribute. Anyone distributing a modified version ships its source too, under the same licence.',
   'credits.role.electron': 'window, multiple monitors and system integration',
   'credits.role.react': 'operator and prompter interface',
   'credits.role.vite': 'build and styles',

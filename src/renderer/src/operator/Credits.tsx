@@ -3,6 +3,7 @@ import { Modal } from '../ui/Modal'
 import { Wordmark, versionLabel } from '../ui/Wordmark'
 
 const REPOSITORY = 'https://github.com/samaBR85/VaLendo-TeleprompterSuite'
+const LICENCA = 'https://www.gnu.org/licenses/gpl-3.0.html'
 
 const STACK = [
   ['Electron', 'credits.role.electron'],
@@ -62,6 +63,22 @@ export function Credits({ onClose }: Props): React.JSX.Element {
             <span className="w-[128px] flex-none text-[var(--color-fog-2)]">{t('credits.dev')}</span>
             <span className="text-[var(--color-fog-1)]">samaBR85, com Claude Code</span>
           </div>
+          {/* a GPL pede que um programa interativo mostre a licença a quem
+              usa; aqui, com o link para o texto que vale */}
+          <div className="flex gap-2 py-0.5">
+            <span className="w-[128px] flex-none text-[var(--color-fog-2)]">{t('credits.license')}</span>
+            <a
+              href={LICENCA}
+              className="text-[var(--color-link)] hover:underline"
+              onClick={(event) => {
+                event.preventDefault()
+                window.valendo.openExternal(LICENCA)
+              }}
+            >
+              GPL-3.0-or-later
+            </a>
+          </div>
+          <p className="mt-2 text-[10px] leading-relaxed text-[var(--color-fog-2)]">{t('credits.freedom')}</p>
         </div>
       </div>
     </Modal>

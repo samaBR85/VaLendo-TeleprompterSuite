@@ -3,11 +3,11 @@
   "productName": "VaLendo",
   "author": "samaBR85",
   "version": "1.0.0",
-  "buildNumber": 78,
+  "buildNumber": 79,
   "description": "VaLendo — A Teleprompter Suite. Teleprompter com edição de texto ao vivo durante a transmissão.",
   "main": "out/main/index.js",
   "type": "commonjs",
-  "license": "UNLICENSED",
+  "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "https://github.com/samaBR85/VaLendo-TeleprompterSuite.git"

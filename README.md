@@ -60,3 +60,11 @@ A versão semântica é decisão humana e fica em `1.0.0`. O número de build so
 Pronto: motor de prompter com edição ao vivo, monitor de saída com identificação e detecção a quente, aparência ao vivo, presets e inversão de cores, espelho e rotação, blackout e congelamento, registro de comandos com paleta e remapeamento de teclas, marcadores e capítulos, 10 abas, desfazer infinito, autosave, importação de txt/md/docx/pdf.
 
 Próximos: exportação, OCR híbrido, Google Drive, modos Foco e Mesa de comando, segue-a-voz e controle remoto, saídas NDI/OBS e empacotamento assinado.
+
+## Licença
+
+GNU General Public License, versão 3 ou posterior — o texto completo está em [LICENSE](LICENSE).
+
+Em português claro: você pode usar, estudar, modificar e redistribuir o VaLendo à vontade, inclusive num estúdio que cobra pelo trabalho. A única obrigação aparece quando você **distribui** uma versão modificada — aí o código dela tem de ir junto, sob esta mesma licença.
+
+É essa a intenção do projeto: nasceu para ficar livre. A GPL não impede que alguém cobre, mas impede que alguém feche o código e transforme isto num produto proprietário — quem vender é obrigado a entregar o fonte e as mesmas liberdades a quem comprou.

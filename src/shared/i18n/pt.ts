@@ -204,6 +204,8 @@ export const pt = {
   'credits.repo': 'Repositório',
   'credits.idea': 'Idealização',
   'credits.dev': 'Desenvolvimento',
+  'credits.license': 'Licença',
+  'credits.freedom': 'Livre para usar, estudar, modificar e redistribuir. Quem distribuir uma versão modificada entrega o código dela junto, sob a mesma licença.',
   'credits.role.electron': 'janela, múltiplos monitores e integração com o sistema',
   'credits.role.react': 'interface do operador e do prompter',
   'credits.role.vite': 'build e estilos',

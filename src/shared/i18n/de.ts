@@ -186,6 +186,8 @@ export const de: Dicionario = {
   'credits.repo': 'Repository',
   'credits.idea': 'Idee',
   'credits.dev': 'Entwicklung',
+  'credits.license': 'Lizenz',
+  'credits.freedom': 'Frei zu nutzen, zu studieren, zu ändern und weiterzugeben. Wer eine geänderte Fassung weitergibt, gibt deren Quelltext mit, unter derselben Lizenz.',
   'credits.role.electron': 'Fenster, mehrere Monitore und Systemanbindung',
   'credits.role.react': 'Oberfläche für Operator und Prompter',
   'credits.role.vite': 'Build und Styles',

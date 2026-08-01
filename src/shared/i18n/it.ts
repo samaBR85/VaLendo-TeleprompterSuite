@@ -186,6 +186,8 @@ export const it: Dicionario = {
   'credits.repo': 'Repository',
   'credits.idea': 'Ideazione',
   'credits.dev': 'Sviluppo',
+  'credits.license': 'Licenza',
+  'credits.freedom': 'Libero di usare, studiare, modificare e ridistribuire. Chi distribuisce una versione modificata ne consegna il codice, con la stessa licenza.',
   'credits.role.electron': 'finestra, più monitor e integrazione con il sistema',
   'credits.role.react': 'interfaccia dell’operatore e del prompter',
   'credits.role.vite': 'build e stili',
