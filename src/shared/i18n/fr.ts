@@ -315,6 +315,7 @@ export const fr: Dicionario = {
   'cards.videoLoop': 'boucle',
   'cards.videoMissing': 'Vidéo introuvable',
   'cards.videoRelink': 'Relier à nouveau',
+  'cards.videoUnsupported': 'ce format ne se lit pas dans l’app. Convertissez-le en MP4 (H.264) et ajoutez-le à nouveau.',
   'cards.videoHint': 'La vidéo reste où elle est : le projet retient où la trouver, pas une copie.',
   'cards.videoSound': 'Le son sort ici et sur le réseau local, jamais sur l’écran du présentateur.',
   'cards.blackoutWins': 'L’écran noir est activé et recouvre le carton.',

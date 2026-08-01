@@ -29,6 +29,8 @@ interface Props {
 export function CardsPanel({ cards, noAr, blackout, clock, dispatch, onClose }: Props): React.JSX.Element {
   const { t } = useT()
   const [ocupado, setOcupado] = useState(false)
+  /** por que o último arquivo escolhido não serviu — some na próxima escolha */
+  const [recusa, setRecusa] = useState<string | null>(null)
   const cheio = cards.length >= MAX_CARTOES
 
   /*
@@ -112,9 +114,14 @@ export function CardsPanel({ cards, noAr, blackout, clock, dispatch, onClose }: 
   const adicionarVideo = async (): Promise<void> => {
     if (cheio || ocupado) return
     setOcupado(true)
+    setRecusa(null)
     try {
       const escolhido = await window.valendo.pickCardVideo()
       if (!escolhido) return
+      if (escolhido.erro) {
+        setRecusa(`${escolhido.arquivoNome} — ${escolhido.erro}`)
+        return
+      }
       dispatch({
         type: 'card/add',
         card: {
@@ -175,6 +182,12 @@ export function CardsPanel({ cards, noAr, blackout, clock, dispatch, onClose }: 
           {cards.some((c) => c.kind === 'video') ? (
             <p className="mb-3 text-[11px] leading-relaxed text-[var(--color-fog-2)]">
               {t('cards.videoHint')} {t('cards.videoSound')}
+            </p>
+          ) : null}
+
+          {recusa ? (
+            <p className="mb-3 rounded-md border border-[var(--color-live)]/40 bg-[var(--color-live)]/10 px-3 py-2 text-[11px] text-[var(--color-live)]">
+              {recusa}
             </p>
           ) : null}
 

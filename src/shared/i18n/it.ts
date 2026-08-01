@@ -315,6 +315,7 @@ export const it: Dicionario = {
   'cards.videoLoop': 'ripeti',
   'cards.videoMissing': 'Video non trovato',
   'cards.videoRelink': 'Ricollega',
+  'cards.videoUnsupported': 'questo formato non si riproduce nell’app. Convertilo in MP4 (H.264) e caricalo di nuovo.',
   'cards.videoHint': 'Il video resta dov’è: il progetto salva dove trovarlo, non una copia.',
   'cards.videoSound': 'L’audio esce qui e sulla rete locale, mai sullo schermo del presentatore.',
   'cards.blackoutWins': 'Lo schermo nero è acceso e copre il cartello.',

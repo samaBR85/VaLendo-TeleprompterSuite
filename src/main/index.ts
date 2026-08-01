@@ -28,7 +28,7 @@ import {
   registerVideoResolver,
   videoVinculado
 } from './cards'
-import { VIDEO_EXTENSIONS } from '@shared/video'
+import { ehVideo, VIDEO_EXTENSIONS } from '@shared/video'
 import { Store } from './state'
 import { flushState, onStorageHealth, storageHealth } from './storage'
 import { buildBroadcastMenu } from './broadcastMenu'
@@ -271,12 +271,20 @@ function registerIpc(): void {
     if (picked.canceled || picked.filePaths.length === 0) return null
 
     const origem = picked.filePaths[0]
-    autorizarVideo(origem)
-    return {
+    const comum = {
       caminho: origem,
       arquivoNome: basename(origem),
       sugestao: basename(origem, extname(origem)).slice(0, 30)
     }
+
+    // o .mov não toca nem com H.264 dentro, e é o que sai de iPhone e de
+    // muita ilha: recusar aqui, com o motivo, é melhor que no meio do programa
+    if (!ehVideo(origem)) {
+      return { ...comum, erro: idioma('cards.videoUnsupported') }
+    }
+
+    autorizarVideo(origem)
+    return comum
   })
 }
 

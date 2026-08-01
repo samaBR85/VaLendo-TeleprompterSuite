@@ -313,6 +313,7 @@ export const es: Dicionario = {
   'cards.videoLoop': 'repetir',
   'cards.videoMissing': 'Vídeo no encontrado',
   'cards.videoRelink': 'Volver a enlazar',
+  'cards.videoUnsupported': 'este formato no se reproduce en la app. Conviértelo a MP4 (H.264) y súbelo otra vez.',
   'cards.videoHint': 'El vídeo se queda donde está: el proyecto guarda dónde encontrarlo, no una copia.',
   'cards.videoSound': 'El sonido suena aquí y en la red local, nunca en la pantalla del presentador.',
   'cards.blackoutWins': 'La pantalla negra está encendida y tapa la tarjeta.',

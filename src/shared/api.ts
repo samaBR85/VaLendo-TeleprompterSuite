@@ -109,6 +109,14 @@ export interface CardVideoPickResult {
   arquivoNome: string
   /** nome sem extensão, como sugestão de nome do cartão */
   sugestao: string
+  /**
+   * Por que este arquivo não serve, quando não serve.
+   *
+   * O filtro da janela esconde os formatos que não tocam, mas quem digita o
+   * nome à mão passa por ele. Sem uma recusa com motivo, o operador só
+   * descobriria no ar, com uma tela preta.
+   */
+  erro?: string
 }
 
 export interface ImportResult {

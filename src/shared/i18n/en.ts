@@ -311,6 +311,7 @@ export const en: Dicionario = {
   'cards.videoLoop': 'loop',
   'cards.videoMissing': 'Video not found',
   'cards.videoRelink': 'Relink',
+  'cards.videoUnsupported': 'this format does not play in the app. Convert it to MP4 (H.264) and add it again.',
   'cards.videoHint': 'The video stays where it is: the project remembers where to find it, not a copy.',
   'cards.videoSound': 'Sound plays here and on the local network, never on the presenter’s screen.',
   'cards.blackoutWins': 'The black screen is on and covers the card.',

@@ -315,6 +315,7 @@ export const de: Dicionario = {
   'cards.videoLoop': 'wiederholen',
   'cards.videoMissing': 'Video nicht gefunden',
   'cards.videoRelink': 'Neu verknüpfen',
+  'cards.videoUnsupported': 'dieses Format spielt die App nicht ab. Wandeln Sie es in MP4 (H.264) um und fügen Sie es erneut hinzu.',
   'cards.videoHint': 'Das Video bleibt, wo es ist: das Projekt merkt sich den Ort, nicht eine Kopie.',
   'cards.videoSound': 'Der Ton läuft hier und im lokalen Netz, nie auf dem Sprecherbildschirm.',
   'cards.blackoutWins': 'Das Schwarzbild ist an und verdeckt die Karte.',

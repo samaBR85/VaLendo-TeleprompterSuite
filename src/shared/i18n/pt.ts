@@ -338,6 +338,7 @@ export const pt = {
   'cards.videoLoop': 'repetir',
   'cards.videoMissing': 'Vídeo não encontrado',
   'cards.videoRelink': 'Reapontar',
+  'cards.videoUnsupported': 'este formato não toca no app. Converta para MP4 (H.264) e suba de novo.',
   'cards.videoHint': 'O vídeo fica onde está: o projeto guarda onde encontrá-lo, e não uma cópia.',
   'cards.videoSound': 'O som toca aqui e na rede local, nunca na tela do apresentador.',
   'cards.blackoutWins': 'A tela preta está ligada e cobre o cartão.',
