@@ -306,6 +306,7 @@ export const pt = {
   'cmd.view.split': 'Ir para o modo Split',
   'cmd.view.focus': 'Ir para o modo Foco',
   'cmd.view.deck': 'Ir para a Mesa de comando',
+  'cmd.view.cards': 'Abrir ou fechar a gaveta de cartões',
   'cmd.palette.open': 'Paleta de comandos',
   'cmd.keymap.open': 'Editar atalhos',
   'cmd.tab.switch': 'Ir para a aba {n}',

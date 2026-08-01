@@ -283,6 +283,7 @@ export const en: Dicionario = {
   'cmd.view.split': 'Go to Split mode',
   'cmd.view.focus': 'Go to Focus mode',
   'cmd.view.deck': 'Go to the command Desk',
+  'cmd.view.cards': 'Open or close the cards drawer',
   'cmd.palette.open': 'Command palette',
   'cmd.keymap.open': 'Edit shortcuts',
   'cmd.tab.switch': 'Go to tab {n}',

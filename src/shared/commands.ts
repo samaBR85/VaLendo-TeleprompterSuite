@@ -91,6 +91,16 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'view.split', group: 'Visão', defaultBinding: 'F6' },
   { id: 'view.focus', group: 'Visão', defaultBinding: 'F7' },
   { id: 'view.deck', group: 'Visão', defaultBinding: 'F8' },
+  /*
+   * `Shift+C`, e não `C` sozinho.
+   *
+   * Dentro do editor as duas seriam igualmente inofensivas — tecla sem `Ctrl`
+   * nem `Alt` pertence ao texto, o mesmo guarda que impede o Espaço de virar
+   * play no meio de uma frase. A diferença está fora dele: com o foco na
+   * prévia ou num botão, um `c` de esbarrão abriria a gaveta, e `Shift+C`
+   * exige intenção.
+   */
+  { id: 'view.cards', group: 'Visão', defaultBinding: 'Shift+C' },
   { id: 'palette.open', group: 'Visão', defaultBinding: 'Mod+K' },
   { id: 'keymap.open', group: 'Visão', defaultBinding: 'Mod+,' }
 ]

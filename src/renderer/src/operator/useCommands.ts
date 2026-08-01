@@ -184,6 +184,10 @@ export function useCommands(
           dispatch({ type: 'card/show', cardId: null })
           break
 
+        case 'view.cards':
+          dispatch({ type: 'layout/cards', visible: !state.cardsVisible })
+          break
+
         case 'output.blackout':
           dispatch({ type: 'transport/blackout' })
           break

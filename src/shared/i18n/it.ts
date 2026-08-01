@@ -287,6 +287,7 @@ export const it: Dicionario = {
   'cmd.view.split': 'Vai al modo Split',
   'cmd.view.focus': 'Vai al modo Focus',
   'cmd.view.deck': 'Vai alla Regia',
+  'cmd.view.cards': 'Apri o chiudi il cassetto dei cartelli',
   'cmd.palette.open': 'Palette dei comandi',
   'cmd.keymap.open': 'Modifica le scorciatoie',
   'cmd.tab.switch': 'Vai alla scheda {n}',

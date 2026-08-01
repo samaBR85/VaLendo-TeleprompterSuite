@@ -287,6 +287,7 @@ export const de: Dicionario = {
   'cmd.view.split': 'Zum Split-Modus',
   'cmd.view.focus': 'Zum Fokus-Modus',
   'cmd.view.deck': 'Zum Kommandopult',
+  'cmd.view.cards': 'Kartenfach öffnen oder schließen',
   'cmd.palette.open': 'Befehlspalette',
   'cmd.keymap.open': 'Tastenkürzel bearbeiten',
   'cmd.tab.switch': 'Zu Tab {n}',

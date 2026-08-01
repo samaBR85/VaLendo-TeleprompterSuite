@@ -285,6 +285,7 @@ export const es: Dicionario = {
   'cmd.view.split': 'Ir al modo Split',
   'cmd.view.focus': 'Ir al modo Foco',
   'cmd.view.deck': 'Ir a la Mesa de mando',
+  'cmd.view.cards': 'Abrir o cerrar el cajón de tarjetas',
   'cmd.palette.open': 'Paleta de comandos',
   'cmd.keymap.open': 'Editar atajos',
   'cmd.tab.switch': 'Ir a la pestaña {n}',

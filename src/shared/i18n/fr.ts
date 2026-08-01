@@ -287,6 +287,7 @@ export const fr: Dicionario = {
   'cmd.view.split': 'Aller au mode Split',
   'cmd.view.focus': 'Aller au mode Focus',
   'cmd.view.deck': 'Aller à la Régie',
+  'cmd.view.cards': 'Ouvrir ou fermer le tiroir des cartons',
   'cmd.palette.open': 'Palette de commandes',
   'cmd.keymap.open': 'Modifier les raccourcis',
   'cmd.tab.switch': 'Aller à l’onglet {n}',
