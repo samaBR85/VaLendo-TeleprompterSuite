@@ -120,7 +120,9 @@ export function StatusBar({
             onChange={(event) => setTarget(event.target.value)}
             onBlur={applyTarget}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') applyTarget()
+              // sair do campo já aplica (onBlur) — Enter só precisa soltar o
+              // foco, senão o cursor fica piscando dentro do placeholder
+              if (event.key === 'Enter') event.currentTarget.blur()
             }}
             placeholder="2:00"
             className="w-14 rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-1.5 py-0.5 text-center outline-none"
