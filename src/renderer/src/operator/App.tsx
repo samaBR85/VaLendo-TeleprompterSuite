@@ -503,29 +503,26 @@ function AppConteudo({
           onMetrics={handleMetrics}
         />
       ) : focusMode ? (
+        /* só a operação: no Foco não há editor nenhum. Escrever é trabalho do
+           Split, e uma gaveta de edição aqui só tirava altura da única coisa
+           que este modo existe para mostrar — a tela do apresentador */
         <main className="flex min-h-0 flex-1 flex-col">
-          <div className="flex min-h-0 flex-1 flex-col">
-            <PanelHeader
-              label={t('panel.broadcasting')}
-              detail={`${viewport.width} × ${viewport.height}`}
-              action={
-                <button
-                  type="button"
-                  onClick={toggleFocusMode}
-                  title={t('panel.collapse')}
-                  className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
-                >
-                  <Icon name="collapse" size={14} />
-                </button>
-              }
-            />
-            {stage}
-            {markerStrip}
-          </div>
-          <div className="flex h-[34%] min-h-0 flex-col border-t border-[var(--color-line)]">
-            <PanelHeader label={t('panel.drawer')} detail={t('panel.drawer.hint')} action={editorTools} />
-            <Editor ref={editorRef} tab={tab} dispatch={dispatch} />
-          </div>
+          <PanelHeader
+            label={t('panel.broadcasting')}
+            detail={`${viewport.width} × ${viewport.height}`}
+            action={
+              <button
+                type="button"
+                onClick={toggleFocusMode}
+                title={t('panel.collapse')}
+                className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
+              >
+                <Icon name="collapse" size={14} />
+              </button>
+            }
+          />
+          {stage}
+          {markerStrip}
         </main>
       ) : (
         <main ref={mainRef} className="flex min-h-0 flex-1">

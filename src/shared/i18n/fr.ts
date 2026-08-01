@@ -22,8 +22,6 @@ export const fr: Dicionario = {
   'panel.edit': 'Édition',
   'panel.edit.hint': '[indications] · § chapitres',
   'panel.broadcasting': 'Diffusion',
-  'panel.drawer': 'Tiroir d’édition',
-  'panel.drawer.hint': 'éditer à l’antenne · F11 replie',
   'panel.expand': 'Agrandir la diffusion · F11',
   'panel.collapse': 'Revenir au split · F11',
   'panel.livePreview': 'Aperçu en direct',

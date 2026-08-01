@@ -22,8 +22,6 @@ export const es: Dicionario = {
   'panel.edit': 'Edición',
   'panel.edit.hint': '[acotaciones] · § capítulos',
   'panel.broadcasting': 'Emitiendo',
-  'panel.drawer': 'Cajón de edición',
-  'panel.drawer.hint': 'edita al aire · F11 lo cierra',
   'panel.expand': 'Ampliar la emisión · F11',
   'panel.collapse': 'Volver al split · F11',
   'panel.livePreview': 'Vista previa en vivo',

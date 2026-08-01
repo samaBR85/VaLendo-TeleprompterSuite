@@ -31,8 +31,6 @@ export const pt = {
   'panel.edit': 'Edição',
   'panel.edit.hint': '[direções] · § capítulos',
   'panel.broadcasting': 'Transmitindo',
-  'panel.drawer': 'Gaveta de edição',
-  'panel.drawer.hint': 'edita no ar · F11 recolhe',
   'panel.expand': 'Expandir a transmissão · F11',
   'panel.collapse': 'Voltar ao split · F11',
   'panel.livePreview': 'Prévia ao vivo',

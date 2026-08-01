@@ -22,8 +22,6 @@ export const en: Dicionario = {
   'panel.edit': 'Editing',
   'panel.edit.hint': '[directions] · § chapters',
   'panel.broadcasting': 'Broadcasting',
-  'panel.drawer': 'Editing drawer',
-  'panel.drawer.hint': 'edit on air · F11 collapses',
   'panel.expand': 'Expand the broadcast · F11',
   'panel.collapse': 'Back to split · F11',
   'panel.livePreview': 'Live preview',

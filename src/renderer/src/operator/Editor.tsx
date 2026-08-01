@@ -98,9 +98,22 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
     })
   }, [tab.id, tab.rev, incoming])
 
+  /**
+   * O envio pendente não morre com o editor.
+   *
+   * Trocar de modo desmonta este componente — e antes disto a limpeza só
+   * cancelava o temporizador do respiro de 140 ms, jogando fora o que ainda
+   * não tinha sido mandado. Quem digitasse a última frase e fosse direto para
+   * o Foco ou para a Mesa perderia justamente essas palavras. O envio vai por
+   * uma referência sempre atual, senão a limpeza mandaria o texto para a aba
+   * que estava aberta na primeira renderização.
+   */
+  const enviarAgora = useRef<(value: string) => void>(() => {})
   useEffect(() => {
     return () => {
-      if (timer.current) clearTimeout(timer.current)
+      if (!timer.current) return
+      clearTimeout(timer.current)
+      if (pendingValue.current !== null) enviarAgora.current(pendingValue.current)
     }
   }, [])
 
@@ -109,6 +122,10 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
     lastSentNormalized.current = serializeBlocks(blocksFromText(value))
     dispatch({ type: 'text/set', tabId: tab.id, text: value })
   }
+
+  // mantida atual a cada renderização, para a limpeza acima nunca mandar o
+  // texto para a aba errada
+  enviarAgora.current = send
 
   const push = (value: string, delay: number): void => {
     pendingValue.current = value

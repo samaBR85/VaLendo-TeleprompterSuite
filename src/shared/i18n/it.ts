@@ -22,8 +22,6 @@ export const it: Dicionario = {
   'panel.edit': 'Modifica',
   'panel.edit.hint': '[indicazioni] · § capitoli',
   'panel.broadcasting': 'In trasmissione',
-  'panel.drawer': 'Cassetto di modifica',
-  'panel.drawer.hint': 'modifica in onda · F11 chiude',
   'panel.expand': 'Ingrandisci la trasmissione · F11',
   'panel.collapse': 'Torna allo split · F11',
   'panel.livePreview': 'Anteprima dal vivo',

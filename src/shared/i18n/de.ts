@@ -22,8 +22,6 @@ export const de: Dicionario = {
   'panel.edit': 'Bearbeitung',
   'panel.edit.hint': '[Regieanweisungen] · § Kapitel',
   'panel.broadcasting': 'Sendung',
-  'panel.drawer': 'Bearbeitungsfach',
-  'panel.drawer.hint': 'auf Sendung bearbeiten · F11 klappt zu',
   'panel.expand': 'Sendung vergrößern · F11',
   'panel.collapse': 'Zurück zum Split · F11',
   'panel.livePreview': 'Live-Vorschau',
