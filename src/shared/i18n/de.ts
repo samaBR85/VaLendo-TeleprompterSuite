@@ -112,10 +112,8 @@ export const de: Dicionario = {
   'insp.clock.size': 'Größe',
   'insp.clock.modeWords': 'Formel',
   'insp.clock.modeStopwatch': 'Stoppuhr',
-  'insp.clock.modeWords.hint':
-    'Verstrichene und verbleibende Zeit ergeben sich aus dem Wortindex und dem Tempo. Eine Geschwindigkeitsänderung oder Textbearbeitung ändert sofort, was die Uhren anzeigen.',
-  'insp.clock.modeStopwatch.hint':
-    'Verstrichene Zeit ist eine echte Stoppuhr: Sie läuft nur mit Play, nichts berechnet sie neu. Verbleibende Zeit zählt bis zum Ziel herunter — und läuft sie ab, zählt sie hoch, wie weit das Ziel schon überschritten ist.',
+  'insp.clock.modeWords.hint': 'Berechnet aus Wortindex und Tempo — ändert sich mit Geschwindigkeit und Bearbeitung.',
+  'insp.clock.modeStopwatch.hint': 'Echte Stoppuhr: nur Play bewegt sie. Verbleibend zählt bis zum Ziel herunter, danach hoch.',
   'insp.clock.target': 'Ziel',
 
   'insp.glass': 'Ausgleich für das Glas',

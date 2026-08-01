@@ -21,11 +21,23 @@ interface Props {
  * Bloco de ajustes. Sem `label` quando o nome da aba já diz o que é ali —
  * repetir o nome logo abaixo da própria aba só gasta altura.
  */
-function Group({ label, children }: { label?: string; children: React.ReactNode }): React.JSX.Element {
+function Group({
+  label,
+  hint,
+  children
+}: {
+  label?: string
+  /** explicação do grupo inteiro, só visível ao passar o mouse no rótulo */
+  hint?: string
+  children: React.ReactNode
+}): React.JSX.Element {
   return (
     <div className="border-b border-[var(--color-line)]/60 px-3 py-2.5">
       {label ? (
-        <div className="mb-1.5 text-[11px] font-medium tracking-wide text-[var(--color-fog-2)]">{label}</div>
+        <div className="mb-1.5 flex items-center gap-1 text-[11px] font-medium tracking-wide text-[var(--color-fog-2)]">
+          {label}
+          {hint ? <Hint text={hint} /> : null}
+        </div>
       ) : null}
       <div className="flex flex-col gap-2">{children}</div>
     </div>
@@ -84,6 +96,23 @@ function Slider({
         onChange={(event) => onChange(Number(event.target.value))}
       />
     </label>
+  )
+}
+
+/**
+ * Explicação que só aparece ao passar o mouse.
+ *
+ * Antes, cada uma dessas frases ficava escrita por baixo do controle o tempo
+ * todo — e um painel de 214px de largura não aguenta muitas delas sem parecer
+ * uma bula. Quem já sabe o que o controle faz nunca lê aquilo de novo; quem
+ * não sabe, lê uma vez e pronto. Cabe melhor num "?" que só fala quando
+ * perguntado.
+ */
+function Hint({ text }: { text: string }): React.JSX.Element {
+  return (
+    <span title={text} className="flex-none cursor-help text-[var(--color-fog-2)]">
+      <Icon name="info" size={12} />
+    </span>
   )
 }
 
@@ -326,27 +355,29 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
         {/* rótulo curto porque o painel tem 214px: "Mostrar a linha na
             transmissão" ficava cortado no meio, e rótulo cortado é rótulo que
             não informa */}
-        <Toggle
-          label={t('insp.markOnOutput')}
-          active={a.readingMarkOnOutput}
-          onClick={() => patch({ readingMarkOnOutput: !a.readingMarkOnOutput })}
-        />
-        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
-          {a.readingMarkOnOutput ? t('insp.markOn.yes') : t('insp.markOn.no')}
+        <div className="flex items-center gap-1.5">
+          <div className="min-w-0 flex-1">
+            <Toggle
+              label={t('insp.markOnOutput')}
+              active={a.readingMarkOnOutput}
+              onClick={() => patch({ readingMarkOnOutput: !a.readingMarkOnOutput })}
+            />
+          </div>
+          <Hint text={a.readingMarkOnOutput ? t('insp.markOn.yes') : t('insp.markOn.no')} />
         </div>
         <Toggle label={t('insp.focusDim')} active={a.focusDim} onClick={() => patch({ focusDim: !a.focusDim })} />
       </Group>
 
       <Group label={t('insp.rhythm')}>
-        <Toggle
-          label={t('insp.uniform')}
-          active={a.uniformSpeed}
-          onClick={() => patch({ uniformSpeed: !a.uniformSpeed })}
-        />
-        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
-          {a.uniformSpeed
-            ? t('insp.uniform.yes')
-            : t('insp.uniform.no')}
+        <div className="flex items-center gap-1.5">
+          <div className="min-w-0 flex-1">
+            <Toggle
+              label={t('insp.uniform')}
+              active={a.uniformSpeed}
+              onClick={() => patch({ uniformSpeed: !a.uniformSpeed })}
+            />
+          </div>
+          <Hint text={a.uniformSpeed ? t('insp.uniform.yes') : t('insp.uniform.no')} />
         </div>
       </Group>
         </>
@@ -403,6 +434,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
                   key={mode}
                   type="button"
                   data-clock-mode={mode}
+                  title={mode === 'palavras' ? t('insp.clock.modeWords.hint') : t('insp.clock.modeStopwatch.hint')}
                   onClick={() => patch({ timers: { ...a.timers, mode } })}
                   className={`flex-1 rounded-md border px-2 py-1.5 text-[11px] ${
                     a.timers.mode === mode
@@ -413,9 +445,6 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
                   {mode === 'palavras' ? t('insp.clock.modeWords') : t('insp.clock.modeStopwatch')}
                 </button>
               ))}
-            </div>
-            <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
-              {a.timers.mode === 'palavras' ? t('insp.clock.modeWords.hint') : t('insp.clock.modeStopwatch.hint')}
             </div>
 
             {a.timers.mode === 'cronometro' ? (
@@ -478,13 +507,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
         ) : null}
       </Group>
 
-      <Group label={t('insp.glass')}>
-        {/* sem este aviso, ligar espelhar e ver a prévia não mudar parece
-            defeito — quando é justamente o certo acontecendo. O rótulo do
-            grupo já diz o "porquê", então aqui basta o "onde vale" */}
-        <div className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">
-          {t('insp.glass.hint')}
-        </div>
+      <Group label={t('insp.glass')} hint={t('insp.glass.hint')}>
         <Toggle label={t('insp.mirrorH')} active={a.mirrorX} onClick={() => patch({ mirrorX: !a.mirrorX })} />
         <Toggle label={t('insp.mirrorV')} active={a.mirrorY} onClick={() => patch({ mirrorY: !a.mirrorY })} />
         <div className="flex gap-1.5">

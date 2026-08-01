@@ -112,10 +112,8 @@ export const es: Dicionario = {
   'insp.clock.size': 'Tamaño',
   'insp.clock.modeWords': 'Fórmula',
   'insp.clock.modeStopwatch': 'Cronómetro',
-  'insp.clock.modeWords.hint':
-    'Transcurrido y restante salen del índice de palabras y del ritmo. Cambiar la velocidad o editar el texto cambia al instante lo que muestran los relojes.',
-  'insp.clock.modeStopwatch.hint':
-    'Transcurrido es un cronómetro de verdad: solo avanza con el play, y nada lo recalcula. Restante cuenta hasta la meta y, si se supera, pasa a contar cuánto se ha pasado de ella.',
+  'insp.clock.modeWords.hint': 'Calculado por el índice de palabras y el ritmo — cambia con la velocidad y la edición.',
+  'insp.clock.modeStopwatch.hint': 'Cronómetro de verdad: solo el play lo mueve. Restante cuenta hasta la meta, y luego hacia arriba.',
   'insp.clock.target': 'Meta',
 
   'insp.glass': 'Compensación del cristal',

@@ -112,10 +112,8 @@ export const fr: Dicionario = {
   'insp.clock.size': 'Taille',
   'insp.clock.modeWords': 'Formule',
   'insp.clock.modeStopwatch': 'Chronomètre',
-  'insp.clock.modeWords.hint':
-    'Écoulé et restant viennent de l’indice de mots et du rythme. Changer la vitesse ou modifier le texte change aussitôt ce que les horloges affichent.',
-  'insp.clock.modeStopwatch.hint':
-    'Écoulé est un vrai chronomètre : il n’avance qu’avec la lecture, et rien ne le recalcule. Restant décompte jusqu’à l’objectif — et une fois dépassé, il compte combien de temps a été dépassé.',
+  'insp.clock.modeWords.hint': 'Calculé à partir de l’indice de mots et du rythme — change avec la vitesse et l’édition.',
+  'insp.clock.modeStopwatch.hint': 'Vrai chronomètre : seule la lecture le fait avancer. Restant décompte jusqu’à l’objectif, puis remonte.',
   'insp.clock.target': 'Objectif',
 
   'insp.glass': 'Compensation du verre',

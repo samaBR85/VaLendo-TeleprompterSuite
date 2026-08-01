@@ -125,10 +125,8 @@ export const pt = {
   'insp.clock.size': 'Tamanho',
   'insp.clock.modeWords': 'Fórmula',
   'insp.clock.modeStopwatch': 'Cronômetro',
-  'insp.clock.modeWords.hint':
-    'Decorrido e restante saem do índice de palavras e do ritmo. Mudar a velocidade ou editar o texto muda o que os relógios mostram na hora.',
-  'insp.clock.modeStopwatch.hint':
-    'Decorrido é um cronômetro de verdade: só anda com o play, e nada o recalcula. Restante conta até o alvo — e, se estourar, passa a contar quanto já passou dele.',
+  'insp.clock.modeWords.hint': 'Calculado pelo índice de palavras e pelo ritmo — muda com a velocidade e a edição.',
+  'insp.clock.modeStopwatch.hint': 'Cronômetro de verdade: só o play mexe nele. Restante conta até o alvo, e depois para cima.',
   'insp.clock.target': 'Alvo',
 
   'insp.glass': 'Compensação do vidro',
