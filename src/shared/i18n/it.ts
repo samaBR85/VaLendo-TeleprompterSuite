@@ -285,7 +285,6 @@ export const it: Dicionario = {
 
   /* ---------------------------------------------------------------- cartoes */
   'cards.title': 'Cartelli',
-  'cards.hint': 'Mostra un’immagine o un messaggio sullo schermo del presentatore, al posto del copione.',
   'cards.toolbar': 'Cartelli sullo schermo del presentatore',
   'cards.empty': 'Ancora nessun cartello. Raccogli le grafiche di attesa e i messaggi che usi sempre.',
   'cards.addImage': 'Aggiungi immagine',
@@ -317,8 +316,6 @@ export const it: Dicionario = {
   'cards.videoMissing': 'Video non trovato',
   'cards.videoRelink': 'Ricollega',
   'cards.videoUnsupported': 'questo formato non si riproduce nell’app. Convertilo in MP4 (H.264) e caricalo di nuovo.',
-  'cards.videoHint': 'Il video resta dov’è: il progetto salva dove trovarlo, non una copia.',
-  'cards.videoSound': 'L’audio esce qui e sulla rete locale, mai sullo schermo del presentatore.',
   'cards.blackoutWins': 'Lo schermo nero è acceso e copre il cartello.',
   'cards.max': 'Sei cartelli, quante sono le scorciatoie.',
   'cmd.card.hide': 'Togli il cartello dallo schermo',

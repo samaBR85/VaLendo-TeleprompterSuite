@@ -281,7 +281,6 @@ export const en: Dicionario = {
 
   /* ---------------------------------------------------------------- cartoes */
   'cards.title': 'Cards',
-  'cards.hint': 'Shows an image or a message on the presenter’s screen, in place of the script.',
   'cards.toolbar': 'Cards on the presenter’s screen',
   'cards.empty': 'No cards yet. Gather the standby artwork and the messages you always use.',
   'cards.addImage': 'Add image',
@@ -313,8 +312,6 @@ export const en: Dicionario = {
   'cards.videoMissing': 'Video not found',
   'cards.videoRelink': 'Relink',
   'cards.videoUnsupported': 'this format does not play in the app. Convert it to MP4 (H.264) and add it again.',
-  'cards.videoHint': 'The video stays where it is: the project remembers where to find it, not a copy.',
-  'cards.videoSound': 'Sound plays here and on the local network, never on the presenter’s screen.',
   'cards.blackoutWins': 'The black screen is on and covers the card.',
   'cards.max': 'Six cards, one per shortcut.',
   'cmd.card.hide': 'Take the card off screen',

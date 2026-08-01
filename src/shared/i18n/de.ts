@@ -285,7 +285,6 @@ export const de: Dicionario = {
 
   /* ---------------------------------------------------------------- cartoes */
   'cards.title': 'Karten',
-  'cards.hint': 'Zeigt ein Bild oder eine Nachricht auf dem Sprecherbildschirm statt des Skripts.',
   'cards.toolbar': 'Karten auf dem Sprecherbildschirm',
   'cards.empty': 'Noch keine Karten. Sammeln Sie die Standby-Grafiken und die Nachrichten, die Sie immer brauchen.',
   'cards.addImage': 'Bild hinzufügen',
@@ -317,8 +316,6 @@ export const de: Dicionario = {
   'cards.videoMissing': 'Video nicht gefunden',
   'cards.videoRelink': 'Neu verknüpfen',
   'cards.videoUnsupported': 'dieses Format spielt die App nicht ab. Wandeln Sie es in MP4 (H.264) um und fügen Sie es erneut hinzu.',
-  'cards.videoHint': 'Das Video bleibt, wo es ist: das Projekt merkt sich den Ort, nicht eine Kopie.',
-  'cards.videoSound': 'Der Ton läuft hier und im lokalen Netz, nie auf dem Sprecherbildschirm.',
   'cards.blackoutWins': 'Das Schwarzbild ist an und verdeckt die Karte.',
   'cards.max': 'Sechs Karten, so viele wie Tastenkürzel.',
   'cmd.card.hide': 'Karte vom Bildschirm nehmen',

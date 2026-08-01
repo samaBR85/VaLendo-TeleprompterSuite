@@ -474,15 +474,7 @@ function Detalhes({
             />
             {t('cards.videoLoop')}
           </label>
-
-          <p className="text-[10px] leading-relaxed text-[var(--color-fog-2)]">
-            {t('cards.videoHint')} {t('cards.videoSound')}
-          </p>
         </>
-      ) : null}
-
-      {card.kind === 'image' ? (
-        <p className="text-[10px] leading-relaxed text-[var(--color-fog-2)]">{t('cards.hint')}</p>
       ) : null}
 
       {noAr ? <span className="text-[10px] text-[var(--color-go)]">{t('cards.onAir')}</span> : null}

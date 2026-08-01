@@ -283,7 +283,6 @@ export const es: Dicionario = {
 
   /* ---------------------------------------------------------------- cartoes */
   'cards.title': 'Tarjetas',
-  'cards.hint': 'Muestra una imagen o un recado en la pantalla del presentador, en lugar del guion.',
   'cards.toolbar': 'Tarjetas en la pantalla del presentador',
   'cards.empty': 'Aún no hay tarjetas. Reúne las artes de espera y los recados que usas siempre.',
   'cards.addImage': 'Añadir imagen',
@@ -315,8 +314,6 @@ export const es: Dicionario = {
   'cards.videoMissing': 'Vídeo no encontrado',
   'cards.videoRelink': 'Volver a enlazar',
   'cards.videoUnsupported': 'este formato no se reproduce en la app. Conviértelo a MP4 (H.264) y súbelo otra vez.',
-  'cards.videoHint': 'El vídeo se queda donde está: el proyecto guarda dónde encontrarlo, no una copia.',
-  'cards.videoSound': 'El sonido suena aquí y en la red local, nunca en la pantalla del presentador.',
   'cards.blackoutWins': 'La pantalla negra está encendida y tapa la tarjeta.',
   'cards.max': 'Son seis tarjetas, el número de atajos.',
   'cmd.card.hide': 'Quitar la tarjeta de la pantalla',
