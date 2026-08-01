@@ -288,8 +288,31 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
         <>
       <Group>
         <Slider label={t('insp.margin')} value={a.marginPct} min={0} max={35} suffix="%" onChange={(marginPct) => patch({ marginPct })} />
-        <Slider label={t('insp.minWords')} value={a.minWords} min={1} max={a.maxWords} onChange={(minWords) => patch({ minWords })} />
-        <Slider label={t('insp.maxWords')} value={a.maxWords} min={a.minWords} max={16} onChange={(maxWords) => patch({ maxWords })} />
+        {/*
+          As duas faixas vão de 1 a 16 inteiras, sem uma restringir a outra —
+          amarrar o piso do "máximo" ao valor do "mínimo" (como era antes)
+          fazia a régua do slider mudar de tamanho a cada ajuste, e quando os
+          dois ficavam iguais, o cabo ficava preso na ponta de uma régua de
+          largura zero: por isso o pedido de "começar do 1" não tinha efeito
+          visível nenhum. A composição do texto já tolera min > max sozinha
+          (`normalizeRule` em senseLines.ts) — o que falta aqui é só manter a
+          leitura óbvia arrastando a outra ponta junto quando precisa, e não
+          impedir o gesto.
+        */}
+        <Slider
+          label={t('insp.minWords')}
+          value={a.minWords}
+          min={1}
+          max={16}
+          onChange={(minWords) => patch(minWords > a.maxWords ? { minWords, maxWords: minWords } : { minWords })}
+        />
+        <Slider
+          label={t('insp.maxWords')}
+          value={a.maxWords}
+          min={1}
+          max={16}
+          onChange={(maxWords) => patch(maxWords < a.minWords ? { maxWords, minWords: maxWords } : { maxWords })}
+        />
         <Slider
           label={t('insp.readingMark')}
           value={a.readingLinePct * 100}
