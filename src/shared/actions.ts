@@ -39,7 +39,15 @@ export type Action =
   /** um quadro do vídeo virou miniatura; é o que viaja no projeto */
   | { type: 'card/videoPoster'; cardId: string; poster: string }
   /** o operador reapontou o arquivo, ou o main descobriu que ele sumiu */
-  | { type: 'card/videoLink'; cardId: string; caminho?: string; arquivoNome?: string; vinculado: boolean }
+  | {
+      type: 'card/videoLink'
+      cardId: string
+      caminho?: string
+      arquivoNome?: string
+      /** cópia tocável recém-gerada; `null` limpa a que existia */
+      convertido?: string | null
+      vinculado: boolean
+    }
   | { type: 'layout/cards'; visible: boolean }
   | { type: 'layout/cardsHeight'; height: number }
   | { type: 'marker/add'; tabId: string; blockId: string; label: string }
@@ -88,5 +96,7 @@ export const CHANNELS = {
   confirmCloseRequest: 'app:confirmCloseRequest',
   confirmCloseResponse: 'app:confirmCloseResponse',
   cardPick: 'card:pick',
-  cardPickVideo: 'card:pickVideo'
+  cardPickVideo: 'card:pickVideo',
+  cardConvert: 'card:convert',
+  cardConvertProgress: 'card:convertProgress'
 } as const

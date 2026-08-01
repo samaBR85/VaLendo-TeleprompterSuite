@@ -136,6 +136,41 @@ export function videoVinculado(caminho: string): boolean {
 }
 
 /**
+ * Onde ficam as cópias tocáveis dos vídeos que não tocam direto.
+ *
+ * Separada da pasta das imagens porque a limpeza é outra: imagem órfã se
+ * apaga a cada projeto aberto, e uma conversão que custou minutos de
+ * recodificação não pode evaporar só porque o operador abriu outro programa.
+ */
+export function convertidosDir(): string {
+  const dir = join(app.getPath('userData'), 'convertidos')
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+  return dir
+}
+
+export function convertidoPath(arquivo: string): string {
+  return join(convertidosDir(), basename(arquivo))
+}
+
+export function deleteVideoConversion(arquivo: string): void {
+  try {
+    rmSync(convertidoPath(arquivo), { force: true })
+  } catch {
+    // apagar é higiene: se o arquivo estiver preso, o cartão já saiu da lista
+  }
+}
+
+/** Apaga conversões que nenhum cartão do projeto aberto referencia. */
+export function pruneVideoConversions(cards: Cartao[]): void {
+  const usados = new Set(
+    cards.flatMap((c) => (c.kind === 'video' && c.convertido ? [c.convertido] : []))
+  )
+  for (const nome of readdirSync(convertidosDir())) {
+    if (!usados.has(nome)) deleteVideoConversion(nome)
+  }
+}
+
+/**
  * De id de cartão para caminho no disco.
  *
  * O renderer nunca vê caminho de arquivo numa URL — pede `valendo://video/<id>`
@@ -143,16 +178,37 @@ export function videoVinculado(caminho: string): boolean {
  * ser forjada para ler outro arquivo, nem caminho de disco vazando para a
  * página que a rede local serve.
  */
-let resolverVideo: (cardId: string) => string | null = () => null
+let resolverVideo: (cardId: string) => { caminho: string; convertido?: string } | null = () => null
 
-export function registerVideoResolver(fn: (cardId: string) => string | null): void {
+export function registerVideoResolver(
+  fn: (cardId: string) => { caminho: string; convertido?: string } | null
+): void {
   resolverVideo = fn
 }
 
+/**
+ * O arquivo que vai de fato ser servido.
+ *
+ * Quando existe uma conversão, é ela que toca — mas a autorização continua
+ * valendo pelo original, que é o que o operador escolheu na janela de abrir.
+ * A conversão nasceu de dentro do app; autorizá-la à parte não acrescentaria
+ * segurança nenhuma e criaria um segundo caminho por onde algo poderia entrar.
+ */
 export function caminhoDoVideo(cardId: string): string | null {
-  const caminho = resolverVideo(cardId)
-  if (!caminho || !videoVinculado(caminho)) return null
-  return caminho
+  const card = resolverVideo(cardId)
+  if (!card || !videoAutorizado(card.caminho)) return null
+
+  if (card.convertido) {
+    const convertido = convertidoPath(card.convertido)
+    return existsSync(convertido) ? convertido : null
+  }
+  return existsSync(card.caminho) ? card.caminho : null
+}
+
+/** O cartão tem um arquivo tocável agora, aqui. */
+export function videoPronto(card: { caminho: string; convertido?: string }): boolean {
+  if (!videoAutorizado(card.caminho)) return false
+  return existsSync(card.convertido ? convertidoPath(card.convertido) : card.caminho)
 }
 
 /**

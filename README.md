@@ -61,6 +61,18 @@ Pronto: motor de prompter com edição ao vivo, monitor de saída com identifica
 
 Próximos: exportação, OCR híbrido, Google Drive, modos Foco e Mesa de comando, segue-a-voz e controle remoto, saídas NDI/OBS e empacotamento assinado.
 
+## Vídeo nos cartões
+
+O app tenta tocar o arquivo como ele veio. Muito `.mov` de celular já toca direto — por dentro é o mesmo formato de um mp4, só com outro rótulo —, e nesse caso nada é convertido nem copiado. Quando o navegador não dá conta (ProRes de ilha de edição, matroska, avi), o ffmpeg entra: primeiro tentando só trocar a embalagem, o que leva segundos e não mexe num pixel, e recodificando de verdade só quando o conteúdo não cabe num mp4.
+
+A cópia gerada mora em `userData/convertidos`, pertence àquele cartão e some junto com ele. O original nunca é copiado nem movido.
+
+### ffmpeg redistribuído
+
+O instalador leva um ffmpeg junto, pelo pacote [`ffmpeg-static`](https://www.npmjs.com/package/ffmpeg-static) (versão registrada em `package-lock.json`). É uma build **GPL** do ffmpeg 6.1.1, compilada por gyan.dev com `--enable-gpl --enable-version3 --enable-libx264` — compatível com a licença deste projeto.
+
+O código-fonte correspondente está em [ffmpeg.org/download.html](https://ffmpeg.org/download.html) e no [repositório oficial](https://git.ffmpeg.org/ffmpeg.git), na tag `n6.1.1`.
+
 ## Licença
 
 GNU General Public License, versão 3 ou posterior — o texto completo está em [LICENSE](LICENSE).

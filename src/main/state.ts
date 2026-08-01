@@ -485,7 +485,17 @@ export class Store {
                   ...c,
                   vinculado: action.vinculado,
                   ...(action.caminho ? { caminho: action.caminho } : {}),
-                  ...(action.arquivoNome ? { arquivoNome: action.arquivoNome } : {})
+                  ...(action.arquivoNome ? { arquivoNome: action.arquivoNome } : {}),
+                  // reapontar para um arquivo que toca direto precisa apagar a
+                  // conversão antiga do cartão, senão ele seguiria servindo o
+                  // vídeo antigo com o nome do novo
+                  ...(action.convertido === undefined
+                    ? {}
+                    : action.convertido === null
+                      ? { convertido: undefined }
+                      : { convertido: action.convertido }),
+                  // o novo arquivo tem outra duração e outro quadro
+                  ...(action.caminho ? { duracao: undefined, poster: undefined } : {})
                 }
               : c
           ),

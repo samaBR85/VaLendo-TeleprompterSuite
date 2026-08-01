@@ -162,5 +162,34 @@ export interface ValendoApi {
    * Abre o seletor de vídeo. Não copia nada — devolve onde o arquivo está e
    * autoriza o app a servi-lo. Serve tanto para subir quanto para relinkar.
    */
-  pickCardVideo(): Promise<CardVideoPickResult | null>
+  pickCardVideo(cardId: string): Promise<CardVideoPickResult | null>
+  /**
+   * Pede a conversão do vídeo deste cartão.
+   *
+   * Só depois de o `<video>` ter falhado: a extensão não decide nada, porque
+   * muito `.mov` já toca direto.
+   */
+  convertCardVideo(cardId: string): Promise<CardConvertResult>
+  /**
+   * Andamento da conversão.
+   *
+   * Trocar a embalagem leva segundos; recodificar leva perto do tempo do
+   * próprio vídeo. A tela precisa distinguir as duas, senão uma espera de
+   * minutos parece o app travado.
+   */
+  onCardConvert(callback: (info: CardConvertProgress | null) => void): () => void
+}
+
+/** O que volta ao pedir a conversão de um vídeo que a janela não tocou. */
+export interface CardConvertResult {
+  /** nome da cópia tocável gerada dentro do app */
+  convertido?: string
+  erro?: string
+}
+
+export interface CardConvertProgress {
+  arquivoNome: string
+  /** 0 a 1, ou nulo enquanto a duração do arquivo não é conhecida */
+  fracao: number | null
+  recodificando: boolean
 }

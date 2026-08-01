@@ -9,6 +9,12 @@ directories:
 # main e preload usam externalizeDepsPlugin (electron.vite.config.ts): as
 # dependências ficam de fora do bundle e continuam como require() de verdade,
 # então node_modules precisa viajar junto com out/ dentro do instalador.
+# o ffmpeg é um executável de verdade: dentro do app.asar, que é um arquivo
+# só, o Windows não teria como rodá-lo. Isto o deixa desempacotado ao lado,
+# e `ffmpegPath()` no main sabe procurar lá.
+asarUnpack:
+  - '**/node_modules/ffmpeg-static/**'
+
 files:
   - out/**/*
   - node_modules/**/*

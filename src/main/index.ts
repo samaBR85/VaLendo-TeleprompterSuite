@@ -1,7 +1,9 @@
 import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from 'electron'
+import { existsSync } from 'node:fs'
 import { basename, extname } from 'node:path'
 import { CHANNELS, type Action } from '@shared/actions'
 import type {
+  CardConvertResult,
   CardPickResult,
   CardVideoPickResult,
   ExportResult,
@@ -19,15 +21,19 @@ import { cartaoNoAr } from '@shared/cards'
 import { traduzir } from '@shared/i18n'
 import {
   autorizarVideo,
+  convertidoPath,
   deleteCardImage,
+  deleteVideoConversion,
   IMAGE_EXTENSIONS,
   importCardImage,
   pruneCardImages,
+  pruneVideoConversions,
   registerCardProtocol,
   registerCardScheme,
   registerVideoResolver,
-  videoVinculado
+  videoPronto
 } from './cards'
+import { converterParaMp4, temFfmpeg } from './ffmpeg'
 import { ehVideo, VIDEO_EXTENSIONS } from '@shared/video'
 import { Store } from './state'
 import { flushState, onStorageHealth, storageHealth } from './storage'
@@ -116,6 +122,8 @@ function registerIpc(): void {
     if (action.type === 'card/remove') {
       const alvo = store.getState().cards.find((c) => c.id === action.cardId)
       if (alvo?.kind === 'image') deleteCardImage(alvo.arquivo)
+      // a conversão é derivada do cartão e não sobrevive a ele
+      if (alvo?.kind === 'video' && alvo.convertido) deleteVideoConversion(alvo.convertido)
     }
     store.dispatch(action)
   })
@@ -215,6 +223,7 @@ function registerIpc(): void {
     store.dispatch({ type: 'project/replace', state })
     // as artes do programa anterior não servem mais a ninguém
     pruneCardImages(store.getState().cards)
+    pruneVideoConversions(store.getState().cards)
     // os vídeos não vêm dentro do projeto: os caminhos podem apontar para
     // arquivos que não existem nesta máquina, e o cartão precisa dizer isso
     revalidarVideos()
@@ -260,31 +269,65 @@ function registerIpc(): void {
    * lista de autorizados, e é por isso que um projeto vindo de fora não
    * consegue publicar arquivo nenhum sozinho.
    */
-  ipcMain.handle(CHANNELS.cardPickVideo, async (): Promise<CardVideoPickResult | null> => {
-    const owner = getOperatorWindow()
-    const options = {
-      title: idioma('cards.pickVideoTitle'),
-      properties: ['openFile' as const],
-      filters: [{ name: idioma('cards.videoFilter'), extensions: VIDEO_EXTENSIONS }]
-    }
-    const picked = owner ? await dialog.showOpenDialog(owner, options) : await dialog.showOpenDialog(options)
-    if (picked.canceled || picked.filePaths.length === 0) return null
+  ipcMain.handle(
+    CHANNELS.cardPickVideo,
+    async (_event, cardId: string): Promise<CardVideoPickResult | null> => {
+      const owner = getOperatorWindow()
+      const options = {
+        title: idioma('cards.pickVideoTitle'),
+        properties: ['openFile' as const],
+        filters: [{ name: idioma('cards.videoFilter'), extensions: VIDEO_EXTENSIONS }]
+      }
+      const picked = owner ? await dialog.showOpenDialog(owner, options) : await dialog.showOpenDialog(options)
+      if (picked.canceled || picked.filePaths.length === 0) return null
 
-    const origem = picked.filePaths[0]
-    const comum = {
-      caminho: origem,
-      arquivoNome: basename(origem),
-      sugestao: basename(origem, extname(origem)).slice(0, 30)
-    }
+      const origem = picked.filePaths[0]
+      const comum = {
+        caminho: origem,
+        arquivoNome: basename(origem),
+        sugestao: basename(origem, extname(origem)).slice(0, 30)
+      }
 
-    // o .mov não toca nem com H.264 dentro, e é o que sai de iPhone e de
-    // muita ilha: recusar aqui, com o motivo, é melhor que no meio do programa
-    if (!ehVideo(origem)) {
-      return { ...comum, erro: idioma('cards.videoUnsupported') }
-    }
+      if (!ehVideo(origem)) return { ...comum, erro: idioma('cards.videoUnsupported') }
 
-    autorizarVideo(origem)
-    return comum
+      // escolher é o que autoriza: a partir daqui o app pode servir este
+      // arquivo, e só ele. Nada é convertido aqui — quem descobre se o
+      // arquivo toca é a própria janela, tentando; converter por precaução
+      // gastaria minutos e um segundo arquivo do mesmo tamanho à toa.
+      autorizarVideo(origem)
+      return comum
+    }
+  )
+
+  /**
+   * Converte o vídeo de um cartão que a janela não conseguiu tocar.
+   *
+   * Só chega aqui depois de o `<video>` ter falhado de verdade, e não por
+   * causa da extensão do arquivo: muito `.mov` de celular já toca direto,
+   * porque por dentro é o mesmo formato de um mp4 com outro rótulo. Quem não
+   * toca é ProRes, matroska e companhia — e aí a conversão vale o custo.
+   */
+  ipcMain.handle(CHANNELS.cardConvert, async (_event, cardId: string): Promise<CardConvertResult> => {
+    const card = store.getState().cards.find((c) => c.id === cardId)
+    if (card?.kind !== 'video') return { erro: idioma('cards.videoConvertFailed') }
+    if (!temFfmpeg()) return { erro: idioma('cards.videoNoFfmpeg') }
+    if (!existsSync(card.caminho)) return { erro: idioma('cards.videoMissing') }
+
+    const arquivo = `${cardId}.mp4`
+    const avisar = (fracao: number | null, recodificando: boolean): void =>
+      sendToAll(CHANNELS.cardConvertProgress, { arquivoNome: card.arquivoNome, fracao, recodificando })
+
+    avisar(null, false)
+    const resultado = await converterParaMp4(card.caminho, convertidoPath(arquivo), (p) =>
+      avisar(p.fracao, p.recodificando)
+    )
+    sendToAll(CHANNELS.cardConvertProgress, null)
+
+    if (!resultado.ok) {
+      deleteVideoConversion(arquivo)
+      return { erro: idioma('cards.videoConvertFailed') }
+    }
+    return { convertido: arquivo }
   })
 }
 
@@ -299,7 +342,10 @@ function registerIpc(): void {
 function revalidarVideos(): void {
   for (const card of store.getState().cards) {
     if (card.kind !== 'video') continue
-    const vinculado = videoVinculado(card.caminho)
+    // um projeto que veio de outra máquina traz o caminho do original e o nome
+    // da conversão, mas nenhum dos dois existe aqui: o cartão precisa dizer
+    // isso e pedir para reapontar, em vez de falhar na hora de ir ao ar
+    const vinculado = videoPronto({ caminho: card.caminho, convertido: card.convertido })
     if (card.vinculado !== vinculado) {
       store.dispatch({ type: 'card/videoLink', cardId: card.id, vinculado })
     }
@@ -340,7 +386,7 @@ function bootstrap(): void {
   // nenhuma URL carrega caminho de disco, e não há URL a forjar
   registerVideoResolver((cardId) => {
     const card = store.getState().cards.find((c) => c.id === cardId)
-    return card?.kind === 'video' ? card.caminho : null
+    return card?.kind === 'video' ? { caminho: card.caminho, convertido: card.convertido } : null
   })
   registerCardProtocol()
   registerIpc()

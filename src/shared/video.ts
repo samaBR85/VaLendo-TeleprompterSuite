@@ -1,14 +1,19 @@
 import type { Cartao, VideoClock } from './types'
 
+/** O que o Chromium desenha sozinho, sem passar por conversão. */
+export const VIDEO_DIRETO = ['mp4', 'm4v', 'webm', 'ogv']
+
 /**
- * Formatos que o Chromium desenha e que valem oferecer.
+ * O que o app aceita, mas precisa converter antes.
  *
- * `.mov` fica de fora porque não toca — o container do QuickTime é recusado
- * mesmo quando o vídeo lá dentro é H.264. Como é justo o que sai de iPhone e
- * de muita ilha de edição, a recusa precisa acontecer na hora de subir, com o
- * motivo escrito, e não virar uma tela preta no meio do programa.
+ * `.mov` é o caso que importa: é o que sai de iPhone e de muita ilha de
+ * edição, e o Chromium recusa o invólucro do QuickTime mesmo quando o vídeo
+ * lá dentro é H.264 — ou seja, quase sempre falta só trocar a embalagem, o
+ * que o ffmpeg faz em segundos sem tocar num pixel.
  */
-export const VIDEO_EXTENSIONS = ['mp4', 'm4v', 'webm', 'ogv']
+export const VIDEO_CONVERTIVEL = ['mov', 'mkv', 'avi', 'mpg', 'mpeg', 'wmv', 'flv', 'ts', 'm2ts', 'mts']
+
+export const VIDEO_EXTENSIONS = [...VIDEO_DIRETO, ...VIDEO_CONVERTIVEL]
 
 const TIPOS_VIDEO: Record<string, string> = {
   '.mp4': 'video/mp4',
@@ -19,6 +24,11 @@ const TIPOS_VIDEO: Record<string, string> = {
 
 export function ehVideo(nomeOuCaminho: string): boolean {
   return VIDEO_EXTENSIONS.includes(extensao(nomeOuCaminho))
+}
+
+/** Precisa passar pelo ffmpeg antes de poder ir ao ar. */
+export function precisaConverter(nomeOuCaminho: string): boolean {
+  return VIDEO_CONVERTIVEL.includes(extensao(nomeOuCaminho))
 }
 
 export function tipoDoVideo(nomeOuCaminho: string): string {

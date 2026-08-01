@@ -613,7 +613,10 @@ export function PrompterCanvas({
               <VideoCartao
                 card={card}
                 clock={transport.video}
-                src={`${videoBaseUrl}${encodeURIComponent(card.id)}`}
+                /* o `?v=` acompanha a conversão: quando ela chega, a URL muda
+                   e o tocador busca o arquivo novo em vez de repetir a
+                   resposta antiga. O servidor ignora a parte depois do `?`. */
+                src={`${videoBaseUrl}${encodeURIComponent(card.id)}?v=${encodeURIComponent(card.convertido ?? 'orig')}`}
                 comSom={cardAudio ?? previaDoOperador}
                 previaDoOperador={previaDoOperador}
               />

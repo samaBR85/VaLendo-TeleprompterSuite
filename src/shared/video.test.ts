@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import type { Cartao, VideoClock } from './types'
-import { ehVideo, podeIrAoAr, posicaoDoVideo, tempoDeVideo, terminou, tipoDoVideo, VIDEO_PARADO } from './video'
+import {
+  ehVideo,
+  podeIrAoAr,
+  posicaoDoVideo,
+  precisaConverter,
+  tempoDeVideo,
+  terminou,
+  tipoDoVideo,
+  VIDEO_PARADO
+} from './video'
 
 const tocando = (base: number, comecouEm: number): VideoClock => ({
   ...VIDEO_PARADO,
@@ -58,10 +67,22 @@ describe('formatos', () => {
     expect(ehVideo('clipe.webm')).toBe(true)
   })
 
-  it('recusa .mov, que não toca mesmo com H.264 dentro', () => {
-    // é o formato que sai de iPhone: a recusa precisa acontecer na hora de
-    // subir, e não virar uma tela preta no meio do programa
-    expect(ehVideo('camera.mov')).toBe(false)
+  it('aceita .mov, mas por conversão', () => {
+    // o Chromium não toca o invólucro do QuickTime nem com H.264 dentro; o
+    // ffmpeg troca a embalagem antes de o cartão existir
+    expect(ehVideo('camera.mov')).toBe(true)
+    expect(precisaConverter('camera.mov')).toBe(true)
+    expect(precisaConverter('CAMERA.MOV')).toBe(true)
+  })
+
+  it('o que já toca não passa pela conversão à toa', () => {
+    expect(precisaConverter('vinheta.mp4')).toBe(false)
+    expect(precisaConverter('clipe.webm')).toBe(false)
+  })
+
+  it('não inventa vídeo onde não há', () => {
+    expect(ehVideo('roteiro.docx')).toBe(false)
+    expect(precisaConverter('roteiro.docx')).toBe(false)
   })
 
   it('dá o tipo certo para o cabeçalho', () => {

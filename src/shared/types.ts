@@ -182,6 +182,15 @@ export type Cartao =
       caminho: string
       /** o nome que o arquivo tinha, para o operador saber o que reapontar */
       arquivoNome: string
+      /**
+       * Cópia tocável, dentro do app, quando o original não toca.
+       *
+       * Um `.mov` continua sendo o original e é ele que o cartão referencia —
+       * isto aqui é derivado, como a miniatura. Nasce de trocar a embalagem
+       * (ou recodificar, quando não dá), e é o que vai de fato para a tela e
+       * para a rede. Some junto com o cartão.
+       */
+      convertido?: string
       /** um quadro, em data: URL — viaja no projeto e mantém o cartão reconhecível mesmo desvinculado */
       poster?: string
       /** duração em segundos, medida quando o vídeo carrega */

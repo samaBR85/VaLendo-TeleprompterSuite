@@ -1,6 +1,8 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import { CHANNELS, type Action } from '@shared/actions'
 import type {
+  CardConvertProgress,
+  CardConvertResult,
   CardPickResult,
   CardVideoPickResult,
   ExportResult,
@@ -36,7 +38,11 @@ const api: ValendoApi = {
   respondToClose: (confirmed: boolean) => ipcRenderer.send(CHANNELS.confirmCloseResponse, confirmed),
   pickCardImage: (cardId: string) =>
     ipcRenderer.invoke(CHANNELS.cardPick, cardId) as Promise<CardPickResult | null>,
-  pickCardVideo: () => ipcRenderer.invoke(CHANNELS.cardPickVideo) as Promise<CardVideoPickResult | null>
+  pickCardVideo: (cardId: string) =>
+    ipcRenderer.invoke(CHANNELS.cardPickVideo, cardId) as Promise<CardVideoPickResult | null>,
+  convertCardVideo: (cardId: string) =>
+    ipcRenderer.invoke(CHANNELS.cardConvert, cardId) as Promise<CardConvertResult>,
+  onCardConvert: (callback) => subscribe<CardConvertProgress | null>(CHANNELS.cardConvertProgress, callback)
 }
 
 contextBridge.exposeInMainWorld('valendo', api)

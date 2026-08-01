@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { CARTOES_COM_ATALHO, novoCartaoId } from '@shared/cards'
 import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN } from '@shared/defaults'
+import type { CardConvertProgress } from '@shared/api'
 import type { Cartao, VideoClock } from '@shared/types'
 import { posicaoDoVideo, tempoDeVideo } from '@shared/video'
 import { useT } from '../i18n'
@@ -48,6 +49,15 @@ export function CardsDrawer({
   const [ocupado, setOcupado] = useState(false)
   /** por que o último arquivo escolhido não serviu — some na próxima escolha */
   const [recusa, setRecusa] = useState<string | null>(null)
+  /**
+   * Um vídeo está sendo convertido.
+   *
+   * Trocar a embalagem de um `.mov` leva segundos; recodificar um ProRes leva
+   * perto do tempo do próprio vídeo. Sem dizer qual das duas está
+   * acontecendo, a segunda parece o app travado.
+   */
+  const [convertendo, setConvertendo] = useState<CardConvertProgress | null>(null)
+  useEffect(() => window.valendo.onCardConvert(setConvertendo), [])
 
   /**
    * Arrasta a divisória do topo para dar mais ou menos altura à gaveta.
@@ -98,7 +108,10 @@ export function CardsDrawer({
     setOcupado(true)
     setRecusa(null)
     try {
-      const escolhido = await window.valendo.pickCardVideo()
+      // o id nasce antes da escolha porque a conversão é nomeada por ele: o
+      // arquivo gerado pertence a este cartão e some junto com ele
+      const id = novoCartaoId(Date.now(), cards.length)
+      const escolhido = await window.valendo.pickCardVideo(id)
       if (!escolhido) return
       if (escolhido.erro) {
         setRecusa(`${escolhido.arquivoNome} — ${escolhido.erro}`)
@@ -107,7 +120,7 @@ export function CardsDrawer({
       dispatch({
         type: 'card/add',
         card: {
-          id: novoCartaoId(Date.now(), cards.length),
+          id,
           kind: 'video',
           nome: escolhido.sugestao || t('cards.addVideo'),
           caminho: escolhido.caminho,
@@ -161,7 +174,20 @@ export function CardsDrawer({
           <BotaoAdicionar atributo="text" icone="direction" rotulo={t('cards.addText')} onClick={adicionarRecado} />
         </div>
 
-        {recusa ? (
+        {convertendo ? (
+          <span className="ml-3 flex min-w-0 items-center gap-2 text-[11px] text-[var(--color-fog-1)]">
+            <span className="truncate">
+              {convertendo.recodificando ? t('cards.videoReencoding') : t('cards.videoConverting')} ·{' '}
+              {convertendo.arquivoNome}
+            </span>
+            <span className="h-1 w-24 flex-none overflow-hidden rounded bg-[var(--color-ink-3)]">
+              <span
+                className="block h-full bg-[var(--color-go)] transition-[width]"
+                style={{ width: `${Math.round((convertendo.fracao ?? 0) * 100)}%` }}
+              />
+            </span>
+          </span>
+        ) : recusa ? (
           <span className="ml-3 min-w-0 truncate text-[11px] text-[var(--color-live)]">{recusa}</span>
         ) : blackout && noAr ? (
           <span className="ml-3 text-[11px] text-[var(--color-warn)]">{t('cards.blackoutWins')}</span>
@@ -192,6 +218,7 @@ export function CardsDrawer({
                 noAr={noAr === card.id}
                 clock={clock}
                 dispatch={dispatch}
+                onFalha={setRecusa}
               />
             ))}
           </div>
@@ -240,13 +267,15 @@ function CartaoNaGaveta({
   atalho,
   noAr,
   clock,
-  dispatch
+  dispatch,
+  onFalha
 }: {
   card: Cartao
   atalho: number | null
   noAr: boolean
   clock: VideoClock
   dispatch: (action: Action) => void
+  onFalha: (mensagem: string) => void
 }): React.JSX.Element {
   const { t } = useT()
   const desvinculado = card.kind === 'video' && card.vinculado === false
@@ -259,7 +288,7 @@ function CartaoNaGaveta({
         noAr ? 'border-[var(--color-go)]/60 bg-[var(--color-go)]/[0.09]' : 'border-[var(--color-line)]'
       }`}
     >
-      {card.kind === 'video' ? <PreparaVideo card={card} dispatch={dispatch} /> : null}
+      {card.kind === 'video' ? <PreparaVideo card={card} dispatch={dispatch} onFalha={onFalha} /> : null}
 
       <button
         type="button"
@@ -389,13 +418,18 @@ function PlayerDoCartao({
   const tocando = noAr && clock.tocando
 
   const relinkar = async (): Promise<void> => {
-    const escolhido = await window.valendo.pickCardVideo()
+    const escolhido = await window.valendo.pickCardVideo(card.id)
     if (!escolhido || escolhido.erro) return
     dispatch({
       type: 'card/videoLink',
       cardId: card.id,
       caminho: escolhido.caminho,
       arquivoNome: escolhido.arquivoNome,
+      // explícito nos dois sentidos: reapontar para um mp4 comum precisa
+      // apagar a conversão que o cartão carregava do arquivo anterior
+      // reapontar limpa a conversão do arquivo anterior: ela não vale para
+      // o novo, e o cartão a refaz sozinho se o novo também não tocar
+      convertido: null,
       vinculado: true
     })
   }
@@ -509,19 +543,45 @@ function PlayerDoCartao({
  */
 function PreparaVideo({
   card,
-  dispatch
+  dispatch,
+  onFalha
 }: {
   card: CartaoVideo
   dispatch: (action: Action) => void
+  onFalha: (mensagem: string) => void
 }): React.JSX.Element | null {
   const ref = useRef<HTMLVideoElement>(null)
   const feito = useRef(false)
+  /** já pedimos conversão para este cartão; sem isto, falhar viraria um laço */
+  const tentouConverter = useRef(false)
   const falta = card.vinculado !== false && (!card.poster || !card.duracao)
 
   useEffect(() => {
     if (!falta || feito.current) return
     const video = ref.current
     if (!video) return
+
+    /*
+     * Não deu para tocar — agora sim vale converter.
+     *
+     * É aqui que se descobre, e não pela extensão do arquivo: um `.mov` de
+     * celular por dentro é o mesmo formato de um mp4, só com outro rótulo, e
+     * costuma tocar direto. Converter todo `.mov` por precaução gastaria
+     * minutos de recodificação e um segundo arquivo do mesmo tamanho, à toa.
+     * Quem realmente não toca — ProRes, matroska — cai aqui e é convertido.
+     */
+    const naoTocou = async (): Promise<void> => {
+      if (tentouConverter.current || card.convertido) return
+      tentouConverter.current = true
+      const r = await window.valendo.convertCardVideo(card.id)
+      if (r.convertido) {
+        dispatch({ type: 'card/videoLink', cardId: card.id, convertido: r.convertido, vinculado: true })
+      } else if (r.erro) {
+        onFalha(`${card.arquivoNome} — ${r.erro}`)
+        dispatch({ type: 'card/videoLink', cardId: card.id, vinculado: false })
+      }
+    }
+    video.addEventListener('error', () => void naoTocou())
 
     const medir = (): void => {
       if (!Number.isFinite(video.duration) || video.duration <= 0) return
@@ -552,14 +612,22 @@ function PreparaVideo({
       video.removeEventListener('loadedmetadata', medir)
       video.removeEventListener('seeked', desenhar)
     }
-  }, [falta, card.id, dispatch])
+    // `card.convertido` entra de propósito: quando a conversão chega, o `src`
+    // muda e este efeito precisa rodar de novo para medir o arquivo novo
+  }, [falta, card.id, card.convertido, card.arquivoNome, dispatch, onFalha])
 
   if (!falta) return null
 
   return (
     <video
       ref={ref}
-      src={`valendo://video/${encodeURIComponent(card.id)}`}
+      key={card.convertido ?? 'original'}
+      /* o `?v=` não serve para o servidor, que só olha o caminho — serve para
+         o navegador. Sem ele a URL do cartão continua a mesma depois da
+         conversão, e o Chromium repete a resposta da tentativa que falhou:
+         o arquivo novo existe e toca, mas este elemento nunca ficaria
+         sabendo. Foi o que aconteceu aqui. */
+      src={`valendo://video/${encodeURIComponent(card.id)}?v=${encodeURIComponent(card.convertido ?? 'orig')}`}
       // sem isto o desenho no canvas conta como de outra origem e ler os
       // pixels de volta vira erro de segurança — não haveria miniatura
       crossOrigin="anonymous"
