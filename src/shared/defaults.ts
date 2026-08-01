@@ -4,14 +4,28 @@ import { blocksFromText } from './text'
 import { VIDEO_PARADO } from './video'
 
 /**
- * Altura de nascença da gaveta de cartões, e os limites do arrasto.
+ * Abaixo disto, o cartão de vídeo — o mais alto, com as três linhas do
+ * player quando está no ar (transporte, tempo/rede/repetir, volume) — não
+ * cabe mais no espaço que a gaveta reserva para ele, e o miolo (que pode
+ * encolher, `flex-1 min-h-0`) fica menor que o player (que não encolhe). O
+ * player então vaza por cima da linha "on screen"/lixeira: os ícones colidem.
  *
- * O padrão mostra a fileira de miniaturas inteira sem comer a prévia: cartão
- * é para bater o olho e disparar, e uma gaveta que nasce alta demais rouba
- * justo a tela que o operador precisa ver.
+ * Medido no app: cabeçalho (34px) + borda (1px) + respiro da fileira de
+ * cartões (20px) + altura mínima de conteúdo do cartão de vídeo (193px) =
+ * 248px. Com folga para variação de renderização de fonte entre sistemas.
  */
-export const CARDS_HEIGHT_DEFAULT = 172
-export const CARDS_HEIGHT_MIN = 108
+export const CARDS_HEIGHT_MIN = 260
+/**
+ * A gaveta nasce no próprio mínimo, e não mais compacta.
+ *
+ * Já foi 172px — mostrava a fileira de miniaturas sem comer a prévia, e
+ * bastava enquanto só havia imagem e recado. Mas todos os cartões dividem a
+ * mesma altura (a fileira estica todos por igual); nascer abaixo do mínimo
+ * faria o primeiro vídeo que o operador subisse colidir com a linha de baixo,
+ * sem ele ter tocado na divisória. Nascer no próprio piso é o mais compacto
+ * que dá para ser sem esse risco.
+ */
+export const CARDS_HEIGHT_DEFAULT = CARDS_HEIGHT_MIN
 export const CARDS_HEIGHT_MAX = 420
 
 export const FONT_OPTIONS: { label: string; value: string }[] = [

@@ -297,14 +297,11 @@ function CartaoNaGaveta({
     >
       {card.kind === 'video' ? <PreparaVideo card={card} dispatch={dispatch} onFalha={onFalha} /> : null}
 
-      <button
-        type="button"
-        data-card-show={card.id}
-        disabled={desvinculado}
-        title={noAr ? t('cards.hide') : t('cards.show')}
-        onClick={() => dispatch({ type: 'card/show', cardId: card.id })}
-        className="relative flex h-[72px] flex-none items-center justify-center overflow-hidden rounded border border-[var(--color-line)] bg-black disabled:cursor-not-allowed"
-      >
+      {/* só retrato, não botão: subir no ar é decisão do quadrado "on screen"
+          ou do play do player, nunca de um clique na arte. Antes a thumbnail
+          também alternava o ar, e um clique querendo só olhar a miniatura de
+          perto acabava trocando o que estava na tela do apresentador. */}
+      <div className="relative flex h-[72px] flex-none items-center justify-center overflow-hidden rounded border border-[var(--color-line)] bg-black">
         {card.kind === 'image' ? (
           <img
             src={`valendo://cartao/${encodeURIComponent(card.arquivo)}`}
@@ -328,7 +325,7 @@ function CartaoNaGaveta({
             {t('cards.videoMissing')}
           </span>
         ) : null}
-      </button>
+      </div>
 
       <div className="flex flex-none items-center gap-1">
         <input
@@ -374,7 +371,24 @@ function CartaoNaGaveta({
       </div>
 
       <div className="flex flex-none items-center gap-1.5">
-        {noAr ? <span className="text-[10px] text-[var(--color-go)]">{t('cards.onAir')}</span> : null}
+        {/* o quadrado que decide o que vai ao ar — clicar na arte não decide
+            mais nada. Serve para ligar e para tirar da tela, e o player do
+            vídeo faz a mesma coisa pelo play: as duas são as únicas portas. */}
+        <label
+          title={noAr ? t('cards.hide') : t('cards.show')}
+          className={`flex items-center gap-1 text-[10px] ${
+            desvinculado ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
+          } ${noAr ? 'text-[var(--color-go)]' : 'text-[var(--color-fog-2)]'}`}
+        >
+          <input
+            type="checkbox"
+            data-card-onscreen={card.id}
+            checked={noAr}
+            disabled={desvinculado}
+            onChange={() => dispatch({ type: 'card/show', cardId: card.id })}
+          />
+          {t('cards.onAir')}
+        </label>
         <button
           type="button"
           data-card-remove={card.id}
@@ -556,24 +570,30 @@ function PlayerDoCartao({
           />
           {t('cards.videoLoop')}
         </label>
-
-        {noAr ? (
-          <>
-            <Icon name="volume" size={10} />
-            <input
-              type="range"
-              data-card-video-volume={card.id}
-              min={0}
-              max={1}
-              step={0.05}
-              value={clock.volume}
-              aria-label={t('cards.videoVolume')}
-              onChange={(event) => dispatch({ type: 'card/videoVolume', volume: Number(event.target.value) })}
-              className="w-10 flex-none accent-[var(--color-fog-1)]"
-            />
-          </>
-        ) : null}
       </div>
+
+      {/* o volume ganhou linha própria — dividindo com tempo, rede e repetir,
+          ele estourava a largura do cartão. Todos os outros itens da linha
+          de cima são `flex-none` (não podem encolher sem virar ilegível), e
+          o slider não tinha para onde ir: a linha simplesmente vazava para
+          fora do cartão, sem quebrar. Aqui, sozinho, ele tem os 164px
+          inteiros do cartão para si. */}
+      {noAr ? (
+        <div className="flex items-center gap-1.5">
+          <Icon name="volume" size={10} className="flex-none" />
+          <input
+            type="range"
+            data-card-video-volume={card.id}
+            min={0}
+            max={1}
+            step={0.05}
+            value={clock.volume}
+            aria-label={t('cards.videoVolume')}
+            onChange={(event) => dispatch({ type: 'card/videoVolume', volume: Number(event.target.value) })}
+            className="min-w-0 flex-1 accent-[var(--color-fog-1)]"
+          />
+        </div>
+      ) : null}
     </div>
   )
 }
