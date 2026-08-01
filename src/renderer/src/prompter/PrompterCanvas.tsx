@@ -103,6 +103,15 @@ interface Props {
    */
   previaDoOperador?: boolean
   /**
+   * Tocar o som do vídeo nesta superfície.
+   *
+   * Segue a prévia do operador quando não é dito, que é o caso das janelas do
+   * app. A página da rede decide sozinha: navegador de celular não deixa
+   * começar com som sem um toque, então lá o som nasce desligado e é a pessoa
+   * que assiste quem liga.
+   */
+  cardAudio?: boolean
+  /**
    * Aplicar espelho e giro.
    *
    * Só a janela que alimenta o vidro do teleprompter liga isto. Espelhar e
@@ -138,20 +147,20 @@ function VideoCartao({
   clock,
   src,
   comSom,
-  segueArrasto
+  previaDoOperador
 }: {
   card: Extract<Cartao, { kind: 'video' }>
   clock: VideoClock
   src: string
   comSom: boolean
-  segueArrasto: boolean
+  previaDoOperador: boolean
 }): React.JSX.Element {
   const ref = useRef<HTMLVideoElement>(null)
   const loop = card.loop ?? false
 
   // com a barra na mão do operador, só a prévia dele acompanha ao vivo: a
   // tela do apresentador segura o quadro e pula uma vez, quando ele solta
-  const congelado = clock.arrastando && !segueArrasto
+  const congelado = clock.arrastando && !previaDoOperador
 
   useEffect(() => {
     const video = ref.current
@@ -169,11 +178,19 @@ function VideoCartao({
     }
   }, [clock, card.duracao, loop, congelado])
 
+  /*
+   * O volume do painel é do monitor do operador, e só dele.
+   *
+   * Na página da rede quem manda no volume é o botão do próprio aparelho:
+   * deixar o operador mexer no som do celular de quem confere seria mexer
+   * numa coisa que não é dele — e no iPhone o pedido seria ignorado de
+   * qualquer forma.
+   */
   useEffect(() => {
     const video = ref.current
-    if (!video) return
+    if (!video || !previaDoOperador) return
     video.volume = clock.volume
-  }, [clock.volume])
+  }, [clock.volume, previaDoOperador])
 
   /*
    * Reencontro periódico.
@@ -228,6 +245,7 @@ export function PrompterCanvas({
   cardBaseUrl = 'valendo://cartao/',
   videoBaseUrl = 'valendo://video/',
   previaDoOperador = false,
+  cardAudio,
   onMetrics
 }: Props): React.JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -596,8 +614,8 @@ export function PrompterCanvas({
                 card={card}
                 clock={transport.video}
                 src={`${videoBaseUrl}${encodeURIComponent(card.id)}`}
-                comSom={previaDoOperador}
-                segueArrasto={previaDoOperador}
+                comSom={cardAudio ?? previaDoOperador}
+                previaDoOperador={previaDoOperador}
               />
             ) : (
               <div

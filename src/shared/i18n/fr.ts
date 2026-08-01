@@ -175,6 +175,7 @@ export const fr: Dicionario = {
     'Tant que c’est activé, toute personne sur le même réseau qui connaît l’adresse peut lire le texte — il n’y a pas de mot de passe. Seul l’onglet à l’antenne est publié ; les autres ne quittent pas cette machine.',
   'web.waiting': 'En attente de VaLendo…',
   'web.offline': 'Pas de connexion à VaLendo',
+  'web.enableSound': 'Activer le son',
 
   'close.title': 'La diffusion est à l’antenne.',
   'close.detail': 'Fermer l’app maintenant efface le texte sur l’écran du présentateur.',

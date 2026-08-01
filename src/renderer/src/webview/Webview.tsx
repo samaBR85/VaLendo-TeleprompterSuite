@@ -18,6 +18,14 @@ export function Webview(): React.JSX.Element {
   const [ligado, setLigado] = useState(false)
   const [tela, setTela] = useState({ width: window.innerWidth, height: window.innerHeight })
   /**
+   * O som do vídeo, nesta página.
+   *
+   * Nasce desligado e não é escolha de gosto: navegador de celular recusa
+   * começar a tocar com som sem um toque da pessoa. Sem este botão o vídeo
+   * chega mudo e não há o que fazer na tela para mudar isso.
+   */
+  const [som, setSom] = useState(false)
+  /**
    * Diferença entre o relógio de quem transmite e o deste aparelho.
    *
    * O celular de quem assiste pode estar minutos adiantado; o relógio de
@@ -78,8 +86,16 @@ export function Webview(): React.JSX.Element {
   const escala = Math.min(tela.width / desenho.width, tela.height / desenho.height)
 
   // o relógio da rolagem é absoluto; corrigido, o texto sobe aqui no mesmo
-  // instante em que sobe na tela do apresentador
-  const transport = { ...quadro.transport, startedAt: quadro.transport.startedAt - desvio.current }
+  // instante em que sobe na tela do apresentador. O do vídeo é da mesma
+  // natureza e precisa do mesmo acerto — sem ele o vídeo tocaria neste
+  // aparelho no ponto errado, tanto quanto o relógio dele estiver adiantado
+  const transport = {
+    ...quadro.transport,
+    startedAt: quadro.transport.startedAt - desvio.current,
+    video: { ...quadro.transport.video, comecouEm: quadro.transport.video.comecouEm - desvio.current }
+  }
+
+  const temVideoNoAr = quadro.card?.kind === 'video'
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
@@ -101,10 +117,49 @@ export function Webview(): React.JSX.Element {
           card={quadro.card}
           cardBaseUrl="/cartao/"
           videoBaseUrl="/video/"
+          cardAudio={som}
           // quem assiste vê o que o apresentador vê, marca inclusive
           readingMark={quadro.appearance.readingMarkOnOutput}
         />
       </div>
+
+      {temVideoNoAr && !som ? (
+        <button
+          type="button"
+          data-web-som
+          onClick={() => {
+            setSom(true)
+            /*
+             * Desmutar aqui dentro, na mão, e não só pelo estado.
+             *
+             * O navegador só libera som logo depois de um toque, e o iPhone é
+             * o mais rigoroso: esperar o React redesenhar pode ser tarde
+             * demais, e o pedido seria recusado sem dizer nada. Mexer no
+             * elemento dentro do próprio clique é o caminho que ele aceita.
+             */
+            const video = document.querySelector('video')
+            if (!video) return
+            video.muted = false
+            void video.play().catch(() => undefined)
+          }}
+          style={{
+            position: 'absolute',
+            bottom: 16,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '10px 18px',
+            borderRadius: 999,
+            border: 'none',
+            background: 'rgba(255,255,255,0.92)',
+            color: '#14171a',
+            fontFamily: 'system-ui, sans-serif',
+            fontSize: 14,
+            cursor: 'pointer'
+          }}
+        >
+          {traduzir(idioma, 'web.enableSound')}
+        </button>
+      ) : null}
 
       {!ligado ? (
         <div

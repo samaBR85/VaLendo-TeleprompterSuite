@@ -175,6 +175,7 @@ export const it: Dicionario = {
     'Finché è acceso, chiunque sulla stessa rete che conosce l’indirizzo può leggere il copione — non c’è password. Viene pubblicata solo la scheda in onda; le altre non escono da qui.',
   'web.waiting': 'In attesa di VaLendo…',
   'web.offline': 'Nessuna connessione a VaLendo',
+  'web.enableSound': 'Attiva l’audio',
 
   'close.title': 'La trasmissione è in onda.',
   'close.detail': 'Chiudere l’app adesso cancella il testo sullo schermo del presentatore.',

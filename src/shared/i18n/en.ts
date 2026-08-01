@@ -173,6 +173,7 @@ export const en: Dicionario = {
     'While this is on, anyone on the same network who knows the address can read the script — there is no password. Only the tab that is on air gets published; the others never leave this machine.',
   'web.waiting': 'Waiting for VaLendo…',
   'web.offline': 'No connection to VaLendo',
+  'web.enableSound': 'Turn on sound',
 
   'close.title': 'The broadcast is on air.',
   'close.detail': 'Closing the app now blanks the presenter’s screen.',

@@ -175,6 +175,7 @@ export const es: Dicionario = {
     'Mientras esté encendido, cualquiera en la misma red que sepa la dirección puede leer el guion — no hay contraseña. Solo se publica la pestaña que está al aire; las demás no salen de aquí.',
   'web.waiting': 'Esperando a VaLendo…',
   'web.offline': 'Sin conexión con VaLendo',
+  'web.enableSound': 'Activar sonido',
 
   'close.title': 'La emisión está al aire.',
   'close.detail': 'Cerrar la app ahora borra el texto en la pantalla del presentador.',

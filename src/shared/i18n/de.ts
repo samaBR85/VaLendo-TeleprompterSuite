@@ -175,6 +175,7 @@ export const de: Dicionario = {
     'Solange das eingeschaltet ist, kann jeder im selben Netz, der die Adresse kennt, das Skript lesen — es gibt kein Passwort. Veröffentlicht wird nur der Tab, der auf Sendung ist; die anderen verlassen diesen Rechner nicht.',
   'web.waiting': 'Warte auf VaLendo…',
   'web.offline': 'Keine Verbindung zu VaLendo',
+  'web.enableSound': 'Ton einschalten',
 
   'close.title': 'Die Sendung läuft.',
   'close.detail': 'Die App jetzt zu schließen löscht den Text auf dem Bildschirm des Sprechers.',

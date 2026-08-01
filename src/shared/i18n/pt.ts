@@ -191,6 +191,7 @@ export const pt = {
     'Enquanto estiver ligado, qualquer pessoa na mesma rede que souber o endereço consegue ler o roteiro — não há senha. Só a aba que está no ar é publicada; as outras não saem daqui.',
   'web.waiting': 'Esperando o VaLendo…',
   'web.offline': 'Sem conexão com o VaLendo',
+  'web.enableSound': 'Ativar som',
 
   /* --------------------------------------------------------- fechar com o ar */
   'close.title': 'A transmissão está no ar.',
