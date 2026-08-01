@@ -23,10 +23,25 @@ export interface Perfil {
   audioKbps: number
 }
 
+/**
+ * Todos os quatro são 16:9 exato e de lados pares, e isso não é capricho.
+ *
+ * O tamanho aqui é um teto, não uma imposição: a conversão encaixa o vídeo
+ * dentro dele preservando a proporção do original, para um retrato de celular
+ * não sair esticado. Quando o teto tem a mesma proporção da fonte, a conta
+ * fecha redonda e a caixa é exatamente o que sai.
+ *
+ * Quando não tem, sobra resto. O perfil leve já foi 854x480 — a convenção de
+ * "480p widescreen", que na verdade é 1,779 e não 1,778 — e um 1920x1080 ali
+ * dentro dava 853,33 de largura e 480,375 de altura. O H.264 recusa lado
+ * ímpar, então a conversão falhava só nesse perfil; e depois de corrigida,
+ * saía 852x480, um número diferente do que a tela prometia. 768x432 não tem
+ * resto nenhum.
+ */
 export const PERFIS: Perfil[] = [
   { id: 'alta', largura: 1280, altura: 720, kbps: 2500, audioKbps: 128 },
   { id: 'media', largura: 960, altura: 540, kbps: 1200, audioKbps: 96 },
-  { id: 'leve', largura: 854, altura: 480, kbps: 700, audioKbps: 96 },
+  { id: 'leve', largura: 768, altura: 432, kbps: 700, audioKbps: 96 },
   { id: 'minima', largura: 640, altura: 360, kbps: 400, audioKbps: 64 }
 ]
 

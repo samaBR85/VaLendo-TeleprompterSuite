@@ -191,7 +191,7 @@ export const pt = {
   'web.offline': 'Sem conexão com o VaLendo',
   'web.enableSound': 'Ativar som',
   'web.videoWeight': 'Peso do vídeo na rede',
-  'web.videoWeightDetail': '{tamanho} · cerca de {mb} MB por minuto. A tela do apresentador recebe sempre o original.',
+  'web.videoWeightDetail': 'até {tamanho} · cerca de {mb} MB por minuto. A tela do apresentador recebe sempre o original.',
   'web.videoOriginalHint': 'O arquivo vai como está. Pesado no wi-fi, mas sem espera para preparar.',
   'web.quality.original': 'Original',
   'web.quality.alta': 'Alta',

@@ -175,7 +175,7 @@ export const de: Dicionario = {
   'web.offline': 'Keine Verbindung zu VaLendo',
   'web.enableSound': 'Ton einschalten',
   'web.videoWeight': 'Videogewicht im Netz',
-  'web.videoWeightDetail': '{tamanho} · etwa {mb} MB pro Minute. Der Sprecherbildschirm bekommt immer das Original.',
+  'web.videoWeightDetail': 'bis {tamanho} · etwa {mb} MB pro Minute. Der Sprecherbildschirm bekommt immer das Original.',
   'web.videoOriginalHint': 'Die Datei geht, wie sie ist. Schwer im WLAN, aber ohne Wartezeit.',
   'web.quality.original': 'Original',
   'web.quality.alta': 'Hoch',

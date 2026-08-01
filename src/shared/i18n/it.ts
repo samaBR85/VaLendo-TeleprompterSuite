@@ -175,7 +175,7 @@ export const it: Dicionario = {
   'web.offline': 'Nessuna connessione a VaLendo',
   'web.enableSound': 'Attiva l’audio',
   'web.videoWeight': 'Peso del video in rete',
-  'web.videoWeightDetail': '{tamanho} · circa {mb} MB al minuto. Lo schermo del presentatore riceve sempre l’originale.',
+  'web.videoWeightDetail': 'fino a {tamanho} · circa {mb} MB al minuto. Lo schermo del presentatore riceve sempre l’originale.',
   'web.videoOriginalHint': 'Il file va com’è. Pesante sul wi-fi, ma senza attesa di preparazione.',
   'web.quality.original': 'Originale',
   'web.quality.alta': 'Alta',
