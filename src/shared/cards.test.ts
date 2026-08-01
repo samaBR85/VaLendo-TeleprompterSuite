@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cartaoNoAr, MAX_CARTOES, novoCartaoId } from './cards'
+import { cartaoNoAr, CARTOES_COM_ATALHO, novoCartaoId } from './cards'
 import { createInitialState } from './defaults'
 import { buildProject, readProject, serializeProject } from './project'
 import type { AppState, Cartao } from './types'
@@ -45,9 +45,12 @@ describe('ids de cartão', () => {
   })
 
   it('não se repetem dentro do mesmo instante', () => {
+    // muito além dos que ganham tecla: não há teto de cartões, e ids iguais
+    // fariam dois cartões apontarem para o mesmo arquivo de imagem
     const agora = 1_700_000_000_000
-    const ids = new Set(Array.from({ length: MAX_CARTOES }, (_, i) => novoCartaoId(agora, i)))
-    expect(ids.size).toBe(MAX_CARTOES)
+    const quantos = CARTOES_COM_ATALHO * 5
+    const ids = new Set(Array.from({ length: quantos }, (_, i) => novoCartaoId(agora, i)))
+    expect(ids.size).toBe(quantos)
   })
 })
 

@@ -1,3 +1,5 @@
+import { CARTOES_COM_ATALHO } from './cards'
+
 export type CommandGroup =
   | 'Transporte'
   | 'Ritmo'
@@ -102,8 +104,9 @@ for (let n = 1; n <= 10; n += 1) {
   })
 }
 
-// um por cartão: seis é o que cabe no painel e o que a mão alcança sem olhar
-for (let n = 1; n <= 6; n += 1) {
+// os primeiros nove cartões ganham tecla; do décimo em diante vale o clique
+// na gaveta, que é onde as artes estão à vista de qualquer jeito
+for (let n = 1; n <= CARTOES_COM_ATALHO; n += 1) {
   COMMANDS.push({
     id: `card.show.${n}`,
     group: 'Saída',

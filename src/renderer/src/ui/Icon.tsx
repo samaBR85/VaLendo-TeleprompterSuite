@@ -37,9 +37,11 @@ export type IconName =
   | 'globe'
   | 'card'
   | 'volume'
+  | 'trash'
 
 const PATHS: Record<IconName, string> = {
   volume: 'M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6',
+  trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6',
   play: 'M8 5l11 7-11 7z',
   pause: 'M9 5v14M15 5v14',
   restart: 'M4 12a8 8 0 1 0 8-8M4 12V6M4 12h6',

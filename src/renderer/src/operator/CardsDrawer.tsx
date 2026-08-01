@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
-import { MAX_CARTOES, novoCartaoId } from '@shared/cards'
+import { CARTOES_COM_ATALHO, novoCartaoId } from '@shared/cards'
 import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN } from '@shared/defaults'
 import type { Cartao, VideoClock } from '@shared/types'
 import { posicaoDoVideo, tempoDeVideo } from '@shared/video'
@@ -15,7 +15,7 @@ interface Props {
   noAr: string | null
   /** a tela preta cobre o cartão; vale avisar em vez de deixar parecer defeito */
   blackout: boolean
-  /** o relógio do vídeo no ar — o controle daqui manda nele */
+  /** o relógio do vídeo no ar — o player do cartão manda nele */
   clock: VideoClock
   altura: number
   dispatch: (action: Action) => void
@@ -25,16 +25,15 @@ interface Props {
 /**
  * A gaveta de cartões, no rodapé e em largura total.
  *
- * Era um modal, e modal é a forma errada para isto: cartão se aciona no meio
- * do programa, com a prévia à vista, e uma janela por cima justamente da
- * prévia obrigava a fechar e reabrir a cada conferida. Aqui as artes ficam
- * lado a lado — que é como se varre um conjunto de standby sob pressão, de
- * relance — e nada some da tela para isso.
+ * Cada cartão é inteiro em si: a arte, o nome, o recado, o player. Antes havia
+ * uma coluna de edição à direita e um botão para abri-la — o que obrigava a
+ * mirar num alvo pequeno para mexer numa coisa que estava logo ali. Todos têm
+ * a mesma largura de propósito: a arte que estava em terceiro continua em
+ * terceiro quando o vídeo entra no ar, e memória muscular no meio de um
+ * programa vale mais que o espaço economizado.
  *
- * Dentro, dois lados com trabalhos diferentes: as miniaturas para disparar, e
- * a coluna da direita para tratar do arquivo com calma. O transporte do vídeo
- * fica numa faixa fixa embaixo, sempre no mesmo lugar, porque procurar botão
- * de play no meio de um programa é o tipo de coisa que não pode acontecer.
+ * A altura vem da gaveta: puxar a divisória para cima dá mais espaço ao recado
+ * e ao player, sem mexer no tamanho das miniaturas.
  */
 export function CardsDrawer({
   cards,
@@ -49,13 +48,6 @@ export function CardsDrawer({
   const [ocupado, setOcupado] = useState(false)
   /** por que o último arquivo escolhido não serviu — some na próxima escolha */
   const [recusa, setRecusa] = useState<string | null>(null)
-  const [selecionado, setSelecionado] = useState<string | null>(null)
-  const cheio = cards.length >= MAX_CARTOES
-
-  // a seleção segue quem existe: apagar o cartão aberto não pode deixar a
-  // coluna da direita mostrando um fantasma
-  const alvo = cards.find((c) => c.id === selecionado) ?? null
-  const videoNoAr = cards.find((c) => c.id === noAr && c.kind === 'video') as CartaoVideo | undefined
 
   /**
    * Arrasta a divisória do topo para dar mais ou menos altura à gaveta.
@@ -78,7 +70,7 @@ export function CardsDrawer({
   }
 
   const adicionarImagem = async (): Promise<void> => {
-    if (cheio || ocupado) return
+    if (ocupado) return
     setOcupado(true)
     setRecusa(null)
     try {
@@ -89,7 +81,6 @@ export function CardsDrawer({
         type: 'card/add',
         card: { id, kind: 'image', nome: escolhido.sugestao || t('cards.addImage'), arquivo: escolhido.arquivo }
       })
-      setSelecionado(id)
     } finally {
       setOcupado(false)
     }
@@ -103,7 +94,7 @@ export function CardsDrawer({
    * porta por onde um caminho entra na lista de autorizados.
    */
   const adicionarVideo = async (): Promise<void> => {
-    if (cheio || ocupado) return
+    if (ocupado) return
     setOcupado(true)
     setRecusa(null)
     try {
@@ -113,11 +104,10 @@ export function CardsDrawer({
         setRecusa(`${escolhido.arquivoNome} — ${escolhido.erro}`)
         return
       }
-      const id = novoCartaoId(Date.now(), cards.length)
       dispatch({
         type: 'card/add',
         card: {
-          id,
+          id: novoCartaoId(Date.now(), cards.length),
           kind: 'video',
           nome: escolhido.sugestao || t('cards.addVideo'),
           caminho: escolhido.caminho,
@@ -125,19 +115,16 @@ export function CardsDrawer({
           vinculado: true
         }
       })
-      setSelecionado(id)
     } finally {
       setOcupado(false)
     }
   }
 
   const adicionarRecado = (): void => {
-    if (cheio) return
-    const id = novoCartaoId(Date.now(), cards.length)
-    dispatch({ type: 'card/add', card: { id, kind: 'text', nome: '', texto: '' } })
-    // já aberto na coluna da direita: um recado nasce vazio e só existe
-    // depois de escrito
-    setSelecionado(id)
+    dispatch({
+      type: 'card/add',
+      card: { id: novoCartaoId(Date.now(), cards.length), kind: 'text', nome: '', texto: '' }
+    })
   }
 
   return (
@@ -161,31 +148,23 @@ export function CardsDrawer({
             atributo="image"
             icone="card"
             rotulo={t('cards.addImage')}
-            desligado={cheio || ocupado}
+            desligado={ocupado}
             onClick={() => void adicionarImagem()}
           />
           <BotaoAdicionar
             atributo="video"
             icone="play"
             rotulo={t('cards.addVideo')}
-            desligado={cheio || ocupado}
+            desligado={ocupado}
             onClick={() => void adicionarVideo()}
           />
-          <BotaoAdicionar
-            atributo="text"
-            icone="direction"
-            rotulo={t('cards.addText')}
-            desligado={cheio}
-            onClick={adicionarRecado}
-          />
+          <BotaoAdicionar atributo="text" icone="direction" rotulo={t('cards.addText')} onClick={adicionarRecado} />
         </div>
 
         {recusa ? (
           <span className="ml-3 min-w-0 truncate text-[11px] text-[var(--color-live)]">{recusa}</span>
         ) : blackout && noAr ? (
           <span className="ml-3 text-[11px] text-[var(--color-warn)]">{t('cards.blackoutWins')}</span>
-        ) : cheio ? (
-          <span className="ml-3 text-[11px] text-[var(--color-fog-2)]">{t('cards.max')}</span>
         ) : null}
 
         <button
@@ -204,33 +183,20 @@ export function CardsDrawer({
             {t('cards.empty')}
           </p>
         ) : (
-          <div className="flex min-w-0 flex-1 items-start gap-2.5 overflow-x-auto px-4 py-2.5">
+          <div className="flex min-w-0 flex-1 items-stretch gap-2.5 overflow-x-auto px-4 py-2.5">
             {cards.map((card, index) => (
-              <Miniatura
+              <CartaoNaGaveta
                 key={card.id}
                 card={card}
-                atalho={index + 1}
+                atalho={index < CARTOES_COM_ATALHO ? index + 1 : null}
                 noAr={noAr === card.id}
-                aberto={selecionado === card.id}
-                onAbrir={() => setSelecionado(card.id)}
+                clock={clock}
                 dispatch={dispatch}
               />
             ))}
           </div>
         )}
-
-        {alvo ? (
-          <Detalhes
-            key={alvo.id}
-            card={alvo}
-            noAr={noAr === alvo.id}
-            dispatch={dispatch}
-            onFechar={() => setSelecionado(null)}
-          />
-        ) : null}
       </div>
-
-      {videoNoAr ? <Transporte card={videoNoAr} clock={clock} dispatch={dispatch} /> : null}
     </section>
   )
 }
@@ -239,13 +205,13 @@ function BotaoAdicionar({
   atributo,
   icone,
   rotulo,
-  desligado,
+  desligado = false,
   onClick
 }: {
   atributo: string
   icone: 'card' | 'play' | 'direction'
   rotulo: string
-  desligado: boolean
+  desligado?: boolean
   onClick: () => void
 }): React.JSX.Element {
   return (
@@ -263,25 +229,23 @@ function BotaoAdicionar({
 }
 
 /**
- * O cartão como se vê de relance: a arte, o nome e a tecla.
+ * Um cartão inteiro: a arte, o nome e o que aquele tipo precisa.
  *
- * Clicar na miniatura põe no ar e tira, que é o gesto do meio do programa.
- * Abrir para editar é o botão pequeno — o contrário deixaria um clique
- * distraído mandando uma arte para a tela do apresentador.
+ * Clicar na arte põe no ar e tira — é o gesto do meio do programa, e por isso
+ * é o alvo maior. O resto (nome, recado, player, remover) fica abaixo, onde a
+ * mão só vai quando há tempo.
  */
-function Miniatura({
+function CartaoNaGaveta({
   card,
   atalho,
   noAr,
-  aberto,
-  onAbrir,
+  clock,
   dispatch
 }: {
   card: Cartao
-  atalho: number
+  atalho: number | null
   noAr: boolean
-  aberto: boolean
-  onAbrir: () => void
+  clock: VideoClock
   dispatch: (action: Action) => void
 }): React.JSX.Element {
   const { t } = useT()
@@ -291,12 +255,8 @@ function Miniatura({
     <div
       data-card-tile={card.id}
       data-on-air={noAr ? 'sim' : 'nao'}
-      className={`flex w-[128px] flex-none flex-col gap-1 rounded-lg border p-1.5 ${
-        noAr
-          ? 'border-[var(--color-go)]/60 bg-[var(--color-go)]/[0.09]'
-          : aberto
-            ? 'border-[var(--color-fog-2)]'
-            : 'border-[var(--color-line)]'
+      className={`flex w-[180px] flex-none flex-col gap-1.5 rounded-lg border p-2 ${
+        noAr ? 'border-[var(--color-go)]/60 bg-[var(--color-go)]/[0.09]' : 'border-[var(--color-line)]'
       }`}
     >
       {card.kind === 'video' ? <PreparaVideo card={card} dispatch={dispatch} /> : null}
@@ -307,7 +267,7 @@ function Miniatura({
         disabled={desvinculado}
         title={noAr ? t('cards.hide') : t('cards.show')}
         onClick={() => dispatch({ type: 'card/show', cardId: card.id })}
-        className="relative flex h-[64px] items-center justify-center overflow-hidden rounded border border-[var(--color-line)] bg-black disabled:cursor-not-allowed"
+        className="relative flex h-[72px] flex-none items-center justify-center overflow-hidden rounded border border-[var(--color-line)] bg-black disabled:cursor-not-allowed"
       >
         {card.kind === 'image' ? (
           <img
@@ -319,19 +279,13 @@ function Miniatura({
           card.poster ? (
             <img src={card.poster} alt="" className="max-h-full max-w-full object-contain" />
           ) : (
-            <Icon name="play" size={16} />
+            <Icon name="play" size={18} />
           )
         ) : (
-          <span className="line-clamp-3 px-1 text-center text-[9px] leading-tight whitespace-pre-wrap text-[var(--color-fog-1)]">
+          <span className="line-clamp-4 px-1.5 text-center text-[10px] leading-tight whitespace-pre-wrap text-[var(--color-fog-1)]">
             {card.texto || '—'}
           </span>
         )}
-
-        {card.kind === 'video' ? (
-          <span className="absolute bottom-0.5 left-0.5 rounded-sm bg-black/70 px-1 text-[9px] text-[var(--color-fog-1)]">
-            <Icon name="play" size={8} />
-          </span>
-        ) : null}
 
         {desvinculado ? (
           <span className="absolute inset-x-0 bottom-0 bg-[var(--color-warn)]/85 py-0.5 text-[9px] text-black">
@@ -340,41 +294,99 @@ function Miniatura({
         ) : null}
       </button>
 
-      <div className="flex items-center gap-1">
-        <span className="min-w-0 flex-1 truncate text-[11px] text-[var(--color-fog-1)]" title={card.nome}>
-          {card.nome || (card.kind === 'text' ? card.texto : '') || '—'}
-        </span>
-        <kbd className="flex-none rounded border border-[var(--color-line)] px-1 font-mono text-[9px] text-[var(--color-fog-2)]">
-          {atalho}
-        </kbd>
+      <div className="flex flex-none items-center gap-1">
+        <input
+          value={card.nome}
+          aria-label={t('cards.name')}
+          placeholder={
+            card.kind === 'image'
+              ? t('cards.namePlaceholderImage')
+              : card.kind === 'video'
+                ? t('cards.namePlaceholderVideo')
+                : t('cards.namePlaceholderText')
+          }
+          onChange={(event) => dispatch({ type: 'card/rename', cardId: card.id, nome: event.target.value })}
+          className="min-w-0 flex-1 rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-1.5 py-0.5 text-[11px] outline-none placeholder:text-[var(--color-fog-2)]/70"
+        />
+        {atalho ? (
+          <kbd
+            title={`Ctrl+Shift+${atalho}`}
+            className="flex-none rounded border border-[var(--color-line)] px-1 font-mono text-[9px] text-[var(--color-fog-2)]"
+          >
+            {atalho}
+          </kbd>
+        ) : null}
+      </div>
+
+      {/* o miolo cresce com a gaveta: puxar a divisória dá mais linha ao
+          recado e mais respiro ao player, sem inchar as miniaturas */}
+      <div className="flex min-h-0 flex-1 flex-col gap-1.5">
+        {card.kind === 'text' ? (
+          <textarea
+            value={card.texto}
+            aria-label={t('cards.message')}
+            placeholder={t('cards.messagePlaceholder')}
+            autoFocus={card.texto === ''}
+            onChange={(event) => dispatch({ type: 'card/text', cardId: card.id, texto: event.target.value })}
+            className="min-h-0 flex-1 resize-none rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-1.5 py-1 text-[11px] leading-snug outline-none placeholder:text-[var(--color-fog-2)]/70"
+          />
+        ) : null}
+
+        {card.kind === 'video' ? <PlayerDoCartao card={card} clock={clock} noAr={noAr} dispatch={dispatch} /> : null}
+      </div>
+
+      <div className="flex flex-none items-center gap-1.5">
+        {noAr ? <span className="text-[10px] text-[var(--color-go)]">{t('cards.onAir')}</span> : null}
         <button
           type="button"
-          data-card-open={card.id}
-          aria-label={t('cards.edit')}
-          title={t('cards.edit')}
-          onClick={onAbrir}
-          className="flex-none rounded p-0.5 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+          data-card-remove={card.id}
+          aria-label={t('cards.remove')}
+          title={t('cards.remove')}
+          onClick={() => dispatch({ type: 'card/remove', cardId: card.id })}
+          className="ml-auto rounded p-0.5 text-[var(--color-fog-2)] hover:bg-[var(--color-live)]/12 hover:text-[var(--color-live)]"
         >
-          <Icon name="sliders" size={11} />
+          <Icon name="trash" size={12} />
         </button>
       </div>
     </div>
   )
 }
 
-/** A coluna da direita: tratar do cartão com calma, longe do gesto de disparar. */
-function Detalhes({
+/**
+ * O player, dentro do próprio cartão.
+ *
+ * Fora do ar ele não fica cinza: apertar play põe o cartão no ar e começa a
+ * tocar, que é o que o operador quer dizer com aquele botão. Manda comando
+ * para o relógio compartilhado, nunca toca num vídeo próprio — é o que faz a
+ * prévia e a transmissão nunca discordarem sobre onde o vídeo está.
+ */
+function PlayerDoCartao({
   card,
+  clock,
   noAr,
-  dispatch,
-  onFechar
+  dispatch
 }: {
-  card: Cartao
+  card: CartaoVideo
+  clock: VideoClock
   noAr: boolean
   dispatch: (action: Action) => void
-  onFechar: () => void
 }): React.JSX.Element {
   const { t } = useT()
+  const [agora, setAgora] = useState(() => Date.now())
+  const [arrastando, setArrastando] = useState<number | null>(null)
+
+  // a barra precisa andar sozinha enquanto toca; dez vezes por segundo é
+  // suave o bastante para o olho e barato o bastante para não disputar
+  // quadro com o vídeo em si
+  useEffect(() => {
+    if (!clock.tocando || !noAr) return
+    const id = setInterval(() => setAgora(Date.now()), 100)
+    return () => clearInterval(id)
+  }, [clock.tocando, noAr])
+
+  const duracao = card.duracao ?? 0
+  const posicao = noAr ? (arrastando ?? posicaoDoVideo(clock, agora, card.duracao, card.loop ?? false)) : 0
+  const tocando = noAr && clock.tocando
 
   const relinkar = async (): Promise<void> => {
     const escolhido = await window.valendo.pickCardVideo()
@@ -388,148 +400,19 @@ function Detalhes({
     })
   }
 
-  return (
-    <aside
-      data-card-details={card.id}
-      className="flex w-[300px] flex-none flex-col gap-2 overflow-y-auto border-l border-[var(--color-line)] px-3 py-2.5"
-    >
-      <div className="flex items-center gap-2">
-        <input
-          value={card.nome}
-          aria-label={t('cards.name')}
-          placeholder={
-            card.kind === 'image'
-              ? t('cards.namePlaceholderImage')
-              : card.kind === 'video'
-                ? t('cards.namePlaceholderVideo')
-                : t('cards.namePlaceholderText')
-          }
-          onChange={(event) => dispatch({ type: 'card/rename', cardId: card.id, nome: event.target.value })}
-          className="min-w-0 flex-1 rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1 text-[12px] outline-none placeholder:text-[var(--color-fog-2)]/70"
-        />
-        {/* fecha a coluna, não apaga o cartão: um X no alto de um painel lê
-            como "fechar" em qualquer app, e apagar uma arte por engano no meio
-            de um programa é caro demais para caber num ícone ambíguo */}
-        <button
-          type="button"
-          data-card-details-close
-          aria-label={t('app.close')}
-          title={t('app.close')}
-          onClick={onFechar}
-          className="flex-none rounded p-1 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
-        >
-          <Icon name="close" size={12} />
-        </button>
-      </div>
-
-      {card.kind === 'text' ? (
-        <textarea
-          value={card.texto}
-          aria-label={t('cards.message')}
-          placeholder={t('cards.messagePlaceholder')}
-          rows={2}
-          autoFocus={card.texto === ''}
-          onChange={(event) => dispatch({ type: 'card/text', cardId: card.id, texto: event.target.value })}
-          // cresce com o texto em vez de rolar dentro de uma caixa de uma
-          // linha: o recado vai para a tela como foi escrito, e onde o
-          // operador apertou Enter é onde ele quebra lá também
-          ref={(el) => {
-            if (!el) return
-            el.style.height = 'auto'
-            el.style.height = `${el.scrollHeight}px`
-          }}
-          className="resize-none overflow-hidden rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1 text-[12px] leading-snug outline-none placeholder:text-[var(--color-fog-2)]/70"
-        />
-      ) : null}
-
-      {card.kind === 'video' ? (
-        <>
-          {card.vinculado === false ? (
-            <div className="flex items-center gap-2 rounded-md border border-[var(--color-warn)]/40 bg-[var(--color-warn)]/10 px-2 py-1.5">
-              <span className="min-w-0 flex-1 truncate text-[11px] text-[var(--color-warn)]" title={card.caminho}>
-                {t('cards.videoMissing')}
-              </span>
-              <button
-                type="button"
-                data-card-relink={card.id}
-                onClick={() => void relinkar()}
-                className="flex-none rounded border border-[var(--color-warn)]/50 px-2 py-0.5 text-[11px] text-[var(--color-warn)] hover:bg-[var(--color-warn)]/15"
-              >
-                {t('cards.videoRelink')}
-              </button>
-            </div>
-          ) : null}
-
-          <p className="text-[10px] break-all text-[var(--color-fog-2)]" title={card.caminho}>
-            {card.arquivoNome}
-            {card.duracao ? ` · ${tempoDeVideo(card.duracao)}` : ''}
-          </p>
-
-          <label className="flex items-center gap-1.5 text-[11px] text-[var(--color-fog-1)]">
-            <input
-              type="checkbox"
-              data-card-loop={card.id}
-              checked={card.loop ?? false}
-              onChange={(event) => dispatch({ type: 'card/videoLoop', cardId: card.id, loop: event.target.checked })}
-            />
-            {t('cards.videoLoop')}
-          </label>
-        </>
-      ) : null}
-
-      {noAr ? <span className="text-[10px] text-[var(--color-go)]">{t('cards.onAir')}</span> : null}
-
-      {/* escrito por extenso e no fim, longe do que se clica com pressa */}
+  if (card.vinculado === false) {
+    return (
       <button
         type="button"
-        data-card-remove={card.id}
-        onClick={() => {
-          dispatch({ type: 'card/remove', cardId: card.id })
-          onFechar()
-        }}
-        className="mt-auto self-start rounded px-1.5 py-0.5 text-[11px] text-[var(--color-fog-2)] hover:bg-[var(--color-live)]/12 hover:text-[var(--color-live)]"
+        data-card-relink={card.id}
+        onClick={() => void relinkar()}
+        title={card.caminho}
+        className="flex items-center justify-center gap-1 rounded border border-[var(--color-warn)]/50 px-2 py-1 text-[11px] text-[var(--color-warn)] hover:bg-[var(--color-warn)]/15"
       >
-        {t('cards.remove')}
+        {t('cards.videoRelink')}
       </button>
-    </aside>
-  )
-}
-
-/**
- * Play, barra e volume do vídeo no ar — sempre na mesma faixa, embaixo.
- *
- * Não vive junto do cartão selecionado de propósito: o operador pode estar
- * com outro cartão aberto para editar enquanto o vídeo corre, e o botão de
- * pausa não pode mudar de lugar conforme o que está selecionado.
- *
- * O painel não tem tocador nenhum: manda comando para o relógio compartilhado
- * e quem desenha são as superfícies. É o que faz a prévia e a transmissão
- * nunca discordarem sobre onde o vídeo está.
- */
-function Transporte({
-  card,
-  clock,
-  dispatch
-}: {
-  card: CartaoVideo
-  clock: VideoClock
-  dispatch: (action: Action) => void
-}): React.JSX.Element {
-  const { t } = useT()
-  const [agora, setAgora] = useState(() => Date.now())
-  const [arrastando, setArrastando] = useState<number | null>(null)
-
-  // a barra precisa andar sozinha enquanto toca; dez vezes por segundo é
-  // suave o bastante para o olho e barato o bastante para não disputar
-  // quadro com o vídeo em si
-  useEffect(() => {
-    if (!clock.tocando) return
-    const id = setInterval(() => setAgora(Date.now()), 100)
-    return () => clearInterval(id)
-  }, [clock.tocando])
-
-  const duracao = card.duracao ?? 0
-  const posicao = arrastando ?? posicaoDoVideo(clock, agora, card.duracao, card.loop ?? false)
+    )
+  }
 
   const soltar = (): void => {
     if (arrastando === null) return
@@ -540,58 +423,79 @@ function Transporte({
   }
 
   return (
-    <div
-      data-card-transport={card.id}
-      className="flex flex-none items-center gap-2.5 border-t border-[var(--color-line)] px-4 py-1.5"
-    >
-      <button
-        type="button"
-        data-card-video-play={card.id}
-        aria-label={clock.tocando ? t('cards.videoPause') : t('cards.videoPlay')}
-        onClick={() => dispatch({ type: 'card/videoPlay', tocando: !clock.tocando })}
-        className="flex-none rounded border border-[var(--color-line)] p-1 text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]"
-      >
-        <Icon name={clock.tocando ? 'pause' : 'play'} size={12} />
-      </button>
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          data-card-video-play={card.id}
+          aria-label={tocando ? t('cards.videoPause') : t('cards.videoPlay')}
+          onClick={() => {
+            // fora do ar, play quer dizer "sobe e toca" — pausar um vídeo que
+            // ninguém está vendo não significa nada
+            if (!noAr) dispatch({ type: 'card/show', cardId: card.id })
+            else dispatch({ type: 'card/videoPlay', tocando: !clock.tocando })
+          }}
+          className="flex-none rounded border border-[var(--color-line)] p-0.5 text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]"
+        >
+          <Icon name={tocando ? 'pause' : 'play'} size={11} />
+        </button>
 
-      <span className="max-w-[160px] flex-none truncate text-[11px] text-[var(--color-fog-2)]">{card.nome}</span>
+        <input
+          type="range"
+          data-card-video-seek={card.id}
+          min={0}
+          max={duracao || 1}
+          step={0.05}
+          value={Math.min(posicao, duracao || 1)}
+          disabled={!duracao || !noAr}
+          aria-label={t('cards.videoSeek')}
+          onChange={(event) => {
+            const segundo = Number(event.target.value)
+            setArrastando(segundo)
+            dispatch({ type: 'card/videoSeek', segundo, arrastando: true })
+          }}
+          onPointerUp={soltar}
+          onKeyUp={soltar}
+          onBlur={soltar}
+          className="min-w-0 flex-1 accent-[var(--color-go)] disabled:opacity-40"
+        />
+      </div>
 
-      <input
-        type="range"
-        data-card-video-seek={card.id}
-        min={0}
-        max={duracao || 1}
-        step={0.05}
-        value={Math.min(posicao, duracao || 1)}
-        disabled={!duracao}
-        aria-label={t('cards.videoSeek')}
-        onChange={(event) => {
-          const segundo = Number(event.target.value)
-          setArrastando(segundo)
-          dispatch({ type: 'card/videoSeek', segundo, arrastando: true })
-        }}
-        onPointerUp={soltar}
-        onKeyUp={soltar}
-        onBlur={soltar}
-        className="min-w-0 flex-1 accent-[var(--color-go)]"
-      />
+      <div className="flex items-center gap-1.5">
+        <span className="flex-none font-mono text-[9px] text-[var(--color-fog-2)]">
+          {tempoDeVideo(posicao)} / {tempoDeVideo(duracao)}
+        </span>
 
-      <span className="flex-none font-mono text-[10px] text-[var(--color-fog-2)]">
-        {tempoDeVideo(posicao)} / {tempoDeVideo(duracao)}
-      </span>
+        <label
+          title={t('cards.videoLoop')}
+          className="ml-auto flex flex-none items-center gap-1 text-[9px] text-[var(--color-fog-2)]"
+        >
+          <input
+            type="checkbox"
+            data-card-loop={card.id}
+            checked={card.loop ?? false}
+            onChange={(event) => dispatch({ type: 'card/videoLoop', cardId: card.id, loop: event.target.checked })}
+          />
+          {t('cards.videoLoop')}
+        </label>
 
-      <Icon name="volume" size={11} />
-      <input
-        type="range"
-        data-card-video-volume={card.id}
-        min={0}
-        max={1}
-        step={0.05}
-        value={clock.volume}
-        aria-label={t('cards.videoVolume')}
-        onChange={(event) => dispatch({ type: 'card/videoVolume', volume: Number(event.target.value) })}
-        className="w-16 flex-none accent-[var(--color-fog-1)]"
-      />
+        {noAr ? (
+          <>
+            <Icon name="volume" size={10} />
+            <input
+              type="range"
+              data-card-video-volume={card.id}
+              min={0}
+              max={1}
+              step={0.05}
+              value={clock.volume}
+              aria-label={t('cards.videoVolume')}
+              onChange={(event) => dispatch({ type: 'card/videoVolume', volume: Number(event.target.value) })}
+              className="w-10 flex-none accent-[var(--color-fog-1)]"
+            />
+          </>
+        ) : null}
+      </div>
     </div>
   )
 }

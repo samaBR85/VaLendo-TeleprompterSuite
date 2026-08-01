@@ -1,7 +1,15 @@
 import type { AppState, Cartao } from './types'
 
-/** Quantos cartões cabem — um por atalho, de Ctrl+Shift+1 a 6. */
-export const MAX_CARTOES = 6
+/**
+ * Quantos cartões ganham atalho de teclado: Ctrl+Shift+1 a 9.
+ *
+ * Não é um teto de cartões. Já foi — o programa parava no sexto porque só
+ * havia seis atalhos, e enquanto os cartões viviam num modal o atalho era o
+ * único jeito rápido de acionar. Com a gaveta, as artes estão à vista e o
+ * clique serve; do décimo em diante o cartão existe e funciona, só não tem
+ * tecla própria.
+ */
+export const CARTOES_COM_ATALHO = 9
 
 /**
  * O cartão que está na tela do apresentador, ou nada.
