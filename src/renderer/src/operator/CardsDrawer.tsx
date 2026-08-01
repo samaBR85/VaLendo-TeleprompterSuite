@@ -300,6 +300,13 @@ function CartaoNaGaveta({
   // mesmo com a arte nova já certa, porque o estado é do componente, não do
   // arquivo
   useEffect(() => setImagemQuebrada(false), [card.kind === 'image' ? card.arquivo : null])
+
+  /**
+   * A barra na mão do operador, para a miniatura mostrar o quadro daquele
+   * segundo enquanto ele arrasta — vive aqui, e não dentro do player, porque
+   * a miniatura também precisa saber.
+   */
+  const [arrastando, setArrastando] = useState<number | null>(null)
   const reimportarImagem = async (): Promise<void> => {
     const escolhido = await window.valendo.pickCardImage(card.id)
     if (!escolhido) return
@@ -341,7 +348,9 @@ function CartaoNaGaveta({
             />
           )
         ) : card.kind === 'video' ? (
-          card.poster ? (
+          arrastando !== null ? (
+            <PreviaDoArrasto card={card} segundo={arrastando} />
+          ) : card.poster ? (
             <img src={card.poster} alt="" className="max-h-full max-w-full object-contain" />
           ) : (
             <Icon name="play" size={18} />
@@ -398,7 +407,15 @@ function CartaoNaGaveta({
         ) : null}
 
         {card.kind === 'video' ? (
-          <PlayerDoCartao card={card} clock={clock} noAr={noAr} videoPerfil={videoPerfil} dispatch={dispatch} />
+          <PlayerDoCartao
+            card={card}
+            clock={clock}
+            noAr={noAr}
+            videoPerfil={videoPerfil}
+            dispatch={dispatch}
+            arrastando={arrastando}
+            onArrastar={setArrastando}
+          />
         ) : null}
       </div>
 
@@ -437,6 +454,39 @@ function CartaoNaGaveta({
 }
 
 /**
+ * Um quadro parado do vídeo, no segundo pedido — nunca tocando.
+ *
+ * É a prévia que aparece na miniatura enquanto o operador arrasta a barra.
+ * Um `<video>` comum, mas sem `autoPlay` e sem jamais chamar `.play()`:
+ * só `currentTime` muda, então o navegador desenha um quadro e para —
+ * exatamente o que faz um `<video>` pausado com o tempo trocado. Compartilha
+ * o mesmo arquivo do player de verdade (mesma URL, mesma faixa de bytes),
+ * então o quadro que aparece aqui é o quadro que vai para a tela ao soltar.
+ */
+function PreviaDoArrasto({ card, segundo }: { card: CartaoVideo; segundo: number }): React.JSX.Element {
+  const ref = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const video = ref.current
+    if (video && Number.isFinite(video.duration)) video.currentTime = segundo
+  }, [segundo])
+
+  return (
+    <video
+      ref={ref}
+      muted
+      playsInline
+      preload="auto"
+      src={`valendo://video/${encodeURIComponent(card.id)}?v=${encodeURIComponent(card.convertido ?? 'orig')}`}
+      onLoadedMetadata={(event) => {
+        event.currentTarget.currentTime = segundo
+      }}
+      className="max-h-full max-w-full object-contain"
+    />
+  )
+}
+
+/**
  * O player, dentro do próprio cartão.
  *
  * Fora do ar ele não fica cinza: apertar play põe o cartão no ar e começa a
@@ -449,17 +499,21 @@ function PlayerDoCartao({
   clock,
   noAr,
   videoPerfil,
-  dispatch
+  dispatch,
+  arrastando,
+  onArrastar
 }: {
   card: CartaoVideo
   clock: VideoClock
   noAr: boolean
   videoPerfil: PerfilDeRede
   dispatch: (action: Action) => void
+  /** a barra na mão do operador; mora no cartão, não aqui, porque a miniatura também precisa */
+  arrastando: number | null
+  onArrastar: (segundo: number | null) => void
 }): React.JSX.Element {
   const { t } = useT()
   const [agora, setAgora] = useState(() => Date.now())
-  const [arrastando, setArrastando] = useState<number | null>(null)
 
   // a barra precisa andar sozinha enquanto toca; dez vezes por segundo é
   // suave o bastante para o olho e barato o bastante para não disputar
@@ -532,7 +586,7 @@ function PlayerDoCartao({
     // arrasto ao vivo mandaria um borrão para o ar. Fora do ar não há para
     // quem mandar nada — só grava a posição no próprio cartão
     dispatch({ type: 'card/videoSeek', cardId: card.id, segundo: arrastando, arrastando: false })
-    setArrastando(null)
+    onArrastar(null)
   }
 
   return (
@@ -564,7 +618,7 @@ function PlayerDoCartao({
           aria-label={t('cards.videoSeek')}
           onChange={(event) => {
             const segundo = Number(event.target.value)
-            setArrastando(segundo)
+            onArrastar(segundo)
             dispatch({ type: 'card/videoSeek', cardId: card.id, segundo, arrastando: true })
           }}
           onPointerUp={soltar}
