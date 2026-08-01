@@ -334,7 +334,23 @@ export function PrompterCanvas({
    * Nenhuma mensagem por frame: cada janela deriva a própria posição, então
    * não existe deriva entre a prévia e o que o apresentador lê.
    */
+  /*
+   * Um cartão ou a tela preta cobrem o palco inteiro, e são opacos.
+   *
+   * Enquanto estão ali, mover o texto por baixo é trabalho que ninguém vê — e
+   * não é trabalho barato: é uma camada do tamanho da saída, marcada com
+   * `will-change: transform`, sendo reposicionada sessenta vezes por segundo.
+   * Num computador a placa de vídeo absorve. Num celular, ela disputa o
+   * compositor com o vídeo do próprio cartão, e o que engasga é a imagem que
+   * o operador está mostrando.
+   *
+   * Não há deriva em parar: a posição é derivada do relógio, não acumulada.
+   * Quando o cartão sai, o primeiro quadro já escreve o lugar certo.
+   */
+  const palcoCoberto = Boolean(card) || transport.blackout
+
   useEffect(() => {
+    if (palcoCoberto) return
     let frame = 0
 
     const tick = (): void => {
@@ -369,7 +385,7 @@ export function PrompterCanvas({
 
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [transport, readingLineY, appearance.timers.elapsed, appearance.timers.remaining])
+  }, [transport, readingLineY, appearance.timers.elapsed, appearance.timers.remaining, palcoCoberto])
 
   const mirror = `${appearance.mirrorX ? ' scaleX(-1)' : ''}${appearance.mirrorY ? ' scaleY(-1)' : ''}`
   const compensacao = outputTransforms ? ` rotate(${appearance.rotation}deg)${mirror}` : ''
