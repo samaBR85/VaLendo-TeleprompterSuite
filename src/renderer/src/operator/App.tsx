@@ -372,6 +372,19 @@ function AppConteudo({
     />
   )
 
+  const cardsDrawer = state.cardsVisible ? (
+    <CardsDrawer
+      cards={state.cards}
+      noAr={state.transport.card}
+      blackout={state.transport.blackout}
+      clock={state.transport.video}
+      videoPerfil={state.webview.videoPerfil}
+      altura={state.cardsHeight}
+      dispatch={dispatch}
+      onClose={() => dispatch({ type: 'layout/cards', visible: false })}
+    />
+  ) : null
+
   const markerStrip =
     tab.markers.length > 0 ? (
       <div className="flex flex-none items-center gap-1.5 overflow-x-auto border-t border-[var(--color-line)] px-3 py-1.5">
@@ -589,6 +602,7 @@ function AppConteudo({
           />
           {stage}
           {markerStrip}
+          {cardsDrawer}
         </main>
       ) : (
         <main ref={mainRef} className="flex min-h-0 flex-1">
@@ -603,43 +617,67 @@ function AppConteudo({
             dispatch={dispatch}
           />
 
-          <section className="flex min-w-0 flex-col" style={{ flex: `${split} 1 0` }}>
-            <PanelHeader
-              label={t('panel.edit')}
-              cor="var(--color-warn)"
-              detail={<MetaDaEdicao tab={tab} rows={rows} ppm={state.transport.ppm} />}
-              action={editorTools}
-            />
-            <Editor ref={editorRef} tab={tab} dispatch={dispatch} />
-          </section>
+          {/* a coluna do meio: edição + transmissão numa fileira, a gaveta de
+              cartões embaixo — com a MESMA largura das duas, nunca a da
+              janela inteira. É o que deixa a coluna e o inspetor virem
+              inteiros até o rodapé, como na maquete, em vez de os dois
+              pararem onde a gaveta (antes irmã da `main`) começava. */}
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            <div className="flex min-h-0 flex-1">
+              <section className="flex min-w-0 flex-col" style={{ flex: `${split} 1 0` }}>
+                <PanelHeader
+                  label={t('panel.edit')}
+                  cor="var(--color-warn)"
+                  detail={<MetaDaEdicao tab={tab} rows={rows} ppm={state.transport.ppm} />}
+                  action={editorTools}
+                />
+                <Editor ref={editorRef} tab={tab} dispatch={dispatch} />
+              </section>
 
-          <div
-            onMouseDown={startDrag}
-            className="w-1 flex-none cursor-col-resize bg-[var(--color-line)] hover:bg-[var(--color-fog-2)]"
-          />
+              <div
+                onMouseDown={startDrag}
+                className="w-1 flex-none cursor-col-resize bg-[var(--color-line)] hover:bg-[var(--color-fog-2)]"
+              />
 
-          <section className="flex min-w-0 flex-col" style={{ flex: `${1 - split} 1 0` }}>
-            <PanelHeader
-              label={t('panel.broadcasting')}
-              cor="var(--color-live)"
-              ponto
-              action={
-                <>
-                  <span className="font-mono text-[10px] text-[var(--color-fog-3)]">{`${viewport.width} × ${viewport.height}`}</span>
-                  <button
-                    type="button"
-                    onClick={toggleFocusMode}
-                    title={t('panel.expand')}
-                    className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
-                  >
-                    <Icon name="expand" size={14} />
-                  </button>
-                </>
-              }
-            />
-            {stage}
-            {markerStrip}
-          </section>
+              <section className="flex min-w-0 flex-col" style={{ flex: `${1 - split} 1 0` }}>
+                <PanelHeader
+                  label={t('panel.broadcasting')}
+                  cor="var(--color-live)"
+                  ponto
+                  action={
+                    <>
+                      <span className="font-mono text-[10px] text-[var(--color-fog-3)]">{`${viewport.width} × ${viewport.height}`}</span>
+                      <button
+                        type="button"
+                        onClick={toggleFocusMode}
+                        title={t('panel.expand')}
+                        className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
+                      >
+                        <Icon name="expand" size={14} />
+                      </button>
+                    </>
+                  }
+                />
+                {stage}
+                {markerStrip}
+              </section>
+            </div>
+
+            {state.transportPosition === 'regua' ? (
+              <BarraDeTransporte
+                state={state}
+                tab={tab}
+                displays={displays}
+                keymap={keymap}
+                rows={rows}
+                dispatch={dispatch}
+                run={run}
+                position="regua"
+              />
+            ) : null}
+
+            {cardsDrawer}
+          </div>
 
           {state.inspectorVisible ? (
             <Inspector
@@ -653,10 +691,9 @@ function AppConteudo({
         </main>
       )}
 
-      {/* a régua: entre o roteiro e os cartões, que é onde o olho já está
-          durante o programa. Fica fora dos três modos pelo mesmo motivo da
-          gaveta — trocar de modo não pode fazer o play sumir da tela */}
-      {state.transportPosition === 'regua' ? (
+      {/* Foco e Mesa não têm coluna nem inspetor — a régua fica fora do
+          conteúdo do modo, entre o roteiro e o resto da tela, igual já era */}
+      {state.transportPosition === 'regua' && state.layoutMode !== 'split' ? (
         <BarraDeTransporte
           state={state}
           tab={tab}
@@ -669,21 +706,9 @@ function AppConteudo({
         />
       ) : null}
 
-      {/* fora dos três modos, e não dentro de cada um: a gaveta é a mesma no
-          Split, no Foco e na Mesa, e trocar de modo não pode fazer as artes
-          do programa sumirem da tela */}
-      {state.cardsVisible ? (
-        <CardsDrawer
-          cards={state.cards}
-          noAr={state.transport.card}
-          blackout={state.transport.blackout}
-          clock={state.transport.video}
-          videoPerfil={state.webview.videoPerfil}
-          altura={state.cardsHeight}
-          dispatch={dispatch}
-          onClose={() => dispatch({ type: 'layout/cards', visible: false })}
-        />
-      ) : null}
+      {/* na Mesa não há sidebar nem inspetor: a gaveta segue em largura
+          total, como sempre foi */}
+      {state.layoutMode === 'deck' ? cardsDrawer : null}
 
       <StatusBar
         state={state}
