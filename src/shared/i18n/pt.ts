@@ -11,6 +11,8 @@ export const pt = {
   'app.settings': 'Ajustes',
   'app.transportTop': 'Transporte na barra de cima',
   'app.transportStrip': 'Transporte na régua do rodapé',
+  'app.panels': 'Painéis',
+  'key.save': 'salvar',
   'app.shortcuts': 'Editar atalhos',
   'app.palette': 'Paleta de comandos',
   'app.credits': 'Créditos',

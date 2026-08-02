@@ -7,7 +7,8 @@ import { LANGS, type Lang } from '@shared/i18n'
 import { ProvedorDeIdioma, useT } from '../i18n'
 import { activeTabOf, useAppState } from '../state/useAppState'
 import { Icon, type IconName } from '../ui/Icon'
-import { Wordmark } from '../ui/Wordmark'
+import { Poco, Tecla } from '../ui/console'
+import { Wordmark, versionLabel } from '../ui/Wordmark'
 import { CloseConfirm } from './CloseConfirm'
 import { CardsDrawer } from './CardsDrawer'
 import { CommandPalette } from './CommandPalette'
@@ -18,8 +19,7 @@ import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
 import { Sidebar } from './Sidebar'
 import { StatusBar } from './StatusBar'
-import { Tabs } from './Tabs'
-import { BarraDeArquivo, BarraDeTransporte, hint } from './Toolbar'
+import { BarraDeArquivo, BarraDeTransporte, PocoDeSaida, PocosDeArquivo, hint } from './Toolbar'
 import { WebviewPanel } from './WebviewPanel'
 import { useCommands } from './useCommands'
 
@@ -111,12 +111,11 @@ function LanguagePicker({
         title={`${t('app.language')} — ${atual.nome}`}
         aria-label={t('app.language')}
         onClick={() => setAberto((v) => !v)}
-        className={`flex items-center gap-1 rounded p-2 hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] ${
+        className={`flex h-8 items-center rounded-md px-2 text-[13px] font-semibold tracking-wide uppercase hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] ${
           aberto ? 'text-[var(--color-fog-0)]' : 'text-[var(--color-fog-2)]'
         }`}
       >
-        <Icon name="globe" size={30} />
-        <span className="font-mono text-[11px] tracking-wide">{atual.sigla}</span>
+        {atual.sigla}
       </button>
 
       {aberto ? (
@@ -406,87 +405,86 @@ function AppConteudo({
 
   return (
     <div className="relative flex h-full flex-col bg-[var(--color-ink-0)]">
-      <header className="flex flex-none items-center gap-4 border-b border-[var(--color-line)] bg-[var(--color-ink-1)] px-4 py-3">
-        <Wordmark size={30} />
-        <div className="h-12 w-px flex-none bg-[var(--color-line)]" />
-        <div className="min-w-0 flex-1">
-          <Tabs state={state} dispatch={dispatch} />
+      {/* a linha do wordmark: identidade à esquerda, controles do app à
+          direita. Quem diz se o programa está no ar é o Transmitir, no poço
+          SAÍDA — o aviso gigante daqui saiu porque dois avisos do mesmo fato
+          ensinavam o olho a ignorar um deles */}
+      <header
+        className="flex flex-none items-center gap-3 border-b border-[var(--color-edge)] px-2.5 py-1.5"
+        style={{ background: 'linear-gradient(#212125, #1a1a1e)' }}
+      >
+        <div className="flex flex-none items-center border-r border-[var(--color-edge)] pr-3">
+          <Wordmark size={30} subtitle={false} />
         </div>
-        <div className="flex flex-none items-center gap-3 text-[13px]">
-          {/* onde o transporte mora. Dois botões em vez de um alternador,
+        <span className="flex-none text-[12px] whitespace-nowrap text-[var(--color-fog-2)]">{versionLabel()}</span>
+
+        {/* com o transporte na régua, a linha das abas perde os poços de
+            arquivo para cá — o wordmark fica com espaço sobrando e as abas
+            ganham a linha inteira, como na variante 8b da maquete */}
+        {state.transportPosition === 'regua' ? (
+          <div className="flex min-w-0 items-center gap-2.5">
+            <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={importDocument} />
+          </div>
+        ) : null}
+
+        <div className="ml-auto flex flex-none items-center gap-2">
+          {/* onde o transporte mora. Duas teclas em vez de um alternador,
               porque o operador precisa ver qual das duas está valendo sem
               ter que lembrar o que o ícone significa quando está apagado */}
-          <div
-            data-paineis
-            className="flex flex-none items-center gap-0.5 rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1"
-          >
-            {(['topo', 'regua'] as const).map((posicao) => (
-              <button
-                key={posicao}
-                type="button"
-                data-transport-position={posicao}
-                title={`${t(posicao === 'topo' ? 'app.transportTop' : 'app.transportStrip')}${hint(keymap, 'view.transportPosition')}`}
-                aria-pressed={state.transportPosition === posicao}
-                onClick={() => dispatch({ type: 'layout/transportPosition', position: posicao })}
-                className={`rounded-md p-1.5 transition-colors ${
-                  state.transportPosition === posicao
-                    ? 'bg-[var(--color-accent)]/16 text-[var(--color-accent)]'
-                    : 'text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-1)]'
-                }`}
-              >
-                <Icon name={posicao === 'topo' ? 'layoutSplit' : 'layoutDeck'} size={20} />
-              </button>
-            ))}
+          <div data-paineis className="flex flex-none items-center gap-[7px]">
+            <span className="k-microcaps text-[var(--color-fog-2)]">{t('app.panels')}</span>
+            <Poco>
+              {(['topo', 'regua'] as const).map((posicao) => (
+                <Tecla
+                  key={posicao}
+                  data-transport-position={posicao}
+                  title={`${t(posicao === 'topo' ? 'app.transportTop' : 'app.transportStrip')}${hint(keymap, 'view.transportPosition')}`}
+                  aria-pressed={state.transportPosition === posicao}
+                  acesa={state.transportPosition === posicao}
+                  cor="var(--color-accent)"
+                  className="h-6 w-8"
+                  onClick={() => dispatch({ type: 'layout/transportPosition', position: posicao })}
+                >
+                  <Icon name={posicao === 'topo' ? 'layoutSplit' : 'layoutDeck'} size={15} />
+                </Tecla>
+              ))}
+            </Poco>
           </div>
 
-          <LanguagePicker
-            lang={state.language}
-            onChange={(language) => dispatch({ type: 'app/language', language })}
-          />
-          <button
-            type="button"
-            onClick={() => dispatch({ type: 'layout/inspector', visible: !state.inspectorVisible })}
-            title={t('app.settings')}
-            className={`rounded p-2 hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] ${
-              state.inspectorVisible ? 'text-[var(--color-fog-0)]' : 'text-[var(--color-fog-2)]'
-            }`}
-          >
-            <Icon name="sliders" size={30} />
-          </button>
           <button
             type="button"
             onClick={() => setKeymapOpen(true)}
             title={t('app.shortcuts')}
-            className="rounded p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+            className="flex h-8 w-9 items-center justify-center rounded-md text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
-            <Icon name="keyboard" size={30} />
+            <Icon name="keyboard" size={20} />
           </button>
           <button
             type="button"
             onClick={() => setPalette(true)}
             title={t('app.palette')}
-            className="rounded p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+            className="flex h-8 w-9 items-center justify-center rounded-md text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
-            <Icon name="search" size={30} />
+            <Icon name="search" size={20} />
           </button>
           <button
             type="button"
-            onClick={() => setCredits(true)}
-            title={t('app.credits')}
-            className="rounded p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+            onClick={() => dispatch({ type: 'layout/inspector', visible: !state.inspectorVisible })}
+            title={t('app.settings')}
+            className={`flex h-8 w-9 items-center justify-center rounded-md hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] ${
+              state.inspectorVisible ? 'text-[var(--color-fog-0)]' : 'text-[var(--color-fog-2)]'
+            }`}
           >
-            <Icon name="info" size={30} />
+            <Icon name="sliders" size={20} />
           </button>
+          <LanguagePicker
+            lang={state.language}
+            onChange={(language) => dispatch({ type: 'app/language', language })}
+          />
 
-          {/* estado da transmissão fica por último e maior: é a informação que
-              o operador precisa achar sem procurar */}
-          {state.output.enabled ? (
-            <span className="rounded bg-[var(--color-live)]/16 px-3.5 py-1.5 text-[20px] text-[var(--color-live)]">
-              {t('app.onAir')}
-            </span>
-          ) : (
-            <span className="px-1 text-[20px] text-[var(--color-fog-2)]">{t('app.offAir')}</span>
-          )}
+          {state.transportPosition === 'regua' ? (
+            <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} />
+          ) : null}
         </div>
       </header>
 
@@ -508,7 +506,6 @@ function AppConteudo({
       <BarraDeArquivo
         state={state}
         tab={tab}
-        displays={displays}
         keymap={keymap}
         dispatch={dispatch}
         run={run}

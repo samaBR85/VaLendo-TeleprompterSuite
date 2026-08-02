@@ -3,18 +3,27 @@ import type { Action } from '@shared/actions'
 import type { AppState } from '@shared/types'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
+import { Tecla } from '../ui/console'
 
 interface Props {
   state: AppState
   dispatch: (action: Action) => void
 }
 
+/**
+ * As fichas dos roteiros: pontinho colorido, nome, × só na ativa.
+ *
+ * A ativa é a única em relevo — fundo mais claro com fio de luz —, as outras
+ * são superfícies chatas: numa fila de dez, o olho precisa achar "qual está
+ * valendo" sem ler nada. Cada ficha estica para dividir a linha (como na
+ * maquete), com um teto de largura para duas abas não virarem dois tapetes.
+ */
 export function Tabs({ state, dispatch }: Props): React.JSX.Element {
   const { t } = useT()
   const [editing, setEditing] = useState<string | null>(null)
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto">
+    <div className="flex min-w-0 flex-1 items-center gap-[3px] overflow-x-auto">
       {state.tabs.map((tab, index) => {
         const active = tab.id === state.activeTabId
         return (
@@ -23,13 +32,13 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
             onClick={() => dispatch({ type: 'tab/activate', tabId: tab.id })}
             onDoubleClick={() => setEditing(tab.id)}
             title={`${tab.title} · Ctrl+${index === 9 ? 0 : index + 1}`}
-            className={`group flex flex-none items-center gap-2 rounded-md border px-3 py-2 text-[13px] ${
+            className={`flex min-w-0 flex-1 cursor-pointer items-center gap-[7px] rounded-md px-2.5 py-[6px] text-[11px] ${
               active
-                ? 'border-[var(--color-line)] bg-[var(--color-ink-2)] text-[var(--color-fog-0)]'
-                : 'border-transparent text-[var(--color-fog-2)] hover:bg-[var(--color-ink-2)]'
+                ? 'max-w-[210px] border border-[var(--color-edge)] bg-[#2e2e33] font-semibold text-[var(--color-fog-0)] shadow-[inset_0_1px_0_rgba(255,255,255,.07)]'
+                : 'max-w-[190px] bg-[#212124] font-medium text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]'
             }`}
           >
-            <span className="h-2.5 w-2.5 flex-none rounded-full" style={{ background: tab.color }} />
+            <span className="h-[7px] w-[7px] flex-none rounded-full" style={{ background: tab.color }} />
             {editing === tab.id ? (
               <input
                 autoFocus
@@ -42,12 +51,12 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
                   if (event.key === 'Enter') event.currentTarget.blur()
                   if (event.key === 'Escape') setEditing(null)
                 }}
-                className="w-28 bg-transparent outline-none"
+                className="w-full min-w-0 bg-transparent outline-none"
               />
             ) : (
-              <span className="max-w-[130px] truncate">{tab.title}</span>
+              <span className="min-w-0 flex-1 truncate">{tab.title}</span>
             )}
-            {state.tabs.length > 1 ? (
+            {active && state.tabs.length > 1 ? (
               <button
                 type="button"
                 aria-label={t('tabs.close', { title: tab.title })}
@@ -55,9 +64,9 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
                   event.stopPropagation()
                   dispatch({ type: 'tab/close', tabId: tab.id })
                 }}
-                className="opacity-0 transition-opacity group-hover:opacity-60 hover:!opacity-100"
+                className="flex-none text-[var(--color-fog-3)] hover:text-[var(--color-fog-0)]"
               >
-                <Icon name="close" size={16} />
+                <Icon name="close" size={12} />
               </button>
             ) : null}
           </div>
@@ -65,17 +74,16 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
       })}
 
       {state.tabs.length < 10 ? (
-        <button
-          type="button"
+        <Tecla
           aria-label={t('tabs.new')}
           title={t('tabs.new.hint')}
+          className="h-[26px] w-7 flex-none"
           onClick={() => dispatch({ type: 'tab/add' })}
-          className="flex-none rounded-md p-2 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-2)] hover:text-[var(--color-fog-0)]"
         >
-          <Icon name="plus" size={20} />
-        </button>
+          <Icon name="plus" size={14} />
+        </Tecla>
       ) : (
-        <span className="flex-none px-1 text-[13px] text-[var(--color-fog-2)]">{t('tabs.max')}</span>
+        <span className="flex-none px-1 text-[11px] text-[var(--color-fog-3)]">{t('tabs.max')}</span>
       )}
     </div>
   )

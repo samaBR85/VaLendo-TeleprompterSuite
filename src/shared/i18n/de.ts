@@ -4,6 +4,8 @@ export const de: Dicionario = {
   'app.settings': 'Einstellungen',
   'app.transportTop': 'Transport in der oberen Leiste',
   'app.transportStrip': 'Transport in der unteren Leiste',
+  'app.panels': 'Panels',
+  'key.save': 'sichern',
   'app.shortcuts': 'Tastenkürzel bearbeiten',
   'app.palette': 'Befehlspalette',
   'app.credits': 'Impressum',

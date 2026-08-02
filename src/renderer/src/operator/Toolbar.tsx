@@ -6,11 +6,12 @@ import { formatClock, ppmForTarget, secondsForWords, wordIndexAt } from '@shared
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
 import { PPM_MAX, PPM_MIN } from '@shared/ruler'
 import type { AppState, DisplayInfo, Tab, TransportPosition } from '@shared/types'
-import { Icon, type IconName } from '../ui/Icon'
+import { Icon } from '../ui/Icon'
 import { Digito, Lcd, Poco, Tecla } from '../ui/console'
 import { useT } from '../i18n'
 import { useNow } from '../ui/useNow'
 import { SpeedRuler } from './SpeedRuler'
+import { Tabs } from './Tabs'
 
 interface Props {
   state: AppState
@@ -48,98 +49,152 @@ function parseDuration(text: string): number | null {
   return Number.isFinite(seconds) && seconds > 0 ? seconds : null
 }
 
-type Tamanho = 'normal' | 'grande' | 'principal'
-
-const MEDIDA: Record<Tamanho, string> = {
-  normal: 'h-[30px] w-[30px]',
-  grande: 'h-10 w-10',
-  principal: 'h-[52px] w-[52px]'
-}
-
-const ICONE: Record<Tamanho, number> = { normal: 17, grande: 21, principal: 26 }
-
-function Tool({
-  icon,
-  label,
-  size = 'normal',
-  active,
-  danger,
-  go,
-  tint,
-  disabled,
-  onClick
+/**
+ * Os poços de arquivo: PROJETO e ROTEIRO, cada um com abrir/importar e salvar.
+ *
+ * Componente próprio porque mudam de andar com o layout: com o transporte no
+ * topo (8a) moram na linha das abas; com ele na régua (8b) sobem para a linha
+ * do wordmark, que fica com espaço sobrando — exatamente como a maquete
+ * desenha as duas variantes.
+ */
+export function PocosDeArquivo({
+  tab,
+  keymap,
+  run,
+  onImport
 }: {
-  icon: IconName
-  label: string
-  size?: Tamanho
-  active?: boolean
-  danger?: boolean
-  go?: boolean
-  /** cor própria em repouso, para o ícone não ficar plano — "tela preta" já tinha a dela */
-  tint?: string
-  disabled?: boolean
-  onClick: () => void
+  tab: Tab
+  keymap: Map<string, string>
+  run: (commandId: string) => void
+  onImport: () => void
 }): React.JSX.Element {
-  const tom = go
-    ? 'bg-[var(--color-go)]/16 text-[var(--color-go)] hover:bg-[var(--color-go)]/24'
-    : active
-      ? danger
-        ? 'bg-[var(--color-live)]/18 text-[var(--color-live)]'
-        : 'bg-[var(--color-go)]/16 text-[var(--color-go)]'
-      : danger
-        ? 'text-[var(--color-live)] hover:bg-[var(--color-ink-3)]'
-        : !tint
-          ? 'text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]'
-          : 'hover:bg-[var(--color-ink-3)]'
+  const { t } = useT()
 
   return (
-    <button
-      type="button"
-      title={label}
-      aria-label={label}
-      disabled={disabled}
-      onClick={onClick}
-      style={tint && !active && !danger ? { color: tint } : undefined}
-      className={`flex flex-none items-center justify-center rounded-md transition-colors disabled:opacity-30 ${MEDIDA[size]} ${tom}`}
-    >
-      <Icon name={icon} size={ICONE[size]} />
-    </button>
+    <>
+      <Poco rotulo={t('toolbar.group.project')} cor="var(--color-link)" data-pill="documento">
+        <Tecla
+          title={`${t('toolbar.openProject')}${hint(keymap, 'project.open')}`}
+          aria-label={t('toolbar.openProject')}
+          className="h-6 w-7"
+          onClick={() => run('project.open')}
+        >
+          <Icon name="projectOpen" size={13} />
+        </Tecla>
+        <Tecla
+          title={`${t('toolbar.saveProject')}${hint(keymap, 'project.save')}`}
+          className="h-6 px-2 text-[11px]"
+          onClick={() => run('project.save')}
+        >
+          {t('key.save')}
+        </Tecla>
+      </Poco>
+
+      <Poco rotulo={t('toolbar.group.script')} cor="var(--color-warn)" data-pill="roteiro">
+        <Tecla title={t('toolbar.import')} aria-label={t('toolbar.import')} className="h-6 w-7" onClick={onImport}>
+          <Icon name="import" size={13} />
+        </Tecla>
+        <Tecla
+          title={
+            tab.exportPath
+              ? `${t('toolbar.saveScriptTo', { file: fileName(tab.exportPath) })}${hint(keymap, 'document.save')}`
+              : `${t('toolbar.saveScript')}${hint(keymap, 'document.save')}`
+          }
+          className="h-6 px-2 text-[11px]"
+          onClick={() => run('document.save')}
+        >
+          {t('key.save')}
+        </Tecla>
+      </Poco>
+    </>
   )
 }
 
-/** A caixa de uma seção da mesa. Pode guardar mais de um grupo, separados por um traço. */
-function Pill({
-  name,
-  className,
-  children
+/**
+ * O poço AR: o que age sobre a tela do apresentador com o programa correndo —
+ * tela preta, cartões, congelar, rede local, identificar monitores.
+ *
+ * A maquete não desenha este grupo (o roteiro dela não precisava), mas o app
+ * precisa: ele ganha o mesmo material dos outros poços, e cada tecla mantém a
+ * cor de glifo que já tinha — apagada em repouso, acesa no estado.
+ */
+export function PocoDoAr({
+  state,
+  webviewLive,
+  keymap,
+  run,
+  onOpenCards,
+  onOpenWebview
 }: {
-  name: string
-  className?: string
-  children: React.ReactNode
+  state: AppState
+  webviewLive: boolean
+  keymap: Map<string, string>
+  run: (commandId: string) => void
+  onOpenCards: () => void
+  onOpenWebview: () => void
 }): React.JSX.Element {
-  return (
-    <div
-      data-pill={name}
-      className={`flex flex-none items-center gap-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1 pl-1.5 ${className ?? ''}`}
-    >
-      {children}
-    </div>
-  )
-}
+  const { t } = useT()
+  const { transport } = state
 
-function Grupo({ label, children }: { label: string; children: React.ReactNode }): React.JSX.Element {
   return (
-    <div data-grupo={label.toLowerCase()} className="flex flex-none items-center gap-1">
-      <span className="px-1.5 pr-2.5 text-[9px] tracking-[0.14em] text-[var(--color-fog-2)] uppercase">
-        {label}
-      </span>
-      {children}
-    </div>
+    <Poco rotulo={t('toolbar.group.air')} data-pill="ar">
+      <Tecla
+        title={`${t('toolbar.blackout')}${hint(keymap, 'output.blackout')}`}
+        aria-label={t('toolbar.blackout')}
+        acesa={transport.blackout}
+        cor="var(--color-live)"
+        className="h-6 w-7"
+        style={!transport.blackout ? { color: 'var(--color-live)' } : undefined}
+        onClick={() => run('output.blackout')}
+      >
+        <Icon name="blackout" size={13} />
+      </Tecla>
+      <Tecla
+        title={t('cards.toolbar')}
+        aria-label={t('cards.toolbar')}
+        acesa={transport.card !== null}
+        cor="var(--color-go)"
+        className="h-6 w-7"
+        style={transport.card === null ? { color: 'var(--color-warn)' } : undefined}
+        onClick={onOpenCards}
+      >
+        <Icon name="card" size={13} />
+      </Tecla>
+      <Tecla
+        title={`${t('toolbar.freeze')}${hint(keymap, 'transport.freeze')}`}
+        aria-label={t('toolbar.freeze')}
+        acesa={transport.frozen}
+        cor="var(--color-go)"
+        className="h-6 w-7"
+        style={!transport.frozen ? { color: 'var(--color-link)' } : undefined}
+        onClick={() => run('transport.freeze')}
+      >
+        <Icon name="freeze" size={13} />
+      </Tecla>
+      {/* aceso pelo que está acontecendo, não pelo que foi pedido: com a porta
+          ocupada, o verde diria que há uma página no ar quando não há */}
+      <Tecla
+        title={webviewLive ? t('toolbar.webviewOn') : t('toolbar.webviewOff')}
+        aria-label={t('toolbar.webviewOff')}
+        acesa={webviewLive}
+        cor="var(--color-go)"
+        className="h-6 w-7"
+        style={!webviewLive ? { color: 'var(--color-go)' } : undefined}
+        onClick={onOpenWebview}
+      >
+        <Icon name="webview" size={13} />
+      </Tecla>
+      <Tecla
+        title={t('toolbar.identify')}
+        aria-label={t('toolbar.identify')}
+        className="h-6 w-7"
+        style={{ color: 'var(--color-accent-2)' }}
+        onClick={() => window.valendo.identifyDisplays()}
+      >
+        <Icon name="monitor" size={13} />
+      </Tecla>
+    </Poco>
   )
-}
-
-function Divisoria(): React.JSX.Element {
-  return <span className="mx-1 h-5 w-px flex-none bg-[var(--color-line)]" />
 }
 
 /**
@@ -155,7 +210,7 @@ function Divisoria(): React.JSX.Element {
  * gigante do cabeçalho saiu — dois avisos do mesmo fato ensinavam o olho a
  * ignorar um deles.
  */
-function PocoDeSaida({
+export function PocoDeSaida({
   displays,
   output,
   dispatch,
@@ -226,18 +281,17 @@ function PocoDeSaida({
 }
 
 /**
- * A barra de preparação: arquivo à esquerda, o ar à direita.
+ * A linha das abas: arquivo, ar e as fichas dos roteiros.
  *
- * É o que se mexe ANTES e DEPOIS do programa — abrir, salvar, escolher o
- * monitor, subir a transmissão. Fica separada do transporte de propósito:
- * nas duas arrumações que o app oferece, esta continua sempre no topo,
- * enquanto o transporte é o que muda de lugar. O poço SAÍDA acompanha o
- * espaço livre: com o transporte na régua, é aqui que ele mora.
+ * Com o transporte no topo (8a), os poços PROJETO/ROTEIRO abrem a linha; com
+ * ele na régua (8b), eles sobem para a linha do wordmark e as abas ganham o
+ * espaço todo — as duas arrumações da maquete. O poço AR fica sempre aqui:
+ * é ação sobre o ar, não sobre arquivo, mas mora perto das abas porque é o
+ * que se alcança com o programa correndo.
  */
 export function BarraDeArquivo({
   state,
   tab,
-  displays,
   keymap,
   dispatch,
   run,
@@ -245,106 +299,23 @@ export function BarraDeArquivo({
   webviewLive,
   onOpenWebview,
   onOpenCards
-}: Omit<Props, 'rows'>): React.JSX.Element {
-  const { t } = useT()
-  const { transport } = state
-
+}: Omit<Props, 'rows' | 'displays'>): React.JSX.Element {
   return (
-    <div className="toolbar-mesa border-b border-[var(--color-line)]">
-      <div className="toolbar-linhas">
-        {/* fila de preparação: documento à esquerda, ar à direita, quando a
-            barra cabe numa linha só — nas outras larguras, esta é a linha de
-            cima */}
-        <div className="toolbar-fila">
-          {/* uma caixa só, com um traço no meio: projeto e roteiro são coisas
-              diferentes — um leva o programa inteiro, o outro só o texto —,
-              mas os dois são arquivo, e uma caixa por grupo picotava a barra.
-              O projeto vem primeiro porque é o que contém o outro */}
-          <Pill name="documento" className="toolbar-grp-doc">
-            <Grupo label={t('toolbar.group.project')}>
-              <Tool
-                icon="projectOpen"
-                label={`${t('toolbar.openProject')}${hint(keymap, 'project.open')}`}
-                onClick={() => run('project.open')}
-              />
-              <Tool
-                icon="project"
-                label={`${t('toolbar.saveProject')}${hint(keymap, 'project.save')}`}
-                onClick={() => run('project.save')}
-              />
-            </Grupo>
+    <div className="flex flex-none items-center gap-2.5 border-b border-[var(--color-edge)] bg-[#17171a] px-2.5 py-[5px]">
+      {state.transportPosition === 'topo' ? (
+        <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={onImport} />
+      ) : null}
 
-            <Divisoria />
+      <PocoDoAr
+        state={state}
+        webviewLive={webviewLive}
+        keymap={keymap}
+        run={run}
+        onOpenCards={onOpenCards}
+        onOpenWebview={onOpenWebview}
+      />
 
-            <Grupo label={t('toolbar.group.script')}>
-              <Tool icon="import" label={t('toolbar.import')} onClick={onImport} />
-              <Tool
-                icon="export"
-                label={
-                  tab.exportPath
-                    ? `${t('toolbar.saveScriptTo', { file: fileName(tab.exportPath) })}${hint(keymap, 'document.save')}`
-                    : `${t('toolbar.saveScript')}${hint(keymap, 'document.save')}`
-                }
-                onClick={() => run('document.save')}
-              />
-            </Grupo>
-          </Pill>
-
-          <div className="toolbar-grp-ar flex flex-none items-center gap-2">
-            <Pill name="ar">
-              <Grupo label={t('toolbar.group.air')}>
-                <Tool
-                  icon="blackout"
-                  label={`${t('toolbar.blackout')}${hint(keymap, 'output.blackout')}`}
-                  active={transport.blackout}
-                  danger
-                  onClick={() => run('output.blackout')}
-                />
-                <Tool
-                  icon="card"
-                  label={t('cards.toolbar')}
-                  active={state.transport.card !== null}
-                  tint="var(--color-warn)"
-                  onClick={onOpenCards}
-                />
-                <Tool
-                  icon="freeze"
-                  label={`${t('toolbar.freeze')}${hint(keymap, 'transport.freeze')}`}
-                  active={transport.frozen}
-                  tint="var(--color-link)"
-                  onClick={() => run('transport.freeze')}
-                />
-                {/* aceso pelo que está acontecendo, não pelo que foi pedido:
-                    com a porta ocupada, o ícone verde diria que há uma página
-                    no ar quando não há */}
-                <Tool
-                  icon="webview"
-                  label={
-                    webviewLive
-                      ? t('toolbar.webviewOn')
-                      : t('toolbar.webviewOff')
-                  }
-                  active={webviewLive}
-                  tint="var(--color-go)"
-                  onClick={onOpenWebview}
-                />
-                <Tool
-                  icon="monitor"
-                  label={t('toolbar.identify')}
-                  tint="var(--color-accent-2)"
-                  onClick={() => window.valendo.identifyDisplays()}
-                />
-              </Grupo>
-            </Pill>
-
-            {/* com o transporte no topo, a SAÍDA fecha a barra do console;
-                aqui ela só aparece quando aquela barra desce para a régua */}
-            {state.transportPosition === 'regua' ? (
-              <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} />
-            ) : null}
-          </div>
-        </div>
-      </div>
+      <Tabs state={state} dispatch={dispatch} />
     </div>
   )
 }

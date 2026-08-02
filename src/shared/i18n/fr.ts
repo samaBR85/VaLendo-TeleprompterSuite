@@ -4,6 +4,8 @@ export const fr: Dicionario = {
   'app.settings': 'Réglages',
   'app.transportTop': 'Transport dans la barre du haut',
   'app.transportStrip': 'Transport dans la barre du bas',
+  'app.panels': 'Panneaux',
+  'key.save': 'sauver',
   'app.shortcuts': 'Modifier les raccourcis',
   'app.palette': 'Palette de commandes',
   'app.credits': 'Crédits',
