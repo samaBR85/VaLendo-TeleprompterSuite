@@ -8,6 +8,7 @@ import {
   type Appearance,
   type Block,
   type Cartao,
+  type CardOverlayStyle,
   type TimerPosition,
   type Transport,
   type VideoClock
@@ -82,6 +83,13 @@ interface Props {
    * partir da mesma coisa.
    */
   card?: Cartao | null
+  /**
+   * O interruptor "OVERLAY": ligado no nível global, força o texto por cima
+   * de QUALQUER cartão, mesmo que `card.overlay` esteja desligado — é a
+   * garantia do operador de nunca subir um cartão sozinho por engano.
+   * Desligado, decide o `card.overlay` do cartão no ar.
+   */
+  cardOverlay?: { enabled: boolean; style: CardOverlayStyle }
   /**
    * De onde a imagem é carregada. `valendo://cartao/` nas janelas do app,
    * `/cartao/` na página servida pela rede — a mesma imagem, dois caminhos.
@@ -271,6 +279,7 @@ export function PrompterCanvas({
   readingMark,
   outputTransforms = false,
   card = null,
+  cardOverlay,
   cardBaseUrl = 'valendo://cartao/',
   videoBaseUrl = 'valendo://video/',
   previaDoOperador = false,
@@ -375,8 +384,14 @@ export function PrompterCanvas({
    *
    * Não há deriva em parar: a posição é derivada do relógio, não acumulada.
    * Quando o cartão sai, o primeiro quadro já escreve o lugar certo.
+   *
+   * "OVERLAY" muda a conta: com ele valendo para este cartão, o texto NÃO
+   * está coberto — ele é o que se quer ver, rolando por cima da arte. O
+   * global (`cardOverlay.enabled`) força a resposta para qualquer cartão,
+   * mesmo com o toggle dele desligado; sem o global, decide `card.overlay`.
    */
-  const palcoCoberto = Boolean(card) || transport.blackout
+  const overlaying = Boolean(card && (cardOverlay?.enabled || card.overlay))
+  const palcoCoberto = (Boolean(card) && !overlaying) || transport.blackout
 
   useEffect(() => {
     if (palcoCoberto) return
@@ -479,10 +494,18 @@ export function PrompterCanvas({
           ela mediria zeros — e trocar a fonte com um cartão no ar deixaria a
           leitura no lugar errado quando ele saísse.
         */}
+        {/* faixa escura entre o cartão e o texto — só existe sobrepondo com
+            o estilo "faixa": garante leitura sem depender do que está por
+            baixo. Zero custo no caso comum: nem monta quando não precisa */}
+        {overlaying && cardOverlay?.style === 'faixa' ? (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'rgba(0,0,0,0.45)' }} />
+        ) : null}
+
         <div
           style={{
             position: 'absolute',
             inset: 0,
+            zIndex: 3,
             overflow: 'hidden',
             visibility: palcoCoberto ? 'hidden' : undefined,
             maskImage:
@@ -511,7 +534,14 @@ export function PrompterCanvas({
               lineHeight: appearance.lineHeight,
               letterSpacing: `${appearance.letterSpacing}em`,
               color: appearance.textColor,
-              textAlign: appearance.align
+              textAlign: appearance.align,
+              // estilo "sombra": sem faixa atrás, o contraste vem de cada
+              // letra ter a própria sombra — funciona em qualquer imagem,
+              // mas pinta menos que a faixa
+              textShadow:
+                overlaying && cardOverlay?.style === 'sombra'
+                  ? '0 1px 4px rgba(0,0,0,.9), 0 0 10px rgba(0,0,0,.75)'
+                  : undefined
             }}
           >
             {lines.map((line, index) => (
@@ -584,6 +614,7 @@ export function PrompterCanvas({
             data-timers
             style={{
               position: 'absolute',
+              zIndex: 4,
               ...timerPlacement(appearance.timers.position, stage.height * 0.025),
               display: 'flex',
               gap: '0.8em',
@@ -617,6 +648,7 @@ export function PrompterCanvas({
                 data-margin-guide={side === 0 ? 'left' : 'right'}
                 style={{
                   position: 'absolute',
+                  zIndex: 4,
                   top: 0,
                   bottom: 0,
                   [side === 0 ? 'left' : 'right']: `${appearance.marginPct}%`,
@@ -640,6 +672,7 @@ export function PrompterCanvas({
               data-reading-mark
               style={{
                 position: 'absolute',
+                zIndex: 4,
                 left: 0,
                 right: 0,
                 top: readingLineY,
@@ -655,6 +688,7 @@ export function PrompterCanvas({
                 data-reading-wedge
                 style={{
                   position: 'absolute',
+                  zIndex: 4,
                   top: readingLineY,
                   [side === 0 ? 'left' : 'right']: 0,
                   transform: 'translateY(-50%)',
@@ -675,13 +709,21 @@ export function PrompterCanvas({
             preta, que é ausência e espelhada continua igual, um cartão carrega
             logo e palavra — sem acompanhar o espelho do vidro, o apresentador
             leria tudo ao contrário. E como a prévia e a página da rede não
-            aplicam a compensação, ali ele sai legível de graça */}
+            aplicam a compensação, ali ele sai legível de graça.
+
+            `zIndex: 1`, o mais baixo do rotador: sem "OVERLAY" ele ainda cobre
+            tudo (é o único visível — os outros ficam escondidos ou vazios do
+            jeito de sempre), mas sobrepondo, o texto (zIndex 3), a faixa
+            (zIndex 2) e timers/guias/marca (zIndex 4) precisam pintar por
+            cima dele, não por baixo como a ordem do DOM sozinha faria. */}
         {card ? (
           <div
             data-card={card.id}
             data-card-kind={card.kind}
+            data-card-overlaying={overlaying ? 'sim' : 'nao'}
             style={{
               position: 'absolute',
+              zIndex: 1,
               inset: 0,
               background: '#000',
               display: 'flex',

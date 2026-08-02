@@ -389,6 +389,12 @@ export const pt = {
   'cards.videoSeek': 'Posição do vídeo',
   'cards.videoVolume': 'Volume',
   'cards.videoLoop': 'repetir',
+  'cards.overlay': 'OVERLAY',
+  'cards.overlayHint':
+    'O texto da Transmissão sobrepõe este cartão em vez de substituí-lo. O switch global da coluna de assets, quando ligado, força isto para todo cartão.',
+  'cards.overlayStyle.faixa': 'Faixa escura atrás do texto',
+  'cards.overlayStyle.sombra': 'Sombra atrás de cada letra',
+  'cards.overlayStyle.nenhum': 'Sem tratamento',
   'cards.videoMissing': 'Vídeo não encontrado',
   'cards.videoRelink': 'Reapontar',
   'cards.netOriginal': 'rede: original',

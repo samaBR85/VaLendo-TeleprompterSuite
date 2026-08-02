@@ -365,6 +365,12 @@ export const it: Dicionario = {
   'cards.videoSeek': 'Posizione del video',
   'cards.videoVolume': 'Volume',
   'cards.videoLoop': 'ripeti',
+  'cards.overlay': 'OVERLAY',
+  'cards.overlayHint':
+    'Il testo della Trasmissione si sovrappone a questo cartello invece di sostituirlo. L\'interruttore globale della colonna degli asset, se attivo, forza questo per ogni cartello.',
+  'cards.overlayStyle.faixa': 'Fascia scura dietro al testo',
+  'cards.overlayStyle.sombra': 'Ombra dietro a ogni lettera',
+  'cards.overlayStyle.nenhum': 'Nessun trattamento',
   'cards.videoMissing': 'Video non trovato',
   'cards.videoRelink': 'Ricollega',
   'cards.netOriginal': 'rete: originale',

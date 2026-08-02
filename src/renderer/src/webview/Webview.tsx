@@ -324,12 +324,16 @@ export function Webview(): React.JSX.Element {
    * toca liso no mesmo aparelho.
    *
    * Aqui não se perde nada ao sair do palco: esta página nunca espelha nem
-   * gira, o cartão cobre o texto de qualquer forma, e um vídeo encaixado por
-   * `object-fit` no mesmo retângulo dá exatamente a mesma imagem. O relógio
-   * compartilhado continua mandando, então play, pausa e arrasto do operador
-   * seguem valendo aqui.
+   * gira, e um vídeo encaixado por `object-fit` no mesmo retângulo dá
+   * exatamente a mesma imagem — MAS só quando o cartão cobre o texto por
+   * completo, como no caso comum. Com "OVERLAY" ligado (pelo switch global
+   * ou pelo próprio cartão), o texto rolando por cima é o pedido, e cai no
+   * palco completo abaixo — o atalho vale só quando não há texto para
+   * mostrar por cima mesmo. O relógio compartilhado continua mandando nos
+   * dois casos, então play, pausa e arrasto do operador seguem valendo.
    */
-  if (quadro.card?.kind === 'video') {
+  const sobrepondoEsteCartao = Boolean(quadro.cardOverlay?.enabled) || Boolean(quadro.card?.overlay)
+  if (quadro.card?.kind === 'video' && !sobrepondoEsteCartao) {
     const video = quadro.card
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%', background: '#000' }}>
@@ -374,6 +378,7 @@ export function Webview(): React.JSX.Element {
           viewport={viewport}
           rows={quadro.rows}
           card={quadro.card}
+          cardOverlay={quadro.cardOverlay}
           cardBaseUrl="/cartao/"
           videoBaseUrl="/video/"
           cardAudio={som}

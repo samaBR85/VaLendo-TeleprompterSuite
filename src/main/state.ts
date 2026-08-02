@@ -540,6 +540,13 @@ export class Store {
         }
         break
 
+      case 'card/overlay':
+        this.state = {
+          ...this.state,
+          cards: this.state.cards.map((c) => (c.id === action.cardId ? { ...c, overlay: action.overlay } : c))
+        }
+        break
+
       case 'card/videoDuration':
         this.state = {
           ...this.state,
@@ -798,6 +805,14 @@ export class Store {
 
       case 'webview/videoPerfil':
         this.state = { ...this.state, webview: { ...this.state.webview, videoPerfil: action.perfil } }
+        break
+
+      case 'cardOverlay/set':
+        this.state = { ...this.state, cardOverlay: { ...this.state.cardOverlay, enabled: action.enabled } }
+        break
+
+      case 'cardOverlay/style':
+        this.state = { ...this.state, cardOverlay: { ...this.state.cardOverlay, style: action.style } }
         break
 
       case 'card/videoProxy':

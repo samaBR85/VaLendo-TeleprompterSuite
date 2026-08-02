@@ -365,6 +365,12 @@ export const de: Dicionario = {
   'cards.videoSeek': 'Videoposition',
   'cards.videoVolume': 'Lautstärke',
   'cards.videoLoop': 'wiederholen',
+  'cards.overlay': 'OVERLAY',
+  'cards.overlayHint':
+    'Der Text der Übertragung legt sich über diese Karte, statt sie zu ersetzen. Der globale Schalter in der Assets-Spalte erzwingt das, wenn eingeschaltet, für jede Karte.',
+  'cards.overlayStyle.faixa': 'Dunkler Streifen hinter dem Text',
+  'cards.overlayStyle.sombra': 'Schatten hinter jedem Buchstaben',
+  'cards.overlayStyle.nenhum': 'Keine Behandlung',
   'cards.videoMissing': 'Video nicht gefunden',
   'cards.videoRelink': 'Neu verknüpfen',
   'cards.netOriginal': 'Netz: Original',

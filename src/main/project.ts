@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'node:fs/promises'
+import { DEFAULT_CARD_OVERLAY } from '@shared/defaults'
 import { PROJECT_EXTENSION, readProject, semTransitorio, serializeProject } from '@shared/project'
 import type { AppState } from '@shared/types'
 import { readCardImage, writeCardImage } from './cards'
@@ -81,6 +82,7 @@ export async function openProject(filePath: string): Promise<{ state: AppState |
     state: {
       ...state,
       cards: state.cards ?? [],
+      cardOverlay: state.cardOverlay ?? DEFAULT_CARD_OVERLAY,
       tabs: state.tabs.map((tab) => ({ ...tab, appearance: mergeAppearance(tab.appearance) }))
     },
     error: null

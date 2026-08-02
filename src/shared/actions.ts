@@ -1,5 +1,5 @@
 import type { Lang } from './i18n/types'
-import type { Anchor, Appearance, AppState, Cartao, LayoutMode, TransportPosition } from './types'
+import type { Anchor, Appearance, AppState, Cartao, CardOverlayStyle, LayoutMode, TransportPosition } from './types'
 import type { PerfilDeRede } from './proxy'
 
 /**
@@ -42,6 +42,8 @@ export type Action =
   | { type: 'card/videoSeek'; cardId: string; segundo: number; arrastando: boolean }
   | { type: 'card/videoVolume'; volume: number }
   | { type: 'card/videoLoop'; cardId: string; loop: boolean }
+  /** o texto da Transmissão sobrepõe este cartão em vez de substituí-lo */
+  | { type: 'card/overlay'; cardId: string; overlay: boolean }
   /** o vídeo carregou e informou quanto dura — a barra precisa saber o fim */
   | { type: 'card/videoDuration'; cardId: string; duracao: number }
   /** um quadro do vídeo virou miniatura; é o que viaja no projeto */
@@ -82,6 +84,9 @@ export type Action =
   | { type: 'project/new' }
   | { type: 'webview/set'; enabled: boolean }
   | { type: 'webview/videoPerfil'; perfil: PerfilDeRede }
+  /** o interruptor "OVERLAY": ligado, força o texto por cima de qualquer cartão */
+  | { type: 'cardOverlay/set'; enabled: boolean }
+  | { type: 'cardOverlay/style'; style: CardOverlayStyle }
   /** a cópia leve ficou pronta (ou foi descartada, com `null`) */
   | { type: 'card/videoProxy'; cardId: string; proxy: { arquivo: string; perfil: PerfilDeRede } | null }
   | { type: 'history/undo'; tabId: string }

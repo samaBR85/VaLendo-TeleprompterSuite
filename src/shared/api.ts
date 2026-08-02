@@ -1,6 +1,6 @@
 import type { Action, HistoryInfo } from './actions'
 import type { Lang } from './i18n/types'
-import type { Appearance, AppState, Block, Cartao, DisplayInfo, Transport } from './types'
+import type { Appearance, AppState, Block, Cartao, CardOverlayStyle, DisplayInfo, Transport } from './types'
 
 export interface StateSnapshot {
   state: AppState
@@ -71,6 +71,8 @@ export interface WebviewFrame {
   language: Lang
   /** o cartão no ar, para quem confere ver o que o apresentador vê */
   card: Cartao | null
+  /** o interruptor "OVERLAY" — decide se o texto sobrepõe o cartão acima */
+  cardOverlay: { enabled: boolean; style: CardOverlayStyle }
   blocks: Block[]
   appearance: Appearance
   transport: Transport

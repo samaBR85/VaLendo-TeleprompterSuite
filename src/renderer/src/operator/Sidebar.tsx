@@ -3,10 +3,10 @@ import type { Action } from '@shared/actions'
 import { composeLines } from '@shared/anchor'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
-import type { Cartao, Tab, Transport } from '@shared/types'
+import type { Cartao, CardOverlayStyle, Tab, Transport } from '@shared/types'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
-import { CabecalhoDePainel, SliderConsole } from '../ui/console'
+import { CabecalhoDePainel, Ficha, SliderConsole } from '../ui/console'
 import { useNow } from '../ui/useNow'
 
 const THUMB_MIN = 40
@@ -17,10 +17,18 @@ interface Props {
   tab: Tab
   transport: Transport
   cards: Cartao[]
+  /** o interruptor "OVERLAY" — força o texto por cima de qualquer cartão */
+  cardOverlay: { enabled: boolean; style: CardOverlayStyle }
   /** régua medida da aba ativa — a mesma que governa a rolagem de verdade */
   rows: number[]
   dispatch: (action: Action) => void
 }
+
+const ESTILOS_DE_OVERLAY: { style: CardOverlayStyle; letra: string; rotulo: 'cards.overlayStyle.faixa' | 'cards.overlayStyle.sombra' | 'cards.overlayStyle.nenhum' }[] = [
+  { style: 'faixa', letra: 'F', rotulo: 'cards.overlayStyle.faixa' },
+  { style: 'sombra', letra: 'S', rotulo: 'cards.overlayStyle.sombra' },
+  { style: 'nenhum', letra: 'N', rotulo: 'cards.overlayStyle.nenhum' }
+]
 
 /**
  * A arte do cartão, em 5:3 no tamanho que o slider do rodapé pedir: imagem
@@ -64,7 +72,7 @@ function MiniaturaDoCartao({ card, size }: { card: Cartao; size: number }): Reac
  * Clicar num capítulo salta para ele pelo mesmo caminho de "próximo
  * capítulo" — uma lista que parece clicável precisa ser clicável.
  */
-export function Sidebar({ tab, transport, cards, rows, dispatch }: Props): React.JSX.Element {
+export function Sidebar({ tab, transport, cards, cardOverlay, rows, dispatch }: Props): React.JSX.Element {
   const { t } = useT()
   const now = useNow()
   // conforto de visualização da coluna, como o tamanho de fonte do editor —
@@ -135,6 +143,41 @@ export function Sidebar({ tab, transport, cards, rows, dispatch }: Props): React
           cor="var(--color-accent-2)"
           titulo={t('sidebar.cards')}
           className="border-t border-t-[var(--color-edge)]"
+          acao={
+            <>
+              {/* "OVERLAY" ligado FORÇA o texto por cima de qualquer cartão,
+                  mesmo com o toggle dele desligado — a garantia do operador.
+                  Desligado, cada cartão decide sozinho pelo próprio toggle. */}
+              <button
+                type="button"
+                title={t('cards.overlayHint')}
+                aria-pressed={cardOverlay.enabled}
+                onClick={() => dispatch({ type: 'cardOverlay/set', enabled: !cardOverlay.enabled })}
+                className={`flex-none rounded-[4px] px-1 py-0.5 text-[8px] font-bold tracking-[0.04em] transition-colors ${
+                  cardOverlay.enabled
+                    ? 'bg-[var(--color-accent-2)] text-[#1c1020]'
+                    : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+                }`}
+              >
+                {t('cards.overlay')}
+              </button>
+              {cardOverlay.enabled ? (
+                <span className="flex flex-none gap-[2px]">
+                  {ESTILOS_DE_OVERLAY.map((opcao) => (
+                    <Ficha
+                      key={opcao.style}
+                      ativa={cardOverlay.style === opcao.style}
+                      title={t(opcao.rotulo)}
+                      onClick={() => dispatch({ type: 'cardOverlay/style', style: opcao.style })}
+                      className="h-4 w-4 rounded-[3px] p-0 text-[8px] leading-none"
+                    >
+                      {opcao.letra}
+                    </Ficha>
+                  ))}
+                </span>
+              ) : null}
+            </>
+          }
         />
 
         {cards.length === 0 ? (
@@ -142,22 +185,45 @@ export function Sidebar({ tab, transport, cards, rows, dispatch }: Props): React
         ) : (
           <div className="flex flex-col gap-1.5 p-2">
             {cards.map((card) => (
-              <button
+              <div
                 key={card.id}
-                type="button"
-                data-sidebar-card={card.id}
-                onClick={() => dispatch({ type: 'card/show', cardId: card.id })}
                 className={`flex flex-none items-center gap-2 rounded-md border p-[5px] text-left text-[10px] transition-colors ${
                   transport.card === card.id
                     ? 'border-[var(--color-go)]/60 bg-[var(--color-go)]/10 text-[var(--color-go)]'
                     : 'border-[var(--color-edge)] bg-[#1e1e22] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
                 }`}
               >
-                <MiniaturaDoCartao card={card} size={thumbSize} />
-                <span className="min-w-0 flex-1 truncate font-medium">
-                  {card.nome || (card.kind === 'text' ? card.texto : '') || t('cards.title')}
-                </span>
-              </button>
+                <button
+                  type="button"
+                  data-sidebar-card={card.id}
+                  onClick={() => dispatch({ type: 'card/show', cardId: card.id })}
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                >
+                  <MiniaturaDoCartao card={card} size={thumbSize} />
+                  <span className="min-w-0 flex-1 truncate font-medium">
+                    {card.nome || (card.kind === 'text' ? card.texto : '') || t('cards.title')}
+                  </span>
+                </button>
+                {/* toggle por cartão: independente do switch global, que
+                    quando ligado vale para todos sem precisar mexer aqui */}
+                <button
+                  type="button"
+                  data-sidebar-card-overlay={card.id}
+                  title={t('cards.overlayHint')}
+                  aria-pressed={card.overlay ?? false}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    dispatch({ type: 'card/overlay', cardId: card.id, overlay: !(card.overlay ?? false) })
+                  }}
+                  className={`flex-none rounded-[4px] px-1 py-0.5 text-[8px] font-bold tracking-[0.04em] transition-colors ${
+                    card.overlay
+                      ? 'bg-[var(--color-accent-2)] text-[#1c1020]'
+                      : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+                  }`}
+                >
+                  {t('cards.overlay')}
+                </button>
+              </div>
             ))}
           </div>
         )}

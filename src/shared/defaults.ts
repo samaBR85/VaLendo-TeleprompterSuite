@@ -1,5 +1,5 @@
 import { traduzir, type Lang } from './i18n'
-import type { Appearance, AppState, ColorPreset, Tab } from './types'
+import type { Appearance, AppState, CardOverlayStyle, ColorPreset, Tab } from './types'
 import { blocksFromText } from './text'
 import { CRONOMETRO_PARADO } from './pacing'
 import { VIDEO_PARADO } from './video'
@@ -27,6 +27,16 @@ export const CARDS_HEIGHT_MIN = 200
  */
 export const CARDS_HEIGHT_DEFAULT = CARDS_HEIGHT_MIN
 export const CARDS_HEIGHT_MAX = 420
+
+/**
+ * O padrão de fábrica do overlay: desligado, e faixa escura pronta para
+ * quando ligar — é o único dos três estilos que garante legibilidade em
+ * cima de qualquer imagem, então é o que faz sentido já vir escolhido.
+ */
+export const DEFAULT_CARD_OVERLAY: { enabled: boolean; style: CardOverlayStyle } = {
+  enabled: false,
+  style: 'faixa'
+}
 
 export const FONT_OPTIONS: { label: string; value: string }[] = [
   { label: 'Sistema', value: 'system-ui, sans-serif' },
@@ -179,6 +189,7 @@ export function createInitialState(
     output: { displayId: null, enabled: false, viewport: null },
     presets: presetsPadrao(lang),
     cards: [],
+    cardOverlay: DEFAULT_CARD_OVERLAY,
     keymap: {},
     customDefaults: false,
     webview: { enabled: false, videoPerfil: 'leve' }

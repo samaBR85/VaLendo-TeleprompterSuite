@@ -415,6 +415,7 @@ function AppConteudo({
       rows={rows}
       marginGuides
       card={cartaoNoAr(state)}
+      cardOverlay={state.cardOverlay}
       onSpeed={(delta) => dispatch({ type: 'transport/nudgePpm', delta })}
       onMetrics={handleMetrics}
     />
@@ -666,6 +667,7 @@ function AppConteudo({
           rows={rows}
           viewport={viewport}
           card={cartaoNoAr(state)}
+          cardOverlay={state.cardOverlay}
           dispatch={dispatch}
           onMetrics={handleMetrics}
         />
@@ -708,6 +710,7 @@ function AppConteudo({
               tab={tab}
               transport={state.transport}
               cards={state.cards}
+              cardOverlay={state.cardOverlay}
               rows={rows}
               dispatch={dispatch}
             />

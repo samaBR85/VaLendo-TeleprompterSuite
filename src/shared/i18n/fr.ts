@@ -365,6 +365,12 @@ export const fr: Dicionario = {
   'cards.videoSeek': 'Position de la vidéo',
   'cards.videoVolume': 'Volume',
   'cards.videoLoop': 'boucle',
+  'cards.overlay': 'OVERLAY',
+  'cards.overlayHint':
+    'Le texte de la Diffusion se superpose à ce carton au lieu de le remplacer. L\'interrupteur global de la colonne des ressources, une fois activé, force ceci pour tous les cartons.',
+  'cards.overlayStyle.faixa': 'Bande sombre derrière le texte',
+  'cards.overlayStyle.sombra': 'Ombre derrière chaque lettre',
+  'cards.overlayStyle.nenhum': 'Aucun traitement',
   'cards.videoMissing': 'Vidéo introuvable',
   'cards.videoRelink': 'Relier à nouveau',
   'cards.netOriginal': 'réseau : original',

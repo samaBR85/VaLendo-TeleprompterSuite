@@ -361,6 +361,12 @@ export const en: Dicionario = {
   'cards.videoSeek': 'Video position',
   'cards.videoVolume': 'Volume',
   'cards.videoLoop': 'loop',
+  'cards.overlay': 'OVERLAY',
+  'cards.overlayHint':
+    'The Broadcast text overlays this card instead of replacing it. The global switch in the assets column, when on, forces this for every card.',
+  'cards.overlayStyle.faixa': 'Dark strip behind the text',
+  'cards.overlayStyle.sombra': 'Shadow behind each letter',
+  'cards.overlayStyle.nenhum': 'No treatment',
   'cards.videoMissing': 'Video not found',
   'cards.videoRelink': 'Relink',
   'cards.netOriginal': 'network: original',

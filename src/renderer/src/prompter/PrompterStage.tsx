@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { canvasBox } from '@shared/output'
 import { PrompterCanvas, type PrompterMetrics, type Viewport } from './PrompterCanvas'
-import type { Appearance, Block, Cartao, Transport } from '@shared/types'
+import type { Appearance, Block, Cartao, CardOverlayStyle, Transport } from '@shared/types'
 
 interface Props {
   blocks: Block[]
@@ -13,6 +13,8 @@ interface Props {
   marginGuides?: boolean
   /** o cartão no ar, se houver */
   card?: Cartao | null
+  /** o interruptor "OVERLAY" — decide se o texto sobrepõe o cartão acima */
+  cardOverlay?: { enabled: boolean; style: CardOverlayStyle }
   /**
    * Roda do mouse sobre a prévia muda o ritmo: para cima acelera.
    *

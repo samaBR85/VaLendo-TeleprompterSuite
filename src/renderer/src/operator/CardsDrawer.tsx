@@ -681,6 +681,22 @@ function CartaoNaGaveta({
         ) : null}
 
         <span className="ml-auto flex flex-none items-center gap-1">
+          {/* "OVERLAY" por cartão: com o switch global (na coluna de assets)
+              desligado, decide sozinho se o texto sobrepõe este cartão em
+              vez de substituí-lo. Ligado o global, força para todos — este
+              toggle continua editável, para deixar pré-configurado. */}
+          <label title={t('cards.overlayHint')} className="flex-none cursor-pointer">
+            <input
+              type="checkbox"
+              data-card-overlay={card.id}
+              checked={card.overlay ?? false}
+              onChange={(event) => dispatch({ type: 'card/overlay', cardId: card.id, overlay: event.target.checked })}
+              className="peer sr-only"
+            />
+            <span className="grid h-[18px] w-6 place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[var(--color-ink-2)] text-[9px] font-bold text-[var(--color-fog-2)] peer-checked:border-[var(--color-accent-2)] peer-checked:bg-[var(--color-accent-2)]/18 peer-checked:text-[#d9bdf0]">
+              {t('cards.overlay')}
+            </span>
+          </label>
           {card.kind === 'video' && !desvinculado ? (
             <label title={t('cards.videoLoop')} className="flex-none cursor-pointer">
               <input

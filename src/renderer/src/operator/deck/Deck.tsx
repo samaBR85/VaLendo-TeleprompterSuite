@@ -3,7 +3,7 @@ import type { Action } from '@shared/actions'
 import { composeLines, totalWords } from '@shared/anchor'
 import { wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
-import type { Cartao, Tab, Transport } from '@shared/types'
+import type { Cartao, CardOverlayStyle, Tab, Transport } from '@shared/types'
 import type { PrompterMetrics, Viewport } from '../../prompter/PrompterCanvas'
 import { PrompterStage } from '../../prompter/PrompterStage'
 import { useT } from '../../i18n'
@@ -16,6 +16,8 @@ interface Props {
   transport: Transport
   /** o cartão no ar, para a prévia compacta mostrar o mesmo que a transmissão */
   card?: Cartao | null
+  /** o interruptor "OVERLAY" — decide se o texto sobrepõe o cartão acima */
+  cardOverlay?: { enabled: boolean; style: CardOverlayStyle }
   rows: number[]
   viewport: Viewport
   dispatch: (action: Action) => void
@@ -53,7 +55,16 @@ const RUNDOWN_MIN = 320
 // texto de longe, lista ainda com espaço para os números não apertarem.
 const PREVIEW_DEFAULT_RATIO = 0.58
 
-export function Deck({ tab, transport, rows, viewport, card = null, dispatch, onMetrics }: Props): React.JSX.Element {
+export function Deck({
+  tab,
+  transport,
+  rows,
+  viewport,
+  card = null,
+  cardOverlay,
+  dispatch,
+  onMetrics
+}: Props): React.JSX.Element {
   const { t } = useT()
   const now = useNow()
   const corpoRef = useRef<HTMLDivElement>(null)
@@ -131,6 +142,7 @@ export function Deck({ tab, transport, rows, viewport, card = null, dispatch, on
             viewport={viewport}
             rows={rows}
             card={card}
+            cardOverlay={cardOverlay}
             onSpeed={(delta) => dispatch({ type: 'transport/nudgePpm', delta })}
             onMetrics={onMetrics}
           />

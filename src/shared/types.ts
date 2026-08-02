@@ -198,6 +198,8 @@ export type Cartao =
        * resposta antiga — inclusive um erro de imagem já resolvido.
        */
       rev?: number
+      /** o texto da Transmissão sobrepõe este cartão em vez de substituí-lo */
+      overlay?: boolean
     }
   | {
       id: string
@@ -254,8 +256,24 @@ export type Cartao =
        * enxerga o disco; nasce indefinido e é preenchido a cada abertura.
        */
       vinculado?: boolean
+      /** o texto da Transmissão sobrepõe este cartão em vez de substituí-lo */
+      overlay?: boolean
     }
-  | { id: string; kind: 'text'; nome: string; texto: string }
+  | {
+      id: string
+      kind: 'text'
+      nome: string
+      texto: string
+      /** o texto da Transmissão sobrepõe este cartão em vez de substituí-lo */
+      overlay?: boolean
+    }
+
+/**
+ * Os três jeitos de garantir que o texto continue legível por cima de um
+ * cartão sobreposto: faixa escura atrás de tudo, sombra atrás de cada letra,
+ * ou nenhum tratamento — a imagem/vídeo decide sozinha se sobra contraste.
+ */
+export type CardOverlayStyle = 'faixa' | 'sombra' | 'nenhum'
 
 /**
  * De onde o vídeo partiu e quando — não em que segundo ele está.
@@ -411,6 +429,13 @@ export interface AppState {
    * o mesmo standby serve para qualquer roteiro aberto.
    */
   cards: Cartao[]
+  /**
+   * O interruptor "OVERLAY": ligado, força o texto por cima de QUALQUER
+   * cartão no ar, mesmo que aquele cartão tenha o próprio toggle desligado —
+   * é a garantia do operador de que, ligando isto, nunca mais vai subir um
+   * cartão sozinho por engano. Desligado, cada cartão decide por si (`card.overlay`).
+   */
+  cardOverlay: { enabled: boolean; style: CardOverlayStyle }
   /** commandId -> binding, sobrepondo o padrão do registro */
   keymap: Record<string, string>
   /**
