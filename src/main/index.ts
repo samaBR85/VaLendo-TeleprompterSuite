@@ -4,6 +4,7 @@ import { basename, extname } from 'node:path'
 import { CHANNELS, type Action } from '@shared/actions'
 import type {
   CardConvertResult,
+  CardDropResult,
   CardPickResult,
   CardVideoPickResult,
   ExportResult,
@@ -302,6 +303,41 @@ function registerIpc(): void {
       // gastaria minutos e um segundo arquivo do mesmo tamanho à toa.
       autorizarVideo(origem)
       return comum
+    }
+  )
+
+  /**
+   * A segunda porta de entrada de cartão: um arquivo solto na gaveta.
+   *
+   * Mesmo contrato dos seletores — imagem é copiada para dentro do app,
+   * vídeo é autorizado onde está — e igualmente atrás de um gesto explícito
+   * do operador (arrastar é tão deliberado quanto escolher no diálogo). Quem
+   * decide se o arquivo é imagem ou vídeo é a MESMA lista de extensões dos
+   * filtros; o renderer não carrega uma cópia dessa regra.
+   */
+  ipcMain.handle(
+    CHANNELS.cardImportPath,
+    (_event, cardId: string, origem: string): CardDropResult | null => {
+      const arquivoNome = basename(origem)
+      const extensao = extname(origem).slice(1).toLowerCase()
+      if (!existsSync(origem)) return null
+      const sugestao = basename(origem, extname(origem)).slice(0, 30)
+
+      if (IMAGE_EXTENSIONS.includes(extensao)) {
+        try {
+          return { kind: 'image', arquivo: importCardImage(origem, cardId), sugestao }
+        } catch {
+          return null
+        }
+      }
+
+      if (VIDEO_EXTENSIONS.includes(extensao)) {
+        if (!ehVideo(origem)) return { kind: 'recusado', arquivoNome, erro: idioma('cards.videoUnsupported') }
+        autorizarVideo(origem)
+        return { kind: 'video', caminho: origem, arquivoNome, sugestao }
+      }
+
+      return { kind: 'recusado', arquivoNome, erro: idioma('cards.dropUnsupported') }
     }
   )
 

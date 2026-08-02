@@ -8,6 +8,7 @@ import type { Cartao, VideoClock } from '@shared/types'
 import { posicaoDoVideo, tempoDeVideo } from '@shared/video'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
+import { CabecalhoDePainel, SliderConsole } from '../ui/console'
 
 type CartaoVideo = Extract<Cartao, { kind: 'video' }>
 
@@ -49,10 +50,12 @@ export function CardsDrawer({
   dispatch,
   onClose
 }: Props): React.JSX.Element {
-  const { t } = useT()
+  const { t, tp } = useT()
   const [ocupado, setOcupado] = useState(false)
   /** por que o último arquivo escolhido não serviu — some na próxima escolha */
   const [recusa, setRecusa] = useState<string | null>(null)
+  /** o ponteiro está sobre a zona de soltar, com um arquivo na mão */
+  const [sobreZona, setSobreZona] = useState(false)
   /**
    * Um vídeo está sendo convertido.
    *
@@ -144,11 +147,62 @@ export function CardsDrawer({
     })
   }
 
+  /**
+   * Arquivos soltos na zona: a zona que parece soltável aceita o solto.
+   *
+   * O caminho real vem do preload (`pathForFile`); quem decide se cada
+   * arquivo é imagem ou vídeo é o main, pela mesma lista dos seletores. O id
+   * leva o índice do arquivo porque soltar três de uma vez chamaria
+   * `novoCartaoId` três vezes com os mesmos argumentos — três cartões com o
+   * mesmo id, dois deles fantasmas.
+   */
+  const soltarArquivos = async (event: React.DragEvent): Promise<void> => {
+    event.preventDefault()
+    setSobreZona(false)
+    if (ocupado) return
+    const files = Array.from(event.dataTransfer.files)
+    if (files.length === 0) return
+
+    setOcupado(true)
+    setRecusa(null)
+    try {
+      for (const [i, file] of files.entries()) {
+        const caminho = window.valendo.pathForFile(file)
+        if (!caminho) continue
+        const id = novoCartaoId(Date.now() + i, cards.length + i)
+        const r = await window.valendo.importCardPath(id, caminho)
+        if (!r) continue
+        if (r.kind === 'image') {
+          dispatch({
+            type: 'card/add',
+            card: { id, kind: 'image', nome: r.sugestao || t('cards.addImage'), arquivo: r.arquivo }
+          })
+        } else if (r.kind === 'video') {
+          dispatch({
+            type: 'card/add',
+            card: {
+              id,
+              kind: 'video',
+              nome: r.sugestao || t('cards.addVideo'),
+              caminho: r.caminho,
+              arquivoNome: r.arquivoNome,
+              vinculado: true
+            }
+          })
+        } else {
+          setRecusa(`${r.arquivoNome} — ${r.erro}`)
+        }
+      }
+    } finally {
+      setOcupado(false)
+    }
+  }
+
   return (
     <section
       data-cards-drawer
       style={{ height: altura }}
-      className="relative flex flex-none flex-col border-t border-[var(--color-line)] bg-[var(--color-ink-1)]"
+      className="relative flex flex-none flex-col border-t border-[var(--color-edge)] bg-[#151518]"
     >
       <div
         data-cards-resizer
@@ -156,30 +210,41 @@ export function CardsDrawer({
         className="absolute inset-x-0 -top-0.5 z-10 h-1.5 cursor-row-resize hover:bg-[var(--color-fog-2)]"
       />
 
-      <header className="flex flex-none items-center gap-2 px-4 py-1.5">
-        <Icon name="card" size={14} />
-        <h2 className="text-[12px] text-[var(--color-fog-0)]">{t('cards.title')}</h2>
-
-        <div className="ml-3 flex items-center gap-1.5">
+      <CabecalhoDePainel
+        cor="var(--color-accent-2)"
+        titulo={t('cards.title')}
+        acao={
+          <>
+            <span className="text-[10px] text-[var(--color-fog-3)]">{tp('cards.count', cards.length)}</span>
+            <button
+              type="button"
+              aria-label={t('app.close')}
+              onClick={onClose}
+              className="rounded p-1 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+            >
+              <Icon name="close" size={12} />
+            </button>
+          </>
+        }
+      >
+        <div className="ml-1 flex flex-none items-center gap-[5px]">
           <BotaoAdicionar
             atributo="image"
-            icone="card"
             rotulo={t('cards.addImage')}
             desligado={ocupado}
             onClick={() => void adicionarImagem()}
           />
           <BotaoAdicionar
             atributo="video"
-            icone="play"
             rotulo={t('cards.addVideo')}
             desligado={ocupado}
             onClick={() => void adicionarVideo()}
           />
-          <BotaoAdicionar atributo="text" icone="direction" rotulo={t('cards.addText')} onClick={adicionarRecado} />
+          <BotaoAdicionar atributo="text" rotulo={t('cards.addText')} onClick={adicionarRecado} />
         </div>
 
         {convertendo ? (
-          <span className="ml-3 flex min-w-0 items-center gap-2 text-[11px] text-[var(--color-fog-1)]">
+          <span className="flex min-w-0 flex-1 items-center gap-2 text-[10px] text-[var(--color-fog-1)]">
             <span className="truncate">
               {convertendo.recodificando ? t('cards.videoReencoding') : t('cards.videoConverting')} ·{' '}
               {convertendo.arquivoNome}
@@ -192,42 +257,54 @@ export function CardsDrawer({
             </span>
           </span>
         ) : recusa ? (
-          <span className="ml-3 min-w-0 truncate text-[11px] text-[var(--color-live)]">{recusa}</span>
+          <span className="min-w-0 flex-1 truncate text-[10px] text-[var(--color-live)]">{recusa}</span>
         ) : blackout && noAr ? (
-          <span className="ml-3 text-[11px] text-[var(--color-warn)]">{t('cards.blackoutWins')}</span>
+          <span className="min-w-0 flex-1 truncate text-[10px] text-[var(--color-warn)]">
+            {t('cards.blackoutWins')}
+          </span>
         ) : null}
+      </CabecalhoDePainel>
 
-        <button
-          type="button"
-          aria-label={t('app.close')}
-          onClick={onClose}
-          className="ml-auto rounded p-1 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+      <div className="flex min-h-0 min-w-0 flex-1 items-stretch gap-2.5 overflow-x-auto p-2.5">
+        {cards.map((card, index) => (
+          <CartaoNaGaveta
+            key={card.id}
+            card={card}
+            atalho={index < CARTOES_COM_ATALHO ? index + 1 : null}
+            noAr={noAr === card.id}
+            clock={clock}
+            videoPerfil={videoPerfil}
+            dispatch={dispatch}
+            onFalha={setRecusa}
+          />
+        ))}
+
+        {/* a zona de soltar fica com a sobra da fileira — e aceita de verdade
+            o que parece aceitar */}
+        <div
+          data-card-drop
+          onDragOver={(event) => {
+            event.preventDefault()
+            setSobreZona(true)
+          }}
+          onDragLeave={() => setSobreZona(false)}
+          onDrop={(event) => void soltarArquivos(event)}
+          className={`grid min-w-[130px] flex-1 place-items-center rounded-[7px] border border-dashed p-2 text-center text-[10px] leading-relaxed transition-colors ${
+            sobreZona
+              ? 'border-[var(--color-accent-2)] bg-[var(--color-accent-2)]/8 text-[var(--color-fog-1)]'
+              : 'border-[#3a3a40] text-[var(--color-fog-3)]'
+          }`}
         >
-          <Icon name="close" size={12} />
-        </button>
-      </header>
-
-      <div className="flex min-h-0 flex-1 border-t border-[var(--color-line)]">
-        {cards.length === 0 ? (
-          <p className="flex flex-1 items-center justify-center px-6 text-center text-[12px] text-[var(--color-fog-2)]">
-            {t('cards.empty')}
-          </p>
-        ) : (
-          <div className="flex min-w-0 flex-1 items-stretch gap-2.5 overflow-x-auto px-4 py-2.5">
-            {cards.map((card, index) => (
-              <CartaoNaGaveta
-                key={card.id}
-                card={card}
-                atalho={index < CARTOES_COM_ATALHO ? index + 1 : null}
-                noAr={noAr === card.id}
-                clock={clock}
-                videoPerfil={videoPerfil}
-                dispatch={dispatch}
-                onFalha={setRecusa}
-              />
-            ))}
-          </div>
-        )}
+          <span>
+            {cards.length === 0 ? (
+              <>
+                {t('cards.empty')}
+                <br />
+              </>
+            ) : null}
+            {t('cards.dropHint')}
+          </span>
+        </div>
       </div>
     </section>
   )
@@ -235,13 +312,11 @@ export function CardsDrawer({
 
 function BotaoAdicionar({
   atributo,
-  icone,
   rotulo,
   desligado = false,
   onClick
 }: {
   atributo: string
-  icone: 'card' | 'play' | 'direction'
   rotulo: string
   desligado?: boolean
   onClick: () => void
@@ -252,20 +327,20 @@ function BotaoAdicionar({
       {...{ [`data-card-add-${atributo}`]: true }}
       disabled={desligado}
       onClick={onClick}
-      className="flex items-center gap-1 rounded border border-[var(--color-line)] px-2 py-0.5 text-[11px] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] disabled:opacity-30"
+      className="flex-none rounded-[5px] border border-[var(--color-edge)] px-2 py-[2px] text-[10px] font-medium transition-[filter] hover:brightness-115 disabled:opacity-30"
+      style={{
+        background: 'color-mix(in srgb, var(--color-accent-2) 13%, var(--color-ink-2))',
+        color: 'color-mix(in srgb, var(--color-accent-2) 35%, var(--color-fog-1))'
+      }}
     >
-      <Icon name={icone} size={11} />
-      {rotulo}
+      + {rotulo}
     </button>
   )
 }
 
 /**
- * Um cartão inteiro: a arte, o nome e o que aquele tipo precisa.
- *
- * Clicar na arte põe no ar e tira — é o gesto do meio do programa, e por isso
- * é o alvo maior. O resto (nome, recado, player, remover) fica abaixo, onde a
- * mão só vai quando há tempo.
+ * Um cartão inteiro: a arte com as etiquetas por cima, e embaixo o que aquele
+ * tipo precisa — player no vídeo, recado no texto, e a fileira do "no ar".
  */
 function CartaoNaGaveta({
   card,
@@ -409,21 +484,40 @@ function CartaoNaGaveta({
     dispatch({ type: 'card/imageFile', cardId: card.id, arquivo: escolhido.arquivo })
   }
 
+  /**
+   * O que a rede recebe deste cartão, em três estados.
+   *
+   * "original" pode ser escolha do operador ou consequência de a cópia ainda
+   * não existir, e as duas coisas têm o mesmo efeito no wi-fi mas significados
+   * opostos — por isso a segunda vem em amarelo.
+   */
+  const perfilDaRede = perfilPorId(videoPerfil)
+  const naRede = !perfilDaRede
+    ? { leve: true, rotulo: t('cards.netOriginal'), titulo: t('cards.netOriginalHint') }
+    : card.kind === 'video' && card.proxy?.perfil === videoPerfil
+      ? {
+          leve: true,
+          rotulo: `${perfilDaRede.altura}p`,
+          titulo: t('cards.netLightHint', { tamanho: `${perfilDaRede.largura}×${perfilDaRede.altura}` })
+        }
+      : { leve: false, rotulo: t('cards.netHeavy'), titulo: t('cards.netHeavyHint') }
+
   return (
     <div
       data-card-tile={card.id}
       data-on-air={noAr ? 'sim' : 'nao'}
-      className={`flex w-[180px] flex-none flex-col gap-1.5 rounded-lg border p-2 ${
-        noAr ? 'border-[var(--color-go)]/60 bg-[var(--color-go)]/[0.09]' : 'border-[var(--color-line)]'
+      className={`flex w-[160px] flex-none flex-col overflow-hidden rounded-[7px] border bg-[#1c1c20] ${
+        noAr ? 'border-[var(--color-go)]/70 shadow-[0_0_0_1px_rgba(70,209,127,.22)]' : 'border-[var(--color-edge)]'
       }`}
     >
       {card.kind === 'video' ? <PreparaVideo card={card} dispatch={dispatch} onFalha={onFalha} /> : null}
 
-      {/* só retrato, não botão: subir no ar é decisão do quadrado "on screen"
-          ou do play do player, nunca de um clique na arte. Antes a thumbnail
-          também alternava o ar, e um clique querendo só olhar a miniatura de
-          perto acabava trocando o que estava na tela do apresentador. */}
-      <div className="relative flex h-[72px] flex-none items-center justify-center overflow-hidden rounded border border-[var(--color-line)] bg-black">
+      {/* só retrato, não botão: subir no ar é decisão do quadrado "no ar"
+          ou do play do player, nunca de um clique na arte. As etiquetas — o
+          atalho, a duração, a rede e o próprio nome — moram sobre a arte,
+          como na maquete, e o nome continua um campo de verdade: a faixa
+          escrita é editável no lugar. */}
+      <div className="relative flex h-[90px] flex-none items-center justify-center overflow-hidden bg-black">
         {card.kind === 'image' ? (
           imagemQuebrada ? (
             <button
@@ -452,32 +546,48 @@ function CartaoNaGaveta({
             <Icon name="play" size={18} />
           )
         ) : (
-          <span className="line-clamp-4 px-1.5 text-center text-[10px] leading-tight whitespace-pre-wrap text-[var(--color-fog-1)]">
+          <span className="line-clamp-3 px-2 pb-4 text-center text-[12px] leading-snug font-semibold whitespace-pre-wrap text-[var(--color-fog-05)]">
             {card.texto || '—'}
           </span>
         )}
 
-        {/* o número do atalho vira etiqueta sobre a arte: é por ele que o
-            operador dispara o cartão no meio do programa, e no canto do
-            campo de nome ele disputava atenção com o texto que se digita */}
+        {/* o número do atalho é a etiqueta roxa: é por ele que o operador
+            dispara o cartão no meio do programa */}
         {atalho ? (
           <kbd
             data-card-atalho={card.id}
             title={`Ctrl+Shift+${atalho}`}
-            className="absolute top-1 left-1 rounded bg-[var(--color-accent-2)]/85 px-1.5 font-mono text-[10px] leading-[1.5] text-black"
+            className="absolute top-[5px] left-[5px] grid h-4 w-4 place-items-center rounded-[4px] bg-[var(--color-accent-2)] font-mono text-[9px] font-bold text-[#1c1020]"
           >
             {atalho}
           </kbd>
         ) : null}
 
+        {card.kind === 'video' && card.duracao ? (
+          <span className="absolute top-[5px] right-[5px] rounded-[4px] bg-black/65 px-1 font-mono text-[9px] font-semibold text-[var(--color-fog-0)]">
+            {tempoDeVideo(card.duracao)}
+          </span>
+        ) : null}
+
+        {card.kind === 'video' && !desvinculado ? (
+          <span
+            data-card-rede={card.id}
+            title={naRede.titulo}
+            className={`absolute top-[24px] right-[5px] max-w-[70%] truncate rounded-[4px] px-1 text-[8px] ${
+              naRede.leve ? 'bg-black/60 text-[var(--color-fog-2)]' : 'bg-[var(--color-warn)]/85 text-black'
+            }`}
+          >
+            {naRede.rotulo}
+          </span>
+        ) : null}
+
         {desvinculado ? (
-          <span className="absolute inset-x-0 bottom-0 bg-[var(--color-warn)]/85 py-0.5 text-[9px] text-black">
+          <span className="absolute inset-x-0 bottom-[19px] bg-[var(--color-warn)]/85 py-0.5 text-center text-[9px] text-black">
             {t('cards.videoMissing')}
           </span>
         ) : null}
-      </div>
 
-      <div className="flex flex-none items-center gap-1">
+        {/* a faixa de nome da maquete, editável no lugar */}
         <input
           value={card.nome}
           aria-label={t('cards.name')}
@@ -489,45 +599,44 @@ function CartaoNaGaveta({
                 : t('cards.namePlaceholderText')
           }
           onChange={(event) => dispatch({ type: 'card/rename', cardId: card.id, nome: event.target.value })}
-          className="min-w-0 flex-1 rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-1.5 py-0.5 text-[11px] outline-none placeholder:text-[var(--color-fog-2)]/70"
+          className="absolute inset-x-0 bottom-0 bg-black/70 px-1.5 py-[3px] text-[9px] text-[var(--color-fog-05)] outline-none placeholder:text-[var(--color-fog-3)] focus:bg-black/85"
         />
       </div>
 
+      {card.kind === 'video' ? (
+        <PlayerDoCartao
+          card={card}
+          clock={clock}
+          noAr={noAr}
+          dispatch={dispatch}
+          arrastando={arrastando}
+          onArrastar={setArrastando}
+          onSoltarArrasto={finalizarArrasto}
+        />
+      ) : null}
+
       {/* o miolo cresce com a gaveta: puxar a divisória dá mais linha ao
-          recado e mais respiro ao player, sem inchar as miniaturas */}
-      <div className="flex min-h-0 flex-1 flex-col gap-1.5">
-        {card.kind === 'text' ? (
+          recado, sem inchar as miniaturas */}
+      {card.kind === 'text' ? (
+        <div className="flex min-h-0 flex-1 flex-col p-[7px] pb-0">
           <textarea
             value={card.texto}
             aria-label={t('cards.message')}
             placeholder={t('cards.messagePlaceholder')}
             autoFocus={card.texto === ''}
             onChange={(event) => dispatch({ type: 'card/text', cardId: card.id, texto: event.target.value })}
-            className="min-h-0 flex-1 resize-none rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] px-1.5 py-1 text-[11px] leading-snug outline-none placeholder:text-[var(--color-fog-2)]/70"
+            className="min-h-0 flex-1 resize-none rounded border border-[var(--color-edge)] bg-[#141416] px-1.5 py-1 text-[10px] leading-snug outline-none placeholder:text-[var(--color-fog-3)]"
           />
-        ) : null}
+        </div>
+      ) : null}
 
-        {card.kind === 'video' ? (
-          <PlayerDoCartao
-            card={card}
-            clock={clock}
-            noAr={noAr}
-            videoPerfil={videoPerfil}
-            dispatch={dispatch}
-            arrastando={arrastando}
-            onArrastar={setArrastando}
-            onSoltarArrasto={finalizarArrasto}
-          />
-        ) : null}
-      </div>
-
-      <div className="flex flex-none items-center gap-1.5">
+      <div className="mt-auto flex flex-none items-center gap-1.5 px-[7px] py-[5px]">
         {/* o quadrado que decide o que vai ao ar — clicar na arte não decide
-            mais nada. Serve para ligar e para tirar da tela, e o player do
-            vídeo faz a mesma coisa pelo play: as duas são as únicas portas. */}
+            nada. Serve para ligar e para tirar da tela, e o player do vídeo
+            faz a mesma coisa pelo play: as duas são as únicas portas. */}
         <label
           title={noAr ? t('cards.hide') : t('cards.show')}
-          className={`flex items-center gap-1 text-[10px] ${
+          className={`flex flex-none items-center gap-1 text-[10px] ${
             desvinculado ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
           } ${noAr ? 'text-[var(--color-go)]' : 'text-[var(--color-fog-2)]'}`}
         >
@@ -540,16 +649,52 @@ function CartaoNaGaveta({
           />
           {t('cards.onAir')}
         </label>
-        <button
-          type="button"
-          data-card-remove={card.id}
-          aria-label={t('cards.remove')}
-          title={t('cards.remove')}
-          onClick={() => dispatch({ type: 'card/remove', cardId: card.id })}
-          className="ml-auto rounded p-0.5 text-[var(--color-fog-2)] hover:bg-[var(--color-live)]/12 hover:text-[var(--color-live)]"
-        >
-          <Icon name="trash" size={12} />
-        </button>
+
+        {/* o volume só existe com o cartão no ar: fora dele não há o que ouvir */}
+        {card.kind === 'video' && noAr ? (
+          <span className="flex min-w-0 items-center gap-1">
+            <Icon name="volume" size={9} className="flex-none text-[var(--color-fog-2)]" />
+            <SliderConsole
+              mini
+              data-card-video-volume={card.id}
+              min={0}
+              max={1}
+              step={0.05}
+              value={clock.volume}
+              cor="var(--color-fog-2)"
+              aria-label={t('cards.videoVolume')}
+              onValue={(volume) => dispatch({ type: 'card/videoVolume', volume })}
+              className="w-[34px] flex-none"
+            />
+          </span>
+        ) : null}
+
+        <span className="ml-auto flex flex-none items-center gap-1">
+          {card.kind === 'video' && !desvinculado ? (
+            <label title={t('cards.videoLoop')} className="flex-none cursor-pointer">
+              <input
+                type="checkbox"
+                data-card-loop={card.id}
+                checked={card.loop ?? false}
+                onChange={(event) => dispatch({ type: 'card/videoLoop', cardId: card.id, loop: event.target.checked })}
+                className="peer sr-only"
+              />
+              <span className="grid h-[18px] w-6 place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[var(--color-ink-2)] text-[11px] text-[var(--color-fog-2)] peer-checked:border-[var(--color-accent-2)] peer-checked:bg-[var(--color-accent-2)]/18 peer-checked:text-[#d9bdf0]">
+                ↻
+              </span>
+            </label>
+          ) : null}
+          <button
+            type="button"
+            data-card-remove={card.id}
+            aria-label={t('cards.remove')}
+            title={t('cards.remove')}
+            onClick={() => dispatch({ type: 'card/remove', cardId: card.id })}
+            className="rounded p-0.5 text-[var(--color-fog-2)] hover:bg-[var(--color-live)]/12 hover:text-[var(--color-live)]"
+          >
+            <Icon name="trash" size={12} />
+          </button>
+        </span>
       </div>
     </div>
   )
@@ -609,7 +754,9 @@ function PreviaDoArrasto({
 }
 
 /**
- * O player, dentro do próprio cartão.
+ * O player, dentro do próprio cartão — a faixa de transporte da maquete:
+ * play redondo, barra roxa, tempo corrente. A duração total virou etiqueta
+ * sobre a arte, e repetir/volume moram na fileira de baixo do cartão.
  *
  * Fora do ar ele não fica cinza: apertar play põe o cartão no ar e começa a
  * tocar, que é o que o operador quer dizer com aquele botão. Manda comando
@@ -620,7 +767,6 @@ function PlayerDoCartao({
   card,
   clock,
   noAr,
-  videoPerfil,
   dispatch,
   arrastando,
   onArrastar,
@@ -629,7 +775,6 @@ function PlayerDoCartao({
   card: CartaoVideo
   clock: VideoClock
   noAr: boolean
-  videoPerfil: PerfilDeRede
   dispatch: (action: Action) => void
   /** a barra na mão do operador; mora no cartão, não aqui, porque a miniatura também precisa */
   arrastando: number | null
@@ -656,24 +801,6 @@ function PlayerDoCartao({
     arrastando ?? (noAr ? posicaoDoVideo(clock, agora, card.duracao, card.loop ?? false) : (card.pausedAt ?? 0))
   const tocando = noAr && clock.tocando
 
-  /**
-   * O que a rede recebe deste cartão, em três estados.
-   *
-   * "original" pode ser escolha do operador ou consequência de a cópia ainda
-   * não existir, e as duas coisas têm o mesmo efeito no wi-fi mas significados
-   * opostos — por isso a segunda vem em amarelo.
-   */
-  const perfilDaRede = perfilPorId(videoPerfil)
-  const naRede = !perfilDaRede
-    ? { leve: true, rotulo: t('cards.netOriginal'), titulo: t('cards.netOriginalHint') }
-    : card.proxy?.perfil === videoPerfil
-      ? {
-          leve: true,
-          rotulo: `${perfilDaRede.altura}p`,
-          titulo: t('cards.netLightHint', { tamanho: `${perfilDaRede.largura}×${perfilDaRede.altura}` })
-        }
-      : { leve: false, rotulo: t('cards.netHeavy'), titulo: t('cards.netHeavyHint') }
-
   const relinkar = async (): Promise<void> => {
     const escolhido = await window.valendo.pickCardVideo(card.id)
     if (!escolhido || escolhido.erro) return
@@ -682,8 +809,6 @@ function PlayerDoCartao({
       cardId: card.id,
       caminho: escolhido.caminho,
       arquivoNome: escolhido.arquivoNome,
-      // explícito nos dois sentidos: reapontar para um mp4 comum precisa
-      // apagar a conversão que o cartão carregava do arquivo anterior
       // reapontar limpa a conversão do arquivo anterior: ela não vale para
       // o novo, e o cartão a refaz sozinho se o novo também não tocar
       convertido: null,
@@ -693,15 +818,17 @@ function PlayerDoCartao({
 
   if (card.vinculado === false) {
     return (
-      <button
-        type="button"
-        data-card-relink={card.id}
-        onClick={() => void relinkar()}
-        title={card.caminho}
-        className="flex items-center justify-center gap-1 rounded border border-[var(--color-warn)]/50 px-2 py-1 text-[11px] text-[var(--color-warn)] hover:bg-[var(--color-warn)]/15"
-      >
-        {t('cards.videoRelink')}
-      </button>
+      <div className="border-y border-[var(--color-edge)] bg-[var(--color-ink-1)] p-1">
+        <button
+          type="button"
+          data-card-relink={card.id}
+          onClick={() => void relinkar()}
+          title={card.caminho}
+          className="flex w-full items-center justify-center gap-1 rounded border border-[var(--color-warn)]/50 px-2 py-0.5 text-[10px] text-[var(--color-warn)] hover:bg-[var(--color-warn)]/15"
+        >
+          {t('cards.videoRelink')}
+        </button>
+      </div>
     )
   }
 
@@ -718,103 +845,46 @@ function PlayerDoCartao({
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center gap-1.5">
-        <button
-          type="button"
-          data-card-video-play={card.id}
-          aria-label={tocando ? t('cards.videoPause') : t('cards.videoPlay')}
-          onClick={() => {
-            // fora do ar, play quer dizer "sobe e toca" — pausar um vídeo que
-            // ninguém está vendo não significa nada
-            if (!noAr) dispatch({ type: 'card/show', cardId: card.id })
-            else dispatch({ type: 'card/videoPlay', tocando: !clock.tocando })
-          }}
-          className="flex-none rounded border border-[var(--color-line)] p-0.5 text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]"
-        >
-          <Icon name={tocando ? 'pause' : 'play'} size={11} />
-        </button>
+    <div className="flex flex-none items-center gap-[7px] border-y border-[var(--color-edge)] bg-[var(--color-ink-1)] px-[7px] py-1">
+      <button
+        type="button"
+        data-card-video-play={card.id}
+        aria-label={tocando ? t('cards.videoPause') : t('cards.videoPlay')}
+        onClick={() => {
+          // fora do ar, play quer dizer "sobe e toca" — pausar um vídeo que
+          // ninguém está vendo não significa nada
+          if (!noAr) dispatch({ type: 'card/show', cardId: card.id })
+          else dispatch({ type: 'card/videoPlay', tocando: !clock.tocando })
+        }}
+        className="grid h-[18px] w-[18px] flex-none place-items-center rounded-full border border-[var(--color-edge)] text-[var(--color-fog-0)]"
+        style={{ background: 'linear-gradient(#3a3a40, #2a2a2f)' }}
+      >
+        <Icon name={tocando ? 'pause' : 'play'} size={8} />
+      </button>
 
-        <input
-          type="range"
-          data-card-video-seek={card.id}
-          min={0}
-          max={duracao || 1}
-          step={0.05}
-          value={Math.min(posicao, duracao || 1)}
-          disabled={!duracao}
-          aria-label={t('cards.videoSeek')}
-          onChange={(event) => {
-            const segundo = Number(event.target.value)
-            onArrastar(segundo)
-            dispatch({ type: 'card/videoSeek', cardId: card.id, segundo, arrastando: true })
-          }}
-          onPointerUp={soltar}
-          onKeyUp={soltar}
-          onBlur={soltar}
-          className="min-w-0 flex-1 accent-[var(--color-go)] disabled:opacity-40"
-        />
-      </div>
+      <SliderConsole
+        mini
+        data-card-video-seek={card.id}
+        min={0}
+        max={duracao || 1}
+        step={0.05}
+        value={Math.min(posicao, duracao || 1)}
+        disabled={!duracao}
+        cor="var(--color-accent-2)"
+        aria-label={t('cards.videoSeek')}
+        onValue={(segundo) => {
+          onArrastar(segundo)
+          dispatch({ type: 'card/videoSeek', cardId: card.id, segundo, arrastando: true })
+        }}
+        onPointerUp={soltar}
+        onKeyUp={soltar}
+        onBlur={soltar}
+        className="min-w-0 flex-1 disabled:opacity-40"
+      />
 
-      <div className="flex items-center gap-1.5">
-        <span className="flex-none font-mono text-[9px] text-[var(--color-fog-2)]">
-          {tempoDeVideo(posicao)} / {tempoDeVideo(duracao)}
-        </span>
-
-        {/* o que a rede está recebendo AGORA.
-            A rede nunca deixa de servir: enquanto a cópia leve não existe, ela
-            manda o original. Isso é bom, e era silencioso — o painel prometia
-            "3 MB por minuto" e o celular podia estar puxando o master inteiro,
-            engasgando, sem nada na tela explicando.
-            `min-w-0 truncate`: sem isso, um rótulo mais comprido (num idioma
-            diferente, ou "network: original") empurrava o "repetir" para fora
-            do cartão — a linha inteira não tinha para onde encolher. */}
-        <span
-          data-card-rede={card.id}
-          title={naRede.titulo}
-          className={`min-w-0 flex-1 truncate rounded px-1 text-right text-[9px] ${
-            naRede.leve ? 'text-[var(--color-fog-2)]' : 'bg-[var(--color-warn)]/15 text-[var(--color-warn)]'
-          }`}
-        >
-          {naRede.rotulo}
-        </span>
-
-        <label
-          title={t('cards.videoLoop')}
-          className="flex flex-none items-center gap-1 text-[9px] text-[var(--color-fog-2)]"
-        >
-          <input
-            type="checkbox"
-            data-card-loop={card.id}
-            checked={card.loop ?? false}
-            onChange={(event) => dispatch({ type: 'card/videoLoop', cardId: card.id, loop: event.target.checked })}
-          />
-          {t('cards.videoLoop')}
-        </label>
-      </div>
-
-      {/* o volume ganhou linha própria — dividindo com tempo, rede e repetir,
-          ele estourava a largura do cartão. Todos os outros itens da linha
-          de cima são `flex-none` (não podem encolher sem virar ilegível), e
-          o slider não tinha para onde ir: a linha simplesmente vazava para
-          fora do cartão, sem quebrar. Aqui, sozinho, ele tem os 164px
-          inteiros do cartão para si. */}
-      {noAr ? (
-        <div className="flex items-center gap-1.5">
-          <Icon name="volume" size={10} className="flex-none" />
-          <input
-            type="range"
-            data-card-video-volume={card.id}
-            min={0}
-            max={1}
-            step={0.05}
-            value={clock.volume}
-            aria-label={t('cards.videoVolume')}
-            onChange={(event) => dispatch({ type: 'card/videoVolume', volume: Number(event.target.value) })}
-            className="min-w-0 flex-1 accent-[var(--color-fog-1)]"
-          />
-        </div>
-      ) : null}
+      <span className="flex-none font-mono text-[9px] font-semibold text-[var(--color-fog-2)]">
+        {tempoDeVideo(posicao)}
+      </span>
     </div>
   )
 }

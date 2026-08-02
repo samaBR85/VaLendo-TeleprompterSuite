@@ -1,8 +1,9 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
 import { CHANNELS, type Action } from '@shared/actions'
 import type {
   CardConvertProgress,
   CardConvertResult,
+  CardDropResult,
   CardPickResult,
   CardVideoPickResult,
   ExportResult,
@@ -40,6 +41,11 @@ const api: ValendoApi = {
     ipcRenderer.invoke(CHANNELS.cardPick, cardId) as Promise<CardPickResult | null>,
   pickCardVideo: (cardId: string) =>
     ipcRenderer.invoke(CHANNELS.cardPickVideo, cardId) as Promise<CardVideoPickResult | null>,
+  // `File.path` não existe mais no Chromium; só o preload pode perguntar o
+  // caminho real de um arquivo solto na janela
+  pathForFile: (file: File) => webUtils.getPathForFile(file),
+  importCardPath: (cardId: string, caminho: string) =>
+    ipcRenderer.invoke(CHANNELS.cardImportPath, cardId, caminho) as Promise<CardDropResult | null>,
   convertCardVideo: (cardId: string) =>
     ipcRenderer.invoke(CHANNELS.cardConvert, cardId) as Promise<CardConvertResult>,
   onCardConvert: (callback) => subscribe<CardConvertProgress | null>(CHANNELS.cardConvertProgress, callback)

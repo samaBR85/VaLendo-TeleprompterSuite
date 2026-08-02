@@ -126,6 +126,19 @@ export interface ImportResult {
   warnings: string[]
 }
 
+/**
+ * O que volta ao soltar um arquivo na gaveta de cartões.
+ *
+ * Quem decide se o arquivo é imagem ou vídeo é o main, pela mesma lista de
+ * extensões dos seletores — o renderer não carrega uma cópia dessa regra.
+ * `recusado` traz o motivo: um arquivo que não é nem imagem nem vídeo não
+ * pode sumir em silêncio depois de um gesto tão explícito quanto arrastar.
+ */
+export type CardDropResult =
+  | { kind: 'image'; arquivo: string; sugestao: string }
+  | { kind: 'video'; caminho: string; arquivoNome: string; sugestao: string }
+  | { kind: 'recusado'; arquivoNome: string; erro: string }
+
 /** Superfície exposta pelo preload. O renderer só conhece isto do processo main. */
 export interface ValendoApi {
   platform: NodeJS.Platform
@@ -163,6 +176,17 @@ export interface ValendoApi {
    * autoriza o app a servi-lo. Serve tanto para subir quanto para relinkar.
    */
   pickCardVideo(cardId: string): Promise<CardVideoPickResult | null>
+  /**
+   * O caminho real de um arquivo solto na janela. `File.path` não existe mais
+   * no Chromium — só o preload consegue perguntar isso ao Electron.
+   */
+  pathForFile(file: File): string
+  /**
+   * Importa um arquivo solto na gaveta: a segunda porta de entrada de cartão,
+   * ao lado dos seletores — e igualmente um gesto explícito do operador.
+   * Imagem é copiada para dentro do app; vídeo é autorizado onde está.
+   */
+  importCardPath(cardId: string, caminho: string): Promise<CardDropResult | null>
   /**
    * Pede a conversão do vídeo deste cartão.
    *

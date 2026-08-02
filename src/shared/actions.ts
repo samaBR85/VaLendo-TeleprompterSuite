@@ -109,6 +109,7 @@ export const CHANNELS = {
   confirmCloseResponse: 'app:confirmCloseResponse',
   cardPick: 'card:pick',
   cardPickVideo: 'card:pickVideo',
+  cardImportPath: 'card:importPath',
   cardConvert: 'card:convert',
   cardConvertProgress: 'card:convertProgress'
 } as const

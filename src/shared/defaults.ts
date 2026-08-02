@@ -5,17 +5,16 @@ import { CRONOMETRO_PARADO } from './pacing'
 import { VIDEO_PARADO } from './video'
 
 /**
- * Abaixo disto, o cartão de vídeo — o mais alto, com as três linhas do
- * player quando está no ar (transporte, tempo/rede/repetir, volume) — não
- * cabe mais no espaço que a gaveta reserva para ele, e o miolo (que pode
- * encolher, `flex-1 min-h-0`) fica menor que o player (que não encolhe). O
- * player então vaza por cima da linha "on screen"/lixeira: os ícones colidem.
+ * Abaixo disto, o cartão de vídeo — o mais alto — não cabe no espaço que a
+ * gaveta reserva para ele, e as fileiras fixas (player e "no ar") passam a
+ * colidir com a arte.
  *
- * Medido no app: cabeçalho (34px) + borda (1px) + respiro da fileira de
- * cartões (20px) + altura mínima de conteúdo do cartão de vídeo (193px) =
- * 248px. Com folga para variação de renderização de fonte entre sistemas.
+ * Medido no cartão da maquete: borda da gaveta (1px) + cabeçalho (28px) +
+ * respiro da fileira (20px) + cartão de vídeo — arte 90 + faixa do player 26
+ * + fileira do "no ar" 28 + bordas 2 = 146px — dá 195px. Com folga para
+ * variação de renderização de fonte entre sistemas.
  */
-export const CARDS_HEIGHT_MIN = 260
+export const CARDS_HEIGHT_MIN = 200
 /**
  * A gaveta nasce no próprio mínimo, e não mais compacta.
  *
