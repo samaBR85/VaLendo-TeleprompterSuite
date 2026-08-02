@@ -1,10 +1,10 @@
 import { readFile, writeFile } from 'node:fs/promises'
-import { PROJECT_EXTENSION, readProject, serializeProject } from '@shared/project'
+import { PROJECT_EXTENSION, readProject, semTransitorio, serializeProject } from '@shared/project'
 import type { AppState } from '@shared/types'
 import { readCardImage, writeCardImage } from './cards'
 import { mergeAppearance } from './mergeAppearance'
 
-export const PROJECT_FILTERS = [{ name: 'Projeto do VaLendo', extensions: [PROJECT_EXTENSION] }]
+export const PROJECT_FILTERS = [{ name: 'Projeto do Valendo', extensions: [PROJECT_EXTENSION] }]
 
 export function projectFileName(title: string): string {
   const limpo = title
@@ -29,6 +29,27 @@ function coletarImagens(state: AppState): Record<string, string> {
 
 export async function saveProject(filePath: string, state: AppState): Promise<void> {
   await writeFile(filePath, serializeProject(state, Date.now(), coletarImagens(state)), 'utf8')
+}
+
+/**
+ * O retrato do que foi salvo ou aberto por último — a régua contra a qual "há
+ * mudança não salva?" se mede.
+ *
+ * Comparado depois de `semTransitorio`: dar play não pode acusar o projeto de
+ * sujo, já que isso nunca vai parar no arquivo. `null` só antes do primeiro
+ * `markProjectClean` da sessão, o que não deveria acontecer — `index.ts` chama
+ * isso assim que o `Store` nasce.
+ */
+let ultimoRetrato: string | null = null
+
+export function markProjectClean(state: AppState): void {
+  ultimoRetrato = JSON.stringify(semTransitorio(state))
+}
+
+/** Sem retrato ainda, não há como acusar sujeira — o mais seguro é dizer que não há. */
+export function projectIsDirty(state: AppState): boolean {
+  if (ultimoRetrato === null) return false
+  return JSON.stringify(semTransitorio(state)) !== ultimoRetrato
 }
 
 export async function openProject(filePath: string): Promise<{ state: AppState | null; error: string | null }> {

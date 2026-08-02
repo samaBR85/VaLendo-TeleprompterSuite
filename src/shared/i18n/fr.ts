@@ -50,6 +50,8 @@ export const fr: Dicionario = {
   'toolbar.group.air': 'Antenne',
   'toolbar.openProject': 'Ouvrir un projet',
   'toolbar.saveProject': 'Enregistrer tout le projet — onglets, apparence, repères et rythme',
+  'toolbar.saveProjectAs': 'Enregistrer sous…',
+  'toolbar.newProject': 'Nouveau projet vierge',
   'toolbar.import': 'Importer un texte (txt, md, docx, pdf)',
   'toolbar.saveScript': 'Enregistrer le texte dans un fichier — le texte seul',
   'toolbar.saveScriptTo': 'Enregistrer le texte dans {file}',
@@ -215,6 +217,12 @@ export const fr: Dicionario = {
   'close.cancel': 'Annuler',
   'close.confirm': 'Terminer la diffusion',
 
+  'unsaved.title': 'Ce projet a des changements non enregistrés.',
+  'unsaved.detail': 'Créer un nouveau projet vierge abandonne ce qui n’a pas été enregistré.',
+  'unsaved.cancel': 'Annuler',
+  'unsaved.discard': 'Créer nouveau sans enregistrer',
+  'unsaved.save': 'Enregistrer et créer nouveau',
+
   'credits.about':
     'Un téléprompteur où le texte s’édite pendant la diffusion. La position de lecture est une ancre dans le texte, pas un pixel à l’écran — c’est pourquoi taper, changer de police ou de marge ne déplace jamais le mot que le présentateur est en train de lire.',
   'credits.builtWith': 'Construit avec',
@@ -302,7 +310,9 @@ export const fr: Dicionario = {
   'cmd.document.save': 'Enregistrer le texte dans un fichier',
   'cmd.document.saveAs': 'Enregistrer le texte sous…',
   'cmd.project.save': 'Enregistrer tout le projet',
+  'cmd.project.saveAs': 'Enregistrer le projet sous…',
   'cmd.project.open': 'Ouvrir un projet',
+  'cmd.project.new': 'Nouveau projet vierge',
   'cmd.insert.chapter': 'Insérer un chapitre',
   'cmd.insert.direction': 'Insérer une indication',
   'cmd.edit.undo': 'Annuler',

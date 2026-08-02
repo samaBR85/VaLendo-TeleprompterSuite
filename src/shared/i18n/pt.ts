@@ -62,6 +62,8 @@ export const pt = {
   'toolbar.group.air': 'Ar',
   'toolbar.openProject': 'Abrir um projeto',
   'toolbar.saveProject': 'Salvar o projeto inteiro — abas, aparência, marcadores e ritmo',
+  'toolbar.saveProjectAs': 'Salvar como…',
+  'toolbar.newProject': 'Novo projeto em branco',
   'toolbar.import': 'Importar roteiro (txt, md, docx, pdf)',
   'toolbar.saveScript': 'Salvar o roteiro num arquivo — só o texto',
   'toolbar.saveScriptTo': 'Salvar o roteiro em {file}',
@@ -232,6 +234,13 @@ export const pt = {
   'close.cancel': 'Cancelar',
   'close.confirm': 'Encerrar a transmissão',
 
+  /* ------------------------------------------------------- projeto não salvo */
+  'unsaved.title': 'Este projeto tem mudanças não salvas.',
+  'unsaved.detail': 'Criar um projeto novo em branco descarta o que não foi salvo.',
+  'unsaved.cancel': 'Cancelar',
+  'unsaved.discard': 'Criar novo sem salvar',
+  'unsaved.save': 'Salvar e criar novo',
+
   /* --------------------------------------------------------------- créditos */
   'credits.about':
     'Teleprompter em que o roteiro é editado com a transmissão no ar. A posição de leitura é uma âncora no texto, não um pixel na tela — por isso digitar, trocar a fonte ou mudar a margem não move a palavra que o apresentador está lendo.',
@@ -321,7 +330,9 @@ export const pt = {
   'cmd.document.save': 'Salvar o roteiro num arquivo',
   'cmd.document.saveAs': 'Salvar o roteiro como…',
   'cmd.project.save': 'Salvar o projeto inteiro',
+  'cmd.project.saveAs': 'Salvar o projeto como…',
   'cmd.project.open': 'Abrir um projeto',
+  'cmd.project.new': 'Novo projeto em branco',
   'cmd.insert.chapter': 'Inserir capítulo',
   'cmd.insert.direction': 'Inserir direção de cena',
   'cmd.edit.undo': 'Desfazer',

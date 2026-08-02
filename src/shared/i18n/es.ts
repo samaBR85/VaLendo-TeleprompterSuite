@@ -50,6 +50,8 @@ export const es: Dicionario = {
   'toolbar.group.air': 'Aire',
   'toolbar.openProject': 'Abrir un proyecto',
   'toolbar.saveProject': 'Guardar el proyecto entero — pestañas, aspecto, marcadores y ritmo',
+  'toolbar.saveProjectAs': 'Guardar como…',
+  'toolbar.newProject': 'Nuevo proyecto en blanco',
   'toolbar.import': 'Importar guion (txt, md, docx, pdf)',
   'toolbar.saveScript': 'Guardar el guion en un archivo — solo el texto',
   'toolbar.saveScriptTo': 'Guardar el guion en {file}',
@@ -215,6 +217,12 @@ export const es: Dicionario = {
   'close.cancel': 'Cancelar',
   'close.confirm': 'Terminar la emisión',
 
+  'unsaved.title': 'Este proyecto tiene cambios sin guardar.',
+  'unsaved.detail': 'Crear un proyecto nuevo en blanco descarta lo que no se guardó.',
+  'unsaved.cancel': 'Cancelar',
+  'unsaved.discard': 'Crear nuevo sin guardar',
+  'unsaved.save': 'Guardar y crear nuevo',
+
   'credits.about':
     'Teleprompter en el que el guion se edita con la emisión al aire. La posición de lectura es un ancla en el texto, no un píxel en la pantalla — por eso escribir, cambiar la fuente o el margen no mueve la palabra que el presentador está leyendo.',
   'credits.builtWith': 'Construido con',
@@ -300,7 +308,9 @@ export const es: Dicionario = {
   'cmd.document.save': 'Guardar el guion en un archivo',
   'cmd.document.saveAs': 'Guardar el guion como…',
   'cmd.project.save': 'Guardar el proyecto entero',
+  'cmd.project.saveAs': 'Guardar el proyecto como…',
   'cmd.project.open': 'Abrir un proyecto',
+  'cmd.project.new': 'Proyecto nuevo en blanco',
   'cmd.insert.chapter': 'Insertar capítulo',
   'cmd.insert.direction': 'Insertar acotación',
   'cmd.edit.undo': 'Deshacer',

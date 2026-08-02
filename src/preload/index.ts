@@ -29,8 +29,9 @@ const api: ValendoApi = {
   importDocument: () => ipcRenderer.invoke(CHANNELS.importDocument) as Promise<ImportResult | null>,
   exportDocument: (saveAs: boolean) =>
     ipcRenderer.invoke(CHANNELS.exportDocument, saveAs) as Promise<ExportResult | null>,
-  saveProject: () => ipcRenderer.invoke(CHANNELS.projectSave) as Promise<ProjectResult | null>,
+  saveProject: (saveAs = false) => ipcRenderer.invoke(CHANNELS.projectSave, saveAs) as Promise<ProjectResult | null>,
   openProject: () => ipcRenderer.invoke(CHANNELS.projectOpen) as Promise<ProjectResult | null>,
+  projectIsDirty: () => ipcRenderer.invoke(CHANNELS.projectIsDirty) as Promise<boolean>,
   openExternal: (url: string) => ipcRenderer.send(CHANNELS.openExternal, url),
   coversOperator: () => ipcRenderer.invoke(CHANNELS.broadcastCoversOperator) as Promise<boolean>,
   onState: (callback) => subscribe<StateSnapshot>(CHANNELS.stateChanged, callback),

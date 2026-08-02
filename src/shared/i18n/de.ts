@@ -50,6 +50,8 @@ export const de: Dicionario = {
   'toolbar.group.air': 'Sendung',
   'toolbar.openProject': 'Projekt öffnen',
   'toolbar.saveProject': 'Ganzes Projekt speichern — Tabs, Aussehen, Marker und Tempo',
+  'toolbar.saveProjectAs': 'Speichern unter…',
+  'toolbar.newProject': 'Neues leeres Projekt',
   'toolbar.import': 'Skript importieren (txt, md, docx, pdf)',
   'toolbar.saveScript': 'Skript in eine Datei speichern — nur den Text',
   'toolbar.saveScriptTo': 'Skript in {file} speichern',
@@ -215,6 +217,12 @@ export const de: Dicionario = {
   'close.cancel': 'Abbrechen',
   'close.confirm': 'Sendung beenden',
 
+  'unsaved.title': 'Dieses Projekt hat ungespeicherte Änderungen.',
+  'unsaved.detail': 'Ein neues leeres Projekt zu erstellen verwirft, was nicht gespeichert wurde.',
+  'unsaved.cancel': 'Abbrechen',
+  'unsaved.discard': 'Neu erstellen ohne zu speichern',
+  'unsaved.save': 'Speichern und neu erstellen',
+
   'credits.about':
     'Ein Teleprompter, bei dem das Skript bearbeitet wird, während die Sendung läuft. Die Leseposition ist ein Anker im Text, kein Pixel auf dem Bildschirm — deshalb bewegt Tippen, ein Schriftwechsel oder ein anderer Rand nie das Wort, das der Sprecher gerade liest.',
   'credits.builtWith': 'Gebaut mit',
@@ -302,7 +310,9 @@ export const de: Dicionario = {
   'cmd.document.save': 'Skript in eine Datei speichern',
   'cmd.document.saveAs': 'Skript speichern unter…',
   'cmd.project.save': 'Ganzes Projekt speichern',
+  'cmd.project.saveAs': 'Projekt speichern unter…',
   'cmd.project.open': 'Projekt öffnen',
+  'cmd.project.new': 'Neues leeres Projekt',
   'cmd.insert.chapter': 'Kapitel einfügen',
   'cmd.insert.direction': 'Regieanweisung einfügen',
   'cmd.edit.undo': 'Rückgängig',

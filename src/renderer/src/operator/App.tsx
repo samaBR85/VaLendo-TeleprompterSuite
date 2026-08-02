@@ -14,6 +14,7 @@ import { Icon, type IconName } from '../ui/Icon'
 import { CabecalhoDePainel, Poco, SliderConsole, Tecla } from '../ui/console'
 import { Wordmark, versionLabel } from '../ui/Wordmark'
 import { CloseConfirm } from './CloseConfirm'
+import { UnsavedConfirm } from './UnsavedConfirm'
 import { CardsDrawer } from './CardsDrawer'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
@@ -244,6 +245,7 @@ function AppConteudo({
   const [credits, setCredits] = useState(false)
   const [notice, setNotice] = useState<Notice | null>(null)
   const [closeConfirm, setCloseConfirm] = useState(false)
+  const [unsavedConfirm, setUnsavedConfirm] = useState(false)
   const mainRef = useRef<HTMLElement>(null)
   const editorRef = useRef<EditorHandle>(null)
 
@@ -285,28 +287,48 @@ function AppConteudo({
     )
   }, [])
 
-  /** Grava ou abre o programa inteiro num .valendo. */
-  const project = useCallback(async (acao: 'salvar' | 'abrir'): Promise<void> => {
-    if (acao === 'salvar') editorRef.current?.flush()
+  /** Grava ou abre o programa inteiro num .valendo. Devolve se a gravação deu certo. */
+  const project = useCallback(async (acao: 'salvar' | 'salvarComo' | 'abrir'): Promise<boolean> => {
+    const salvando = acao === 'salvar' || acao === 'salvarComo'
+    if (salvando) editorRef.current?.flush()
     await window.valendo.getState()
 
-    const result = acao === 'salvar' ? await window.valendo.saveProject() : await window.valendo.openProject()
-    if (!result) return
+    const result = salvando
+      ? await window.valendo.saveProject(acao === 'salvarComo')
+      : await window.valendo.openProject()
+    if (!result) return false
 
     setNotice(
       result.ok
         ? {
-            title: acao === 'salvar' ? t('notice.projectSaved') : t('notice.projectOpened'),
+            title: salvando ? t('notice.projectSaved') : t('notice.projectOpened'),
             lines: [result.path],
             tone: 'ok'
           }
         : {
-            title: acao === 'salvar' ? t('notice.projectSaveFail') : t('notice.projectOpenFail'),
+            title: salvando ? t('notice.projectSaveFail') : t('notice.projectOpenFail'),
             lines: [result.error ?? t('notice.unknownError')],
             tone: 'warn'
           }
     )
+    return result.ok
   }, [])
+
+  /**
+   * Pedido de "novo projeto": se não há nada não salvo, cria direto; senão,
+   * pergunta primeiro — o mesmo cuidado do fechar-com-transmissão-no-ar, só
+   * que aqui a pergunta é sobre o projeto, não sobre a transmissão.
+   */
+  const novoProjeto = useCallback(async (): Promise<void> => {
+    editorRef.current?.flush()
+    await window.valendo.getState()
+    const dirty = await window.valendo.projectIsDirty()
+    if (dirty) {
+      setUnsavedConfirm(true)
+      return
+    }
+    dispatch({ type: 'project/new' })
+  }, [dispatch])
 
   const toggleFocusMode = useCallback(() => {
     if (!state) return
@@ -321,9 +343,10 @@ function AppConteudo({
       flushEditor: () => editorRef.current?.flush(),
       insertBlock: (kind: InsertKind) => editorRef.current?.insert(kind),
       exportDocument: (saveAs: boolean) => void exportDocument(saveAs),
-      project: (acao: 'salvar' | 'abrir') => void project(acao)
+      project: (acao: 'salvar' | 'salvarComo' | 'abrir') => void project(acao),
+      novoProjeto: () => void novoProjeto()
     }),
-    [toggleFocusMode, exportDocument, project]
+    [toggleFocusMode, exportDocument, project, novoProjeto]
   )
 
   // a prévia do operador é quem mede as fileiras e devolve ao main, para que
@@ -601,6 +624,7 @@ function AppConteudo({
         dispatch={dispatch}
         run={run}
         onImport={importDocument}
+        onNewProject={novoProjeto}
         webviewLive={state.webview.enabled && webview.running && !webview.error}
         onOpenWebview={() => setWebviewOpen(true)}
       />
@@ -852,6 +876,20 @@ function AppConteudo({
       ) : null}
       {closeConfirm ? (
         <CloseConfirm onCancel={() => respondToClose(false)} onConfirm={() => respondToClose(true)} />
+      ) : null}
+      {unsavedConfirm ? (
+        <UnsavedConfirm
+          onCancel={() => setUnsavedConfirm(false)}
+          onDiscard={() => {
+            setUnsavedConfirm(false)
+            dispatch({ type: 'project/new' })
+          }}
+          onSave={async () => {
+            const ok = await project('salvar')
+            setUnsavedConfirm(false)
+            if (ok) dispatch({ type: 'project/new' })
+          }}
+        />
       ) : null}
     </div>
   )

@@ -17,7 +17,9 @@ export interface CommandUi {
   flushEditor: () => void
   insertBlock: (kind: InsertKind) => void
   exportDocument: (saveAs: boolean) => void
-  project: (acao: 'salvar' | 'abrir') => void
+  project: (acao: 'salvar' | 'salvarComo' | 'abrir') => void
+  /** confirma sozinho se não houver mudança para perder; senão, pede antes */
+  novoProjeto: () => void
 }
 
 function blockIdUnderReadingLine(state: AppState, tab: Tab, rows: number[]): string | null {
@@ -218,8 +220,14 @@ export function useCommands(
         case 'project.save':
           ui.project('salvar')
           break
+        case 'project.saveAs':
+          ui.project('salvarComo')
+          break
         case 'project.open':
           ui.project('abrir')
+          break
+        case 'project.new':
+          ui.novoProjeto()
           break
 
         case 'insert.chapter':

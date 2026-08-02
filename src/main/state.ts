@@ -10,7 +10,7 @@ import {
 import { cartaoNoAr } from '@shared/cards'
 import { COMMANDS_BY_ID } from '@shared/commands'
 import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
-import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN, TAB_COLORS, createTab } from '@shared/defaults'
+import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN, TAB_COLORS, createInitialState, createTab } from '@shared/defaults'
 import { History } from '@shared/history'
 import { reconcileBlocks } from '@shared/text'
 import type { Anchor, Appearance, AppState, PacingRule, StopwatchClock, Tab, Transport } from '@shared/types'
@@ -828,6 +828,27 @@ export class Store {
           : aberto.tabs[0].id
         this.state = { ...aberto, activeTabId: ativa, customDefaults: this.state.customDefaults }
         this.dispatch({ type: 'tab/activate', tabId: ativa })
+        return
+      }
+
+      /**
+       * Programa em branco — mesma casca de um app recém-instalado, e não a
+       * mesma amostra de exemplo (`roteiroDeExemplo`) que `createInitialState`
+       * dá de graça: "em branco" é isso mesmo, uma aba vazia. `customDefaults`
+       * sobrevive pelo mesmo motivo do `project/replace`: é do operador nesta
+       * máquina, não do programa que estava aberto.
+       */
+      case 'project/new': {
+        this.histories.clear()
+        this.rows.clear()
+        const tab = createTab('Aba 1', '', TAB_COLORS[0], this.defaults.appearance)
+        this.state = {
+          ...createInitialState(this.defaults, this.state.language),
+          tabs: [tab],
+          activeTabId: tab.id,
+          customDefaults: this.state.customDefaults
+        }
+        this.dispatch({ type: 'tab/activate', tabId: tab.id })
         return
       }
 

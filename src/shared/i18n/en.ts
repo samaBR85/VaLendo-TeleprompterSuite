@@ -50,6 +50,8 @@ export const en: Dicionario = {
   'toolbar.group.air': 'Air',
   'toolbar.openProject': 'Open a project',
   'toolbar.saveProject': 'Save the whole project — tabs, appearance, markers and pace',
+  'toolbar.saveProjectAs': 'Save as…',
+  'toolbar.newProject': 'New blank project',
   'toolbar.import': 'Import script (txt, md, docx, pdf)',
   'toolbar.saveScript': 'Save the script to a file — text only',
   'toolbar.saveScriptTo': 'Save the script to {file}',
@@ -213,6 +215,12 @@ export const en: Dicionario = {
   'close.cancel': 'Cancel',
   'close.confirm': 'End the broadcast',
 
+  'unsaved.title': 'This project has unsaved changes.',
+  'unsaved.detail': 'Creating a new blank project discards what wasn’t saved.',
+  'unsaved.cancel': 'Cancel',
+  'unsaved.discard': 'Create new without saving',
+  'unsaved.save': 'Save and create new',
+
   'credits.about':
     'A teleprompter where the script is edited with the broadcast on air. The reading position is an anchor in the text, not a pixel on the screen — which is why typing, changing the font or the margin never moves the word the presenter is reading.',
   'credits.builtWith': 'Built with',
@@ -298,7 +306,9 @@ export const en: Dicionario = {
   'cmd.document.save': 'Save the script to a file',
   'cmd.document.saveAs': 'Save the script as…',
   'cmd.project.save': 'Save the whole project',
+  'cmd.project.saveAs': 'Save the project as…',
   'cmd.project.open': 'Open a project',
+  'cmd.project.new': 'New blank project',
   'cmd.insert.chapter': 'Insert chapter',
   'cmd.insert.direction': 'Insert stage direction',
   'cmd.edit.undo': 'Undo',

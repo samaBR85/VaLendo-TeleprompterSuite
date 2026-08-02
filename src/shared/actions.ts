@@ -79,6 +79,7 @@ export type Action =
   | { type: 'document/exportedTo'; tabId: string; path: string }
   | { type: 'project/replace'; state: AppState }
   | { type: 'project/pathSet'; path: string | null }
+  | { type: 'project/new' }
   | { type: 'webview/set'; enabled: boolean }
   | { type: 'webview/videoPerfil'; perfil: PerfilDeRede }
   /** a cópia leve ficou pronta (ou foi descartada, com `null`) */
@@ -105,6 +106,7 @@ export const CHANNELS = {
   exportDocument: 'document:export',
   projectSave: 'project:save',
   projectOpen: 'project:open',
+  projectIsDirty: 'project:isDirty',
   openExternal: 'app:openExternal',
   broadcastCoversOperator: 'broadcast:coversOperator',
   confirmCloseRequest: 'app:confirmCloseRequest',

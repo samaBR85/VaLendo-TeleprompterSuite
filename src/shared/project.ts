@@ -30,8 +30,14 @@ export interface ProjectFile {
   imagens?: Record<string, string>
 }
 
-/** O que não faz sentido guardar: estado de momento, não de projeto. */
-function semTransitorio(state: AppState): AppState {
+/**
+ * O que não faz sentido guardar: estado de momento, não de projeto.
+ *
+ * Exportada porque é também a normalização usada para saber se o projeto tem
+ * mudança não salva — comparar o estado bruto acusaria "sujo" só por ter dado
+ * play, sem o operador ter tocado em nada que fosse parar no arquivo.
+ */
+export function semTransitorio(state: AppState): AppState {
   return {
     ...state,
     transport: {

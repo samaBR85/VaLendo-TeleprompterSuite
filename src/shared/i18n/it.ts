@@ -50,6 +50,8 @@ export const it: Dicionario = {
   'toolbar.group.air': 'Onda',
   'toolbar.openProject': 'Apri un progetto',
   'toolbar.saveProject': 'Salva tutto il progetto — schede, aspetto, segnalibri e ritmo',
+  'toolbar.saveProjectAs': 'Salva con nome…',
+  'toolbar.newProject': 'Nuovo progetto vuoto',
   'toolbar.import': 'Importa copione (txt, md, docx, pdf)',
   'toolbar.saveScript': 'Salva il copione in un file — solo il testo',
   'toolbar.saveScriptTo': 'Salva il copione in {file}',
@@ -215,6 +217,12 @@ export const it: Dicionario = {
   'close.cancel': 'Annulla',
   'close.confirm': 'Termina la trasmissione',
 
+  'unsaved.title': 'Questo progetto ha modifiche non salvate.',
+  'unsaved.detail': 'Creare un nuovo progetto vuoto scarta ciò che non è stato salvato.',
+  'unsaved.cancel': 'Annulla',
+  'unsaved.discard': 'Crea nuovo senza salvare',
+  'unsaved.save': 'Salva e crea nuovo',
+
   'credits.about':
     'Un teleprompter in cui il copione si modifica mentre la trasmissione è in onda. La posizione di lettura è un’ancora nel testo, non un pixel sullo schermo — per questo scrivere, cambiare carattere o margine non sposta mai la parola che il presentatore sta leggendo.',
   'credits.builtWith': 'Costruito con',
@@ -302,7 +310,9 @@ export const it: Dicionario = {
   'cmd.document.save': 'Salva il copione in un file',
   'cmd.document.saveAs': 'Salva il copione come…',
   'cmd.project.save': 'Salva tutto il progetto',
+  'cmd.project.saveAs': 'Salva il progetto come…',
   'cmd.project.open': 'Apri un progetto',
+  'cmd.project.new': 'Nuovo progetto vuoto',
   'cmd.insert.chapter': 'Inserisci capitolo',
   'cmd.insert.direction': 'Inserisci indicazione di regia',
   'cmd.edit.undo': 'Annulla',

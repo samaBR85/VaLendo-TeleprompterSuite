@@ -23,6 +23,7 @@ interface Props {
   dispatch: (action: Action) => void
   run: (commandId: string) => void
   onImport: () => void
+  onNewProject: () => void
   /** a página da rede está mesmo no ar, e não só pedida */
   webviewLive: boolean
   onOpenWebview: () => void
@@ -60,14 +61,17 @@ export function PocosDeArquivo({
   tab,
   keymap,
   run,
-  onImport
+  onImport,
+  onNewProject
 }: {
   tab: Tab
   keymap: Map<string, string>
   run: (commandId: string) => void
   onImport: () => void
+  onNewProject: () => void
 }): React.JSX.Element {
   const { t } = useT()
+  const [saveMenuOpen, setSaveMenuOpen] = useState(false)
 
   return (
     <>
@@ -80,12 +84,48 @@ export function PocosDeArquivo({
         >
           <Icon name="projectOpen" size={13} />
         </Tecla>
+        <div className="relative flex items-stretch">
+          <Tecla
+            title={`${t('toolbar.saveProject')}${hint(keymap, 'project.save')}`}
+            className="h-6 rounded-r-none border-r-0 px-2 text-[11px]"
+            onClick={() => run('project.save')}
+          >
+            {t('key.save')}
+          </Tecla>
+          <Tecla
+            title={`${t('toolbar.saveProjectAs')}${hint(keymap, 'project.saveAs')}`}
+            aria-label={t('toolbar.saveProjectAs')}
+            className="h-6 w-4 rounded-l-none px-0"
+            onClick={() => setSaveMenuOpen((open) => !open)}
+          >
+            <Icon name="down" size={10} />
+          </Tecla>
+          {saveMenuOpen ? (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setSaveMenuOpen(false)} />
+              <div className="absolute top-full left-0 z-50 mt-1 min-w-max rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] py-1 shadow-lg">
+                <button
+                  type="button"
+                  className="block w-full px-3 py-1.5 text-left text-[11px] whitespace-nowrap text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+                  onClick={() => {
+                    setSaveMenuOpen(false)
+                    run('project.saveAs')
+                  }}
+                >
+                  {t('toolbar.saveProjectAs')}
+                  <span className="ml-3 text-[var(--color-fog-3)]">{hint(keymap, 'project.saveAs')}</span>
+                </button>
+              </div>
+            </>
+          ) : null}
+        </div>
         <Tecla
-          title={`${t('toolbar.saveProject')}${hint(keymap, 'project.save')}`}
-          className="h-6 px-2 text-[11px]"
-          onClick={() => run('project.save')}
+          title={`${t('toolbar.newProject')}${hint(keymap, 'project.new')}`}
+          aria-label={t('toolbar.newProject')}
+          className="h-6 w-7"
+          onClick={onNewProject}
         >
-          {t('key.save')}
+          <Icon name="plus" size={13} />
         </Tecla>
       </Poco>
 
@@ -299,12 +339,13 @@ export function BarraDeArquivo({
   dispatch,
   run,
   onImport,
+  onNewProject,
   webviewLive,
   onOpenWebview
 }: Omit<Props, 'rows'>): React.JSX.Element {
   return (
     <div className="flex flex-none items-center gap-2.5 border-b border-[var(--color-edge)] bg-[#17171a] px-2.5 py-[5px]">
-      <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={onImport} />
+      <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={onImport} onNewProject={onNewProject} />
 
       <Tabs state={state} dispatch={dispatch} />
 

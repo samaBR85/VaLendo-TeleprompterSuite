@@ -153,10 +153,16 @@ export interface ValendoApi {
    * regrava por cima do último arquivo desta aba e só pergunta na primeira vez.
    */
   exportDocument(saveAs: boolean): Promise<ExportResult | null>
-  /** grava o programa inteiro num .valendo: abas, aparência, marcadores, ritmo */
-  saveProject(): Promise<ProjectResult | null>
+  /**
+   * Grava o programa inteiro num .valendo: abas, aparência, marcadores, ritmo.
+   * Com `saveAs`, sempre pergunta onde; sem ele, regrava por cima do arquivo
+   * já aberto (`projectPath`) e só pergunta se ainda não há um.
+   */
+  saveProject(saveAs?: boolean): Promise<ProjectResult | null>
   /** abre um .valendo e substitui o que está na tela */
   openProject(): Promise<ProjectResult | null>
+  /** o projeto aberto tem mudança que não foi para o arquivo ainda? */
+  projectIsDirty(): Promise<boolean>
   openExternal(url: string): void
   /** a transmissão está por cima da janela do operador? */
   coversOperator(): Promise<boolean>

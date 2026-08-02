@@ -15,7 +15,7 @@ import type {
 import type { AppState } from '@shared/types'
 import { IMPORT_FILTERS, importFile } from './import'
 import { EXPORT_FILTERS, defaultFileName, exportScript } from './export'
-import { PROJECT_FILTERS, openProject, projectFileName, saveProject } from './project'
+import { PROJECT_FILTERS, markProjectClean, openProject, projectFileName, projectIsDirty, saveProject } from './project'
 import { onWebviewChange, publish, startWebview, stopWebview, webviewInfo } from './webview'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
 import { cartaoNoAr } from '@shared/cards'
@@ -56,6 +56,10 @@ import {
 } from './windows'
 
 const store = new Store()
+// o workspace recém-carregado É o retrato limpo: sem isto, o primeiro clique
+// em "Novo" da sessão acusaria sujeira por causa de um projeto que o
+// operador nunca tocou
+markProjectClean(store.getState())
 
 /** Traduz no idioma que o operador escolheu — o main também fala com ele. */
 function idioma(chave: Parameters<typeof traduzir>[1], valores?: Record<string, string | number>): string {
@@ -133,7 +137,11 @@ function registerIpc(): void {
       }
     }
     store.dispatch(action)
+    // um projeto em branco nasce limpo — nada digitado nele ainda para
+    // acusar como mudança não salva
+    if (action.type === 'project/new') markProjectClean(store.getState())
   })
+  ipcMain.handle(CHANNELS.projectIsDirty, () => projectIsDirty(store.getState()))
   ipcMain.handle(CHANNELS.displaysList, () => listDisplays())
   ipcMain.on(CHANNELS.displaysIdentify, () => identifyDisplays())
 
@@ -193,13 +201,30 @@ function registerIpc(): void {
     }
   })
 
-  ipcMain.handle(CHANNELS.projectSave, async (): Promise<ProjectResult | null> => {
+  /**
+   * `saveAs=false` (o botão "Salvar" comum) grava direto no arquivo já
+   * aberto, sem perguntar onde — só cai no diálogo se ainda não há
+   * `projectPath` (primeiro salvamento) ou se `saveAs=true` foi pedido de
+   * propósito, pelo item "Salvar como" do menu.
+   */
+  ipcMain.handle(CHANNELS.projectSave, async (_event, saveAs = false): Promise<ProjectResult | null> => {
     const state = store.getState()
+
+    if (!saveAs && state.projectPath) {
+      try {
+        await saveProject(state.projectPath, state)
+        markProjectClean(state)
+        return { ok: true, path: state.projectPath }
+      } catch (error) {
+        return { ok: false, path: state.projectPath, error: (error as Error).message }
+      }
+    }
+
     const ativa = state.tabs.find((t) => t.id === state.activeTabId)
     const owner = getOperatorWindow()
     const options = {
       title: idioma('main.saveProjectTitle'),
-      defaultPath: projectFileName(ativa?.title ?? 'projeto'),
+      defaultPath: state.projectPath ?? projectFileName(ativa?.title ?? 'projeto'),
       filters: PROJECT_FILTERS
     }
     const picked = owner ? await dialog.showSaveDialog(owner, options) : await dialog.showSaveDialog(options)
@@ -210,6 +235,7 @@ function registerIpc(): void {
       // salvar troca qual arquivo é "o projeto aberto" — o nome no centro
       // do cabeçalho precisa acompanhar, mesmo sem recarregar nada
       store.dispatch({ type: 'project/pathSet', path: picked.filePath })
+      markProjectClean(state)
       return { ok: true, path: picked.filePath }
     } catch (error) {
       return { ok: false, path: picked.filePath, error: (error as Error).message }
@@ -234,6 +260,8 @@ function registerIpc(): void {
     // salvo — se o operador moveu ou copiou o .valendo, é aqui que ele está
     // agora, e é esse nome que o cabeçalho deve mostrar
     store.dispatch({ type: 'project/replace', state: { ...state, projectPath: caminho } })
+    // o que acabou de abrir é o novo retrato limpo — nada foi mudado ainda
+    markProjectClean(store.getState())
     // as artes do programa anterior não servem mais a ninguém
     pruneCardImages(store.getState().cards)
     pruneVideoConversions(store.getState().cards)
