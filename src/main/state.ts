@@ -669,6 +669,10 @@ export class Store {
         this.state = { ...this.state, inspectorVisible: action.visible }
         break
 
+      case 'layout/sidebar':
+        this.state = { ...this.state, sidebarVisible: action.visible }
+        break
+
       case 'layout/cards':
         this.state = { ...this.state, cardsVisible: action.visible }
         break

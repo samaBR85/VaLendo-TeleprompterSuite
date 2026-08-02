@@ -5,6 +5,7 @@ export const de: Dicionario = {
   'app.transportTop': 'Transport in der oberen Leiste',
   'app.transportStrip': 'Transport in der unteren Leiste',
   'app.panels': 'Panels',
+  'app.assets': 'Assets',
   'panel.edit.meta': '{words} Wörter · {time}',
   'key.save': 'sichern',
   'app.shortcuts': 'Tastenkürzel bearbeiten',

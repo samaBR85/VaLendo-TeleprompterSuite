@@ -376,6 +376,8 @@ export interface AppState {
   transportPosition: TransportPosition
   /** painel de ajustes da direita */
   inspectorVisible: boolean
+  /** coluna de capítulos e cartões do bloco, à esquerda — só existe no Split */
+  sidebarVisible: boolean
   /**
    * A gaveta de cartões, embaixo.
    *

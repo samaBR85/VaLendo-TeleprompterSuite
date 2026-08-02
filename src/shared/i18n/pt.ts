@@ -12,6 +12,7 @@ export const pt = {
   'app.transportTop': 'Transporte na barra de cima',
   'app.transportStrip': 'Transporte na régua do rodapé',
   'app.panels': 'Painéis',
+  'app.assets': 'Assets',
   'panel.edit.meta': '{words} palavras · {time}',
   'key.save': 'salvar',
   'app.shortcuts': 'Editar atalhos',

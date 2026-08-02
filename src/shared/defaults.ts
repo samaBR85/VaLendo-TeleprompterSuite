@@ -160,6 +160,7 @@ export function createInitialState(
     layoutMode: 'split',
     transportPosition: 'topo',
     inspectorVisible: true,
+    sidebarVisible: true,
     cardsVisible: false,
     cardsHeight: CARDS_HEIGHT_DEFAULT,
     transport: {

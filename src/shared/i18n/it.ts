@@ -5,6 +5,7 @@ export const it: Dicionario = {
   'app.transportTop': 'Trasporto nella barra in alto',
   'app.transportStrip': 'Trasporto nella barra in basso',
   'app.panels': 'Pannelli',
+  'app.assets': 'Assets',
   'panel.edit.meta': '{words} parole · {time}',
   'key.save': 'salva',
   'app.shortcuts': 'Modifica le scorciatoie',

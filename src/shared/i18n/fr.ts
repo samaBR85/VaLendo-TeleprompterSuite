@@ -5,6 +5,7 @@ export const fr: Dicionario = {
   'app.transportTop': 'Transport dans la barre du haut',
   'app.transportStrip': 'Transport dans la barre du bas',
   'app.panels': 'Panneaux',
+  'app.assets': 'Assets',
   'panel.edit.meta': '{words} mots · {time}',
   'key.save': 'sauver',
   'app.shortcuts': 'Modifier les raccourcis',

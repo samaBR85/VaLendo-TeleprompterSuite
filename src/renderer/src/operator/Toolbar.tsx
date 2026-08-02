@@ -26,7 +26,6 @@ interface Props {
   /** a página da rede está mesmo no ar, e não só pedida */
   webviewLive: boolean
   onOpenWebview: () => void
-  onOpenCards: () => void
 }
 
 /** " · Ctrl+K" para colar no fim de um rótulo, ou nada se o comando não tem tecla. */
@@ -91,8 +90,10 @@ export function PocosDeArquivo({
       </Poco>
 
       <Poco rotulo={t('toolbar.group.script')} cor="var(--color-warn)" data-pill="roteiro">
+        {/* mesma pasta do PROJETO: abrir um roteiro também é abrir um
+            arquivo, e as duas teclas precisam ler como a mesma ação */}
         <Tecla title={t('toolbar.import')} aria-label={t('toolbar.import')} className="h-6 w-7" onClick={onImport}>
-          <Icon name="import" size={13} />
+          <Icon name="projectOpen" size={13} />
         </Tecla>
         <Tecla
           title={
@@ -112,32 +113,33 @@ export function PocosDeArquivo({
 
 /**
  * O poço AR: o que age sobre a tela do apresentador com o programa correndo —
- * tela preta, cartões, congelar, rede local, identificar monitores.
+ * tela preta, congelar, rede local, identificar monitores.
  *
  * A maquete não desenha este grupo (o roteiro dela não precisava), mas o app
  * precisa: ele ganha o mesmo material dos outros poços, e cada tecla mantém a
- * cor de glifo que já tinha — apagada em repouso, acesa no estado.
+ * cor de glifo que já tinha — apagada em repouso, acesa no estado. Sem
+ * rótulo: fica na ponta da barra, junto das abas, e não precisa se apresentar
+ * — CARDS foi para os PAINÉIS, junto de Assets e Ajustes, por ser um painel
+ * como os outros dois, e não uma ação sobre o ar.
  */
 export function PocoDoAr({
   state,
   webviewLive,
   keymap,
   run,
-  onOpenCards,
   onOpenWebview
 }: {
   state: AppState
   webviewLive: boolean
   keymap: Map<string, string>
   run: (commandId: string) => void
-  onOpenCards: () => void
   onOpenWebview: () => void
 }): React.JSX.Element {
   const { t } = useT()
   const { transport } = state
 
   return (
-    <Poco rotulo={t('toolbar.group.air')} data-pill="ar">
+    <Poco data-pill="ar">
       <Tecla
         title={`${t('toolbar.blackout')}${hint(keymap, 'output.blackout')}`}
         aria-label={t('toolbar.blackout')}
@@ -148,17 +150,6 @@ export function PocoDoAr({
         onClick={() => run('output.blackout')}
       >
         <Icon name="blackout" size={13} />
-      </Tecla>
-      <Tecla
-        title={t('cards.toolbar')}
-        aria-label={t('cards.toolbar')}
-        acesa={transport.card !== null}
-        cor="var(--color-go)"
-        className="h-6 w-7"
-        style={transport.card === null ? { color: 'var(--color-warn)' } : undefined}
-        onClick={onOpenCards}
-      >
-        <Icon name="card" size={13} />
       </Tecla>
       <Tecla
         title={`${t('toolbar.freeze')}${hint(keymap, 'transport.freeze')}`}
@@ -224,7 +215,7 @@ export function PocoDeSaida({
   const { t } = useT()
 
   return (
-    <Poco rotulo={t('insp.tab.output')} cor="var(--color-live)" className="gap-[7px]" data-pill="saida">
+    <Poco className="gap-[7px]" data-pill="saida">
       <select
         value={output.displayId ?? ''}
         onChange={(event) => {
@@ -285,37 +276,36 @@ export function PocoDeSaida({
  *
  * Com o transporte no topo (8a), os poços PROJETO/ROTEIRO abrem a linha; com
  * ele na régua (8b), eles sobem para a linha do wordmark e as abas ganham o
- * espaço todo — as duas arrumações da maquete. O poço AR fica sempre aqui:
- * é ação sobre o ar, não sobre arquivo, mas mora perto das abas porque é o
- * que se alcança com o programa correndo.
+ * espaço todo — as duas arrumações da maquete. As abas esticam (`flex-1`),
+ * então tudo que vem depois delas — AR e, na régua, SAÍDA — fica empurrado
+ * para a ponta direita da barra, na ordem em que aparece aqui.
  */
 export function BarraDeArquivo({
   state,
   tab,
+  displays,
   keymap,
   dispatch,
   run,
   onImport,
   webviewLive,
-  onOpenWebview,
-  onOpenCards
-}: Omit<Props, 'rows' | 'displays'>): React.JSX.Element {
+  onOpenWebview
+}: Omit<Props, 'rows'>): React.JSX.Element {
   return (
     <div className="flex flex-none items-center gap-2.5 border-b border-[var(--color-edge)] bg-[#17171a] px-2.5 py-[5px]">
       {state.transportPosition === 'topo' ? (
         <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={onImport} />
       ) : null}
 
-      <PocoDoAr
-        state={state}
-        webviewLive={webviewLive}
-        keymap={keymap}
-        run={run}
-        onOpenCards={onOpenCards}
-        onOpenWebview={onOpenWebview}
-      />
-
       <Tabs state={state} dispatch={dispatch} />
+
+      <PocoDoAr state={state} webviewLive={webviewLive} keymap={keymap} run={run} onOpenWebview={onOpenWebview} />
+
+      {/* com o transporte no topo, a SAÍDA fecha a barra do console; na
+          régua, ela sobe para cá, à direita do AR */}
+      {state.transportPosition === 'regua' ? (
+        <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} />
+      ) : null}
     </div>
   )
 }
@@ -438,7 +428,14 @@ function TecladoDeTransporte({
         className="h-[46px] w-[86px] rounded-lg"
         onClick={() => run('transport.playPause')}
       >
-        <Icon name={playing ? 'pause' : 'play'} size={20} />
+        {playing ? (
+          <Icon name="pause" size={20} />
+        ) : (
+          // preenchido, e não contorno: um triângulo fino sobre o verde vivo
+          // some de tão claro — o play é a única tecla que precisa de um
+          // glifo sólido para ler de longe
+          <Icon name="play" size={20} filled style={{ color: '#000' }} />
+        )}
       </Tecla>
       <Tecla
         title={`${t('toolbar.forward')}${hint(keymap, 'transport.jumpForward')}`}
@@ -522,7 +519,12 @@ export function BarraDeTransporte({
   )
 
   const velocidade = (
-    <Lcd className={`${compacto ? 'h-12' : 'h-[52px]'} min-w-0 flex-1`}>
+    // na régua a largura vem da coluna do grid, não de `flex-1`: as duas
+    // pontas da barra (este LCD e o de decorrido/restante+progresso) usam a
+    // MESMA coluna `1fr`, o que garante as duas do mesmo tamanho sempre —
+    // é o que deixa o play exatamente no meio, não uma sobra do que os
+    // conteúdos de cada lado pediam
+    <Lcd className={`${compacto ? 'h-12' : 'h-[52px] flex-1'} min-w-0`}>
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 border-r border-[var(--color-lcd-line)] px-4">
         <SpeedRuler ppm={transport.ppm} onChange={(ppm) => dispatch({ type: 'transport/ppm', ppm })} />
         <div className="k-microcaps flex justify-between gap-2 tracking-[0.1em] text-[var(--color-lcd-caption)]">
@@ -570,15 +572,22 @@ export function BarraDeTransporte({
   }
 
   return (
+    // grade de 3 colunas, e não `flex`: duas colunas `1fr` IGUAIS nas pontas
+    // garantem que o teclado de transporte (coluna do meio, `auto`) cai no
+    // centro geométrico da régua sempre — com `flex-1` simples, cada ponta
+    // cresce a partir do próprio conteúdo, e o lado mais cheio (decorrido +
+    // restante + progresso) sobra maior que o outro, empurrando o play para
+    // fora do centro
     <div
       data-transporte="regua"
-      className="relative z-[2] flex h-[70px] flex-none items-center gap-2.5 border-y border-[var(--color-edge)] px-2.5"
+      className="relative z-[2] grid h-[70px] flex-none items-center gap-2.5 border-y border-[var(--color-edge)] px-2.5"
       style={{
+        gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
         background: 'linear-gradient(#2c2c31, #1e1e22)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,.08), 0 6px 14px rgba(0,0,0,.45)'
       }}
     >
-      <Lcd className="h-12 min-w-0 flex-1">
+      <Lcd className="h-12 min-w-0">
         {decorrido}
         {restante}
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-3">

@@ -68,6 +68,7 @@ export type Action =
   | { type: 'layout/mode'; mode: LayoutMode }
   | { type: 'layout/transportPosition'; position: TransportPosition }
   | { type: 'layout/inspector'; visible: boolean }
+  | { type: 'layout/sidebar'; visible: boolean }
   | { type: 'layout/rows'; tabId: string; rows: number[] }
   | { type: 'output/set'; displayId: number | null; enabled: boolean }
   | { type: 'output/viewport'; width: number; height: number }

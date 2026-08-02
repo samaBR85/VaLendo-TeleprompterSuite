@@ -23,7 +23,7 @@ import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
 import { Sidebar } from './Sidebar'
 import { StatusBar } from './StatusBar'
-import { BarraDeArquivo, BarraDeTransporte, PocoDeSaida, PocosDeArquivo, hint } from './Toolbar'
+import { BarraDeArquivo, BarraDeTransporte, PocosDeArquivo, hint } from './Toolbar'
 import { WebviewPanel } from './WebviewPanel'
 import { useCommands } from './useCommands'
 
@@ -465,12 +465,53 @@ function AppConteudo({
         ) : null}
 
         <div className="ml-auto flex flex-none items-center gap-2">
-          {/* onde o transporte mora. Duas teclas em vez de um alternador,
-              porque o operador precisa ver qual das duas está valendo sem
-              ter que lembrar o que o ícone significa quando está apagado */}
+          {/* os painéis do app: Assets (coluna esquerda), Cards (gaveta) e
+              Ajustes são liga-desliga — cada tecla mantém a cor do painel que
+              controla, acesa ou não, para reconhecer de longe qual está
+              aberto sem ler o ícone. Depois do traço, o transporte escolhe
+              ONDE morar, não SE aparece — por isso fica separado dos três. */}
           <div data-paineis className="flex flex-none items-center gap-[7px]">
             <span className="k-microcaps text-[var(--color-fog-2)]">{t('app.panels')}</span>
             <Poco>
+              <Tecla
+                data-toggle-sidebar
+                title={t('app.assets')}
+                aria-pressed={state.sidebarVisible}
+                acesa={state.sidebarVisible}
+                cor="var(--color-warn)"
+                className="h-6 w-8"
+                style={!state.sidebarVisible ? { color: 'var(--color-warn)' } : undefined}
+                onClick={() => dispatch({ type: 'layout/sidebar', visible: !state.sidebarVisible })}
+              >
+                <Icon name="sidebarLeft" size={15} />
+              </Tecla>
+              <Tecla
+                data-toggle-cards
+                title={`${t('cards.toolbar')}${hint(keymap, 'view.cards')}`}
+                aria-pressed={state.cardsVisible}
+                acesa={state.cardsVisible}
+                cor="var(--color-accent-2)"
+                className="h-6 w-8"
+                style={!state.cardsVisible ? { color: 'var(--color-accent-2)' } : undefined}
+                onClick={() => run('view.cards')}
+              >
+                <Icon name="card" size={15} />
+              </Tecla>
+              <Tecla
+                data-toggle-settings
+                title={`${t('app.settings')}${hint(keymap, 'view.inspector')}`}
+                aria-pressed={state.inspectorVisible}
+                acesa={state.inspectorVisible}
+                cor="var(--color-accent)"
+                className="h-6 w-8"
+                style={!state.inspectorVisible ? { color: 'var(--color-accent)' } : undefined}
+                onClick={() => run('view.inspector')}
+              >
+                <Icon name="sliders" size={15} />
+              </Tecla>
+
+              <span className="mx-0.5 h-4 w-px flex-none bg-[var(--color-edge)]" />
+
               {(['topo', 'regua'] as const).map((posicao) => (
                 <Tecla
                   key={posicao}
@@ -504,24 +545,10 @@ function AppConteudo({
           >
             <Icon name="search" size={20} />
           </button>
-          <button
-            type="button"
-            onClick={() => dispatch({ type: 'layout/inspector', visible: !state.inspectorVisible })}
-            title={t('app.settings')}
-            className={`flex h-8 w-9 items-center justify-center rounded-md hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] ${
-              state.inspectorVisible ? 'text-[var(--color-fog-0)]' : 'text-[var(--color-fog-2)]'
-            }`}
-          >
-            <Icon name="sliders" size={20} />
-          </button>
           <LanguagePicker
             lang={state.language}
             onChange={(language) => dispatch({ type: 'app/language', language })}
           />
-
-          {state.transportPosition === 'regua' ? (
-            <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} />
-          ) : null}
         </div>
       </header>
 
@@ -543,13 +570,13 @@ function AppConteudo({
       <BarraDeArquivo
         state={state}
         tab={tab}
+        displays={displays}
         keymap={keymap}
         dispatch={dispatch}
         run={run}
         onImport={importDocument}
         webviewLive={state.webview.enabled && webview.running && !webview.error}
         onOpenWebview={() => setWebviewOpen(true)}
-        onOpenCards={() => dispatch({ type: 'layout/cards', visible: !state.cardsVisible })}
       />
 
       {/* no topo, o transporte vem logo abaixo do arquivo e as duas barras
@@ -608,14 +635,18 @@ function AppConteudo({
         <main ref={mainRef} className="flex min-h-0 flex-1">
           {/* só no Split: no Foco a tela é do apresentador e na Mesa o rundown
               já mostra os mesmos capítulos, em maior e com linha do tempo —
-              ter as duas coisas ao mesmo tempo seria dizer duas vezes */}
-          <Sidebar
-            tab={tab}
-            transport={state.transport}
-            cards={state.cards}
-            rows={rows}
-            dispatch={dispatch}
-          />
+              ter as duas coisas ao mesmo tempo seria dizer duas vezes. E só
+              se Assets estiver aceso: é um painel como o de Ajustes, e o
+              operador pode querer a tela inteira para o roteiro e a saída. */}
+          {state.sidebarVisible ? (
+            <Sidebar
+              tab={tab}
+              transport={state.transport}
+              cards={state.cards}
+              rows={rows}
+              dispatch={dispatch}
+            />
+          ) : null}
 
           {/* a coluna do meio: edição + transmissão numa fileira, a gaveta de
               cartões embaixo — com a MESMA largura das duas, nunca a da

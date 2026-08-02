@@ -38,6 +38,7 @@ export type IconName =
   | 'card'
   | 'volume'
   | 'trash'
+  | 'sidebarLeft'
 
 const PATHS: Record<IconName, string> = {
   volume: 'M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6',
@@ -90,27 +91,38 @@ const PATHS: Record<IconName, string> = {
   readingLine: 'M7 6h10M7 18h10M2 12h20M4 10l2 2-2 2M20 10l-2 2 2 2',
   globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18',
   // um quadro com uma montanha dentro: a arte que entra no lugar do texto
-  card: 'M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6'
+  card: 'M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6',
+  // a moldura da janela com uma coluna estreita separada à esquerda: a
+  // mesma leitura do "toggle sidebar" de qualquer editor de código
+  sidebarLeft: 'M3 5h18v14H3zM9 5v14'
 }
 
 interface Props {
   name: IconName
   size?: number
   className?: string
+  style?: React.CSSProperties
+  /**
+   * Sólido em vez de contorno — só faz sentido para um path FECHADO (que
+   * termina em `z`), como o triângulo do play. Um path aberto (as barras do
+   * pause, por exemplo) não tem área para preencher e desapareceria.
+   */
+  filled?: boolean
 }
 
-export function Icon({ name, size = 16, className }: Props): React.JSX.Element {
+export function Icon({ name, size = 16, className, style, filled }: Props): React.JSX.Element {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke={filled ? 'none' : 'currentColor'}
       strokeWidth={1.7}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
+      style={style}
       aria-hidden="true"
     >
       <path d={PATHS[name]} />
