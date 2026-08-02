@@ -52,11 +52,11 @@ describe('a régua de ritmo', () => {
 })
 
 describe('a cor da régua', () => {
-  it('vai do vermelho do no ar ao verde-ciano do iniciar', () => {
-    // as pontas são as cores do app, e não cores novas: o mesmo vermelho do
-    // no ar (devagar) e o mesmo verde-ciano do botão de iniciar (rápido)
-    expect(segmentColor(0)).toBe('hsl(0 100% 65%)')
-    expect(segmentColor(SEGMENT_COUNT - 1)).toBe('hsl(145 60% 55%)')
+  it('vai do verde-ciano do iniciar ao vermelho do no ar', () => {
+    // as pontas são as cores do app, e não cores novas: o mesmo verde-ciano
+    // do botão de iniciar (devagar) e o mesmo vermelho do no ar (rápido)
+    expect(segmentColor(0)).toBe('hsl(145 60% 55%)')
+    expect(segmentColor(SEGMENT_COUNT - 1)).toBe('hsl(0 100% 65%)')
   })
 
   it('atravessa a roda de cor em vez de passar pelo cinza', () => {
@@ -71,12 +71,12 @@ describe('a cor da régua', () => {
     expect(saturacao).toBeGreaterThan(50)
   })
 
-  it('esfria sem voltar atrás, barrinha a barrinha', () => {
+  it('esquenta sem voltar atrás, barrinha a barrinha', () => {
     const matizes = Array.from({ length: SEGMENT_COUNT }, (_, i) =>
       Number(/hsl\((\d+)/.exec(segmentColor(i))![1])
     )
     for (let i = 1; i < matizes.length; i += 1) {
-      expect(matizes[i], `barrinha ${i}`).toBeGreaterThanOrEqual(matizes[i - 1])
+      expect(matizes[i], `barrinha ${i}`).toBeLessThanOrEqual(matizes[i - 1])
     }
   })
 })

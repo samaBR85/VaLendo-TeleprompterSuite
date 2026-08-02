@@ -161,6 +161,7 @@ export const pt = {
   'sidebar.help': 'Ajuda rápida',
   'sidebar.noChapters': 'Nenhum capítulo ainda — abra um com § no roteiro.',
   'sidebar.noCards': 'Nenhum cartão ainda.',
+  'sidebar.thumbSize': 'Tamanho das miniaturas dos cartões',
   'sidebar.help.scrollTitle': 'Botão de rolagem',
   'sidebar.help.scroll': 'É o maior alvo da tela: à esquerda dele o ritmo, à direita o tempo. Espaço toca e pausa.',
 

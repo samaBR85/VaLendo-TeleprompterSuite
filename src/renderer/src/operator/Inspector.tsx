@@ -166,6 +166,36 @@ function Hint({ text }: { text: string }): React.JSX.Element {
   )
 }
 
+/**
+ * Uma linha de toggle dentro de um grupo — sempre com a mesma largura,
+ * tenha ou não uma dica ao lado.
+ *
+ * Sem o espaço reservado do placeholder, um toggle com dica ficava mais
+ * estreito que o vizinho sem dica (o ícone "?" e o respiro antes dele saíam
+ * da largura do botão), e as bolinhas de estado acabavam em colunas
+ * diferentes — a régua vertical que devia alinhá-las quebrava.
+ */
+function ToggleRow({
+  label,
+  active,
+  onClick,
+  hint
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+  hint?: string
+}): React.JSX.Element {
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className="min-w-0 flex-1">
+        <Toggle label={label} active={active} onClick={onClick} />
+      </div>
+      {hint ? <Hint text={hint} /> : <span className="w-3 flex-none" />}
+    </div>
+  )
+}
+
 function Toggle({
   label,
   active,
@@ -423,30 +453,22 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
         {/* rótulo curto porque o painel tem 214px: "Mostrar a linha na
             transmissão" ficava cortado no meio, e rótulo cortado é rótulo que
             não informa */}
-        <div className="flex items-center gap-1.5">
-          <div className="min-w-0 flex-1">
-            <Toggle
-              label={t('insp.markOnOutput')}
-              active={a.readingMarkOnOutput}
-              onClick={() => patch({ readingMarkOnOutput: !a.readingMarkOnOutput })}
-            />
-          </div>
-          <Hint text={a.readingMarkOnOutput ? t('insp.markOn.yes') : t('insp.markOn.no')} />
-        </div>
-        <Toggle label={t('insp.focusDim')} active={a.focusDim} onClick={() => patch({ focusDim: !a.focusDim })} />
+        <ToggleRow
+          label={t('insp.markOnOutput')}
+          active={a.readingMarkOnOutput}
+          onClick={() => patch({ readingMarkOnOutput: !a.readingMarkOnOutput })}
+          hint={a.readingMarkOnOutput ? t('insp.markOn.yes') : t('insp.markOn.no')}
+        />
+        <ToggleRow label={t('insp.focusDim')} active={a.focusDim} onClick={() => patch({ focusDim: !a.focusDim })} />
       </Group>
 
       <Group label={t('insp.rhythm')}>
-        <div className="flex items-center gap-1.5">
-          <div className="min-w-0 flex-1">
-            <Toggle
-              label={t('insp.uniform')}
-              active={a.uniformSpeed}
-              onClick={() => patch({ uniformSpeed: !a.uniformSpeed })}
-            />
-          </div>
-          <Hint text={a.uniformSpeed ? t('insp.uniform.yes') : t('insp.uniform.no')} />
-        </div>
+        <ToggleRow
+          label={t('insp.uniform')}
+          active={a.uniformSpeed}
+          onClick={() => patch({ uniformSpeed: !a.uniformSpeed })}
+          hint={a.uniformSpeed ? t('insp.uniform.yes') : t('insp.uniform.no')}
+        />
       </Group>
         </>
       ) : null}

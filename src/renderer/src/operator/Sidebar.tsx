@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { composeLines } from '@shared/anchor'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
@@ -6,8 +6,12 @@ import { buildRundown, segmentIndexAt } from '@shared/rundown'
 import type { Cartao, Tab, Transport } from '@shared/types'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
-import { CabecalhoDePainel } from '../ui/console'
+import { CabecalhoDePainel, SliderConsole } from '../ui/console'
 import { useNow } from '../ui/useNow'
+
+const THUMB_MIN = 40
+const THUMB_MAX = 96
+const THUMB_DEFAULT = 40
 
 interface Props {
   tab: Tab
@@ -19,16 +23,24 @@ interface Props {
 }
 
 /**
- * A arte do cartão em 40×24: imagem pelo mesmo protocolo da gaveta, vídeo
- * pelo poster que já viaja no projeto, recado pelo glifo — nunca um <video>,
- * que aqui seria um decodificador rodando para pintar um selo.
+ * A arte do cartão, em 5:3 no tamanho que o slider do rodapé pedir: imagem
+ * pelo mesmo protocolo da gaveta, vídeo pelo poster que já viaja no projeto,
+ * recado pelo glifo — nunca um <video>, que aqui seria um decodificador
+ * rodando para pintar um selo.
  */
-function MiniaturaDoCartao({ card }: { card: Cartao }): React.JSX.Element {
+function MiniaturaDoCartao({ card, size }: { card: Cartao; size: number }): React.JSX.Element {
   return (
-    <span className="flex h-6 w-10 flex-none items-center justify-center overflow-hidden rounded-[3px] border border-[var(--color-edge)] bg-[var(--color-ink-3)]">
+    <span
+      className="flex flex-none items-center justify-center overflow-hidden rounded-[3px] border border-[var(--color-edge)] bg-[var(--color-ink-3)]"
+      style={{ width: size, height: Math.round(size * 0.6) }}
+    >
       {card.kind === 'image' ? (
         <img
-          src={`valendo://cartao/${encodeURIComponent(card.arquivo)}`}
+          // reimportar pode gerar o MESMO nome de arquivo de antes (mesmo id,
+          // mesma extensão) — sem `rev` na URL, o navegador reaproveita a
+          // resposta antiga (ou um erro já resolvido) porque a `src` não mudou
+          key={`${card.id}:${card.rev ?? 0}`}
+          src={`valendo://cartao/${encodeURIComponent(card.arquivo)}?v=${card.rev ?? 0}`}
           alt=""
           className="h-full w-full object-cover"
         />
@@ -55,6 +67,9 @@ function MiniaturaDoCartao({ card }: { card: Cartao }): React.JSX.Element {
 export function Sidebar({ tab, transport, cards, rows, dispatch }: Props): React.JSX.Element {
   const { t } = useT()
   const now = useNow()
+  // conforto de visualização da coluna, como o tamanho de fonte do editor —
+  // não é dado do projeto, não persiste entre sessões
+  const [thumbSize, setThumbSize] = useState(THUMB_DEFAULT)
 
   const lines = useMemo(
     () => composeLines(tab.blocks, tab.appearance, rows),
@@ -138,7 +153,7 @@ export function Sidebar({ tab, transport, cards, rows, dispatch }: Props): React
                     : 'border-[var(--color-edge)] bg-[#1e1e22] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
                 }`}
               >
-                <MiniaturaDoCartao card={card} />
+                <MiniaturaDoCartao card={card} size={thumbSize} />
                 <span className="min-w-0 flex-1 truncate font-medium">
                   {card.nome || (card.kind === 'text' ? card.texto : '') || t('cards.title')}
                 </span>
@@ -146,6 +161,23 @@ export function Sidebar({ tab, transport, cards, rows, dispatch }: Props): React
             ))}
           </div>
         )}
+      </div>
+
+      {/* tamanho da miniatura dos cartões: cresce para a direita, empurrando
+          o rótulo, que continua truncando dentro da largura fixa da coluna —
+          o mesmo material do slider de fonte do editor */}
+      <div className="flex flex-none items-center gap-2 border-t border-[var(--color-edge)] bg-[#131316] px-3 py-1.5">
+        <Icon name="card" size={10} className="flex-none text-[var(--color-fog-3)]" />
+        <SliderConsole
+          value={thumbSize}
+          min={THUMB_MIN}
+          max={THUMB_MAX}
+          cor="var(--color-accent-2)"
+          aria-label={t('sidebar.thumbSize')}
+          onValue={setThumbSize}
+          className="w-full"
+        />
+        <Icon name="card" size={16} className="flex-none text-[var(--color-fog-3)]" />
       </div>
 
       {/* a ajuda fica ancorada no rodapé da coluna, e não no meio do fluxo:

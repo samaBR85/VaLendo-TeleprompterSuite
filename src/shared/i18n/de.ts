@@ -148,6 +148,7 @@ export const de: Dicionario = {
   'sidebar.help': 'Schnellhilfe',
   'sidebar.noChapters': 'Noch keine Kapitel — eröffne eines mit § im Text.',
   'sidebar.noCards': 'Noch keine Karten.',
+  'sidebar.thumbSize': 'Größe der Kartenvorschaubilder',
   'sidebar.help.scrollTitle': 'Lauftaste',
   'sidebar.help.scroll': 'Das größte Ziel auf dem Schirm: links davon das Tempo, rechts die Zeit. Leertaste startet und pausiert.',
 

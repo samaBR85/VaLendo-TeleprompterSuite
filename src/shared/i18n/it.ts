@@ -148,6 +148,7 @@ export const it: Dicionario = {
   'sidebar.help': 'Aiuto rapido',
   'sidebar.noChapters': 'Nessun capitolo ancora — aprine uno con § nel testo.',
   'sidebar.noCards': 'Nessun cartello ancora.',
+  'sidebar.thumbSize': 'Dimensione delle miniature dei cartelli',
   'sidebar.help.scrollTitle': 'Pulsante di scorrimento',
   'sidebar.help.scroll': 'Il bersaglio più grande dello schermo: a sinistra il ritmo, a destra il tempo. Spazio avvia e mette in pausa.',
 

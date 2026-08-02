@@ -35,15 +35,15 @@ export function filledSegments(ppm: number): number {
 }
 
 /**
- * Cor da barrinha, do vermelho ao verde.
+ * Cor da barrinha, do verde ao vermelho.
  *
  * Interpolado em HSL, e não em RGB: em RGB o caminho entre essas duas cores
  * passa por cinza-oliva e a cor some no meio da régua. Em HSL ele percorre a
- * roda — vermelho, laranja, amarelo, verde —, que é a leitura de um medidor
- * de velocidade: devagar e vermelho à esquerda, rápido e verde à direita.
+ * roda — verde, amarelo, laranja, vermelho —, devagar e verde à esquerda,
+ * rápido e vermelho à direita.
  */
-const LENTO = { h: 0, s: 100, l: 65 } // #FF4D4D, o mesmo vermelho do no ar
-const RAPIDO = { h: 145, s: 60, l: 55 } // #46D17F, o mesmo verde do iniciar
+const LENTO = { h: 145, s: 60, l: 55 } // #46D17F, o mesmo verde do iniciar
+const RAPIDO = { h: 0, s: 100, l: 65 } // #FF4D4D, o mesmo vermelho do no ar
 
 export function segmentColor(index: number): string {
   const fracao = SEGMENT_COUNT > 1 ? Math.min(1, Math.max(0, index / (SEGMENT_COUNT - 1))) : 0

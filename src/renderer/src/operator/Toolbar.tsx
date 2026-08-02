@@ -589,40 +589,45 @@ export function BarraDeTransporte({
 
   if (position === 'topo') {
     return (
+      // grade de 3 colunas, como na régua: duas colunas `1fr` IGUAIS nas
+      // pontas garantem o play centralizado em QUALQUER largura de janela.
+      // Uma razão de flex ajustada à mão (`flex-[2.25_1_0%]`) funcionava só
+      // na largura em que foi medida — a janela maximizada tinha espaço
+      // sobrando extra demais para aquela razão, e o play saía do centro.
       <div
         data-transporte="topo"
-        className="flex flex-none items-center gap-2.5 border-b border-[var(--color-edge)] px-2.5 py-2"
-        style={{ background: 'linear-gradient(#1b1b1f, #161618)' }}
+        className="grid flex-none items-center gap-2.5 border-b border-[var(--color-edge)] px-2.5 py-2"
+        style={{
+          gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
+          background: 'linear-gradient(#1b1b1f, #161618)'
+        }}
       >
-        {/* `flex-[2.25_1_0%]`, e não `flex-1`: contra o `flex-1` da régua de
-            velocidade logo abaixo, essa razão é a medida (por tentativa e
-            erro, com o app rodando) que deixa o play exatamente no centro
-            horizontal da janela — o resto do bloco esquerdo (decorrido,
-            restante) e do bloco direito (velocidade, SAÍDA) não é simétrico
-            em largura, então a razão 1:1 não bastava */}
-        <Lcd className="h-[52px] min-w-0 flex-[2.25_1_0%]">
-          <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-4">
-            <BarraDeProgresso fracao={fracao} ticks={ticks} />
-            <div className="k-microcaps flex items-center justify-between gap-3 tracking-[0.1em] text-[var(--color-lcd-caption)]">
-              <span className="min-w-0 truncate">{capitulo ? `§ ${capitulo}` : ''}</span>
-              <span className="flex flex-none items-center gap-1">
-                <span>
-                  {t('lcd.forecast')} {formatClock(total)} ·
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Lcd className="h-[52px] min-w-0 flex-1">
+            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-4">
+              <BarraDeProgresso fracao={fracao} ticks={ticks} />
+              <div className="k-microcaps flex items-center justify-between gap-3 tracking-[0.1em] text-[var(--color-lcd-caption)]">
+                <span className="min-w-0 truncate">{capitulo ? `§ ${capitulo}` : ''}</span>
+                <span className="flex flex-none items-center gap-1">
+                  <span>
+                    {t('lcd.forecast')} {formatClock(total)} ·
+                  </span>
+                  <AlvoDoLcd ruler={ruler} dispatch={dispatch} />
                 </span>
-                <AlvoDoLcd ruler={ruler} dispatch={dispatch} />
-              </span>
+              </div>
             </div>
-          </div>
-        </Lcd>
+          </Lcd>
 
-        {decorrido}
-        {restante}
+          {decorrido}
+          {restante}
+        </div>
 
         <TecladoDeTransporte playing={transport.playing} keymap={keymap} run={run} />
 
-        {velocidade}
-
-        <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} grande />
+        <div className="flex min-w-0 items-center justify-end gap-2.5">
+          {velocidade}
+          <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} grande />
+        </div>
       </div>
     )
   }

@@ -148,6 +148,7 @@ export const es: Dicionario = {
   'sidebar.help': 'Ayuda rápida',
   'sidebar.noChapters': 'Ningún capítulo todavía — abre uno con § en el guion.',
   'sidebar.noCards': 'Ninguna tarjeta todavía.',
+  'sidebar.thumbSize': 'Tamaño de las miniaturas de las tarjetas',
   'sidebar.help.scrollTitle': 'Botón de desplazamiento',
   'sidebar.help.scroll': 'El mayor objetivo de la pantalla: a su izquierda el ritmo, a su derecha el tiempo. Espacio inicia y pausa.',
 

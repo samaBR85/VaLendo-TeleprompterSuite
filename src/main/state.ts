@@ -419,7 +419,9 @@ export class Store {
         this.state = {
           ...this.state,
           cards: this.state.cards.map((c) =>
-            c.id === action.cardId && c.kind === 'image' ? { ...c, arquivo: action.arquivo } : c
+            c.id === action.cardId && c.kind === 'image'
+              ? { ...c, arquivo: action.arquivo, rev: (c.rev ?? 0) + 1 }
+              : c
           )
         }
         break

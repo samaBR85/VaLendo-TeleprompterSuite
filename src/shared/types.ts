@@ -190,6 +190,14 @@ export type Cartao =
       nome: string
       /** nome do arquivo dentro de userData/cartoes — nunca o caminho de origem */
       arquivo: string
+      /**
+       * Sobe a cada reimportação bem-sucedida, mesmo quando `arquivo` sai
+       * com o mesmo nome de antes (mesmo id, mesma extensão). Sem isto, um
+       * componente que só reage a `arquivo` mudar (como a miniatura da
+       * coluna de assets) não percebe a troca e continua mostrando a
+       * resposta antiga — inclusive um erro de imagem já resolvido.
+       */
+      rev?: number
     }
   | {
       id: string
