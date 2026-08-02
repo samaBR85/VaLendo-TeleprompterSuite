@@ -12,7 +12,8 @@ import { TIMER_POSITIONS, type Appearance, type ColorPreset, type Tab } from '@s
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { larguraDoPainel, type Chave } from '@shared/i18n'
 import { useT } from '../i18n'
-import { Icon, type IconName } from '../ui/Icon'
+import { Icon } from '../ui/Icon'
+import { Ficha, SliderConsole, Tecla } from '../ui/console'
 
 interface Props {
   tab: Tab
@@ -60,12 +61,13 @@ type AbaId = 'texto' | 'leitura' | 'saida'
  * legibilidade); "Leitura" é como ele se comporta enquanto sobe; "Saída" é o
  * que só existe na tela do apresentador — relógios, espelho e giro.
  */
-const ABAS: { id: AbaId; icon: IconName; rotulo: 'insp.tab.text' | 'insp.tab.reading' | 'insp.tab.output' }[] = [
-  { id: 'texto', icon: 'text', rotulo: 'insp.tab.text' },
-  { id: 'leitura', icon: 'readingLine', rotulo: 'insp.tab.reading' },
-  { id: 'saida', icon: 'monitor', rotulo: 'insp.tab.output' }
+const ABAS: { id: AbaId; rotulo: 'insp.tab.text' | 'insp.tab.reading' | 'insp.tab.output' }[] = [
+  { id: 'texto', rotulo: 'insp.tab.text' },
+  { id: 'leitura', rotulo: 'insp.tab.reading' },
+  { id: 'saida', rotulo: 'insp.tab.output' }
 ]
 
+/** Slider do console: rótulo à esquerda, valor em rosa mono à direita. */
 function Slider({
   label,
   value,
@@ -86,21 +88,13 @@ function Slider({
   return (
     <label className="block">
       <div className="mb-1 flex items-baseline justify-between text-[11px]">
-        <span className="text-[var(--color-fog-1)]">{label}</span>
-        <span className="text-[var(--color-fog-0)]">
+        <span className="text-[var(--color-fog-2)]">{label}</span>
+        <span className="font-mono text-[11px] font-semibold text-[var(--color-accent)]">
           {step < 1 ? value.toFixed(2) : Math.round(value)}
           {suffix}
         </span>
       </div>
-      <input
-        type="range"
-        className="w-full"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
-      />
+      <SliderConsole value={value} min={min} max={max} step={step} onValue={onChange} className="w-full" />
     </label>
   )
 }
@@ -150,7 +144,7 @@ function AlvoField({ value, onChange }: { value: number; onChange: (seconds: num
       onKeyDown={onKeyDown}
       onFocus={() => setBuffer(segundosParaBufferDoAlvo(value))}
       onBlur={() => setBuffer(null)}
-      className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1 text-right text-[13px] tabular-nums text-[var(--color-fog-0)] outline-none focus:border-[var(--color-fog-1)]"
+      className="w-full rounded-md border border-[var(--color-edge)] bg-[#212126] px-2 py-1 text-right text-[13px] tabular-nums text-[var(--color-fog-0)] outline-none focus:border-[var(--color-accent)]"
     />
   )
 }
@@ -193,14 +187,14 @@ function Toggle({
       onClick={onClick}
       className={`flex w-full items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-[11px] transition-colors ${
         active
-          ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
-          : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
+          ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/12 text-[var(--color-accent-soft)]'
+          : 'border-[var(--color-edge)] bg-[#212126] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
       }`}
     >
       <span className="truncate">{label}</span>
       <span
         className={`h-2.5 w-2.5 flex-none rounded-full ${
-          active ? 'bg-[var(--color-go)]' : 'border border-[var(--color-line)]'
+          active ? 'bg-[var(--color-accent)]' : 'border border-[var(--color-fog-3)]'
         }`}
       />
     </button>
@@ -231,7 +225,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
     <aside
       data-inspector
       style={{ width: larguraDoPainel(lang) }}
-      className="flex flex-none flex-col border-l border-[var(--color-line)] bg-[var(--color-ink-1)]"
+      className="flex flex-none flex-col border-l border-[var(--color-edge)] bg-[#17171a]"
     >
       {/* o aviso fica FORA das abas, fixo: ele fala do estado de agora, e numa
           aba qualquer ele passaria despercebido justamente quando importa.
@@ -253,7 +247,13 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
         </div>
       ) : null}
 
-      <div data-inspector-abas className="flex flex-none border-b border-[var(--color-line)] bg-[var(--color-ink-2)]">
+      {/* o filete rosa é a assinatura dos Ajustes, como o âmbar é da Edição:
+          a aba ativa fica tingida do mesmo rosa, sem relevo — ficha, não tecla */}
+      <div
+        data-inspector-abas
+        className="flex flex-none border-b border-[var(--color-edge)]"
+        style={{ background: 'linear-gradient(#212125, #1a1a1d)', borderTop: '2px solid var(--color-accent)' }}
+      >
         {ABAS.map((item) => (
           <button
             key={item.id}
@@ -262,13 +262,12 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
             aria-pressed={aba === item.id}
             title={`${t(item.rotulo)} — ${t(`${item.rotulo}.hint` as Chave)}`}
             onClick={() => setAba(item.id)}
-            className={`flex flex-1 flex-col items-center gap-1 border-b-2 px-1 pt-2 pb-1.5 text-[10px] transition-colors ${
+            className={`flex-1 py-[7px] text-center text-[11px] transition-colors ${
               aba === item.id
-                ? 'border-[var(--color-go)] bg-[var(--color-ink-1)] text-[var(--color-fog-0)]'
-                : 'border-transparent text-[var(--color-fog-2)] hover:text-[var(--color-fog-1)]'
+                ? 'bg-[var(--color-accent)]/10 font-semibold text-[var(--color-accent-soft)]'
+                : 'font-medium text-[var(--color-fog-2)] hover:text-[var(--color-fog-1)]'
             }`}
           >
-            <Icon name={item.icon} size={15} />
             {t(item.rotulo)}
           </button>
         ))}
@@ -281,7 +280,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
         <select
           value={a.fontFamily}
           onChange={(event) => patch({ fontFamily: event.target.value })}
-          className="w-full rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] px-2 py-1.5 text-[11px]"
+          className="w-full rounded-md border border-[var(--color-edge)] bg-[#212126] px-2 py-1.5 text-[11px] text-[var(--color-fog-05)]"
         >
           {FONT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -303,18 +302,14 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
         />
         <div className="flex gap-1.5">
           {(['left', 'center'] as const).map((align) => (
-            <button
+            <Ficha
               key={align}
-              type="button"
+              ativa={a.align === align}
               onClick={() => patch({ align })}
-              className={`flex-1 rounded-md border px-2 py-1.5 text-[11px] ${
-                a.align === align
-                  ? 'border-[var(--color-fog-1)] text-[var(--color-fog-0)]'
-                  : 'border-[var(--color-line)] text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]'
-              }`}
+              className="flex-1 px-2 py-1.5 text-[11px]"
             >
               {align === 'left' ? t('insp.alignLeft') : t('insp.alignCenter')}
-            </button>
+            </Ficha>
           ))}
         </div>
       </Group>
@@ -365,25 +360,24 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
                   title={preset.name}
                   onClick={() => dispatch({ type: 'appearance/preset', tabId: tab.id, presetId: preset.id })}
                   className={`h-9 w-11 rounded-md border transition-colors ${
-                    valendo ? 'border-[var(--color-accent)]' : 'border-[var(--color-line)]'
+                    valendo ? 'border-[var(--color-accent)]' : 'border-[var(--color-ink-4)]'
                   }`}
                   style={{ background: preset.bgColor, color: preset.textColor }}
                 >
-                  <span className="text-[13px] font-medium">Aa</span>
+                  <span className="text-[13px] font-bold">Aa</span>
                 </button>
               )
             })}
           </div>
         </div>
 
-        <button
-          type="button"
+        <Ficha
           onClick={() => dispatch({ type: 'appearance/invert', tabId: tab.id })}
-          className="flex items-center justify-center gap-1.5 rounded-md border border-[var(--color-line)] py-1.5 text-[11px] hover:bg-[var(--color-ink-3)]"
+          className="flex w-full items-center justify-center gap-1.5 py-1.5 text-[11px]"
         >
           <Icon name="contrast" size={14} />
           {t('insp.invert')}
-        </button>
+        </Ficha>
       </Group>
         </>
       ) : null}
@@ -511,20 +505,16 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
                   ['livre', t('insp.clock.modeFree'), t('insp.clock.modeFree.hint')]
                 ] as const
               ).map(([mode, rotulo, dica]) => (
-                <button
+                <Ficha
                   key={mode}
-                  type="button"
                   data-clock-mode={mode}
                   title={dica}
+                  ativa={a.timers.mode === mode}
                   onClick={() => patch({ timers: { ...a.timers, mode } })}
-                  className={`flex-1 rounded-md border px-2 py-1.5 text-[11px] ${
-                    a.timers.mode === mode
-                      ? 'border-[var(--color-fog-1)] text-[var(--color-fog-0)]'
-                      : 'border-[var(--color-line)] text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]'
-                  }`}
+                  className="flex-1 px-1 py-1.5 text-[11px]"
                 >
                   {rotulo}
-                </button>
+                </Ficha>
               ))}
             </div>
 
@@ -545,7 +535,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
               {/* estreita de propósito: as células são quadradas, então ocupar
                   a largura toda do painel custava ~190px de altura só para
                   apontar um canto */}
-              <div className="grid w-[104px] grid-cols-3 gap-1 rounded-md border border-[var(--color-line)] p-1">
+              <div className="grid w-[104px] grid-cols-3 gap-1 rounded-md border border-[var(--color-edge)] bg-[#141416] p-1">
                 {TIMER_POSITIONS.flat().map((position) => (
                   <button
                     key={position}
@@ -556,7 +546,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
                     onClick={() => patch({ timers: { ...a.timers, position } })}
                     className={`aspect-square rounded-sm transition-colors ${
                       a.timers.position === position
-                        ? 'bg-[var(--color-go)]'
+                        ? 'bg-[var(--color-accent)]'
                         : 'bg-[var(--color-ink-3)] hover:bg-[var(--color-fog-2)]'
                     }`}
                   />
@@ -582,18 +572,14 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
         <Toggle label={t('insp.mirrorV')} active={a.mirrorY} onClick={() => patch({ mirrorY: !a.mirrorY })} />
         <div className="flex gap-1.5">
           {([0, 90, 180, 270] as const).map((rotation) => (
-            <button
+            <Ficha
               key={rotation}
-              type="button"
+              ativa={a.rotation === rotation}
               onClick={() => patch({ rotation })}
-              className={`flex-1 rounded-md border py-1.5 text-[11px] ${
-                a.rotation === rotation
-                  ? 'border-[var(--color-fog-1)] text-[var(--color-fog-0)]'
-                  : 'border-[var(--color-line)] text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]'
-              }`}
+              className="flex-1 py-1.5 text-[11px]"
             >
               {rotation}°
-            </button>
+            </Ficha>
           ))}
         </div>
       </Group>
@@ -604,38 +590,30 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
       {/* fora das abas, no rodapé: guardar o padrão vale para o painel inteiro,
           não para a aba que está aberta — dentro de uma delas, pareceria
           guardar só aquele pedaço */}
-      <div className="flex flex-none items-center gap-2 border-t border-[var(--color-line)] px-3 py-2">
-        <button
-          type="button"
+      <div className="flex flex-none items-center gap-2 border-t border-[var(--color-edge)] p-2.5">
+        <Tecla
           data-save-defaults
-          title={
-            customDefaults
-              ? t('insp.defaults.custom')
-              : t('insp.defaults.factory')
-          }
+          title={customDefaults ? t('insp.defaults.custom') : t('insp.defaults.factory')}
+          acesa={salvou}
+          cor="var(--color-go)"
           onClick={() => {
             dispatch({ type: 'defaults/save' })
             setSalvou(true)
           }}
-          className={`min-w-0 flex-1 truncate rounded-md border py-1.5 text-[11px] transition-colors ${
-            salvou
-              ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
-              : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
-          }`}
+          className="h-[30px] min-w-0 flex-1 rounded-md text-[11px] font-semibold"
         >
-          {salvou ? t('insp.saved') : t('insp.saveDefaults')}
-        </button>
+          <span className="max-w-full truncate">{salvou ? t('insp.saved') : t('insp.saveDefaults')}</span>
+        </Tecla>
         {customDefaults ? (
-          <button
-            type="button"
+          <Tecla
             data-reset-defaults
             title={t('insp.defaults.reset')}
             aria-label={t('insp.defaults.reset')}
             onClick={() => dispatch({ type: 'defaults/reset' })}
-            className="flex-none rounded-md border border-[var(--color-line)] p-1.5 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+            className="h-[30px] w-[30px] flex-none rounded-md"
           >
             <Icon name="restart" size={13} />
-          </button>
+          </Tecla>
         ) : null}
       </div>
     </aside>
