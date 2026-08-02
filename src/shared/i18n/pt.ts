@@ -78,6 +78,9 @@ export const pt = {
   'toolbar.ppm': 'ppm',
   'toolbar.elapsed': 'decorrido',
   'toolbar.remaining': 'restante',
+  'lcd.forecast': 'previsão',
+  'lcd.target': 'alvo',
+  'lcd.speed': 'velocidade de rolagem',
 
   /* ---------------------------------------------------------------- ajustes */
   'insp.tab.text': 'Texto',

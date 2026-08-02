@@ -66,6 +66,9 @@ export const en: Dicionario = {
   'toolbar.ppm': 'wpm',
   'toolbar.elapsed': 'elapsed',
   'toolbar.remaining': 'remaining',
+  'lcd.forecast': 'forecast',
+  'lcd.target': 'target',
+  'lcd.speed': 'scroll speed',
 
   'insp.tab.text': 'Text',
   'insp.tab.text.hint': 'font, size, alignment and colours',

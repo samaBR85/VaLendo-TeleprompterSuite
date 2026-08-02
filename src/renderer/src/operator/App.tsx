@@ -524,6 +524,7 @@ function AppConteudo({
         <BarraDeTransporte
           state={state}
           tab={tab}
+          displays={displays}
           keymap={keymap}
           rows={rows}
           dispatch={dispatch}
@@ -625,6 +626,7 @@ function AppConteudo({
         <BarraDeTransporte
           state={state}
           tab={tab}
+          displays={displays}
           keymap={keymap}
           rows={rows}
           dispatch={dispatch}

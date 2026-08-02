@@ -66,6 +66,9 @@ export const de: Dicionario = {
   'toolbar.ppm': 'WpM',
   'toolbar.elapsed': 'vergangen',
   'toolbar.remaining': 'verbleibend',
+  'lcd.forecast': 'Prognose',
+  'lcd.target': 'Ziel',
+  'lcd.speed': 'Rollgeschwindigkeit',
 
   'insp.tab.text': 'Text',
   'insp.tab.text.hint': 'Schrift, Größe, Ausrichtung und Farben',

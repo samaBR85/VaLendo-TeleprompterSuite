@@ -66,6 +66,9 @@ export const fr: Dicionario = {
   'toolbar.ppm': 'mpm',
   'toolbar.elapsed': 'écoulé',
   'toolbar.remaining': 'restant',
+  'lcd.forecast': 'prévision',
+  'lcd.target': 'cible',
+  'lcd.speed': 'vitesse de défilement',
 
   'insp.tab.text': 'Texte',
   'insp.tab.text.hint': 'police, corps, alignement et couleurs',

@@ -6,8 +6,7 @@ import {
   SEGMENT_COUNT,
   clampPpm,
   filledSegments,
-  ppmFromFraction,
-  segmentColor
+  ppmFromFraction
 } from '@shared/ruler'
 
 interface Props {
@@ -98,17 +97,23 @@ export function SpeedRuler({ ppm, onChange }: Props): React.JSX.Element {
         onChange(clampPpm(ppm + (event.deltaY < 0 ? PPM_STEP : -PPM_STEP)))
       }}
       onKeyDown={onKeyDown}
-      className="flex cursor-pointer touch-none items-end gap-[3px] rounded py-1 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-go)]"
+      className="flex w-full cursor-pointer touch-none items-center rounded py-1 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-go)]"
     >
+      {/* cada segmento pinta os próprios tracinhos de 2px: no vidro do LCD a
+          régua vira um medidor pontilhado — verde até o ritmo, cinza-esverdeado
+          dali em diante, como um VU desligado */}
       {SEGMENTS.map((index) => (
         <div
           key={index}
           data-segment={index < acesas ? 'on' : 'off'}
           style={{
-            width: 2,
-            height: 16,
-            borderRadius: 1,
-            background: index < acesas ? segmentColor(index) : 'var(--color-ink-3)'
+            flex: 1,
+            minWidth: 2,
+            height: 9,
+            background:
+              index < acesas
+                ? 'repeating-linear-gradient(90deg, var(--color-go) 0 2px, transparent 2px 4px)'
+                : 'repeating-linear-gradient(90deg, #2c3a33 0 2px, transparent 2px 4px)'
           }}
         />
       ))}

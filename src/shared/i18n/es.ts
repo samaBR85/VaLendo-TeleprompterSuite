@@ -66,6 +66,9 @@ export const es: Dicionario = {
   'toolbar.ppm': 'ppm',
   'toolbar.elapsed': 'transcurrido',
   'toolbar.remaining': 'restante',
+  'lcd.forecast': 'previsión',
+  'lcd.target': 'objetivo',
+  'lcd.speed': 'velocidad de desplazamiento',
 
   'insp.tab.text': 'Texto',
   'insp.tab.text.hint': 'fuente, cuerpo, alineación y colores',
