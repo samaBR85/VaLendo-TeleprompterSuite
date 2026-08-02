@@ -6,6 +6,7 @@ import { buildRundown, segmentIndexAt } from '@shared/rundown'
 import type { Cartao, Tab, Transport } from '@shared/types'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
+import { CabecalhoDePainel } from '../ui/console'
 import { useNow } from '../ui/useNow'
 
 interface Props {
@@ -17,13 +18,26 @@ interface Props {
   dispatch: (action: Action) => void
 }
 
-/** Título de seção da coluna, com a barrinha colorida da maquete. */
-function Secao({ label, cor }: { label: string; cor: string }): React.JSX.Element {
+/**
+ * A arte do cartão em 40×24: imagem pelo mesmo protocolo da gaveta, vídeo
+ * pelo poster que já viaja no projeto, recado pelo glifo — nunca um <video>,
+ * que aqui seria um decodificador rodando para pintar um selo.
+ */
+function MiniaturaDoCartao({ card }: { card: Cartao }): React.JSX.Element {
   return (
-    <div className="flex flex-none items-center gap-2 px-3 py-2">
-      <span className="h-3 w-[3px] flex-none rounded-sm" style={{ background: cor }} />
-      <span className="text-[11px] font-medium text-[var(--color-fog-1)]">{label}</span>
-    </div>
+    <span className="flex h-6 w-10 flex-none items-center justify-center overflow-hidden rounded-[3px] border border-[var(--color-edge)] bg-[var(--color-ink-3)]">
+      {card.kind === 'image' ? (
+        <img
+          src={`valendo://cartao/${encodeURIComponent(card.arquivo)}`}
+          alt=""
+          className="h-full w-full object-cover"
+        />
+      ) : card.kind === 'video' && card.poster ? (
+        <img src={card.poster} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <Icon name={card.kind === 'video' ? 'play' : 'direction'} size={10} className="text-[var(--color-fog-3)]" />
+      )}
+    </span>
   )
 }
 
@@ -52,80 +66,102 @@ export function Sidebar({ tab, transport, cards, rows, dispatch }: Props): React
   return (
     <aside
       data-sidebar
-      className="flex w-[230px] flex-none flex-col border-r border-[var(--color-line)] bg-[var(--color-ink-1)]"
+      className="flex w-[206px] flex-none flex-col border-r border-[var(--color-edge)] bg-[#17171a]"
     >
-      <Secao label={t('sidebar.chapters')} cor="var(--color-warn)" />
+      <CabecalhoDePainel tique cor="var(--color-warn)" titulo={t('sidebar.chapters')} />
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {segments.length === 0 ? (
-          <p className="px-3 py-1 text-[11px] leading-relaxed text-[var(--color-fog-3)]">
+          <p className="px-3 py-2 text-[11px] leading-relaxed text-[var(--color-fog-3)]">
             {t('sidebar.noChapters')}
           </p>
         ) : (
-          segments.map((segment, index) => (
-            <button
-              key={segment.blockId}
-              type="button"
-              data-chapter={segment.blockId}
-              aria-current={index === atual}
-              onClick={() =>
-                dispatch({ type: 'transport/seekAnchor', anchor: { blockId: segment.blockId, wordOffset: 0 } })
-              }
-              className={`flex flex-none items-baseline gap-2 px-3 py-1.5 text-left text-[12px] transition-colors ${
-                index === atual
-                  ? 'bg-[var(--color-warn)]/12 text-[var(--color-warn)]'
-                  : 'text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
-              }`}
-            >
-              <span className="min-w-0 flex-1 truncate">
-                {segment.title ? `§ ${segment.title}` : t('deck.noChapter')}
-              </span>
-              <span className="flex-none font-mono text-[10px] text-[var(--color-fog-3)]">
-                {formatClock(secondsForWords(segment.rulerSpan, transport.ppm))}
-              </span>
-            </button>
-          ))
+          <div className="flex flex-col gap-[3px] p-2">
+            {segments.map((segment, index) => (
+              <button
+                key={segment.blockId}
+                type="button"
+                data-chapter={segment.blockId}
+                aria-current={index === atual}
+                onClick={() =>
+                  dispatch({ type: 'transport/seekAnchor', anchor: { blockId: segment.blockId, wordOffset: 0 } })
+                }
+                className="flex flex-none items-baseline gap-2 rounded-[5px] px-2 py-1.5 text-left text-[11px] transition-colors"
+                style={
+                  index === atual
+                    ? {
+                        background: 'color-mix(in srgb, var(--color-warn) 14%, transparent)',
+                        borderLeft: '3px solid var(--color-warn)'
+                      }
+                    : { borderLeft: '3px solid color-mix(in srgb, var(--color-warn) 35%, transparent)' }
+                }
+              >
+                <span
+                  className={`min-w-0 flex-1 truncate ${
+                    index === atual ? 'font-semibold' : 'font-medium text-[#a0a0a8]'
+                  }`}
+                  style={index === atual ? { color: '#f6d38a' } : undefined}
+                >
+                  {segment.title ? `§ ${segment.title}` : t('deck.noChapter')}
+                </span>
+                <span
+                  className="flex-none font-mono text-[10px]"
+                  style={{ color: index === atual ? '#8a7648' : '#6a6a72' }}
+                >
+                  {formatClock(secondsForWords(segment.rulerSpan, transport.ppm))}
+                </span>
+              </button>
+            ))}
+          </div>
         )}
 
-        <Secao label={t('sidebar.cards')} cor="var(--color-accent-2)" />
+        <CabecalhoDePainel
+          tique
+          cor="var(--color-accent-2)"
+          titulo={t('sidebar.cards')}
+          className="border-t border-t-[var(--color-edge)]"
+        />
 
         {cards.length === 0 ? (
-          <p className="px-3 py-1 text-[11px] leading-relaxed text-[var(--color-fog-3)]">{t('sidebar.noCards')}</p>
+          <p className="px-3 py-2 text-[11px] leading-relaxed text-[var(--color-fog-3)]">{t('sidebar.noCards')}</p>
         ) : (
-          cards.map((card) => (
-            <button
-              key={card.id}
-              type="button"
-              data-sidebar-card={card.id}
-              onClick={() => dispatch({ type: 'card/show', cardId: card.id })}
-              className={`flex flex-none items-center gap-2 px-3 py-1.5 text-left text-[11px] transition-colors ${
-                transport.card === card.id
-                  ? 'bg-[var(--color-go)]/12 text-[var(--color-go)]'
-                  : 'text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
-              }`}
-            >
-              <Icon
-                name={card.kind === 'image' ? 'card' : card.kind === 'video' ? 'play' : 'direction'}
-                size={12}
-                className="flex-none"
-              />
-              <span className="min-w-0 flex-1 truncate">
-                {card.nome || (card.kind === 'text' ? card.texto : '') || t('cards.title')}
-              </span>
-            </button>
-          ))
+          <div className="flex flex-col gap-1.5 p-2">
+            {cards.map((card) => (
+              <button
+                key={card.id}
+                type="button"
+                data-sidebar-card={card.id}
+                onClick={() => dispatch({ type: 'card/show', cardId: card.id })}
+                className={`flex flex-none items-center gap-2 rounded-md border p-[5px] text-left text-[10px] transition-colors ${
+                  transport.card === card.id
+                    ? 'border-[var(--color-go)]/60 bg-[var(--color-go)]/10 text-[var(--color-go)]'
+                    : 'border-[var(--color-edge)] bg-[#1e1e22] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
+                }`}
+              >
+                <MiniaturaDoCartao card={card} />
+                <span className="min-w-0 flex-1 truncate font-medium">
+                  {card.nome || (card.kind === 'text' ? card.texto : '') || t('cards.title')}
+                </span>
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
       {/* a ajuda fica ancorada no rodapé da coluna, e não no meio do fluxo:
           é o único bloco aqui que não é o programa — some do caminho do olho
           quando o operador está procurando um capítulo */}
-      <div className="flex-none border-t border-[var(--color-line)] px-3 py-2.5">
-        <div className="mb-1 flex items-center gap-1.5 text-[10px] tracking-[0.14em] text-[var(--color-fog-3)] uppercase">
-          <Icon name="info" size={11} />
-          {t('sidebar.help')}
+      <div className="flex-none border-t border-[var(--color-edge)] bg-[#131316]">
+        <div className="flex h-[26px] items-center gap-1.5 border-b border-[var(--color-edge)] px-2.5">
+          <span className="grid h-3.5 w-3.5 flex-none place-items-center rounded-full border border-[#5b6470] text-[9px] font-bold text-[#8b95a3]">
+            ?
+          </span>
+          <span className="text-[10px] font-semibold text-[#9aa3b0]">{t('sidebar.help')}</span>
         </div>
-        <p className="text-[11px] leading-relaxed text-[var(--color-fog-2)]">{t('sidebar.help.scroll')}</p>
+        <div className="px-3 py-2.5">
+          <div className="mb-1 text-[11px] font-semibold text-[var(--color-go)]">{t('sidebar.help.scrollTitle')}</div>
+          <p className="text-[10.5px] leading-relaxed text-[var(--color-fog-2)]">{t('sidebar.help.scroll')}</p>
+        </div>
       </div>
     </aside>
   )

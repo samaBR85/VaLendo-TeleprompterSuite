@@ -143,7 +143,8 @@ export const en: Dicionario = {
   'sidebar.help': 'Quick help',
   'sidebar.noChapters': 'No chapters yet — open one with § in the script.',
   'sidebar.noCards': 'No cards yet.',
-  'sidebar.help.scroll': 'The scroll button is the biggest target on screen: pace to its left, time to its right. Space plays and pauses.',
+  'sidebar.help.scrollTitle': 'Scroll button',
+  'sidebar.help.scroll': 'The biggest target on screen: pace to its left, time to its right. Space plays and pauses.',
 
   'status.words': 'Words',
   'status.duration': 'Duration',

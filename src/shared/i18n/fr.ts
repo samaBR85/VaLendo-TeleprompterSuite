@@ -144,7 +144,8 @@ export const fr: Dicionario = {
   'sidebar.help': 'Aide rapide',
   'sidebar.noChapters': 'Aucun chapitre pour l’instant — ouvrez-en un avec § dans le texte.',
   'sidebar.noCards': 'Aucun carton pour l’instant.',
-  'sidebar.help.scroll': 'Le bouton de défilement est la plus grande cible de l’écran : à sa gauche le rythme, à sa droite le temps. Espace démarre et met en pause.',
+  'sidebar.help.scrollTitle': 'Bouton de défilement',
+  'sidebar.help.scroll': 'La plus grande cible de l’écran : à sa gauche le rythme, à sa droite le temps. Espace démarre et met en pause.',
 
   'status.words': 'Mots',
   'status.duration': 'Durée',
