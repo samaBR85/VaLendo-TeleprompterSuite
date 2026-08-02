@@ -207,6 +207,9 @@ function registerIpc(): void {
 
     try {
       await saveProject(picked.filePath, state)
+      // salvar troca qual arquivo é "o projeto aberto" — o nome no centro
+      // do cabeçalho precisa acompanhar, mesmo sem recarregar nada
+      store.dispatch({ type: 'project/pathSet', path: picked.filePath })
       return { ok: true, path: picked.filePath }
     } catch (error) {
       return { ok: false, path: picked.filePath, error: (error as Error).message }
@@ -227,7 +230,10 @@ function registerIpc(): void {
     const { state, error } = await openProject(caminho)
     if (!state) return { ok: false, path: caminho, error: error ?? idioma('project.cantOpen') }
 
-    store.dispatch({ type: 'project/replace', state })
+    // o caminho é DESTE momento, não o que o arquivo carregava de quando foi
+    // salvo — se o operador moveu ou copiou o .valendo, é aqui que ele está
+    // agora, e é esse nome que o cabeçalho deve mostrar
+    store.dispatch({ type: 'project/replace', state: { ...state, projectPath: caminho } })
     // as artes do programa anterior não servem mais a ninguém
     pruneCardImages(store.getState().cards)
     pruneVideoConversions(store.getState().cards)

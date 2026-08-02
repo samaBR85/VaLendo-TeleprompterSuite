@@ -838,6 +838,10 @@ export class Store {
         this.patchTab(action.tabId, { exportPath: action.path })
         break
 
+      case 'project/pathSet':
+        this.state = { ...this.state, projectPath: action.path }
+        break
+
       case 'history/undo':
       case 'history/redo': {
         const tab = this.state.tabs.find((t) => t.id === action.tabId)

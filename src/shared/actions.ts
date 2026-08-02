@@ -78,6 +78,7 @@ export type Action =
   | { type: 'storage/dismissNotice' }
   | { type: 'document/exportedTo'; tabId: string; path: string }
   | { type: 'project/replace'; state: AppState }
+  | { type: 'project/pathSet'; path: string | null }
   | { type: 'webview/set'; enabled: boolean }
   | { type: 'webview/videoPerfil'; perfil: PerfilDeRede }
   /** a cópia leve ficou pronta (ou foi descartada, com `null`) */

@@ -156,6 +156,7 @@ export function createInitialState(
   return {
     tabs: [tab],
     activeTabId: tab.id,
+    projectPath: null,
     language: lang,
     layoutMode: 'split',
     transportPosition: 'topo',

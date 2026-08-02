@@ -193,24 +193,31 @@ export function PocoDoAr({
  *
  * Mora num componente porque muda de casa com o layout: com o transporte no
  * topo (8a) ele fecha a barra do console; com o transporte na régua (8b) ele
- * sobe para a barra de arquivo — a maquete desenha assim nos dois casos, e o
- * botão precisa existir UMA vez em cada arrumação, nunca duas.
+ * mora na barra de abas, à direita do AR — a maquete desenha assim nos dois
+ * casos, e o botão precisa existir UMA vez em cada arrumação, nunca duas.
  *
  * O Transmitir é o próprio indicador de estado: apagado é um relevo vinho com
  * o ponto fundido; no ar, acende de vermelho com brilho vazando. O "No ar"
  * gigante do cabeçalho saiu — dois avisos do mesmo fato ensinavam o olho a
  * ignorar um deles.
+ *
+ * `grande` é só o topo: ali a régua de velocidade encolheu pela metade
+ * (`flex-[3_1_0%]` no LCD de progresso, sobrando espaço), e é esse espaço
+ * que cresce aqui — monitor mais largo, para o nome do monitor caber
+ * inteiro, e Transmitir maior, o botão que decide o programa inteiro.
  */
 export function PocoDeSaida({
   displays,
   output,
   dispatch,
-  run
+  run,
+  grande
 }: {
   displays: DisplayInfo[]
   output: AppState['output']
   dispatch: (action: Action) => void
   run: (commandId: string) => void
+  grande?: boolean
 }): React.JSX.Element {
   const { t } = useT()
 
@@ -226,7 +233,9 @@ export function PocoDeSaida({
             enabled: value !== '' && output.enabled
           })
         }}
-        className="h-6 max-w-[190px] flex-none rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] px-2 text-[10px] text-[var(--color-fog-2)]"
+        className={`flex-none rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] text-[var(--color-fog-2)] ${
+          grande ? 'h-8 max-w-[340px] px-2.5 text-[12px]' : 'h-6 max-w-[190px] px-2 text-[10px]'
+        }`}
       >
         <option value="">{t('toolbar.pickMonitor')}</option>
         {displays.map((display) => (
@@ -242,7 +251,9 @@ export function PocoDeSaida({
         data-broadcast-toggle
         disabled={output.displayId === null}
         onClick={() => run('output.toggle')}
-        className="flex h-6 flex-none items-center gap-1.5 rounded-[5px] border border-[var(--color-edge)] px-3 text-[11px] font-semibold whitespace-nowrap transition-[filter] hover:brightness-115 disabled:opacity-30"
+        className={`flex flex-none items-center gap-1.5 rounded-[5px] border border-[var(--color-edge)] font-semibold whitespace-nowrap transition-[filter] hover:brightness-115 disabled:opacity-30 ${
+          grande ? 'h-11 min-w-[150px] justify-center px-6 text-[15px]' : 'h-6 px-3 text-[11px]'
+        }`}
         style={
           output.enabled
             ? {
@@ -274,11 +285,11 @@ export function PocoDeSaida({
 /**
  * A linha das abas: arquivo, ar e as fichas dos roteiros.
  *
- * Com o transporte no topo (8a), os poços PROJETO/ROTEIRO abrem a linha; com
- * ele na régua (8b), eles sobem para a linha do wordmark e as abas ganham o
- * espaço todo — as duas arrumações da maquete. As abas esticam (`flex-1`),
- * então tudo que vem depois delas — AR e, na régua, SAÍDA — fica empurrado
- * para a ponta direita da barra, na ordem em que aparece aqui.
+ * PROJETO/ROTEIRO abrem a linha nas duas arrumações — antes eles subiam para
+ * o cabeçalho quando o transporte ia para a régua, mas o cabeçalho é do
+ * PROGRAMA (nome do projeto, painéis), não do arquivo. As abas esticam
+ * (`flex-1`), então tudo que vem depois delas — AR e, na régua, SAÍDA — fica
+ * empurrado para a ponta direita da barra, na ordem em que aparece aqui.
  */
 export function BarraDeArquivo({
   state,
@@ -293,9 +304,7 @@ export function BarraDeArquivo({
 }: Omit<Props, 'rows'>): React.JSX.Element {
   return (
     <div className="flex flex-none items-center gap-2.5 border-b border-[var(--color-edge)] bg-[#17171a] px-2.5 py-[5px]">
-      {state.transportPosition === 'topo' ? (
-        <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={onImport} />
-      ) : null}
+      <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={onImport} />
 
       <Tabs state={state} dispatch={dispatch} />
 
@@ -544,7 +553,11 @@ export function BarraDeTransporte({
         className="flex flex-none items-center gap-2.5 border-b border-[var(--color-edge)] px-2.5 py-2"
         style={{ background: 'linear-gradient(#1b1b1f, #161618)' }}
       >
-        <Lcd className="h-[52px] min-w-0 flex-1">
+        {/* `flex-[3_1_0%]`, e não `flex-1`: contra o `flex-1` da régua de
+            velocidade logo abaixo, essa razão 3:1 é o que deixa a régua com
+            METADE da fatia que ela tinha antes (1/2 do espaço → 1/4) — o
+            espaço que ela devolve é o que a SAÍDA, mais à frente, ganha */}
+        <Lcd className="h-[52px] min-w-0 flex-[3_1_0%]">
           <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-4">
             <BarraDeProgresso fracao={fracao} ticks={ticks} />
             <div className="k-microcaps flex items-center justify-between gap-3 tracking-[0.1em] text-[var(--color-lcd-caption)]">
@@ -566,7 +579,7 @@ export function BarraDeTransporte({
 
         {velocidade}
 
-        <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} />
+        <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} grande />
       </div>
     )
   }

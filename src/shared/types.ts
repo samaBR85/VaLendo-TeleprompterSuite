@@ -368,6 +368,13 @@ export interface AppState {
   tabs: Tab[]
   activeTabId: string
   /**
+   * Onde o .valendo deste programa foi salvo ou aberto pela última vez —
+   * `null` enquanto nada foi gravado ainda. É o que dá nome ao projeto no
+   * centro do cabeçalho; diferente de `tab.exportPath`, que é do ROTEIRO
+   * (só o texto), não do programa inteiro.
+   */
+  projectPath: string | null
+  /**
    * Idioma da interface. Do app inteiro, não da aba: é cromo do programa, e
    * não uma escolha de aparência do roteiro.
    */

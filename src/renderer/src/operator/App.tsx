@@ -23,7 +23,7 @@ import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
 import { Sidebar } from './Sidebar'
 import { StatusBar } from './StatusBar'
-import { BarraDeArquivo, BarraDeTransporte, PocosDeArquivo, hint } from './Toolbar'
+import { BarraDeArquivo, BarraDeTransporte, hint } from './Toolbar'
 import { WebviewPanel } from './WebviewPanel'
 import { useCommands } from './useCommands'
 
@@ -340,6 +340,12 @@ function AppConteudo({
   }
 
   const tab = activeTabOf(state)
+  // nome do projeto para o centro do cabeçalho: só o arquivo, sem pasta nem
+  // extensão — o caminho inteiro não cabe ali e não é o que identifica o
+  // programa para quem está olhando de longe
+  const nomeDoProjeto = state.projectPath
+    ? (state.projectPath.split(/[\\/]/).pop() ?? state.projectPath).replace(/\.valendo$/i, '')
+    : null
   // o viewport informado pela própria janela de transmissão vale mais que a
   // medida do monitor: em cheio os dois não batem
   const viewport =
@@ -447,7 +453,7 @@ function AppConteudo({
           SAÍDA — o aviso gigante daqui saiu porque dois avisos do mesmo fato
           ensinavam o olho a ignorar um deles */}
       <header
-        className="flex flex-none items-center gap-3 border-b border-[var(--color-edge)] px-2.5 py-1.5"
+        className="relative flex flex-none items-center gap-3 border-b border-[var(--color-edge)] px-2.5 py-1.5"
         style={{ background: 'linear-gradient(#212125, #1a1a1e)' }}
       >
         <div className="flex flex-none items-center border-r border-[var(--color-edge)] pr-3">
@@ -455,12 +461,18 @@ function AppConteudo({
         </div>
         <span className="flex-none text-[12px] whitespace-nowrap text-[var(--color-fog-2)]">{versionLabel()}</span>
 
-        {/* com o transporte na régua, a linha das abas perde os poços de
-            arquivo para cá — o wordmark fica com espaço sobrando e as abas
-            ganham a linha inteira, como na variante 8b da maquete */}
-        {state.transportPosition === 'regua' ? (
-          <div className="flex min-w-0 items-center gap-2.5">
-            <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={importDocument} />
+        {/* centralizado de verdade — `absolute`, e não flex/auto-margin, para
+            não depender de quanto os grupos dos dois lados pesam (o mesmo
+            truque do seletor de modo no rodapé). Só aparece com um .valendo
+            de verdade por trás: nome de projeto que não existe ainda não
+            é nome de nada. */}
+        {nomeDoProjeto ? (
+          <div
+            data-project-name
+            className="absolute left-1/2 -translate-x-1/2 truncate text-[13px] font-medium"
+            style={{ color: '#62a8ff' }}
+          >
+            {nomeDoProjeto}
           </div>
         ) : null}
 
