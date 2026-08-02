@@ -33,6 +33,8 @@ export interface EditorHandle {
   flush: () => void
   /** insere capítulo ou direção no cursor, já com o miolo selecionado. */
   insert: (kind: InsertKind) => void
+  /** o texto atual do rascunho e onde o cursor está nele — para o "Go To". */
+  caret: () => { text: string; position: number }
 }
 
 /**
@@ -181,7 +183,12 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, fon
     [tab.id, dispatch]
   )
 
-  useImperativeHandle(ref, () => ({ flush, insert }), [flush, insert])
+  const caret = useCallback(
+    () => ({ text: draft, position: areaRef.current?.selectionStart ?? 0 }),
+    [draft]
+  )
+
+  useImperativeHandle(ref, () => ({ flush, insert, caret }), [flush, insert, caret])
 
   const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setDraft(event.target.value)

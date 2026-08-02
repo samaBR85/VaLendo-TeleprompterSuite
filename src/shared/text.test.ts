@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { blockWordCount, blocksFromText, reconcileBlocks, serializeBlocks, totalWordCount } from './text'
+import {
+  anchorFromCaret,
+  blockWordCount,
+  blocksFromText,
+  reconcileBlocks,
+  serializeBlocks,
+  totalWordCount,
+  words
+} from './text'
 
 describe('classificação de blocos', () => {
   it('reconhece fala, direção e capítulo', () => {
@@ -78,5 +86,51 @@ describe('reconcileBlocks — estabilidade dos ids', () => {
     const round = reconcileBlocks(blocks, serializeBlocks(blocks))
     expect(round.map((b) => b.id)).toEqual(blocks.map((b) => b.id))
     expect(round.map((b) => b.kind)).toEqual(blocks.map((b) => b.kind))
+  })
+})
+
+describe('anchorFromCaret — o "Go To" do rodapé da edição', () => {
+  it('acha o bloco e a palavra certos dentro de um parágrafo de fala', () => {
+    const text = 'boa noite a todos\n\nsegundo parágrafo aqui'
+    const blocks = blocksFromText(text)
+
+    // cursor logo depois de "boa noite" (9 caracteres) — 2 palavras percorridas
+    const anchor = anchorFromCaret(blocks, text, 9)
+    expect(anchor).toEqual({ blockId: blocks[0].id, wordOffset: 2 })
+  })
+
+  it('pousa no início da linha para capítulo e direção, sem contar palavras', () => {
+    const text = '§ Abertura\n\n[olhar câmera 2]'
+    const blocks = blocksFromText(text)
+
+    const noCapitulo = anchorFromCaret(blocks, text, 5)
+    expect(noCapitulo).toEqual({ blockId: blocks[0].id, wordOffset: 0 })
+
+    const naDirecao = anchorFromCaret(blocks, text, text.length - 3)
+    expect(naDirecao).toEqual({ blockId: blocks[1].id, wordOffset: 0 })
+  })
+
+  it('cursor no respiro entre parágrafos pousa no início do seguinte', () => {
+    const text = 'primeiro\n\nsegundo'
+    const blocks = blocksFromText(text)
+    const gap = text.indexOf('\n\n') + 1 // dentro da quebra dupla, antes do segundo parágrafo
+
+    const anchor = anchorFromCaret(blocks, text, gap)
+    expect(anchor).toEqual({ blockId: blocks[1].id, wordOffset: 0 })
+  })
+
+  it('mantém o id do bloco mesmo com digitação ainda não confirmada pelo main', () => {
+    const before = blocksFromText('o apresentador fala com calma')
+    // "muita" foi digitado agora mesmo; before ainda não sabe disso
+    const draft = 'o apresentador fala com muita calma'
+    const caret = draft.length
+
+    const anchor = anchorFromCaret(before, draft, caret)
+    expect(anchor?.blockId).toBe(before[0].id)
+    expect(anchor?.wordOffset).toBe(words(draft).length)
+  })
+
+  it('texto vazio não tem para onde ir', () => {
+    expect(anchorFromCaret([], '', 0)).toBeNull()
   })
 })

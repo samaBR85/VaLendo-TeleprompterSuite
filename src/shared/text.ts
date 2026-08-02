@@ -1,4 +1,4 @@
-import type { Block, BlockKind } from './types'
+import type { Anchor, Block, BlockKind } from './types'
 
 export function words(text: string): string[] {
   return text.trim().length === 0 ? [] : text.trim().split(/\s+/)
@@ -32,18 +32,32 @@ function newId(): string {
   return `b${Date.now().toString(36)}${idCounter.toString(36)}`
 }
 
+interface ParagraphSpan {
+  text: string
+  /** onde este parágrafo começa no texto normalizado — usado por `anchorFromCaret` */
+  start: number
+}
+
 /**
- * Divide em parágrafos por linha em branco, preservando as quebras simples.
+ * Divide em parágrafos por linha em branco, preservando as quebras simples e
+ * a posição de cada um no texto original.
  *
  * A quebra que o operador digitou fica no texto do bloco de propósito: ela é
  * intencional e precisa aparecer na tela do apresentador. Quem transforma isso
  * em linhas é `composeLines`.
  */
+function paragraphSpans(text: string): ParagraphSpan[] {
+  const spans: ParagraphSpan[] = []
+  let offset = 0
+  for (const chunk of text.replace(/\r\n?/g, '\n').split(/(\n{2,})/)) {
+    if (chunk.trim().length > 0) spans.push({ text: chunk, start: offset })
+    offset += chunk.length
+  }
+  return spans
+}
+
 function splitParagraphs(text: string): string[] {
-  return text
-    .replace(/\r\n?/g, '\n')
-    .split(/\n{2,}/)
-    .filter((paragraph) => paragraph.trim().length > 0)
+  return paragraphSpans(text).map((span) => span.text)
 }
 
 function similarity(a: string, b: string): number {
@@ -120,4 +134,29 @@ export function serializeBlocks(blocks: Block[]): string {
 
 export function blocksFromText(text: string): Block[] {
   return reconcileBlocks([], text)
+}
+
+/**
+ * Onde o cursor do editor está, em termos que o transporte entende: bloco +
+ * palavras percorridas dentro dele. É o "Go To" — reaproveita a mesma
+ * reconciliação de ids que o editor já faz a cada tecla, para que a âncora
+ * caia no bloco certo mesmo com a digitação ainda não confirmada pelo main.
+ *
+ * Capítulo e direção não têm fala para contar — pousa no início da linha.
+ * Um cursor no respiro entre dois parágrafos pousa no início do seguinte.
+ */
+export function anchorFromCaret(previousBlocks: Block[], text: string, caret: number): Anchor | null {
+  const spans = paragraphSpans(text)
+  if (spans.length === 0) return null
+
+  const found = spans.findIndex((span) => caret <= span.start + span.text.length)
+  const index = found === -1 ? spans.length - 1 : found
+  const span = spans[index]
+
+  const block = reconcileBlocks(previousBlocks, text)[index]
+  if (!block) return null
+  if (block.kind !== 'speech') return { blockId: block.id, wordOffset: 0 }
+
+  const offsetInParagraph = Math.max(0, Math.min(span.text.length, caret - span.start))
+  return { blockId: block.id, wordOffset: words(span.text.slice(0, offsetInParagraph)).length }
 }

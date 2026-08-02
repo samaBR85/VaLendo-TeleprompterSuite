@@ -5,7 +5,7 @@ import { PrompterStage } from '../prompter/PrompterStage'
 import { composeLines, totalWords } from '@shared/anchor'
 import { cartaoNoAr } from '@shared/cards'
 import { formatClock, secondsForWords } from '@shared/pacing'
-import { totalWordCount } from '@shared/text'
+import { anchorFromCaret, totalWordCount } from '@shared/text'
 import type { Tab } from '@shared/types'
 import { LANGS, type Lang } from '@shared/i18n'
 import { ProvedorDeIdioma, useT } from '../i18n'
@@ -333,6 +333,21 @@ function AppConteudo({
   const toggleFocusMode = useCallback(() => {
     if (!state) return
     dispatch({ type: 'layout/mode', mode: state.layoutMode === 'focus' ? 'split' : 'focus' })
+  }, [state, dispatch])
+
+  /**
+   * "Go To": só reposiciona a marca de leitura no ponto do cursor do editor —
+   * nunca liga nem desliga o play. Tocando, ela salta e segue rolando dali;
+   * pausada, salta e continua pausada.
+   */
+  const goToCaret = useCallback(() => {
+    const handle = editorRef.current
+    if (!handle || !state) return
+    handle.flush()
+    const { text, position } = handle.caret()
+    const anchor = anchorFromCaret(activeTabOf(state).blocks, text, position)
+    if (!anchor) return
+    dispatch({ type: 'transport/seekAnchor', anchor })
   }, [state, dispatch])
 
   const ui = useMemo(
@@ -719,6 +734,16 @@ function AppConteudo({
                     menor) enquanto escreve. O texto continua quebrando pela
                     largura da caixa, igual a qualquer editor. */}
                 <div className="flex flex-none items-center gap-2 border-t border-[var(--color-edge)] bg-[#17171a] px-3 py-1.5">
+                  <Tecla
+                    title="Go To"
+                    aria-label="Go To"
+                    cor="var(--color-go)"
+                    className="h-6 w-7"
+                    style={{ color: 'var(--color-go)' }}
+                    onClick={goToCaret}
+                  >
+                    <Icon name="play" size={13} filled />
+                  </Tecla>
                   <span className="text-[10px] text-[var(--color-fog-3)]">Aa</span>
                   <SliderConsole
                     value={editorFontSize}
