@@ -87,23 +87,26 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'tab.close', group: 'Documento', defaultBinding: 'Mod+W' },
 
   { id: 'view.focusMode', group: 'Visão', defaultBinding: 'F11' },
-  { id: 'view.inspector', group: 'Visão', defaultBinding: 'F5' },
-  { id: 'view.split', group: 'Visão', defaultBinding: 'F6' },
-  { id: 'view.focus', group: 'Visão', defaultBinding: 'F7' },
-  { id: 'view.deck', group: 'Visão', defaultBinding: 'F8' },
-  /* alterna o transporte entre a barra de cima e a régua do rodapé — segue a
-     fila F5..F8 dos outros comandos de arrumação da tela */
-  { id: 'view.transportPosition', group: 'Visão', defaultBinding: 'F9' },
+  /* Split, Foco e Mesa são os três MODOS da mesa — telas inteiras, mutuamente
+     exclusivas. Saíram de F5..F8 (histórico) para F1..F3: aquela fila agora é
+     dos PAINÉIS (Assets, Cards, Ajustes, Transporte), que ficam ligados por
+     cima de qualquer modo, e as duas famílias não podem dividir tecla */
+  { id: 'view.split', group: 'Visão', defaultBinding: 'F1' },
+  { id: 'view.focus', group: 'Visão', defaultBinding: 'F2' },
+  { id: 'view.deck', group: 'Visão', defaultBinding: 'F3' },
+  /* os PAINÉIS: ligam e desligam por cima do modo, na ordem em que aparecem
+     no cabeçalho — Assets, Cards, Ajustes, Transporte */
+  { id: 'view.sidebar', group: 'Visão', defaultBinding: 'F5' },
   /*
-   * `Shift+C`, e não `C` sozinho.
+   * `F6`, e não mais `Shift+C`.
    *
-   * Dentro do editor as duas seriam igualmente inofensivas — tecla sem `Ctrl`
-   * nem `Alt` pertence ao texto, o mesmo guarda que impede o Espaço de virar
-   * play no meio de uma frase. A diferença está fora dele: com o foco na
-   * prévia ou num botão, um `c` de esbarrão abriria a gaveta, e `Shift+C`
-   * exige intenção.
+   * Cards virou painel — mesma família de Assets e Ajustes, mesma fila de
+   * tecla. O `Shift+C` antigo ainda evitava um `c` de esbarrão no editor,
+   * mas F6 já não corre esse risco: tecla de função não é texto.
    */
-  { id: 'view.cards', group: 'Visão', defaultBinding: 'Shift+C' },
+  { id: 'view.cards', group: 'Visão', defaultBinding: 'F6' },
+  { id: 'view.inspector', group: 'Visão', defaultBinding: 'F7' },
+  { id: 'view.transportPosition', group: 'Visão', defaultBinding: 'F8' },
   { id: 'palette.open', group: 'Visão', defaultBinding: 'Mod+K' },
   { id: 'keymap.open', group: 'Visão', defaultBinding: 'Mod+,' }
 ]

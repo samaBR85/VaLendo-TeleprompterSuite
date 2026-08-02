@@ -310,6 +310,7 @@ export const de: Dicionario = {
   'cmd.tab.close': 'Tab schließen',
   'cmd.view.focusMode': 'Fokusmodus umschalten',
   'cmd.view.inspector': 'Einstellungen öffnen oder schließen',
+  'cmd.view.sidebar': 'Assets öffnen oder schließen',
   'cmd.view.split': 'Zum Split-Modus',
   'cmd.view.focus': 'Zum Fokus-Modus',
   'cmd.view.deck': 'Zum Kommandopult',

@@ -329,6 +329,7 @@ export const pt = {
   'cmd.tab.close': 'Fechar aba',
   'cmd.view.focusMode': 'Alternar modo foco',
   'cmd.view.inspector': 'Abrir ou fechar os ajustes',
+  'cmd.view.sidebar': 'Abrir ou fechar Assets',
   'cmd.view.split': 'Ir para o modo Split',
   'cmd.view.focus': 'Ir para o modo Foco',
   'cmd.view.deck': 'Ir para a Mesa de comando',

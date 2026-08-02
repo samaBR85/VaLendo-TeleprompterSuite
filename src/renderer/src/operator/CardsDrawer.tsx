@@ -371,10 +371,19 @@ function CartaoNaGaveta({
    * `<img>` nasce de novo com outra `src` e o aviso não gruda no cartão certo.
    */
   const [imagemQuebrada, setImagemQuebrada] = useState(false)
-  // reimportar troca `card.arquivo`: sem isto o aviso continuaria na tela
-  // mesmo com a arte nova já certa, porque o estado é do componente, não do
-  // arquivo
+  // reimportar troca `card.arquivo` a maior parte do tempo: sem isto o aviso
+  // continuaria na tela mesmo com a arte nova já certa, porque o estado é do
+  // componente, não do arquivo
   useEffect(() => setImagemQuebrada(false), [card.kind === 'image' ? card.arquivo : null])
+  /**
+   * O reimportado pode gerar o MESMO nome do arquivo antigo — mesma
+   * extensão, mesmo id — e aí `card.arquivo` não muda, o efeito acima não
+   * dispara, e o `<img>` nem tenta buscar de novo (mesma `src` de uma
+   * requisição que já falhou). Este número força os dois: incrementa a cada
+   * reimportação bem-sucedida, entra na `key` (remonta o `<img>`) e na URL
+   * (o navegador não reaproveita a resposta 404 de antes).
+   */
+  const [versaoDaImagem, setVersaoDaImagem] = useState(0)
 
   /**
    * A barra na mão do operador, para a miniatura mostrar o quadro daquele
@@ -482,6 +491,8 @@ function CartaoNaGaveta({
     const escolhido = await window.valendo.pickCardImage(card.id)
     if (!escolhido) return
     dispatch({ type: 'card/imageFile', cardId: card.id, arquivo: escolhido.arquivo })
+    setImagemQuebrada(false)
+    setVersaoDaImagem((v) => v + 1)
   }
 
   /**
@@ -530,8 +541,8 @@ function CartaoNaGaveta({
             </button>
           ) : (
             <img
-              key={card.arquivo}
-              src={`valendo://cartao/${encodeURIComponent(card.arquivo)}`}
+              key={`${card.arquivo}:${versaoDaImagem}`}
+              src={`valendo://cartao/${encodeURIComponent(card.arquivo)}?v=${versaoDaImagem}`}
               alt=""
               className="max-h-full max-w-full object-contain"
               onError={() => setImagemQuebrada(true)}

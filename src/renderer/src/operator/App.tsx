@@ -487,13 +487,13 @@ function AppConteudo({
             <Poco>
               <Tecla
                 data-toggle-sidebar
-                title={t('app.assets')}
+                title={`${t('app.assets')}${hint(keymap, 'view.sidebar')}`}
                 aria-pressed={state.sidebarVisible}
                 acesa={state.sidebarVisible}
                 cor="var(--color-warn)"
                 className="h-6 w-8"
                 style={!state.sidebarVisible ? { color: 'var(--color-warn)' } : undefined}
-                onClick={() => dispatch({ type: 'layout/sidebar', visible: !state.sidebarVisible })}
+                onClick={() => run('view.sidebar')}
               >
                 <Icon name="sidebarLeft" size={15} />
               </Tecla>

@@ -188,6 +188,10 @@ export function useCommands(
           dispatch({ type: 'layout/cards', visible: !state.cardsVisible })
           break
 
+        case 'view.sidebar':
+          dispatch({ type: 'layout/sidebar', visible: !state.sidebarVisible })
+          break
+
         case 'output.blackout':
           dispatch({ type: 'transport/blackout' })
           break

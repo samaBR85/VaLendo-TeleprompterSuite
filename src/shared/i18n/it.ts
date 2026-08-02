@@ -310,6 +310,7 @@ export const it: Dicionario = {
   'cmd.tab.close': 'Chiudi scheda',
   'cmd.view.focusMode': 'Attiva o disattiva il modo focus',
   'cmd.view.inspector': 'Apri o chiudi le impostazioni',
+  'cmd.view.sidebar': 'Apri o chiudi Assets',
   'cmd.view.split': 'Vai al modo Split',
   'cmd.view.focus': 'Vai al modo Focus',
   'cmd.view.deck': 'Vai alla Regia',
