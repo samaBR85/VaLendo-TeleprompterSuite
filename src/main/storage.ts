@@ -169,7 +169,11 @@ export function loadState(defaults: UserDefaults, locale = 'pt-BR'): AppState {
       startedAt: 0,
       video: VIDEO_PARADO,
       stopwatch: CRONOMETRO_PARADO,
-      independentStartedAt: 0
+      independentStartedAt: 0,
+      // preferência, não estado de momento — mas `saved.transport`, se vier
+      // de um workspace anterior a este recurso, substitui `fresh()` por
+      // inteiro no merge acima e apaga o padrão `false` junto
+      loop: state.transport.loop ?? false
     }
 
     // o monitor escolhido é lembrado, mas a transmissão nunca sobe sozinha:

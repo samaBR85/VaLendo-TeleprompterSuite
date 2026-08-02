@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
-import { CARTOES_COM_ATALHO, novoCartaoId } from '@shared/cards'
+import { CARD_DRAG_MIME, CARTOES_COM_ATALHO, novoCartaoId } from '@shared/cards'
 import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN } from '@shared/defaults'
 import type { CardConvertProgress } from '@shared/api'
 import { perfilPorId, type PerfilDeRede } from '@shared/proxy'
@@ -267,28 +267,72 @@ export function CardsDrawer({
 
       <div className="flex min-h-0 min-w-0 flex-1 items-stretch gap-2.5 overflow-x-auto p-2.5">
         {cards.map((card, index) => (
-          <CartaoNaGaveta
+          <div
             key={card.id}
-            card={card}
-            atalho={index < CARTOES_COM_ATALHO ? index + 1 : null}
-            noAr={noAr === card.id}
-            clock={clock}
-            videoPerfil={videoPerfil}
-            dispatch={dispatch}
-            onFalha={setRecusa}
-          />
+            draggable
+            data-card-drag={card.id}
+            onDragStart={(event) => {
+              // um clique dentro de um campo de texto, botão ou barra do
+              // player não é pedido de arrastar o cartão inteiro — é a
+              // interação normal daquele controle
+              if (
+                event.target instanceof HTMLElement &&
+                event.target.closest('input, textarea, button, [data-no-card-drag]')
+              ) {
+                event.preventDefault()
+                return
+              }
+              event.dataTransfer.setData(CARD_DRAG_MIME, card.id)
+              event.dataTransfer.effectAllowed = 'move'
+            }}
+            onDragOver={(event) => {
+              if (!event.dataTransfer.types.includes(CARD_DRAG_MIME)) return
+              event.preventDefault()
+            }}
+            onDrop={(event) => {
+              const draggedId = event.dataTransfer.getData(CARD_DRAG_MIME)
+              if (!draggedId) return
+              event.preventDefault()
+              event.stopPropagation()
+              const rect = event.currentTarget.getBoundingClientRect()
+              const antes = event.clientX < rect.left + rect.width / 2
+              dispatch({ type: 'card/reorder', cardId: draggedId, toIndex: antes ? index : index + 1 })
+            }}
+            className="flex flex-none"
+          >
+            <CartaoNaGaveta
+              card={card}
+              atalho={index < CARTOES_COM_ATALHO ? index + 1 : null}
+              noAr={noAr === card.id}
+              clock={clock}
+              videoPerfil={videoPerfil}
+              dispatch={dispatch}
+              onFalha={setRecusa}
+            />
+          </div>
         ))}
 
         {/* a zona de soltar fica com a sobra da fileira — e aceita de verdade
-            o que parece aceitar */}
+            o que parece aceitar. Ignora arrasto de cartão: aquele solta no
+            próprio cartão vizinho, não aqui — soltar um cartão nesta zona
+            só faz sentido como "mandar para o fim" */}
         <div
           data-card-drop
           onDragOver={(event) => {
+            if (event.dataTransfer.types.includes(CARD_DRAG_MIME)) return
             event.preventDefault()
             setSobreZona(true)
           }}
           onDragLeave={() => setSobreZona(false)}
-          onDrop={(event) => void soltarArquivos(event)}
+          onDrop={(event) => {
+            const draggedId = event.dataTransfer.getData(CARD_DRAG_MIME)
+            if (draggedId) {
+              event.preventDefault()
+              dispatch({ type: 'card/reorder', cardId: draggedId, toIndex: cards.length })
+              return
+            }
+            void soltarArquivos(event)
+          }}
           className={`grid min-w-[130px] flex-1 place-items-center rounded-[7px] border border-dashed p-2 text-center text-[10px] leading-relaxed transition-colors ${
             sobreZona
               ? 'border-[var(--color-accent-2)] bg-[var(--color-accent-2)]/8 text-[var(--color-fog-1)]'
@@ -685,7 +729,7 @@ function CartaoNaGaveta({
               desligado, decide sozinho se o texto sobrepõe este cartão em
               vez de substituí-lo. Ligado o global, força para todos — este
               toggle continua editável, para deixar pré-configurado. */}
-          <label title={t('cards.overlayHint')} className="flex-none cursor-pointer">
+          <label title={t('cards.overlay')} className="flex-none cursor-pointer">
             <input
               type="checkbox"
               data-card-overlay={card.id}
@@ -694,7 +738,7 @@ function CartaoNaGaveta({
               className="peer sr-only"
             />
             <span className="grid h-[18px] w-6 place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[var(--color-ink-2)] text-[9px] font-bold text-[var(--color-fog-2)] peer-checked:border-[var(--color-accent-2)] peer-checked:bg-[var(--color-accent-2)]/18 peer-checked:text-[#d9bdf0]">
-              {t('cards.overlay')}
+              {t('cards.overlayShort')}
             </span>
           </label>
           {card.kind === 'video' && !desvinculado ? (

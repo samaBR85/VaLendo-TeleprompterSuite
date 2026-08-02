@@ -65,6 +65,7 @@ export const fr: Dicionario = {
   'toolbar.broadcast': 'Diffuser',
   'toolbar.broadcasting': 'En diffusion',
   'toolbar.restart': 'Revenir au début',
+  'toolbar.loop': 'Boucle continue — à la fin, revient au début et continue de jouer',
   'toolbar.back': 'Reculer',
   'toolbar.forward': 'Avancer',
   'toolbar.play': 'Démarrer',
@@ -94,6 +95,7 @@ export const fr: Dicionario = {
   'insp.letterSpacing': 'Interlettrage',
   'insp.alignLeft': 'À gauche',
   'insp.alignCenter': 'Centré',
+  'insp.alignRight': 'À droite',
 
   'insp.colors': 'Couleurs',
   'insp.textColor': 'Texte',
@@ -101,6 +103,7 @@ export const fr: Dicionario = {
   'insp.invert': 'Inverser les couleurs',
   'insp.contrast': 'Contraste de lecture',
 
+  'insp.position': 'Position',
   'insp.margin': 'Marge',
   'insp.minWords': 'Minimum par ligne',
   'insp.maxWords': 'Maximum par ligne',
@@ -366,6 +369,7 @@ export const fr: Dicionario = {
   'cards.videoVolume': 'Volume',
   'cards.videoLoop': 'boucle',
   'cards.overlay': 'OVERLAY',
+  'cards.overlayShort': 'O',
   'cards.overlayHint':
     'Le texte de la Diffusion se superpose à ce carton au lieu de le remplacer. L\'interrupteur global de la colonne des ressources, une fois activé, force ceci pour tous les cartons.',
   'cards.overlayStyle.faixa': 'Bande sombre derrière le texte',

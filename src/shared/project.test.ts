@@ -7,12 +7,15 @@ function programa(): AppState {
   const state = createInitialState()
   return {
     ...state,
-    transport: { ...state.transport, ppm: 260, playing: true, startedAt: 12_345, blackout: true },
+    transport: { ...state.transport, ppm: 260, playing: true, startedAt: 12_345, blackout: true, loop: true },
     output: { displayId: 7, enabled: true, viewport: { width: 864, height: 1537 } },
+    window: { width: 1_800, height: 1_000, x: 40, y: 20 },
+    sidebarWidth: 260,
+    editionSplit: 0.6,
     tabs: state.tabs.map((tab) => ({
       ...tab,
       title: 'Jornal das Dez',
-      appearance: { ...tab.appearance, fontSize: 50, align: 'center' }
+      appearance: { ...tab.appearance, fontSize: 50, align: 'center', positionPct: 30 }
     }))
   }
 }
@@ -42,6 +45,18 @@ describe('salvar e abrir o projeto', () => {
     expect(state?.transport.playing).toBe(false)
     expect(state?.transport.blackout).toBe(false)
     expect(state?.transport.startedAt).toBe(0)
+  })
+
+  it('guarda a janela, a divisória, a coluna de assets e o loop — não são "no ar"', () => {
+    // o único recorte de semTransitorio é o status de transmissão; tudo o
+    // mais é preferência ou lugar das coisas, e precisa sobreviver ao salvar
+    const { state } = readProject(serializeProject(programa(), 0))
+
+    expect(state?.window).toEqual({ width: 1_800, height: 1_000, x: 40, y: 20 })
+    expect(state?.sidebarWidth).toBe(260)
+    expect(state?.editionSplit).toBe(0.6)
+    expect(state?.transport.loop).toBe(true)
+    expect(state?.tabs[0].appearance.positionPct).toBe(30)
   })
 
   it('carimba quando foi salvo', () => {

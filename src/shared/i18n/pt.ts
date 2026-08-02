@@ -77,6 +77,7 @@ export const pt = {
   'toolbar.broadcast': 'Transmitir',
   'toolbar.broadcasting': 'Transmitindo',
   'toolbar.restart': 'Voltar ao início',
+  'toolbar.loop': 'Repetir em loop — ao chegar no fim, volta ao início e continua tocando',
   'toolbar.back': 'Recuar',
   'toolbar.forward': 'Avançar',
   'toolbar.play': 'Iniciar',
@@ -107,6 +108,7 @@ export const pt = {
   'insp.letterSpacing': 'Entre letras',
   'insp.alignLeft': 'À esquerda',
   'insp.alignCenter': 'Centralizado',
+  'insp.alignRight': 'À direita',
 
   'insp.colors': 'Cores',
   'insp.textColor': 'Texto',
@@ -114,6 +116,7 @@ export const pt = {
   'insp.invert': 'Inverter cores',
   'insp.contrast': 'Contraste de leitura',
 
+  'insp.position': 'Posição',
   'insp.margin': 'Margem',
   'insp.minWords': 'Mínimo por linha',
   'insp.maxWords': 'Máximo por linha',
@@ -390,6 +393,7 @@ export const pt = {
   'cards.videoVolume': 'Volume',
   'cards.videoLoop': 'repetir',
   'cards.overlay': 'OVERLAY',
+  'cards.overlayShort': 'O',
   'cards.overlayHint':
     'O texto da Transmissão sobrepõe este cartão em vez de substituí-lo. O switch global da coluna de assets, quando ligado, força isto para todo cartão.',
   'cards.overlayStyle.faixa': 'Faixa escura atrás do texto',

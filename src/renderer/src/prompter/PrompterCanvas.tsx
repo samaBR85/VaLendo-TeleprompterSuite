@@ -454,6 +454,18 @@ export function PrompterCanvas({
   const mirror = `${appearance.mirrorX ? ' scaleX(-1)' : ''}${appearance.mirrorY ? ' scaleY(-1)' : ''}`
   const compensacao = outputTransforms ? ` rotate(${appearance.rotation}deg)${mirror}` : ''
 
+  /**
+   * "Position" desliza a caixa de texto entre as duas margens, sem mudar a
+   * LARGURA dela — só `marginPct` decide isso. A folga total para deslizar
+   * é `2×marginPct` (a soma das duas margens de sempre); em 50% a folga se
+   * reparte igual, devolvendo exatamente o `marginPct` de cada lado — o
+   * comportamento simétrico de sempre. Em 0%, a esquerda zera (encosta na
+   * borda) e a direita dobra; em 100%, o espelho.
+   */
+  const folgaHorizontal = 2 * appearance.marginPct
+  const paddingEsquerdo = (folgaHorizontal * appearance.positionPct) / 100
+  const paddingDireito = folgaHorizontal - paddingEsquerdo
+
   return (
     <div
       data-prompter-surface={outputTransforms ? 'broadcast' : 'preview'}
@@ -521,8 +533,8 @@ export function PrompterCanvas({
               top: 0,
               left: 0,
               width: '100%',
-              paddingLeft: `${appearance.marginPct}%`,
-              paddingRight: `${appearance.marginPct}%`,
+              paddingLeft: `${paddingEsquerdo}%`,
+              paddingRight: `${paddingDireito}%`,
               paddingBottom: stage.height,
               // a promoção só vale enquanto há rolagem para promover; com o
               // palco coberto ela seria uma camada guardada na GPU à toa,

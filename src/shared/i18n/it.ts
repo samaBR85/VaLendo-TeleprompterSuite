@@ -65,6 +65,7 @@ export const it: Dicionario = {
   'toolbar.broadcast': 'Trasmetti',
   'toolbar.broadcasting': 'In trasmissione',
   'toolbar.restart': 'Torna all’inizio',
+  'toolbar.loop': 'Ripeti in loop — arrivato alla fine, torna all’inizio e continua a riprodurre',
   'toolbar.back': 'Indietro',
   'toolbar.forward': 'Avanti',
   'toolbar.play': 'Avvia',
@@ -94,6 +95,7 @@ export const it: Dicionario = {
   'insp.letterSpacing': 'Spaziatura',
   'insp.alignLeft': 'A sinistra',
   'insp.alignCenter': 'Centrato',
+  'insp.alignRight': 'A destra',
 
   'insp.colors': 'Colori',
   'insp.textColor': 'Testo',
@@ -101,6 +103,7 @@ export const it: Dicionario = {
   'insp.invert': 'Inverti i colori',
   'insp.contrast': 'Contrasto di lettura',
 
+  'insp.position': 'Posizione',
   'insp.margin': 'Margine',
   'insp.minWords': 'Minimo per riga',
   'insp.maxWords': 'Massimo per riga',
@@ -366,6 +369,7 @@ export const it: Dicionario = {
   'cards.videoVolume': 'Volume',
   'cards.videoLoop': 'ripeti',
   'cards.overlay': 'OVERLAY',
+  'cards.overlayShort': 'O',
   'cards.overlayHint':
     'Il testo della Trasmissione si sovrappone a questo cartello invece di sostituirlo. L\'interruttore globale della colonna degli asset, se attivo, forza questo per ogni cartello.',
   'cards.overlayStyle.faixa': 'Fascia scura dietro al testo',

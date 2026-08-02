@@ -236,7 +236,6 @@ function AppConteudo({
   const [webviewOpen, setWebviewOpen] = useState(false)
   const [palette, setPalette] = useState(false)
   const [keymapOpen, setKeymapOpen] = useState(false)
-  const [split, setSplit] = useState(0.46)
   // tamanho da fonte de EDITAR, não da SAÍDA (essa é aparência do roteiro,
   // em tab.appearance) — é conforto de digitação, e nasce igual ao que
   // sempre foi (14px), sem persistir entre sessões
@@ -479,7 +478,8 @@ function AppConteudo({
     const onMove = (event: MouseEvent): void => {
       const box = mainRef.current?.getBoundingClientRect()
       if (!box) return
-      setSplit(Math.min(0.72, Math.max(0.2, (event.clientX - box.left) / box.width)))
+      const ratio = Math.min(0.72, Math.max(0.2, (event.clientX - box.left) / box.width))
+      dispatch({ type: 'layout/split', ratio })
     }
     const onUp = (): void => {
       window.removeEventListener('mousemove', onMove)
@@ -712,6 +712,7 @@ function AppConteudo({
               cards={state.cards}
               cardOverlay={state.cardOverlay}
               rows={rows}
+              sidebarWidth={state.sidebarWidth}
               dispatch={dispatch}
             />
           ) : null}
@@ -723,7 +724,7 @@ function AppConteudo({
               pararem onde a gaveta (antes irmã da `main`) começava. */}
           <div className="flex min-h-0 min-w-0 flex-1 flex-col">
             <div className="flex min-h-0 flex-1">
-              <section className="flex min-w-0 flex-col" style={{ flex: `${split} 1 0` }}>
+              <section className="flex min-w-0 flex-col" style={{ flex: `${state.editionSplit} 1 0` }}>
                 <PanelHeader
                   label={t('panel.edit')}
                   cor="var(--color-warn)"
@@ -747,6 +748,20 @@ function AppConteudo({
                   >
                     <Icon name="play" size={13} filled />
                   </Tecla>
+                  {/* loop: ao chegar no fim, volta ao início e continua
+                      tocando — o Reiniciar do transporte acende junto,
+                      mesmo aceso que este botão usa */}
+                  <Tecla
+                    title={t('toolbar.loop')}
+                    aria-label={t('toolbar.loop')}
+                    acesa={state.transport.loop}
+                    cor="var(--color-go)"
+                    className="h-6 w-7 text-[13px] leading-none"
+                    style={!state.transport.loop ? { color: 'var(--color-go)' } : undefined}
+                    onClick={() => dispatch({ type: 'transport/loop' })}
+                  >
+                    ∞
+                  </Tecla>
                   <span className="text-[10px] text-[var(--color-fog-3)]">Aa</span>
                   <SliderConsole
                     value={editorFontSize}
@@ -769,7 +784,7 @@ function AppConteudo({
                 className="w-1 flex-none cursor-col-resize bg-[var(--color-line)] hover:bg-[var(--color-fog-2)]"
               />
 
-              <section className="flex min-w-0 flex-col" style={{ flex: `${1 - split} 1 0` }}>
+              <section className="flex min-w-0 flex-col" style={{ flex: `${1 - state.editionSplit} 1 0` }}>
                 <PanelHeader
                   label={t('panel.broadcasting')}
                   cor="var(--color-live)"

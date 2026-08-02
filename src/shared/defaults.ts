@@ -28,6 +28,14 @@ export const CARDS_HEIGHT_MIN = 200
 export const CARDS_HEIGHT_DEFAULT = CARDS_HEIGHT_MIN
 export const CARDS_HEIGHT_MAX = 420
 
+/** largura da coluna de assets: o valor fixo de antes vira o padrão, agora ajustável */
+export const SIDEBAR_WIDTH_MIN = 180
+export const SIDEBAR_WIDTH_DEFAULT = 206
+export const SIDEBAR_WIDTH_MAX = 420
+
+/** a divisória Edição×Transmissão no Split — fração que a Edição ocupa */
+export const EDITION_SPLIT_DEFAULT = 0.46
+
 /**
  * O padrão de fábrica do overlay: desligado, e faixa escura pronta para
  * quando ligar — é o único dos três estilos que garante legibilidade em
@@ -54,6 +62,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   lineHeight: 1.35,
   letterSpacing: 0,
   marginPct: 8,
+  positionPct: 50,
   minWords: 4,
   maxWords: 7,
   uniformSpeed: true,
@@ -172,8 +181,11 @@ export function createInitialState(
     transportPosition: 'topo',
     inspectorVisible: true,
     sidebarVisible: true,
+    sidebarWidth: SIDEBAR_WIDTH_DEFAULT,
     cardsVisible: false,
     cardsHeight: CARDS_HEIGHT_DEFAULT,
+    editionSplit: EDITION_SPLIT_DEFAULT,
+    window: null,
     transport: {
       playing: false,
       ppm: defaults.ppm,
@@ -184,7 +196,8 @@ export function createInitialState(
       card: null,
       video: VIDEO_PARADO,
       stopwatch: CRONOMETRO_PARADO,
-      independentStartedAt: 0
+      independentStartedAt: 0,
+      loop: false
     },
     output: { displayId: null, enabled: false, viewport: null },
     presets: presetsPadrao(lang),

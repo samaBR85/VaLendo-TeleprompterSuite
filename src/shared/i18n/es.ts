@@ -65,6 +65,7 @@ export const es: Dicionario = {
   'toolbar.broadcast': 'Emitir',
   'toolbar.broadcasting': 'Emitiendo',
   'toolbar.restart': 'Volver al principio',
+  'toolbar.loop': 'Repetir en bucle — al llegar al final, vuelve al principio y sigue tocando',
   'toolbar.back': 'Retroceder',
   'toolbar.forward': 'Avanzar',
   'toolbar.play': 'Iniciar',
@@ -94,6 +95,7 @@ export const es: Dicionario = {
   'insp.letterSpacing': 'Entre letras',
   'insp.alignLeft': 'A la izquierda',
   'insp.alignCenter': 'Centrado',
+  'insp.alignRight': 'A la derecha',
 
   'insp.colors': 'Colores',
   'insp.textColor': 'Texto',
@@ -101,6 +103,7 @@ export const es: Dicionario = {
   'insp.invert': 'Invertir colores',
   'insp.contrast': 'Contraste de lectura',
 
+  'insp.position': 'Posición',
   'insp.margin': 'Margen',
   'insp.minWords': 'Mínimo por línea',
   'insp.maxWords': 'Máximo por línea',
@@ -364,6 +367,7 @@ export const es: Dicionario = {
   'cards.videoVolume': 'Volumen',
   'cards.videoLoop': 'repetir',
   'cards.overlay': 'OVERLAY',
+  'cards.overlayShort': 'O',
   'cards.overlayHint':
     'El texto de la Transmisión se sobrepone a esta tarjeta en vez de sustituirla. El interruptor global de la columna de recursos, si está activado, fuerza esto para todas las tarjetas.',
   'cards.overlayStyle.faixa': 'Franja oscura detrás del texto',

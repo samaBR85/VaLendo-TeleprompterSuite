@@ -50,6 +50,7 @@ import {
   getBroadcastWindow,
   getOperatorWindow,
   onBroadcastContextMenu,
+  onOperatorWindowBounds,
   openBroadcastWindow,
   respondToCloseConfirm,
   sendToAll
@@ -584,6 +585,7 @@ function bootstrap(): void {
    */
   void garantirProxies()
   onBroadcastContextMenu(showBroadcastMenu)
+  onOperatorWindowBounds((bounds) => store.dispatch({ type: 'window/bounds', bounds }))
 
   store.subscribe(() => {
     void garantirProxies()
@@ -613,7 +615,7 @@ function bootstrap(): void {
     }
   })
 
-  createOperatorWindow()
+  createOperatorWindow(store.getState().window)
   syncOutput(store.getState())
 }
 
@@ -637,7 +639,7 @@ if (!app.requestSingleInstanceLock()) {
   void app.whenReady().then(bootstrap)
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createOperatorWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createOperatorWindow(store.getState().window)
   })
 
   app.on('window-all-closed', () => {

@@ -18,6 +18,32 @@ export function onBroadcastContextMenu(handler: () => void): void {
   contextMenuHandler = handler
 }
 
+export interface JanelaSalva {
+  width: number
+  height: number
+  x: number
+  y: number
+}
+
+/**
+ * Avisa quando a janela do operador muda de lugar ou tamanho, para o main
+ * guardar isso no estado — mesmo desenho de `onBroadcastContextMenu`: quem
+ * decide o QUE fazer com o evento é `index.ts`, este arquivo só entrega.
+ */
+let boundsHandler: ((bounds: JanelaSalva) => void) | null = null
+
+export function onOperatorWindowBounds(handler: (bounds: JanelaSalva) => void): void {
+  boundsHandler = handler
+}
+
+/** A origem salva ainda cai dentro de algum monitor conectado agora? */
+function origemNaTela(x: number, y: number): boolean {
+  return screen.getAllDisplays().some((d) => {
+    const b = d.bounds
+    return x >= b.x && y >= b.y && x < b.x + b.width && y < b.y + b.height
+  })
+}
+
 /** A transmissão está cobrindo a janela do operador? */
 export function broadcastCoversOperator(): boolean {
   if (!broadcastWindow || broadcastWindow.isDestroyed()) return false
@@ -54,17 +80,23 @@ export function sendToAll(channel: string, ...args: unknown[]): void {
   }
 }
 
-export function createOperatorWindow(): BrowserWindow {
+export function createOperatorWindow(bounds?: JanelaSalva | null): BrowserWindow {
   // sem barra de menu no Windows e no Linux: ela não serve a nada aqui e come
   // uma faixa da tela do operador (no macOS o menu é do sistema, fica)
   if (!isMac) Menu.setApplicationMenu(null)
+
+  // a origem salva só vale se ainda cair dentro de algum monitor conectado —
+  // um notebook que abriu com um segundo monitor e fechou sem ele reabriria
+  // fora da tela, invisível, sem jeito de arrastar de volta
+  const usaOrigem = Boolean(bounds) && origemNaTela(bounds!.x, bounds!.y)
 
   operatorWindow = new BrowserWindow({
     // acima da largura em que a barra de comando cabe numa linha só (medido:
     // ~1500px de janela). Abrir já assim é o que a maioria das telas comporta;
     // encolher a janela abaixo disso é o que vira a barra em duas linhas
-    width: 1_640,
-    height: 940,
+    width: bounds?.width ?? 1_640,
+    height: bounds?.height ?? 940,
+    ...(usaOrigem ? { x: bounds!.x, y: bounds!.y } : {}),
     minWidth: 1_080,
     minHeight: 660,
     show: false,
@@ -77,10 +109,27 @@ export function createOperatorWindow(): BrowserWindow {
 
   operatorWindow.on('ready-to-show', () => operatorWindow?.show())
 
+  // captura posição/tamanho enquanto o operador ajusta a janela — debounced,
+  // no mesmo ritmo do autosave, para não disparar um dispatch por pixel
+  let debounce: ReturnType<typeof setTimeout> | null = null
+  const avisarBounds = (): void => {
+    if (debounce) clearTimeout(debounce)
+    debounce = setTimeout(() => {
+      if (operatorWindow && !operatorWindow.isDestroyed()) boundsHandler?.(operatorWindow.getBounds())
+    }, 500)
+  }
+  operatorWindow.on('resize', avisarBounds)
+  operatorWindow.on('move', avisarBounds)
+
   // fechar a janela do operador derruba a transmissão: confirma primeiro, com
   // um modal do próprio app em vez do diálogo nativo do sistema — pede para o
   // renderer perguntar e espera a resposta chegar por IPC antes de decidir
   operatorWindow.on('close', (event) => {
+    // captura imediata, sem esperar o debounce: é o último instante confiável
+    // antes da janela sumir, e `before-quit` já grava o estado logo depois
+    if (debounce) clearTimeout(debounce)
+    if (operatorWindow) boundsHandler?.(operatorWindow.getBounds())
+
     if (closeConfirmed) return
     if (!broadcastWindow || broadcastWindow.isDestroyed() || !operatorWindow) return
     event.preventDefault()

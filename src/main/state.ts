@@ -10,11 +10,19 @@ import {
 import { cartaoNoAr } from '@shared/cards'
 import { COMMANDS_BY_ID } from '@shared/commands'
 import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
-import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN, TAB_COLORS, createInitialState, createTab } from '@shared/defaults'
+import {
+  CARDS_HEIGHT_MAX,
+  CARDS_HEIGHT_MIN,
+  SIDEBAR_WIDTH_MAX,
+  SIDEBAR_WIDTH_MIN,
+  TAB_COLORS,
+  createInitialState,
+  createTab
+} from '@shared/defaults'
 import { History } from '@shared/history'
 import { reconcileBlocks } from '@shared/text'
 import type { Anchor, Appearance, AppState, PacingRule, StopwatchClock, Tab, Transport } from '@shared/types'
-import { CRONOMETRO_PARADO, segundosDoCronometro, wordIndexAt } from '@shared/pacing'
+import { CRONOMETRO_PARADO, secondsForWords, segundosDoCronometro, wordIndexAt } from '@shared/pacing'
 // a régua da tela e o passo do atalho saem da mesma constante: o degrau que se
 // vê tem que ser o degrau que a tecla anda
 import { PPM_MAX, PPM_MIN, PPM_STEP } from '@shared/ruler'
@@ -66,6 +74,8 @@ export class Store {
    * do operador desenha.
    */
   private readonly rows = new Map<string, number[]>()
+  /** o alarme do loop — quando a leitura vai alcançar o fim do roteiro */
+  private loopTimer: ReturnType<typeof setTimeout> | null = null
 
   /** Com o que uma aba nova nasce. Vive fora do workspace, ver userDefaults.ts. */
   private defaults: UserDefaults
@@ -136,8 +146,37 @@ export class Store {
   private setState(next: AppState): void {
     this.state = next
     saveState(next)
+    this.scheduleLoop()
     const info = this.historyInfo()
     for (const listener of this.listeners) listener(next, info)
+  }
+
+  /**
+   * O alarme do loop: em vez de sondar a cada quadro, calcula analiticamente
+   * quanto falta (em ms) para a leitura alcançar o fim do roteiro e agenda
+   * um `setTimeout` único que, ao disparar, reinicia — `transport/restart`
+   * já preserva `playing` e reancora cronômetro/relógio independente
+   * corretamente quando ainda está tocando, então não precisa de lógica de
+   * reinício própria, só da hora certa de chamá-la.
+   *
+   * Chamado a cada `setState` (todo estado que sai daqui para os ouvintes),
+   * e sempre recomeça do zero: play/pausa, mudança de ppm, um `seek`, ou
+   * texto editado — qualquer um desses muda quando o fim chega.
+   */
+  private scheduleLoop(): void {
+    if (this.loopTimer) {
+      clearTimeout(this.loopTimer)
+      this.loopTimer = null
+    }
+    const { transport } = this.state
+    if (!transport.playing || !transport.loop) return
+
+    const tab = this.activeTab()
+    if (!tab) return
+    const lines = composeLines(tab.blocks, rule(tab), this.rows.get(tab.id))
+    const restantes = Math.max(0, totalWords(lines) - this.currentWordIndex())
+    const ms = secondsForWords(restantes, transport.ppm) * 1000
+    this.loopTimer = setTimeout(() => this.dispatch({ type: 'transport/restart' }), ms)
   }
 
   private replaceTab(tab: Tab): AppState {
@@ -248,6 +287,7 @@ export class Store {
             draft.appearance.maxWords = clamp(draft.appearance.maxWords, draft.appearance.minWords, 24)
             draft.appearance.fontSize = clamp(draft.appearance.fontSize, 16, 260)
             draft.appearance.marginPct = clamp(draft.appearance.marginPct, 0, 35)
+            draft.appearance.positionPct = clamp(draft.appearance.positionPct, 0, 100)
           }
         )
 
@@ -383,6 +423,13 @@ export class Store {
         }
         break
 
+      case 'transport/loop':
+        this.state = {
+          ...this.state,
+          transport: { ...this.state.transport, loop: !this.state.transport.loop }
+        }
+        break
+
       case 'card/add':
         this.state = { ...this.state, cards: [...this.state.cards, action.card] }
         break
@@ -396,6 +443,21 @@ export class Store {
           cards: this.state.cards.filter((c) => c.id !== action.cardId),
           transport: noAr ? { ...this.state.transport, card: null } : this.state.transport
         }
+        break
+      }
+
+      case 'card/reorder': {
+        // a ordem do array já é o que numera os atalhos (1-9) — mover um
+        // cartão é o mesmo tipo de mudança que remover já provoca hoje.
+        // `toIndex` chega medido no array de ANTES de tirar o cartão do
+        // lugar — tirando um de antes do alvo, tudo desliza uma casa
+        const cards = [...this.state.cards]
+        const from = cards.findIndex((c) => c.id === action.cardId)
+        if (from === -1) return
+        const [moved] = cards.splice(from, 1)
+        const to = clamp(from < action.toIndex ? action.toIndex - 1 : action.toIndex, 0, cards.length)
+        cards.splice(to, 0, moved)
+        this.state = { ...this.state, cards }
         break
       }
 
@@ -694,6 +756,21 @@ export class Store {
           ...this.state,
           cardsHeight: Math.min(CARDS_HEIGHT_MAX, Math.max(CARDS_HEIGHT_MIN, Math.round(action.height)))
         }
+        break
+
+      case 'layout/sidebarWidth':
+        this.state = {
+          ...this.state,
+          sidebarWidth: clamp(Math.round(action.width), SIDEBAR_WIDTH_MIN, SIDEBAR_WIDTH_MAX)
+        }
+        break
+
+      case 'layout/split':
+        this.state = { ...this.state, editionSplit: clamp(action.ratio, 0.2, 0.8) }
+        break
+
+      case 'window/bounds':
+        this.state = { ...this.state, window: action.bounds }
         break
 
       case 'layout/rows': {

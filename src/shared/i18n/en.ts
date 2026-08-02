@@ -65,6 +65,7 @@ export const en: Dicionario = {
   'toolbar.broadcast': 'Broadcast',
   'toolbar.broadcasting': 'Broadcasting',
   'toolbar.restart': 'Back to the start',
+  'toolbar.loop': 'Loop playback — reaching the end, goes back to the start and keeps playing',
   'toolbar.back': 'Step back',
   'toolbar.forward': 'Step forward',
   'toolbar.play': 'Start',
@@ -94,6 +95,7 @@ export const en: Dicionario = {
   'insp.letterSpacing': 'Letter spacing',
   'insp.alignLeft': 'Left',
   'insp.alignCenter': 'Centred',
+  'insp.alignRight': 'Right',
 
   'insp.colors': 'Colours',
   'insp.textColor': 'Text',
@@ -101,6 +103,7 @@ export const en: Dicionario = {
   'insp.invert': 'Invert colours',
   'insp.contrast': 'Reading contrast',
 
+  'insp.position': 'Position',
   'insp.margin': 'Margin',
   'insp.minWords': 'Minimum per line',
   'insp.maxWords': 'Maximum per line',
@@ -362,6 +365,7 @@ export const en: Dicionario = {
   'cards.videoVolume': 'Volume',
   'cards.videoLoop': 'loop',
   'cards.overlay': 'OVERLAY',
+  'cards.overlayShort': 'O',
   'cards.overlayHint':
     'The Broadcast text overlays this card instead of replacing it. The global switch in the assets column, when on, forces this for every card.',
   'cards.overlayStyle.faixa': 'Dark strip behind the text',

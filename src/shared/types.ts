@@ -47,10 +47,17 @@ export interface Appearance extends PacingRule {
   letterSpacing: number
   /** margem lateral em % da largura do viewport */
   marginPct: number
+  /**
+   * Posição horizontal da caixa de texto entre as duas margens, 0 a 100.
+   * 50 (padrão) é o centro simétrico de sempre — a mesma margem dos dois
+   * lados. 0 encosta a caixa na margem esquerda (a margem direita dobra);
+   * 100 espelha para a direita. A LARGURA da caixa nunca muda — só desliza.
+   */
+  positionPct: number
   textColor: string
   bgColor: string
   directionColor: string
-  align: 'left' | 'center'
+  align: 'left' | 'center' | 'right'
   /** posição vertical da marca de leitura, 0..1 */
   readingLinePct: number
   /**
@@ -352,6 +359,12 @@ export interface Transport {
    * zera `stopwatch` hoje.
    */
   independentStartedAt: number
+  /**
+   * Ao chegar no fim do roteiro, volta ao início e continua tocando —
+   * preferência do operador, não status de momento: sobrevive ao salvar,
+   * como `ppm` já sobrevive.
+   */
+  loop: boolean
 }
 
 /** De onde o cronômetro partiu e quando — nunca em que segundo ele está. */
@@ -411,6 +424,8 @@ export interface AppState {
   inspectorVisible: boolean
   /** coluna de capítulos e cartões do bloco, à esquerda — só existe no Split */
   sidebarVisible: boolean
+  /** largura da coluna de assets em pixels, ajustada pelo operador na divisória */
+  sidebarWidth: number
   /**
    * A gaveta de cartões, embaixo.
    *
@@ -421,6 +436,14 @@ export interface AppState {
   cardsVisible: boolean
   /** altura da gaveta em pixels, ajustada pelo operador na divisória */
   cardsHeight: number
+  /** fração da largura que a Edição ocupa contra a Transmissão, no Split (0 a 1) */
+  editionSplit: number
+  /**
+   * Posição e tamanho da janela do operador, para reabrir onde ficou.
+   * `null` até a primeira vez que o operador mover ou redimensionar —
+   * antes disso, a janela nasce no padrão centralizado de sempre.
+   */
+  window: { width: number; height: number; x: number; y: number } | null
   transport: Transport
   output: OutputConfig
   presets: ColorPreset[]

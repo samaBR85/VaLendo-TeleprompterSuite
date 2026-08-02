@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { composeLines } from '@shared/anchor'
+import { CARD_DRAG_MIME } from '@shared/cards'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
 import type { Cartao, CardOverlayStyle, Tab, Transport } from '@shared/types'
@@ -21,6 +22,8 @@ interface Props {
   cardOverlay: { enabled: boolean; style: CardOverlayStyle }
   /** régua medida da aba ativa — a mesma que governa a rolagem de verdade */
   rows: number[]
+  /** largura da coluna em pixels, ajustada pelo operador na divisória direita */
+  sidebarWidth: number
   dispatch: (action: Action) => void
 }
 
@@ -72,12 +75,21 @@ function MiniaturaDoCartao({ card, size }: { card: Cartao; size: number }): Reac
  * Clicar num capítulo salta para ele pelo mesmo caminho de "próximo
  * capítulo" — uma lista que parece clicável precisa ser clicável.
  */
-export function Sidebar({ tab, transport, cards, cardOverlay, rows, dispatch }: Props): React.JSX.Element {
+export function Sidebar({
+  tab,
+  transport,
+  cards,
+  cardOverlay,
+  rows,
+  sidebarWidth,
+  dispatch
+}: Props): React.JSX.Element {
   const { t } = useT()
   const now = useNow()
   // conforto de visualização da coluna, como o tamanho de fonte do editor —
   // não é dado do projeto, não persiste entre sessões
   const [thumbSize, setThumbSize] = useState(THUMB_DEFAULT)
+  const [ajudaAberta, setAjudaAberta] = useState(true)
 
   const lines = useMemo(
     () => composeLines(tab.blocks, tab.appearance, rows),
@@ -86,11 +98,30 @@ export function Sidebar({ tab, transport, cards, cardOverlay, rows, dispatch }: 
   const segments = useMemo(() => buildRundown(tab.blocks, lines, tab.markers), [tab.blocks, lines, tab.markers])
   const atual = segmentIndexAt(segments, wordIndexAt(transport, now))
 
+  /** Arrasta a borda direita: mesmo molde da divisória da gaveta de cards. */
+  const comecarArrasto = (): void => {
+    const mover = (event: MouseEvent): void => {
+      dispatch({ type: 'layout/sidebarWidth', width: event.clientX })
+    }
+    const soltar = (): void => {
+      window.removeEventListener('mousemove', mover)
+      window.removeEventListener('mouseup', soltar)
+    }
+    window.addEventListener('mousemove', mover)
+    window.addEventListener('mouseup', soltar)
+  }
+
   return (
     <aside
       data-sidebar
-      className="flex w-[206px] flex-none flex-col border-r border-[var(--color-edge)] bg-[#17171a]"
+      style={{ width: sidebarWidth }}
+      className="relative flex flex-none flex-col border-r border-[var(--color-edge)] bg-[#17171a]"
     >
+      <div
+        data-sidebar-resizer
+        onMouseDown={comecarArrasto}
+        className="absolute inset-y-0 -right-0.5 z-10 w-1.5 cursor-col-resize hover:bg-[var(--color-fog-2)]"
+      />
       <CabecalhoDePainel tique cor="var(--color-warn)" titulo={t('sidebar.chapters')} />
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -184,9 +215,34 @@ export function Sidebar({ tab, transport, cards, cardOverlay, rows, dispatch }: 
           <p className="px-3 py-2 text-[11px] leading-relaxed text-[var(--color-fog-3)]">{t('sidebar.noCards')}</p>
         ) : (
           <div className="flex flex-col gap-1.5 p-2">
-            {cards.map((card) => (
+            {cards.map((card, index) => (
               <div
                 key={card.id}
+                draggable
+                data-card-drag={card.id}
+                onDragStart={(event) => {
+                  if (
+                    event.target instanceof HTMLElement &&
+                    event.target.closest('input, textarea, button, [data-no-card-drag]')
+                  ) {
+                    event.preventDefault()
+                    return
+                  }
+                  event.dataTransfer.setData(CARD_DRAG_MIME, card.id)
+                  event.dataTransfer.effectAllowed = 'move'
+                }}
+                onDragOver={(event) => {
+                  if (!event.dataTransfer.types.includes(CARD_DRAG_MIME)) return
+                  event.preventDefault()
+                }}
+                onDrop={(event) => {
+                  const draggedId = event.dataTransfer.getData(CARD_DRAG_MIME)
+                  if (!draggedId) return
+                  event.preventDefault()
+                  const rect = event.currentTarget.getBoundingClientRect()
+                  const antes = event.clientY < rect.top + rect.height / 2
+                  dispatch({ type: 'card/reorder', cardId: draggedId, toIndex: antes ? index : index + 1 })
+                }}
                 className={`flex flex-none items-center gap-2 rounded-md border p-[5px] text-left text-[10px] transition-colors ${
                   transport.card === card.id
                     ? 'border-[var(--color-go)]/60 bg-[var(--color-go)]/10 text-[var(--color-go)]'
@@ -209,7 +265,7 @@ export function Sidebar({ tab, transport, cards, cardOverlay, rows, dispatch }: 
                 <button
                   type="button"
                   data-sidebar-card-overlay={card.id}
-                  title={t('cards.overlayHint')}
+                  title={t('cards.overlay')}
                   aria-pressed={card.overlay ?? false}
                   onClick={(event) => {
                     event.stopPropagation()
@@ -221,7 +277,7 @@ export function Sidebar({ tab, transport, cards, cardOverlay, rows, dispatch }: 
                       : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
                   }`}
                 >
-                  {t('cards.overlay')}
+                  {t('cards.overlayShort')}
                 </button>
               </div>
             ))}
@@ -248,18 +304,35 @@ export function Sidebar({ tab, transport, cards, cardOverlay, rows, dispatch }: 
 
       {/* a ajuda fica ancorada no rodapé da coluna, e não no meio do fluxo:
           é o único bloco aqui que não é o programa — some do caminho do olho
-          quando o operador está procurando um capítulo */}
+          quando o operador está procurando um capítulo. Colapsável, mas
+          nasce aberta: é conforto de leitura de agora, não escolha que
+          precise sobreviver a fechar o app */}
       <div className="flex-none border-t border-[var(--color-edge)] bg-[#131316]">
-        <div className="flex h-[26px] items-center gap-1.5 border-b border-[var(--color-edge)] px-2.5">
+        <button
+          type="button"
+          data-sidebar-help-toggle
+          aria-expanded={ajudaAberta}
+          onClick={() => setAjudaAberta((v) => !v)}
+          className="flex h-[26px] w-full items-center gap-1.5 border-b border-[var(--color-edge)] px-2.5 text-left"
+        >
           <span className="grid h-3.5 w-3.5 flex-none place-items-center rounded-full border border-[#5b6470] text-[9px] font-bold text-[#8b95a3]">
             ?
           </span>
           <span className="text-[10px] font-semibold text-[#9aa3b0]">{t('sidebar.help')}</span>
-        </div>
-        <div className="px-3 py-2.5">
-          <div className="mb-1 text-[11px] font-semibold text-[var(--color-go)]">{t('sidebar.help.scrollTitle')}</div>
-          <p className="text-[10.5px] leading-relaxed text-[var(--color-fog-2)]">{t('sidebar.help.scroll')}</p>
-        </div>
+          <Icon
+            name="down"
+            size={11}
+            className={`ml-auto flex-none text-[#8b95a3] transition-transform ${ajudaAberta ? '' : '-rotate-90'}`}
+          />
+        </button>
+        {ajudaAberta ? (
+          <div className="px-3 py-2.5">
+            <div className="mb-1 text-[11px] font-semibold text-[var(--color-go)]">
+              {t('sidebar.help.scrollTitle')}
+            </div>
+            <p className="text-[10.5px] leading-relaxed text-[var(--color-fog-2)]">{t('sidebar.help.scroll')}</p>
+          </div>
+        ) : null}
       </div>
     </aside>
   )

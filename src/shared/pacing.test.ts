@@ -31,7 +31,8 @@ const stopped: Transport = {
   card: null,
   video: VIDEO_PARADO,
   stopwatch: CRONOMETRO_PARADO,
-  independentStartedAt: 0
+  independentStartedAt: 0,
+  loop: false
 }
 
 describe('relógio de rolagem', () => {

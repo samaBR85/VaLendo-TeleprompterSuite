@@ -257,26 +257,6 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
       style={{ width: larguraDoPainel(lang) }}
       className="flex flex-none flex-col border-l border-[var(--color-edge)] bg-[#17171a]"
     >
-      {/* o aviso fica FORA das abas, fixo: ele fala do estado de agora, e numa
-          aba qualquer ele passaria despercebido justamente quando importa.
-          Dobra de linha é silenciosa e estraga a leitura — o apresentador
-          combinou 7 palavras por linha e recebe 4 e 3 */}
-      {metrics?.wrapping ? (
-        <div className="flex-none border-b border-[var(--color-line)]/60 bg-[var(--color-warn)]/10 px-3 py-2.5">
-          <div className="text-[11px] text-[var(--color-warn)]">{t('insp.wrapping')}</div>
-          <div className="mt-0.5 text-[11px] text-[var(--color-fog-2)]">
-            {t('insp.wrapping.detail', { words: a.maxWords, size: a.fontSize })}
-          </div>
-          <button
-            type="button"
-            onClick={() => patch({ fontSize: metrics.fitFontSize })}
-            className="mt-1.5 w-full rounded-md border border-[var(--color-warn)]/50 py-1 text-[11px] text-[var(--color-warn)] hover:bg-[var(--color-warn)]/12"
-          >
-            {t('insp.wrapping.fix', { size: metrics.fitFontSize })}
-          </button>
-        </div>
-      ) : null}
-
       {/* o filete rosa é a assinatura dos Ajustes, como o âmbar é da Edição:
           a aba ativa fica tingida do mesmo rosa, sem relevo — ficha, não tecla */}
       <div
@@ -331,14 +311,14 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
           onChange={(letterSpacing) => patch({ letterSpacing })}
         />
         <div className="flex gap-1.5">
-          {(['left', 'center'] as const).map((align) => (
+          {(['left', 'center', 'right'] as const).map((align) => (
             <Ficha
               key={align}
               ativa={a.align === align}
               onClick={() => patch({ align })}
               className="flex-1 px-2 py-1.5 text-[11px]"
             >
-              {align === 'left' ? t('insp.alignLeft') : t('insp.alignCenter')}
+              {{ left: t('insp.alignLeft'), center: t('insp.alignCenter'), right: t('insp.alignRight') }[align]}
             </Ficha>
           ))}
         </div>
@@ -415,6 +395,17 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
       {aba === 'leitura' ? (
         <>
       <Group>
+        {/* ímã: arrastar perto do centro gruda em 50% exato — é o ponto que
+            já era o comportamento de sempre, antes deste slider existir, e
+            errar por 1-2% dele não abre diferença visível nenhuma */}
+        <Slider
+          label={t('insp.position')}
+          value={a.positionPct}
+          min={0}
+          max={100}
+          suffix="%"
+          onChange={(value) => patch({ positionPct: Math.abs(value - 50) <= 4 ? 50 : value })}
+        />
         <Slider label={t('insp.margin')} value={a.marginPct} min={0} max={35} suffix="%" onChange={(marginPct) => patch({ marginPct })} />
         {/*
           As duas faixas vão de 1 a 16 inteiras, sem uma restringir a outra —
@@ -470,6 +461,25 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
           hint={a.uniformSpeed ? t('insp.uniform.yes') : t('insp.uniform.no')}
         />
       </Group>
+
+      {/* mora aqui, e não mais fixo fora das abas: dobra de linha é assunto
+          de ritmo de leitura — min/max palavras por linha, corpo da fonte —,
+          que é exatamente o que esta aba já reúne */}
+      {metrics?.wrapping ? (
+        <div className="flex-none border-t border-[var(--color-line)]/60 bg-[var(--color-warn)]/10 px-3 py-2.5">
+          <div className="text-[11px] text-[var(--color-warn)]">{t('insp.wrapping')}</div>
+          <div className="mt-0.5 text-[11px] text-[var(--color-fog-2)]">
+            {t('insp.wrapping.detail', { words: a.maxWords, size: a.fontSize })}
+          </div>
+          <button
+            type="button"
+            onClick={() => patch({ fontSize: metrics.fitFontSize })}
+            className="mt-1.5 w-full rounded-md border border-[var(--color-warn)]/50 py-1 text-[11px] text-[var(--color-warn)] hover:bg-[var(--color-warn)]/12"
+          >
+            {t('insp.wrapping.fix', { size: metrics.fitFontSize })}
+          </button>
+        </div>
+      ) : null}
         </>
       ) : null}
 

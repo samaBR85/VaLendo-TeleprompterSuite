@@ -26,3 +26,10 @@ export function cartaoNoAr(state: AppState): Cartao | null {
 export function novoCartaoId(agora: number, semente: number): string {
   return `c${agora.toString(36)}${semente.toString(36)}`
 }
+
+/**
+ * Identifica um arrasto de reordenar cartão, para distinguir de um arrasto
+ * de arquivo do sistema operacional — a gaveta e a coluna de assets aceitam
+ * os dois tipos de solta, cada um com sua reação própria.
+ */
+export const CARD_DRAG_MIME = 'application/x-valendo-card'

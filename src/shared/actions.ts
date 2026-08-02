@@ -21,8 +21,12 @@ export type Action =
   | { type: 'transport/nudgePpm'; delta: number }
   | { type: 'transport/blackout' }
   | { type: 'transport/freeze' }
+  /** ao chegar no fim do roteiro, volta ao início e continua tocando */
+  | { type: 'transport/loop' }
   | { type: 'card/add'; card: Cartao }
   | { type: 'card/remove'; cardId: string }
+  /** arrastar reordena — o cartão sai de onde está e entra em `toIndex` */
+  | { type: 'card/reorder'; cardId: string; toIndex: number }
   | { type: 'card/rename'; cardId: string; nome: string }
   | { type: 'card/text'; cardId: string; texto: string }
   /** o operador reimportou a arte de um cartão de imagem cujo arquivo sumiu */
@@ -60,6 +64,11 @@ export type Action =
     }
   | { type: 'layout/cards'; visible: boolean }
   | { type: 'layout/cardsHeight'; height: number }
+  | { type: 'layout/sidebarWidth'; width: number }
+  /** a divisória Edição×Transmissão, arrastada no Split */
+  | { type: 'layout/split'; ratio: number }
+  /** posição/tamanho da janela do operador, capturado ao mover/redimensionar/fechar */
+  | { type: 'window/bounds'; bounds: { width: number; height: number; x: number; y: number } }
   | { type: 'marker/add'; tabId: string; blockId: string; label: string }
   | { type: 'marker/remove'; tabId: string; markerId: string }
   | { type: 'tab/add' }

@@ -443,10 +443,13 @@ function AlvoDoLcd({
 /** O teclado de transporte: teclas físicas num poço fundo, o play maior e verde. */
 function TecladoDeTransporte({
   playing,
+  loop,
   keymap,
   run
 }: {
   playing: boolean
+  /** com o loop ligado, o Reiniciar acende — é ele quem a leitura chama sozinha ao voltar ao início */
+  loop: boolean
   keymap: Map<string, string>
   run: (commandId: string) => void
 }): React.JSX.Element {
@@ -458,7 +461,10 @@ function TecladoDeTransporte({
       <Tecla
         title={`${t('toolbar.restart')}${hint(keymap, 'transport.restart')}`}
         aria-label={t('toolbar.restart')}
+        acesa={loop}
+        cor="var(--color-go)"
         className={lado}
+        style={!loop ? { color: 'var(--color-go)' } : undefined}
         onClick={() => run('transport.restart')}
       >
         <Icon name="restart" size={17} />
@@ -622,7 +628,7 @@ export function BarraDeTransporte({
           {restante}
         </div>
 
-        <TecladoDeTransporte playing={transport.playing} keymap={keymap} run={run} />
+        <TecladoDeTransporte playing={transport.playing} loop={transport.loop} keymap={keymap} run={run} />
 
         <div className="flex min-w-0 items-center justify-end gap-2.5">
           {velocidade}
@@ -660,7 +666,7 @@ export function BarraDeTransporte({
         </div>
       </Lcd>
 
-      <TecladoDeTransporte playing={transport.playing} keymap={keymap} run={run} />
+      <TecladoDeTransporte playing={transport.playing} loop={transport.loop} keymap={keymap} run={run} />
 
       {velocidade}
     </div>

@@ -65,6 +65,7 @@ export const de: Dicionario = {
   'toolbar.broadcast': 'Senden',
   'toolbar.broadcasting': 'Sendet',
   'toolbar.restart': 'Zurück zum Anfang',
+  'toolbar.loop': 'Endlosschleife — am Ende angekommen, zurück zum Anfang und weiter abspielen',
   'toolbar.back': 'Zurück',
   'toolbar.forward': 'Vor',
   'toolbar.play': 'Start',
@@ -94,6 +95,7 @@ export const de: Dicionario = {
   'insp.letterSpacing': 'Laufweite',
   'insp.alignLeft': 'Linksbündig',
   'insp.alignCenter': 'Zentriert',
+  'insp.alignRight': 'Rechts',
 
   'insp.colors': 'Farben',
   'insp.textColor': 'Text',
@@ -101,6 +103,7 @@ export const de: Dicionario = {
   'insp.invert': 'Farben umkehren',
   'insp.contrast': 'Lesekontrast',
 
+  'insp.position': 'Position',
   'insp.margin': 'Rand',
   'insp.minWords': 'Minimum pro Zeile',
   'insp.maxWords': 'Maximum pro Zeile',
@@ -366,6 +369,7 @@ export const de: Dicionario = {
   'cards.videoVolume': 'Lautstärke',
   'cards.videoLoop': 'wiederholen',
   'cards.overlay': 'OVERLAY',
+  'cards.overlayShort': 'O',
   'cards.overlayHint':
     'Der Text der Übertragung legt sich über diese Karte, statt sie zu ersetzen. Der globale Schalter in der Assets-Spalte erzwingt das, wenn eingeschaltet, für jede Karte.',
   'cards.overlayStyle.faixa': 'Dunkler Streifen hinter dem Text',
