@@ -35,6 +35,7 @@ export const es: Dicionario = {
   'editor.chapter': 'Insertar capítulo — se convierte en § en el texto',
   'editor.direction': 'Insertar acotación — se convierte en [corchetes], no se lee',
   'editor.undo': 'Deshacer',
+  'editor.fontSize': 'Tamaño de fuente del editor',
   'editor.redo': 'Rehacer',
   'editor.placeholder':
     'Pega o escribe el guion. Donde cortes la línea, se corta en la pantalla del presentador. [corchetes] marcan acotaciones, § abre capítulo.',
@@ -196,8 +197,8 @@ export const es: Dicionario = {
   'web.noNetwork': 'Esta máquina no está en ninguna red. Conecta el cable o el wifi.',
   'web.warning':
     'Mientras esté encendido, cualquiera en la misma red que sepa la dirección puede leer el guion — no hay contraseña. Solo se publica la pestaña que está al aire; las demás no salen de aquí.',
-  'web.waiting': 'Esperando a VaLendo…',
-  'web.offline': 'Sin conexión con VaLendo',
+  'web.waiting': 'Esperando a Valendo…',
+  'web.offline': 'Sin conexión con Valendo',
   'web.enableSound': 'Activar sonido',
   'web.rawVideoEmpty': 'Pon una tarjeta de vídeo al aire para probar el reproductor solo.',
   'web.videoWeight': 'Peso del vídeo en la red',
@@ -252,13 +253,13 @@ export const es: Dicionario = {
   'filter.markdown': 'Markdown',
   'filter.word': 'Word',
   'filter.pdf': 'PDF',
-  'filter.project': 'Proyecto de VaLendo',
+  'filter.project': 'Proyecto de Valendo',
 
   'import.imported': 'Importado',
   'import.scannedPdf': 'Este PDF está escaneado: no tiene capa de texto. El OCR llega en el próximo hito.',
 
-  'project.notValendo': 'Este archivo no es un proyecto de VaLendo.',
-  'project.tooNew': 'Este proyecto se guardó con una versión más nueva de VaLendo. Actualiza la app para abrirlo.',
+  'project.notValendo': 'Este archivo no es un proyecto de Valendo.',
+  'project.tooNew': 'Este proyecto se guardó con una versión más nueva de Valendo. Actualiza la app para abrirlo.',
   'project.noScript': 'El proyecto no tiene guion dentro.',
   'project.cantOpen': 'No se pudo abrir el proyecto.',
 

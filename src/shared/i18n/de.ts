@@ -35,6 +35,7 @@ export const de: Dicionario = {
   'editor.chapter': 'Kapitel einfügen — wird im Text zu §',
   'editor.direction': 'Regieanweisung einfügen — wird zu [Klammern], wird nicht gelesen',
   'editor.undo': 'Rückgängig',
+  'editor.fontSize': 'Schriftgröße des Editors',
   'editor.redo': 'Wiederholen',
   'editor.placeholder':
     'Skript einfügen oder tippen. Wo Sie die Zeile umbrechen, bricht sie auch auf dem Bildschirm des Sprechers. [Klammern] kennzeichnen Regieanweisungen, § öffnet ein Kapitel.',
@@ -196,8 +197,8 @@ export const de: Dicionario = {
   'web.noNetwork': 'Dieser Rechner ist in keinem Netz. Kabel einstecken oder ins WLAN gehen.',
   'web.warning':
     'Solange das eingeschaltet ist, kann jeder im selben Netz, der die Adresse kennt, das Skript lesen — es gibt kein Passwort. Veröffentlicht wird nur der Tab, der auf Sendung ist; die anderen verlassen diesen Rechner nicht.',
-  'web.waiting': 'Warte auf VaLendo…',
-  'web.offline': 'Keine Verbindung zu VaLendo',
+  'web.waiting': 'Warte auf Valendo…',
+  'web.offline': 'Keine Verbindung zu Valendo',
   'web.enableSound': 'Ton einschalten',
   'web.rawVideoEmpty': 'Bringen Sie eine Videokarte auf Sendung, um den einfachen Player zu testen.',
   'web.videoWeight': 'Videogewicht im Netz',
@@ -252,15 +253,15 @@ export const de: Dicionario = {
   'filter.markdown': 'Markdown',
   'filter.word': 'Word',
   'filter.pdf': 'PDF',
-  'filter.project': 'VaLendo-Projekt',
+  'filter.project': 'Valendo-Projekt',
 
   'import.imported': 'Importiert',
   'import.scannedPdf':
     'Dieses PDF ist gescannt: es hat keine Textebene. OCR kommt im nächsten Meilenstein.',
 
-  'project.notValendo': 'Diese Datei ist kein VaLendo-Projekt.',
+  'project.notValendo': 'Diese Datei ist kein Valendo-Projekt.',
   'project.tooNew':
-    'Dieses Projekt wurde mit einer neueren Version von VaLendo gespeichert. Aktualisieren Sie die App, um es zu öffnen.',
+    'Dieses Projekt wurde mit einer neueren Version von Valendo gespeichert. Aktualisieren Sie die App, um es zu öffnen.',
   'project.noScript': 'In dem Projekt ist kein Skript.',
   'project.cantOpen': 'Das Projekt konnte nicht geöffnet werden.',
 

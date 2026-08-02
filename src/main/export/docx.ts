@@ -38,7 +38,7 @@ function paragraphFor(block: Block): Paragraph {
 
 export async function buildDocx(blocks: Block[], title: string): Promise<Buffer> {
   const doc = new Document({
-    creator: 'VaLendo',
+    creator: 'Valendo',
     title,
     sections: [
       {

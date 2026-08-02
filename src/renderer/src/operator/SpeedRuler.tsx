@@ -6,7 +6,8 @@ import {
   SEGMENT_COUNT,
   clampPpm,
   filledSegments,
-  ppmFromFraction
+  ppmFromFraction,
+  segmentColor
 } from '@shared/ruler'
 
 interface Props {
@@ -100,8 +101,11 @@ export function SpeedRuler({ ppm, onChange }: Props): React.JSX.Element {
       className="flex w-full cursor-pointer touch-none items-center rounded py-1 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-go)]"
     >
       {/* cada segmento pinta os próprios tracinhos de 2px: no vidro do LCD a
-          régua vira um medidor pontilhado — verde até o ritmo, cinza-esverdeado
-          dali em diante, como um VU desligado */}
+          régua vira um medidor pontilhado — do vermelho (devagar) ao verde
+          (rápido) até o ritmo, cinza-esverdeado dali em diante, como um VU
+          desligado. A cor é por barrinha (`segmentColor`), não um gradiente
+          CSS único: o degrau aceso mais à direita sempre lê a cor do PRÓPRIO
+          ritmo, não uma média do trecho inteiro */}
       {SEGMENTS.map((index) => (
         <div
           key={index}
@@ -112,7 +116,7 @@ export function SpeedRuler({ ppm, onChange }: Props): React.JSX.Element {
             height: 9,
             background:
               index < acesas
-                ? 'repeating-linear-gradient(90deg, var(--color-go) 0 2px, transparent 2px 4px)'
+                ? `repeating-linear-gradient(90deg, ${segmentColor(index)} 0 2px, transparent 2px 4px)`
                 : 'repeating-linear-gradient(90deg, #2c3a33 0 2px, transparent 2px 4px)'
           }}
         />

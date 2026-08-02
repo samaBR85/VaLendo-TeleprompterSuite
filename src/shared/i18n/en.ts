@@ -35,6 +35,7 @@ export const en: Dicionario = {
   'editor.chapter': 'Insert chapter — becomes § in the text',
   'editor.direction': 'Insert stage direction — becomes [brackets], not read aloud',
   'editor.undo': 'Undo',
+  'editor.fontSize': 'Editor font size',
   'editor.redo': 'Redo',
   'editor.placeholder':
     'Paste or type the script. Where you break the line, it breaks on the presenter’s screen. [brackets] mark directions, § opens a chapter.',
@@ -194,8 +195,8 @@ export const en: Dicionario = {
   'web.noNetwork': 'This machine is not on any network. Plug in the cable or join the wi-fi.',
   'web.warning':
     'While this is on, anyone on the same network who knows the address can read the script — there is no password. Only the tab that is on air gets published; the others never leave this machine.',
-  'web.waiting': 'Waiting for VaLendo…',
-  'web.offline': 'No connection to VaLendo',
+  'web.waiting': 'Waiting for Valendo…',
+  'web.offline': 'No connection to Valendo',
   'web.enableSound': 'Turn on sound',
   'web.rawVideoEmpty': 'Put a video card on air to test the plain player.',
   'web.videoWeight': 'Video weight on the network',
@@ -250,13 +251,13 @@ export const en: Dicionario = {
   'filter.markdown': 'Markdown',
   'filter.word': 'Word',
   'filter.pdf': 'PDF',
-  'filter.project': 'VaLendo project',
+  'filter.project': 'Valendo project',
 
   'import.imported': 'Imported',
   'import.scannedPdf': 'This PDF is scanned: it has no text layer. OCR arrives in the next milestone.',
 
-  'project.notValendo': 'This file is not a VaLendo project.',
-  'project.tooNew': 'This project was saved by a newer version of VaLendo. Update the app to open it.',
+  'project.notValendo': 'This file is not a Valendo project.',
+  'project.tooNew': 'This project was saved by a newer version of Valendo. Update the app to open it.',
   'project.noScript': 'The project has no script inside.',
   'project.cantOpen': 'Could not open the project.',
 

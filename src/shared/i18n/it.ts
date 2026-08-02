@@ -35,6 +35,7 @@ export const it: Dicionario = {
   'editor.chapter': 'Inserisci capitolo — diventa § nel testo',
   'editor.direction': 'Inserisci indicazione di regia — diventa [parentesi], non si legge',
   'editor.undo': 'Annulla',
+  'editor.fontSize': 'Dimensione del carattere dell’editor',
   'editor.redo': 'Ripeti',
   'editor.placeholder':
     'Incolla o scrivi il copione. Dove spezzi la riga, si spezza sullo schermo del presentatore. Le [parentesi] segnano le indicazioni, § apre un capitolo.',
@@ -196,8 +197,8 @@ export const it: Dicionario = {
   'web.noNetwork': 'Questa macchina non è su nessuna rete. Collega il cavo o entra nel wi-fi.',
   'web.warning':
     'Finché è acceso, chiunque sulla stessa rete che conosce l’indirizzo può leggere il copione — non c’è password. Viene pubblicata solo la scheda in onda; le altre non escono da qui.',
-  'web.waiting': 'In attesa di VaLendo…',
-  'web.offline': 'Nessuna connessione a VaLendo',
+  'web.waiting': 'In attesa di Valendo…',
+  'web.offline': 'Nessuna connessione a Valendo',
   'web.enableSound': 'Attiva l’audio',
   'web.rawVideoEmpty': 'Manda in onda un cartello video per provare il lettore da solo.',
   'web.videoWeight': 'Peso del video in rete',
@@ -252,15 +253,15 @@ export const it: Dicionario = {
   'filter.markdown': 'Markdown',
   'filter.word': 'Word',
   'filter.pdf': 'PDF',
-  'filter.project': 'Progetto VaLendo',
+  'filter.project': 'Progetto Valendo',
 
   'import.imported': 'Importato',
   'import.scannedPdf':
     'Questo PDF è scansionato: non ha uno strato di testo. L’OCR arriva alla prossima tappa.',
 
-  'project.notValendo': 'Questo file non è un progetto VaLendo.',
+  'project.notValendo': 'Questo file non è un progetto Valendo.',
   'project.tooNew':
-    'Questo progetto è stato salvato da una versione più nuova di VaLendo. Aggiorna l’app per aprirlo.',
+    'Questo progetto è stato salvato da una versione più nuova di Valendo. Aggiorna l’app per aprirlo.',
   'project.noScript': 'Nel progetto non c’è nessun copione.',
   'project.cantOpen': 'Non è stato possibile aprire il progetto.',
 

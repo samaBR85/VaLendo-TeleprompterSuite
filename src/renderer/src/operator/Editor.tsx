@@ -10,7 +10,6 @@ const TYPE_SETTINGS: React.CSSProperties = {
   border: 'none',
   padding: '14px 16px',
   fontFamily: '"Cascadia Mono", "SF Mono", Consolas, monospace',
-  fontSize: 14,
   lineHeight: 1.75,
   letterSpacing: 0,
   whiteSpace: 'pre-wrap',
@@ -18,8 +17,14 @@ const TYPE_SETTINGS: React.CSSProperties = {
   tabSize: 2
 }
 
+export const EDITOR_FONT_MIN = 11
+export const EDITOR_FONT_MAX = 28
+export const EDITOR_FONT_DEFAULT = 14
+
 interface Props {
   tab: Tab
+  /** tamanho da fonte do textarea editável — não é a fonte da SAÍDA, só de digitar */
+  fontSize: number
   dispatch: (action: Action) => void
 }
 
@@ -38,7 +43,7 @@ export interface EditorHandle {
  * — cursor, seleção, teclado do sistema. Um textarea transparente sobre um
  * `pre` colorido dá as duas coisas.
  */
-export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dispatch }, ref) {
+export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, fontSize, dispatch }, ref) {
   const { t } = useT()
   const incoming = useMemo(() => serializeBlocks(tab.blocks), [tab.blocks])
   const [draft, setDraft] = useState(incoming)
@@ -230,7 +235,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
         ref={preRef}
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 overflow-x-hidden overflow-y-auto"
-        style={{ ...TYPE_SETTINGS, scrollbarGutter: 'stable' }}
+        style={{ ...TYPE_SETTINGS, fontSize, scrollbarGutter: 'stable' }}
       >
         {highlighted}
         {'\n'}
@@ -248,6 +253,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, dis
         className="absolute inset-0 resize-none bg-transparent outline-none"
         style={{
           ...TYPE_SETTINGS,
+          fontSize,
           color: 'transparent',
           caretColor: 'var(--color-fog-0)',
           userSelect: 'text',

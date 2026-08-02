@@ -145,22 +145,22 @@ export function PocoDoAr({
         aria-label={t('toolbar.blackout')}
         acesa={transport.blackout}
         cor="var(--color-live)"
-        className="h-6 w-7"
+        className="h-9 w-10"
         style={!transport.blackout ? { color: 'var(--color-live)' } : undefined}
         onClick={() => run('output.blackout')}
       >
-        <Icon name="blackout" size={13} />
+        <Icon name="blackout" size={17} />
       </Tecla>
       <Tecla
         title={`${t('toolbar.freeze')}${hint(keymap, 'transport.freeze')}`}
         aria-label={t('toolbar.freeze')}
         acesa={transport.frozen}
         cor="var(--color-go)"
-        className="h-6 w-7"
+        className="h-9 w-10"
         style={!transport.frozen ? { color: 'var(--color-link)' } : undefined}
         onClick={() => run('transport.freeze')}
       >
-        <Icon name="freeze" size={13} />
+        <Icon name="freeze" size={17} />
       </Tecla>
       {/* aceso pelo que está acontecendo, não pelo que foi pedido: com a porta
           ocupada, o verde diria que há uma página no ar quando não há */}
@@ -169,20 +169,20 @@ export function PocoDoAr({
         aria-label={t('toolbar.webviewOff')}
         acesa={webviewLive}
         cor="var(--color-go)"
-        className="h-6 w-7"
+        className="h-9 w-10"
         style={!webviewLive ? { color: 'var(--color-go)' } : undefined}
         onClick={onOpenWebview}
       >
-        <Icon name="webview" size={13} />
+        <Icon name="webview" size={17} />
       </Tecla>
       <Tecla
         title={t('toolbar.identify')}
         aria-label={t('toolbar.identify')}
-        className="h-6 w-7"
+        className="h-9 w-10"
         style={{ color: 'var(--color-accent-2)' }}
         onClick={() => window.valendo.identifyDisplays()}
       >
-        <Icon name="monitor" size={13} />
+        <Icon name="monitor" size={17} />
       </Tecla>
     </Poco>
   )
@@ -553,11 +553,13 @@ export function BarraDeTransporte({
         className="flex flex-none items-center gap-2.5 border-b border-[var(--color-edge)] px-2.5 py-2"
         style={{ background: 'linear-gradient(#1b1b1f, #161618)' }}
       >
-        {/* `flex-[3_1_0%]`, e não `flex-1`: contra o `flex-1` da régua de
-            velocidade logo abaixo, essa razão 3:1 é o que deixa a régua com
-            METADE da fatia que ela tinha antes (1/2 do espaço → 1/4) — o
-            espaço que ela devolve é o que a SAÍDA, mais à frente, ganha */}
-        <Lcd className="h-[52px] min-w-0 flex-[3_1_0%]">
+        {/* `flex-[2.25_1_0%]`, e não `flex-1`: contra o `flex-1` da régua de
+            velocidade logo abaixo, essa razão é a medida (por tentativa e
+            erro, com o app rodando) que deixa o play exatamente no centro
+            horizontal da janela — o resto do bloco esquerdo (decorrido,
+            restante) e do bloco direito (velocidade, SAÍDA) não é simétrico
+            em largura, então a razão 1:1 não bastava */}
+        <Lcd className="h-[52px] min-w-0 flex-[2.25_1_0%]">
           <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-4">
             <BarraDeProgresso fracao={fracao} ticks={ticks} />
             <div className="k-microcaps flex items-center justify-between gap-3 tracking-[0.1em] text-[var(--color-lcd-caption)]">

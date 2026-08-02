@@ -35,6 +35,7 @@ export const fr: Dicionario = {
   'editor.chapter': 'Insérer un chapitre — devient § dans le texte',
   'editor.direction': 'Insérer une indication — devient [crochets], non lue',
   'editor.undo': 'Annuler',
+  'editor.fontSize': 'Taille de police de l’éditeur',
   'editor.redo': 'Rétablir',
   'editor.placeholder':
     'Collez ou tapez le texte. Là où vous coupez la ligne, elle se coupe sur l’écran du présentateur. Les [crochets] marquent les indications, § ouvre un chapitre.',
@@ -196,8 +197,8 @@ export const fr: Dicionario = {
   'web.noNetwork': 'Cette machine n’est sur aucun réseau. Branchez le câble ou rejoignez le wi-fi.',
   'web.warning':
     'Tant que c’est activé, toute personne sur le même réseau qui connaît l’adresse peut lire le texte — il n’y a pas de mot de passe. Seul l’onglet à l’antenne est publié ; les autres ne quittent pas cette machine.',
-  'web.waiting': 'En attente de VaLendo…',
-  'web.offline': 'Pas de connexion à VaLendo',
+  'web.waiting': 'En attente de Valendo…',
+  'web.offline': 'Pas de connexion à Valendo',
   'web.enableSound': 'Activer le son',
   'web.rawVideoEmpty': 'Mettez un carton vidéo à l’antenne pour tester le lecteur seul.',
   'web.videoWeight': 'Poids de la vidéo sur le réseau',
@@ -252,15 +253,15 @@ export const fr: Dicionario = {
   'filter.markdown': 'Markdown',
   'filter.word': 'Word',
   'filter.pdf': 'PDF',
-  'filter.project': 'Projet VaLendo',
+  'filter.project': 'Projet Valendo',
 
   'import.imported': 'Importé',
   'import.scannedPdf':
     'Ce PDF est numérisé : il n’a pas de couche texte. L’OCR arrive au prochain jalon.',
 
-  'project.notValendo': 'Ce fichier n’est pas un projet VaLendo.',
+  'project.notValendo': 'Ce fichier n’est pas un projet Valendo.',
   'project.tooNew':
-    'Ce projet a été enregistré par une version plus récente de VaLendo. Mettez l’app à jour pour l’ouvrir.',
+    'Ce projet a été enregistré par une version plus récente de Valendo. Mettez l’app à jour pour l’ouvrir.',
   'project.noScript': 'Il n’y a pas de texte dans ce projet.',
   'project.cantOpen': 'Impossible d’ouvrir le projet.',
 

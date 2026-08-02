@@ -11,14 +11,14 @@ import { LANGS, type Lang } from '@shared/i18n'
 import { ProvedorDeIdioma, useT } from '../i18n'
 import { activeTabOf, useAppState } from '../state/useAppState'
 import { Icon, type IconName } from '../ui/Icon'
-import { CabecalhoDePainel, Poco, Tecla } from '../ui/console'
+import { CabecalhoDePainel, Poco, SliderConsole, Tecla } from '../ui/console'
 import { Wordmark, versionLabel } from '../ui/Wordmark'
 import { CloseConfirm } from './CloseConfirm'
 import { CardsDrawer } from './CardsDrawer'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
 import { Deck } from './deck/Deck'
-import { Editor, type EditorHandle } from './Editor'
+import { EDITOR_FONT_DEFAULT, EDITOR_FONT_MAX, EDITOR_FONT_MIN, Editor, type EditorHandle } from './Editor'
 import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
 import { Sidebar } from './Sidebar'
@@ -236,6 +236,10 @@ function AppConteudo({
   const [palette, setPalette] = useState(false)
   const [keymapOpen, setKeymapOpen] = useState(false)
   const [split, setSplit] = useState(0.46)
+  // tamanho da fonte de EDITAR, não da SAÍDA (essa é aparência do roteiro,
+  // em tab.appearance) — é conforto de digitação, e nasce igual ao que
+  // sempre foi (14px), sem persistir entre sessões
+  const [editorFontSize, setEditorFontSize] = useState(EDITOR_FONT_DEFAULT)
   const [metrics, setMetrics] = useState<PrompterMetrics | null>(null)
   const [credits, setCredits] = useState(false)
   const [notice, setNotice] = useState<Notice | null>(null)
@@ -459,7 +463,16 @@ function AppConteudo({
         <div className="flex flex-none items-center border-r border-[var(--color-edge)] pr-3">
           <Wordmark size={30} subtitle={false} />
         </div>
-        <span className="flex-none text-[12px] whitespace-nowrap text-[var(--color-fog-2)]">{versionLabel()}</span>
+        {/* a versão saiu do rodapé — este é o único lugar que ainda mostra
+            build/versão, e também o gatilho dos créditos (era o rodapé antes) */}
+        <button
+          type="button"
+          onClick={() => setCredits(true)}
+          title={t('app.credits')}
+          className="flex-none text-[12px] whitespace-nowrap text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
+        >
+          {versionLabel()}
+        </button>
 
         {/* centralizado de verdade — `absolute`, e não flex/auto-margin, para
             não depender de quanto os grupos dos dois lados pesam (o mesmo
@@ -469,7 +482,7 @@ function AppConteudo({
         {nomeDoProjeto ? (
           <div
             data-project-name
-            className="absolute left-1/2 -translate-x-1/2 truncate text-[13px] font-medium"
+            className="absolute left-1/2 -translate-x-1/2 truncate text-[19.5px] font-medium"
             style={{ color: '#62a8ff' }}
           >
             {nomeDoProjeto}
@@ -531,8 +544,9 @@ function AppConteudo({
                   title={`${t(posicao === 'topo' ? 'app.transportTop' : 'app.transportStrip')}${hint(keymap, 'view.transportPosition')}`}
                   aria-pressed={state.transportPosition === posicao}
                   acesa={state.transportPosition === posicao}
-                  cor="var(--color-accent)"
+                  cor="var(--color-go)"
                   className="h-6 w-8"
+                  style={state.transportPosition !== posicao ? { color: 'var(--color-go)' } : undefined}
                   onClick={() => dispatch({ type: 'layout/transportPosition', position: posicao })}
                 >
                   <Icon name={posicao === 'topo' ? 'layoutSplit' : 'layoutDeck'} size={15} />
@@ -674,7 +688,28 @@ function AppConteudo({
                   detail={<MetaDaEdicao tab={tab} rows={rows} ppm={state.transport.ppm} />}
                   action={editorTools}
                 />
-                <Editor ref={editorRef} tab={tab} dispatch={dispatch} />
+                <Editor ref={editorRef} tab={tab} fontSize={editorFontSize} dispatch={dispatch} />
+
+                {/* fonte de DIGITAR, não a da SAÍDA — essa mexe só no
+                    textarea, para o operador que prefere letra maior (ou
+                    menor) enquanto escreve. O texto continua quebrando pela
+                    largura da caixa, igual a qualquer editor. */}
+                <div className="flex flex-none items-center gap-2 border-t border-[var(--color-edge)] bg-[#17171a] px-3 py-1.5">
+                  <span className="text-[10px] text-[var(--color-fog-3)]">Aa</span>
+                  <SliderConsole
+                    value={editorFontSize}
+                    min={EDITOR_FONT_MIN}
+                    max={EDITOR_FONT_MAX}
+                    cor="var(--color-warn)"
+                    aria-label={t('editor.fontSize')}
+                    onValue={setEditorFontSize}
+                    className="w-24"
+                  />
+                  <span className="text-[16px] text-[var(--color-fog-3)]">Aa</span>
+                  <span className="ml-1 font-mono text-[10px] text-[var(--color-fog-2)] tabular-nums">
+                    {editorFontSize}px
+                  </span>
+                </div>
               </section>
 
               <div
@@ -760,7 +795,6 @@ function AppConteudo({
         rows={rows}
         storage={storage}
         dispatch={dispatch}
-        onOpenCredits={() => setCredits(true)}
         onModeChange={(mode) => dispatch({ type: 'layout/mode', mode })}
       />
 

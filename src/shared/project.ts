@@ -95,17 +95,17 @@ export function readProject(contents: string): ProjectReadResult {
   try {
     parsed = JSON.parse(contents) as Partial<ProjectFile>
   } catch {
-    return { state: null, error: 'Este arquivo não é um projeto do VaLendo.', imagens: {} }
+    return { state: null, error: 'Este arquivo não é um projeto do Valendo.', imagens: {} }
   }
 
   if (parsed?.app !== MARCA) {
-    return { state: null, error: 'Este arquivo não é um projeto do VaLendo.', imagens: {} }
+    return { state: null, error: 'Este arquivo não é um projeto do Valendo.', imagens: {} }
   }
 
   if (typeof parsed.formato === 'number' && parsed.formato > FORMATO) {
     return {
       state: null,
-      error: 'Este projeto foi salvo por uma versão mais nova do VaLendo. Atualize o app para abrir.',
+      error: 'Este projeto foi salvo por uma versão mais nova do Valendo. Atualize o app para abrir.',
       imagens: {}
     }
   }

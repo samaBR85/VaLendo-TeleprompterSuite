@@ -71,7 +71,7 @@ export function createOperatorWindow(): BrowserWindow {
     // igual ao `--color-ink-0` do renderer: é a cor que aparece no instante
     // entre a janela abrir e o React pintar. Diferente, dá um flash claro
     backgroundColor: '#0e0e10',
-    title: 'VaLendo',
+    title: 'Valendo',
     webPreferences: { preload, sandbox: false }
   })
 

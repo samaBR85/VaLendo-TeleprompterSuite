@@ -8,7 +8,6 @@ import type { AppState, LayoutMode, Tab } from '@shared/types'
 import { Icon, type IconName } from '../ui/Icon'
 import type { Chave } from '@shared/i18n'
 import { useT } from '../i18n'
-import { versionLabel } from '../ui/Wordmark'
 
 interface Props {
   state: AppState
@@ -17,7 +16,6 @@ interface Props {
   rows: number[]
   storage: StorageHealth
   dispatch: (action: Action) => void
-  onOpenCredits: () => void
   onModeChange: (mode: LayoutMode) => void
 }
 
@@ -81,7 +79,6 @@ export function StatusBar({
   rows,
   storage,
   dispatch,
-  onOpenCredits,
   onModeChange
 }: Props): React.JSX.Element {
   const { t, tp, lang } = useT()
@@ -149,14 +146,6 @@ export function StatusBar({
         <span>{tp('status.markers', tab.markers.length)}</span>
         <span>{tp('status.undo', history.depth)}</span>
         <span>{t('status.paletteHint')}</span>
-        <button
-          type="button"
-          onClick={onOpenCredits}
-          title={t('app.credits')}
-          className="tabular-nums hover:text-[var(--color-fog-0)]"
-        >
-          {versionLabel()}
-        </button>
       </div>
     </footer>
   )

@@ -52,9 +52,9 @@ describe('salvar e abrir o projeto', () => {
 })
 
 describe('arquivo que não dá para abrir', () => {
-  it('recusa o que não é projeto do VaLendo, com uma frase clara', () => {
-    expect(readProject('nem json').error).toBe('Este arquivo não é um projeto do VaLendo.')
-    expect(readProject('{"tabs":[]}').error).toBe('Este arquivo não é um projeto do VaLendo.')
+  it('recusa o que não é projeto do Valendo, com uma frase clara', () => {
+    expect(readProject('nem json').error).toBe('Este arquivo não é um projeto do Valendo.')
+    expect(readProject('{"tabs":[]}').error).toBe('Este arquivo não é um projeto do Valendo.')
   })
 
   it('recusa projeto de versão mais nova em vez de abrir pela metade', () => {

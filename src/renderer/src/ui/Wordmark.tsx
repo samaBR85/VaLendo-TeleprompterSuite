@@ -5,16 +5,16 @@ interface Props {
 }
 
 /**
- * Logomarca: "VaLendo" grande, "A Teleprompter Suite" pequeno embaixo.
- * O tom mais claro em "Lendo" existe para as duas maiúsculas do nome serem
- * lidas como intenção e não como erro de digitação.
+ * Logomarca: "Valendo" grande, "A Teleprompter Suite" pequeno embaixo.
+ * O tom mais claro em "Va" continua marcando as duas sílabas do nome, mesmo
+ * sem o L maiúsculo do meio.
  */
 export function Wordmark({ size = 15, subtitle = true }: Props): React.JSX.Element {
   return (
     <div className="flex flex-none flex-col justify-center leading-none">
       <span style={{ fontSize: size, fontWeight: 500, letterSpacing: '-0.015em' }}>
         <span style={{ color: 'var(--color-fog-1)' }}>Va</span>
-        <span style={{ color: 'var(--color-fog-0)' }}>Lendo</span>
+        <span style={{ color: 'var(--color-fog-0)' }}>lendo</span>
       </span>
       {subtitle ? (
         <span

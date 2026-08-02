@@ -45,6 +45,7 @@ export const pt = {
   'editor.chapter': 'Inserir capítulo — vira § no texto',
   'editor.direction': 'Inserir direção de cena — vira [colchetes], não é lida',
   'editor.undo': 'Desfazer',
+  'editor.fontSize': 'Tamanho da fonte do editor',
   'editor.redo': 'Refazer',
   'editor.placeholder':
     'Cole ou digite o roteiro. Onde você quebrar a linha, ela quebra na tela do apresentador. [colchetes] marcam direções, § abre capítulo.',
@@ -212,8 +213,8 @@ export const pt = {
   'web.noNetwork': 'Esta máquina não está em nenhuma rede. Conecte o cabo ou o wi-fi.',
   'web.warning':
     'Enquanto estiver ligado, qualquer pessoa na mesma rede que souber o endereço consegue ler o roteiro — não há senha. Só a aba que está no ar é publicada; as outras não saem daqui.',
-  'web.waiting': 'Esperando o VaLendo…',
-  'web.offline': 'Sem conexão com o VaLendo',
+  'web.waiting': 'Esperando o Valendo…',
+  'web.offline': 'Sem conexão com o Valendo',
   'web.enableSound': 'Ativar som',
   'web.rawVideoEmpty': 'Ponha um cartão de vídeo no ar para testar o tocador sozinho.',
   'web.videoWeight': 'Peso do vídeo na rede',
@@ -272,13 +273,13 @@ export const pt = {
   'filter.markdown': 'Markdown',
   'filter.word': 'Word',
   'filter.pdf': 'PDF',
-  'filter.project': 'Projeto do VaLendo',
+  'filter.project': 'Projeto do Valendo',
 
   'import.imported': 'Importado',
   'import.scannedPdf': 'Este PDF é digitalizado: não tem camada de texto. O OCR entra no próximo marco.',
 
-  'project.notValendo': 'Este arquivo não é um projeto do VaLendo.',
-  'project.tooNew': 'Este projeto foi salvo por uma versão mais nova do VaLendo. Atualize o app para abrir.',
+  'project.notValendo': 'Este arquivo não é um projeto do Valendo.',
+  'project.tooNew': 'Este projeto foi salvo por uma versão mais nova do Valendo. Atualize o app para abrir.',
   'project.noScript': 'O projeto está sem roteiro dentro.',
   'project.cantOpen': 'Não deu para abrir o projeto.',
 

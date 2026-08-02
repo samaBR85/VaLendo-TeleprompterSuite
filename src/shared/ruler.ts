@@ -35,21 +35,20 @@ export function filledSegments(ppm: number): number {
 }
 
 /**
- * Cor da barrinha, do ciano ao vermelho.
+ * Cor da barrinha, do vermelho ao verde.
  *
  * Interpolado em HSL, e não em RGB: em RGB o caminho entre essas duas cores
  * passa por cinza-oliva e a cor some no meio da régua. Em HSL ele percorre a
- * roda — ciano, verde, amarelo, laranja, vermelho —, que é a leitura de um
- * medidor de áudio: calmo à esquerda, quente à direita, e o vermelho onde
- * quase ninguém acompanha lendo.
+ * roda — vermelho, laranja, amarelo, verde —, que é a leitura de um medidor
+ * de velocidade: devagar e vermelho à esquerda, rápido e verde à direita.
  */
-const CALMO = { h: 145, s: 60, l: 55 } // #46D17F, o mesmo verde do iniciar
-const QUENTE = { h: 0, s: 100, l: 65 } // #FF4D4D, o mesmo vermelho do no ar
+const LENTO = { h: 0, s: 100, l: 65 } // #FF4D4D, o mesmo vermelho do no ar
+const RAPIDO = { h: 145, s: 60, l: 55 } // #46D17F, o mesmo verde do iniciar
 
 export function segmentColor(index: number): string {
   const fracao = SEGMENT_COUNT > 1 ? Math.min(1, Math.max(0, index / (SEGMENT_COUNT - 1))) : 0
-  const h = Math.round(CALMO.h + (QUENTE.h - CALMO.h) * fracao)
-  const s = Math.round(CALMO.s + (QUENTE.s - CALMO.s) * fracao)
-  const l = Math.round(CALMO.l + (QUENTE.l - CALMO.l) * fracao)
+  const h = Math.round(LENTO.h + (RAPIDO.h - LENTO.h) * fracao)
+  const s = Math.round(LENTO.s + (RAPIDO.s - LENTO.s) * fracao)
+  const l = Math.round(LENTO.l + (RAPIDO.l - LENTO.l) * fracao)
   return `hsl(${h} ${s}% ${l}%)`
 }
