@@ -118,7 +118,12 @@ export function Deck({ tab, transport, rows, viewport, card = null, dispatch, on
         />
 
         <div data-deck-preview className="flex min-h-0 flex-none flex-col" style={{ width: previewWidth }}>
-          <PanelHeader label={t('panel.livePreview')} detail={`${viewport.width} × ${viewport.height}`} />
+          <PanelHeader
+            label={t('panel.livePreview')}
+            cor="var(--color-live)"
+            ponto
+            detail={`${viewport.width} × ${viewport.height}`}
+          />
           <PrompterStage
             blocks={tab.blocks}
             appearance={tab.appearance}

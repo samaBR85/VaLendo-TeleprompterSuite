@@ -2,12 +2,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { InsertKind } from '@shared/insertBlock'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { PrompterStage } from '../prompter/PrompterStage'
+import { composeLines, totalWords } from '@shared/anchor'
 import { cartaoNoAr } from '@shared/cards'
+import { formatClock, secondsForWords } from '@shared/pacing'
+import { totalWordCount } from '@shared/text'
+import type { Tab } from '@shared/types'
 import { LANGS, type Lang } from '@shared/i18n'
 import { ProvedorDeIdioma, useT } from '../i18n'
 import { activeTabOf, useAppState } from '../state/useAppState'
 import { Icon, type IconName } from '../ui/Icon'
-import { Poco, Tecla } from '../ui/console'
+import { CabecalhoDePainel, Poco, Tecla } from '../ui/console'
 import { Wordmark, versionLabel } from '../ui/Wordmark'
 import { CloseConfirm } from './CloseConfirm'
 import { CardsDrawer } from './CardsDrawer'
@@ -31,21 +35,41 @@ interface Notice {
   tone: 'ok' | 'warn'
 }
 
+/**
+ * Cabeçalho de painel com a moldura do console: filete colorido no topo,
+ * gradiente tingido, título na cor da seção. A cor é a assinatura — âmbar é
+ * Edição, vermelho é Saída — e o `ponto` é o olhinho de estado da Saída.
+ */
 export function PanelHeader({
   label,
   detail,
+  cor,
+  ponto,
   action
 }: {
   label: string
-  detail?: string
+  detail?: React.ReactNode
+  cor?: string
+  ponto?: boolean
   action?: React.ReactNode
 }): React.JSX.Element {
+  return <CabecalhoDePainel cor={cor} ponto={ponto} titulo={label} detalhe={detail} acao={action} />
+}
+
+/**
+ * O "83 palavras · 1:54" do cabeçalho da Edição. Palavras é a contagem de
+ * fala; o tempo sai da MESMA régua que governa a rolagem — não é uma conta
+ * paralela, é a que o console também mostra.
+ */
+function MetaDaEdicao({ tab, rows, ppm }: { tab: Tab; rows: number[]; ppm: number }): React.JSX.Element {
+  const { t, lang } = useT()
+  const spoken = useMemo(() => totalWordCount(tab.blocks), [tab.blocks])
+  const ruler = useMemo(
+    () => totalWords(composeLines(tab.blocks, tab.appearance, rows)),
+    [tab.blocks, tab.appearance.minWords, tab.appearance.maxWords, tab.appearance.uniformSpeed, rows]
+  )
   return (
-    <div className="flex flex-none items-center gap-2 border-b border-[var(--color-line)] bg-[var(--color-ink-1)] px-3 py-1.5 text-[11px]">
-      <span className="font-medium text-[var(--color-fog-1)]">{label}</span>
-      {detail ? <span className="text-[var(--color-fog-2)]">{detail}</span> : null}
-      <span className="ml-auto flex items-center gap-1.5">{action}</span>
-    </div>
+    <>{t('panel.edit.meta', { words: spoken.toLocaleString(lang), time: formatClock(secondsForWords(ruler, ppm)) })}</>
   )
 }
 
@@ -547,16 +571,20 @@ function AppConteudo({
         <main className="flex min-h-0 flex-1 flex-col">
           <PanelHeader
             label={t('panel.broadcasting')}
-            detail={`${viewport.width} × ${viewport.height}`}
+            cor="var(--color-live)"
+            ponto
             action={
-              <button
-                type="button"
-                onClick={toggleFocusMode}
-                title={t('panel.collapse')}
-                className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
-              >
-                <Icon name="collapse" size={14} />
-              </button>
+              <>
+                <span className="font-mono text-[10px] text-[var(--color-fog-3)]">{`${viewport.width} × ${viewport.height}`}</span>
+                <button
+                  type="button"
+                  onClick={toggleFocusMode}
+                  title={t('panel.collapse')}
+                  className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
+                >
+                  <Icon name="collapse" size={14} />
+                </button>
+              </>
             }
           />
           {stage}
@@ -576,7 +604,12 @@ function AppConteudo({
           />
 
           <section className="flex min-w-0 flex-col" style={{ flex: `${split} 1 0` }}>
-            <PanelHeader label={t('panel.edit')} detail={t('panel.edit.hint')} action={editorTools} />
+            <PanelHeader
+              label={t('panel.edit')}
+              cor="var(--color-warn)"
+              detail={<MetaDaEdicao tab={tab} rows={rows} ppm={state.transport.ppm} />}
+              action={editorTools}
+            />
             <Editor ref={editorRef} tab={tab} dispatch={dispatch} />
           </section>
 
@@ -588,16 +621,20 @@ function AppConteudo({
           <section className="flex min-w-0 flex-col" style={{ flex: `${1 - split} 1 0` }}>
             <PanelHeader
               label={t('panel.broadcasting')}
-              detail={`${viewport.width} × ${viewport.height}`}
+              cor="var(--color-live)"
+              ponto
               action={
-                <button
-                  type="button"
-                  onClick={toggleFocusMode}
-                  title={t('panel.expand')}
-                  className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
-                >
-                  <Icon name="expand" size={14} />
-                </button>
+                <>
+                  <span className="font-mono text-[10px] text-[var(--color-fog-3)]">{`${viewport.width} × ${viewport.height}`}</span>
+                  <button
+                    type="button"
+                    onClick={toggleFocusMode}
+                    title={t('panel.expand')}
+                    className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
+                  >
+                    <Icon name="expand" size={14} />
+                  </button>
+                </>
               }
             />
             {stage}

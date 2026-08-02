@@ -5,6 +5,7 @@ export const en: Dicionario = {
   'app.transportTop': 'Transport on the top bar',
   'app.transportStrip': 'Transport on the bottom strip',
   'app.panels': 'Panels',
+  'panel.edit.meta': '{words} words · {time}',
   'key.save': 'save',
   'app.shortcuts': 'Edit shortcuts',
   'app.palette': 'Command palette',

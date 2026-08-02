@@ -111,8 +111,10 @@ interface CabecalhoProps extends React.HTMLAttributes<HTMLDivElement> {
   cor?: string
   /** cabeçalho de seção da coluna (tique colorido), em vez de filete no topo */
   tique?: boolean
+  /** ponto de estado antes do título, fundido na cor da seção — o da Saída */
+  ponto?: boolean
   titulo: string
-  detalhe?: string
+  detalhe?: React.ReactNode
   acao?: React.ReactNode
 }
 
@@ -124,6 +126,7 @@ interface CabecalhoProps extends React.HTMLAttributes<HTMLDivElement> {
 export function CabecalhoDePainel({
   cor,
   tique,
+  ponto,
   titulo,
   detalhe,
   acao,
@@ -135,6 +138,12 @@ export function CabecalhoDePainel({
   return (
     <div className={`k-cabecalho ${className}`} style={comCor(style, tique ? undefined : cor)} {...rest}>
       {tique && cor ? <span className="h-3 w-[3px] flex-none rounded-sm" style={{ background: cor }} /> : null}
+      {ponto && cor ? (
+        <span
+          className="h-[7px] w-[7px] flex-none rounded-full"
+          style={{ background: `color-mix(in srgb, ${cor} 30%, #1a1a1a)`, boxShadow: 'inset 0 0 3px #000' }}
+        />
+      ) : null}
       <span className={tique ? 'text-[11px] font-semibold text-[var(--color-fog-05)]' : 'k-cabecalho-titulo'}>
         {titulo}
       </span>
