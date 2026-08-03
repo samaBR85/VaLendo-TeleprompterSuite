@@ -846,6 +846,16 @@ export function BarraDeTransporte({
     // os arquivos e a saída não descem junto — eles são preparação, e ficam
     // na barra de cima, perto das abas.
     <>
+      {/* a linha vem ANTES da régua, e não depois: assim ela encosta na base
+          da Edição e da Transmissão, que é o conteúdo que ela mede. Embaixo
+          da régua, ficava separada do roteiro pela própria régua e virava um
+          fio solto na borda da janela.
+
+          No topo a ordem continua invertida (barra, depois linha) pelo mesmo
+          motivo — lá o que está logo abaixo da barra são os painéis, então é
+          depois dela que a linha os toca. Nos dois arranjos a linha faz
+          fronteira com o conteúdo, nunca com a moldura. */}
+      {linha}
       <div
         data-transporte="regua"
         // 84px, e não os 70 de antes: com o play em 60 o poço do teclado passa
@@ -862,7 +872,6 @@ export function BarraDeTransporte({
         {teclado}
         <div className="flex min-w-0 items-center">{velocidade}</div>
       </div>
-      {linha}
     </>
   )
 }
