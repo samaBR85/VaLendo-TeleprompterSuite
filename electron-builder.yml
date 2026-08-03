@@ -24,7 +24,7 @@ files:
   - '!teste_projetos/**'
   - '!electron.vite.config.ts'
   - '!*.md'
-  - '!Abrir VaLendo.bat'
+  - '!Abrir Valendo.bat'
 
 win:
   target:

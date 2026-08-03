@@ -1,9 +1,9 @@
 @echo off
 cd /d "%~dp0"
-title VaLendo
+title Valendo
 
 if not exist "node_modules" (
-    echo Preparando o VaLendo pela primeira vez, aguarde...
+    echo Preparando o Valendo pela primeira vez, aguarde...
     echo Isso pode levar alguns minutos.
     echo.
     call npm install
@@ -16,7 +16,7 @@ if not exist "node_modules" (
 )
 
 if not exist "out\main\index.js" (
-    echo Construindo o VaLendo pela primeira vez, aguarde...
+    echo Construindo o Valendo pela primeira vez, aguarde...
     echo.
     call npm run build
     if errorlevel 1 (
@@ -27,11 +27,11 @@ if not exist "out\main\index.js" (
     )
 )
 
-echo Abrindo o VaLendo...
+echo Abrindo o Valendo...
 call npx electron .
 
 if errorlevel 1 (
     echo.
-    echo O VaLendo fechou com um erro. Tire um print desta janela e mande para o suporte.
+    echo O Valendo fechou com um erro. Tire um print desta janela e mande para o suporte.
     pause
 )
