@@ -28,6 +28,19 @@ interface Props {
    * "Go To" automático. Sem ouvinte, não custa nada além do evento em si.
    */
   onCaretMove?: () => void
+  /**
+   * Há texto digitado que ainda não chegou ao main (o respiro de 140ms).
+   *
+   * Quem usa é o botão DESFAZER: ele acende por `history.canUndo`, que vem do
+   * main — e nessa janela de 140ms o main ainda não sabe da digitação, então o
+   * botão ficava DESABILITADO justo no instante em que o operador acabou de
+   * escrever e vai desfazer. O clique não fazia nada nem dava sinal; o
+   * segundo, já depois do respiro, funcionava. Daí a impressão de "preciso
+   * clicar duas vezes".
+   */
+  onPendenteChange?: (pendente: boolean) => void
+  /** ALL CAPS: só a PINTURA do editor, o texto guardado não muda */
+  allCaps?: boolean
 }
 
 export interface EditorHandle {
@@ -50,7 +63,7 @@ export interface EditorHandle {
  * `pre` colorido dá as duas coisas.
  */
 export const Editor = forwardRef<EditorHandle, Props>(function Editor(
-  { tab, fontSize, dispatch, onCaretMove },
+  { tab, fontSize, dispatch, onCaretMove, onPendenteChange, allCaps },
   ref
 ) {
   const { t } = useT()
@@ -72,6 +85,15 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
   const lastKey = useRef(`${tab.id}:${tab.rev}`)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingValue = useRef<string | null>(null)
+
+  /** avisa o pai só na TROCA de estado, para não re-renderizar a cada tecla */
+  const pendente = useRef(false)
+  const avisarPendente = useRef<(v: boolean) => void>(() => {})
+  avisarPendente.current = (v: boolean): void => {
+    if (pendente.current === v) return
+    pendente.current = v
+    onPendenteChange?.(v)
+  }
 
   // adota o texto do main sempre que a aba ou a revisão dela mudar — assim o
   // desfazer, o refazer e a troca de aba entram na hora. O gatilho é
@@ -100,6 +122,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       clearTimeout(timer.current)
       timer.current = null
       pendingValue.current = null
+      avisarPendente.current(false)
     }
 
     const caret = areaRef.current?.selectionStart ?? 0
@@ -143,10 +166,12 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
 
   const push = (value: string, delay: number): void => {
     pendingValue.current = value
+    avisarPendente.current(true)
     if (timer.current) clearTimeout(timer.current)
     timer.current = setTimeout(() => {
       timer.current = null
       pendingValue.current = null
+      avisarPendente.current(false)
       send(value)
     }, delay)
   }
@@ -165,6 +190,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     timer.current = null
     const value = pendingValue.current
     pendingValue.current = null
+    avisarPendente.current(false)
     if (value !== null) send(value)
   }, [tab.id, dispatch])
 
@@ -272,6 +298,22 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
   // (que rola de verdade) e não no <pre> (que só é panorâmico por baixo dele)
   // — os dois passam a quebrar linha em pontos diferentes, e selecionar texto
   // revela o textarea real desalinhado por baixo do texto colorido.
+  /*
+   * ALL CAPS é PINTURA, não edição.
+   *
+   * `text-transform` muda o que se vê e não toca uma letra do que está
+   * guardado — desligar devolve o texto exatamente como estava, com as
+   * maiúsculas que já existiam nos lugares certos. Transformar o texto de
+   * verdade seria destrutivo: não há como saber depois quais letras eram
+   * maiúsculas antes.
+   *
+   * Vai nas DUAS camadas com o mesmo valor. Aqui isso é seguro porque a fonte
+   * do editor é monoespaçada: maiúscula e minúscula ocupam a mesma largura,
+   * então a quebra de linha do `<pre>` e a do `textarea` continuam caindo no
+   * mesmo lugar — que é a única coisa que mantém o cursor sob a letra certa.
+   */
+  const caixaAlta: React.CSSProperties = allCaps ? { textTransform: 'uppercase' } : {}
+
   return (
     // `data-sem-roda`: sobre o texto que se está escrevendo a roda rola o
     // roteiro, como em qualquer editor — nunca o ritmo da leitura. A marca
@@ -282,7 +324,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
         ref={preRef}
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 overflow-x-hidden overflow-y-auto"
-        style={{ ...TYPE_SETTINGS, fontSize, scrollbarGutter: 'stable' }}
+        style={{ ...TYPE_SETTINGS, fontSize, scrollbarGutter: 'stable', ...caixaAlta }}
       >
         {highlighted}
         {'\n'}
@@ -305,7 +347,8 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
           color: 'transparent',
           caretColor: 'var(--color-fog-0)',
           userSelect: 'text',
-          scrollbarGutter: 'stable'
+          scrollbarGutter: 'stable',
+          ...caixaAlta
         }}
       />
     </div>

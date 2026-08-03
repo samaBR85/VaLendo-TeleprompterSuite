@@ -322,17 +322,31 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
           suffix="em"
           onChange={(letterSpacing) => patch({ letterSpacing })}
         />
+        {/* `min-w-0` + `truncate`: sem eles, um item flex nunca encolhe abaixo
+            do próprio texto, e a fileira inteira transbordava o painel — era o
+            "Direita" saindo pela borda direita. O rótulo mais longo dos seis
+            idiomas era o "Centralizado" do português, que também encurtou.
+            O truncar é rede de segurança para uma tradução futura, não o
+            comportamento esperado: o nome inteiro fica no `title`. */}
         <div className="flex gap-1.5">
-          {(['left', 'center', 'right'] as const).map((align) => (
-            <Ficha
-              key={align}
-              ativa={a.align === align}
-              onClick={() => patch({ align })}
-              className="flex-1 px-2 py-1.5 text-[11px]"
-            >
-              {{ left: t('insp.alignLeft'), center: t('insp.alignCenter'), right: t('insp.alignRight') }[align]}
-            </Ficha>
-          ))}
+          {(['left', 'center', 'right'] as const).map((align) => {
+            const rotulo = {
+              left: t('insp.alignLeft'),
+              center: t('insp.alignCenter'),
+              right: t('insp.alignRight')
+            }[align]
+            return (
+              <Ficha
+                key={align}
+                ativa={a.align === align}
+                title={rotulo}
+                onClick={() => patch({ align })}
+                className="min-w-0 flex-1 truncate px-1.5 py-1.5 text-[11px]"
+              >
+                {rotulo}
+              </Ficha>
+            )
+          })}
         </div>
       </Group>
 

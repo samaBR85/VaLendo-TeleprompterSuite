@@ -42,6 +42,7 @@ export const es: Dicionario = {
   'editor.fontSmaller': 'Reducir la fuente del editor',
   'editor.fontBigger': 'Aumentar la fuente del editor',
   'editor.clearFormat': 'Quitar formato: los capítulos y las indicaciones pasan a texto simple',
+  'editor.allCaps': 'MAYÚSCULAS en el editor — solo la vista, el texto no cambia',
   'editor.redo': 'Rehacer',
   'editor.placeholder':
     'Pega o escribe el guion. Donde cortes la línea, se corta en la pantalla del presentador. [corchetes] marcan acotaciones, ## abre capítulo.',

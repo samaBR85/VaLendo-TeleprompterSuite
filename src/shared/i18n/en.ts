@@ -42,6 +42,7 @@ export const en: Dicionario = {
   'editor.fontSmaller': 'Smaller editor font',
   'editor.fontBigger': 'Larger editor font',
   'editor.clearFormat': 'Clear formatting: chapters and directions become plain text',
+  'editor.allCaps': 'ALL CAPS in the editor — display only, the text is unchanged',
   'editor.redo': 'Redo',
   'editor.placeholder':
     'Paste or type the script. Where you break the line, it breaks on the presenter’s screen. [brackets] mark directions, ## opens a chapter.',

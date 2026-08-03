@@ -83,13 +83,19 @@ function MetaDaEdicao({ tab, rows, ppm }: { tab: Tab; rows: number[]; ppm: numbe
  */
 function EditorTool({
   icon,
+  texto,
   label,
   disabled,
+  acesa,
   onClick
 }: {
-  icon: IconName
+  icon?: IconName
+  /** rótulo curto no lugar do ícone — para "AA", que nenhum glifo diz melhor */
+  texto?: string
   label: string
   disabled?: boolean
+  /** ligado: fica âmbar, a cor da Edição, para se ler como estado e não como botão */
+  acesa?: boolean
   onClick: () => void
 }): React.JSX.Element {
   return (
@@ -97,11 +103,18 @@ function EditorTool({
       type="button"
       title={label}
       aria-label={label}
+      aria-pressed={acesa === undefined ? undefined : acesa}
       disabled={disabled}
       onClick={onClick}
-      className="rounded p-1 text-[var(--color-fog-2)] transition-colors hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] disabled:opacity-30"
+      className={`rounded p-1 transition-colors hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] disabled:opacity-30 ${
+        acesa ? 'bg-[var(--color-warn)]/18 text-[var(--color-warn)]' : 'text-[var(--color-fog-2)]'
+      }`}
     >
-      <Icon name={icon} size={14} />
+      {icon ? (
+        <Icon name={icon} size={14} />
+      ) : (
+        <span className="block px-0.5 text-[11px] leading-[14px] font-bold tracking-[0.06em]">{texto}</span>
+      )}
     </button>
   )
 }
@@ -378,6 +391,14 @@ function AppConteudo({
    * projeto — é só um jeito de operar que o operador liga quando quer.
    */
   const [catchAtivo, setCatchAtivo] = useState(false)
+  /**
+   * Há digitação ainda dentro do respiro de 140ms do editor.
+   *
+   * Serve só para o botão DESFAZER acender nesse intervalo — o `canUndo` vem
+   * do main, que ainda não recebeu o texto. Muda no máximo duas vezes por
+   * rajada de digitação (entra e sai), então não custa renderização por tecla.
+   */
+  const [textoPendente, setTextoPendente] = useState(false)
   const catchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   /** a divisória Edição×Transmissão mede a fração contra ESTE container — só as duas seções, nunca a Sidebar nem o Inspetor */
   const splitRef = useRef<HTMLDivElement>(null)
@@ -653,8 +674,28 @@ function AppConteudo({
         disabled={!hasFormatting(tab.blocks)}
         onClick={() => run('edit.clearFormat')}
       />
+      {/* CAIXA ALTA: só a pintura do editor. O texto guardado não muda, então
+          desligar devolve as maiúsculas originais — nada a desfazer */}
+      <EditorTool
+        texto="AA"
+        label={t('editor.allCaps')}
+        acesa={state.maquina.editorAllCaps}
+        onClick={() =>
+          dispatch({ type: 'maquina/patch', patch: { editorAllCaps: !state.maquina.editorAllCaps } })
+        }
+      />
       <span className="mx-0.5 h-3.5 w-px bg-[var(--color-line)]" />
-      <EditorTool icon="undo" label={t('editor.undo')} disabled={!history.canUndo} onClick={() => run('edit.undo')} />
+      {/* aceso também com digitação ainda no respiro de 140ms: nesse instante
+          o main ainda não sabe do que foi escrito (`canUndo` falso), mas há
+          sim o que desfazer — o comando descarrega o pendente antes de
+          desfazer. Sem isto o botão ficava apagado justamente depois de
+          digitar, o clique não fazia nada, e parecia precisar de dois */}
+      <EditorTool
+        icon="undo"
+        label={t('editor.undo')}
+        disabled={!history.canUndo && !textoPendente}
+        onClick={() => run('edit.undo')}
+      />
       <EditorTool icon="redo" label={t('editor.redo')} disabled={!history.canRedo} onClick={() => run('edit.redo')} />
     </>
   )
@@ -983,8 +1024,10 @@ function AppConteudo({
                   ref={editorRef}
                   tab={tab}
                   fontSize={editorFontSize}
+                  allCaps={state.maquina.editorAllCaps}
                   dispatch={dispatch}
                   onCaretMove={onCaretMove}
+                  onPendenteChange={setTextoPendente}
                 />
 
                 {/* fonte de DIGITAR, não a da SAÍDA — essa mexe só no

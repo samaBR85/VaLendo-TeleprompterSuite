@@ -42,6 +42,7 @@ export const it: Dicionario = {
   'editor.fontSmaller': 'Riduci il carattere dell’editor',
   'editor.fontBigger': 'Ingrandisci il carattere dell’editor',
   'editor.clearFormat': 'Rimuovi formattazione: capitoli e indicazioni diventano testo semplice',
+  'editor.allCaps': 'MAIUSCOLE nell’editor — solo la vista, il testo non cambia',
   'editor.redo': 'Ripeti',
   'editor.placeholder':
     'Incolla o scrivi il copione. Dove spezzi la riga, si spezza sullo schermo del presentatore. Le [parentesi] segnano le indicazioni, ## apre un capitolo.',

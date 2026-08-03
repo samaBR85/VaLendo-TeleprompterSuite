@@ -437,6 +437,15 @@ export interface PreferenciasDaMaquina {
   thumbSize: number
   /** corpo da fonte de DIGITAR, no editor — nunca a da saída */
   editorFontSize: number
+  /**
+   * Mostrar o roteiro em CAIXA ALTA no editor.
+   *
+   * É pintura, não conteúdo: o texto guardado nunca muda, e desligar devolve
+   * as maiúsculas originais intactas. Por isso mora aqui, no conforto desta
+   * máquina, e não na aparência da aba — não é do programa, é de quem lê a
+   * tela enquanto digita.
+   */
+  editorAllCaps: boolean
   /** volume da prévia dos cartões de vídeo, 0 a 1; a transmissão é sempre muda */
   cardVolume: number
   /** a caixa "Ajuda rápida", no rodapé da coluna, está aberta */

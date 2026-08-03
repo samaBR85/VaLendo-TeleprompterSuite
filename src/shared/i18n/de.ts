@@ -42,6 +42,7 @@ export const de: Dicionario = {
   'editor.fontSmaller': 'Editorschrift verkleinern',
   'editor.fontBigger': 'Editorschrift vergrößern',
   'editor.clearFormat': 'Formatierung entfernen: Kapitel und Regieanweisungen werden zu einfachem Text',
+  'editor.allCaps': 'GROSSBUCHSTABEN im Editor — nur die Anzeige, der Text bleibt',
   'editor.redo': 'Wiederholen',
   'editor.placeholder':
     'Skript einfügen oder tippen. Wo Sie die Zeile umbrechen, bricht sie auch auf dem Bildschirm des Sprechers. [Klammern] kennzeichnen Regieanweisungen, ## öffnet ein Kapitel.',
