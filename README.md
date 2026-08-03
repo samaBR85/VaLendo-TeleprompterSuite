@@ -84,19 +84,17 @@ The app never restores the last script by itself. Opening Valendo in someone els
 
 **Windows** — run `Valendo-1.0.0-setup.exe`. It installs per user, so it does not ask for an administrator password. SmartScreen warns about an unrecognised publisher; **More info → Run anyway**.
 
-**macOS** — open the `.dmg` for your chip (`arm64` for Apple Silicon, `x64` for Intel) and drag Valendo to Applications. The app is **not notarised**, so the first launch is blocked:
-
-1. Open it once. macOS refuses.
-2. **System Settings → Privacy & Security**, scroll down, **Open Anyway**.
-3. Confirm on the next prompt. It never asks again.
-
-If that button does not appear, one line in Terminal does the same thing:
+**macOS** — open the `.dmg` for your chip (`arm64` for Apple Silicon, `x64` for Intel), drag Valendo to Applications, then run this once in Terminal:
 
 ```bash
 xattr -dr com.apple.quarantine /Applications/Valendo.app
 ```
 
-This is the price of not paying Apple's yearly developer fee. The app is signed ad-hoc, which is what lets it run at all on Apple Silicon; what is missing is Apple's notarisation stamp, which only a paid account can obtain. Building from source has no such block.
+It prints nothing and asks for nothing. Then the app opens normally, for good.
+
+Do this **before** the first launch. Without it macOS says *"Valendo is damaged and can't be opened"* and offers only **Move to Bin** — the app is not damaged; that is the message macOS gives a downloaded app it cannot verify with Apple. There is no **Open Anyway** button to click in this case: that one appears only when macOS warns, and here it refuses outright.
+
+The reason is that the app is **not notarised**. It is signed ad-hoc, which is what lets it run at all on Apple Silicon, but Apple's notarisation stamp requires a paid developer account this project does not have. Building from source has no such block, because nothing was downloaded.
 
 **From source** —
 

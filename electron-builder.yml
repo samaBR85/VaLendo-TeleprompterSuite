@@ -66,10 +66,10 @@ mac:
         - arm64
         - x64
   category: public.app-category.video
-  # o teleprompter mede e reposiciona janelas em telas que o operador escolhe;
-  # a lista de monitores vem do Electron, mas o app precisa poder abrir janela
-  # em tela cheia em qualquer uma delas
-  hardenedRuntime: true
+  # SEM `hardenedRuntime`. Ele é requisito da NOTARIZAÇÃO, que este projeto não
+  # vai ter — e sozinho ele só acrescenta restrição: liga a validação de
+  # bibliotecas, e o Electron carrega várias .dylib que não estão assinadas com
+  # o mesmo certificado. Ligá-lo aqui seria pagar o preço sem comprar nada.
   gatekeeperAssess: false
   artifactName: ${productName}-${version}-${arch}.${ext}
 
