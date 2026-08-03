@@ -121,7 +121,16 @@ function Medidor(): React.JSX.Element {
  * rigoroso: esperar o React redesenhar pode ser tarde demais, e o pedido seria
  * recusado sem dizer nada. Mexer no elemento aqui é o caminho que ele aceita.
  */
-function BotaoDeSom({ onLigar, rotulo }: { onLigar: () => void; rotulo: string }): React.JSX.Element {
+function BotaoDeSom({
+  onLigar,
+  rotulo,
+  deveTocar
+}: {
+  onLigar: () => void
+  rotulo: string
+  /** o operador mandou tocar? só então este clique pode chamar `play` */
+  deveTocar: boolean
+}): React.JSX.Element {
   return (
     <button
       type="button"
@@ -131,7 +140,18 @@ function BotaoDeSom({ onLigar, rotulo }: { onLigar: () => void; rotulo: string }
         const video = document.querySelector('video')
         if (!video) return
         video.muted = false
-        void video.play().catch(() => undefined)
+        /*
+         * `play` só quando o relógio compartilhado já mandava tocar.
+         *
+         * Quem manda no play deste tocador é o operador, e o efeito que obedece
+         * a ele só reage quando a ORDEM muda — um `play` disparado aqui, com o
+         * vídeo pausado na mesa, ficaria rodando sozinho até a próxima ordem,
+         * fora de sincronia com a tela do apresentador e sem ninguém conseguir
+         * pará-lo. Com o vídeo tocando, este `play` é o que o iPhone exige para
+         * aceitar o som, e é inofensivo: chamar `play` no que já toca não faz
+         * nada.
+         */
+        if (deveTocar) void video.play().catch(() => undefined)
       }}
       style={{
         position: 'absolute',
@@ -333,6 +353,19 @@ export function Webview(): React.JSX.Element {
    * dois casos, então play, pausa e arrasto do operador seguem valendo.
    */
   const sobrepondoEsteCartao = Boolean(quadro.cardOverlay?.enabled) || Boolean(quadro.card?.overlay)
+
+  /*
+   * Quem decide se o botão de som aparece é o CARTÃO no ar, não o caminho de
+   * desenho que coube a ele.
+   *
+   * Isto já foi escrito dentro do atalho abaixo, e o overlay o levou junto sem
+   * que ninguém decidisse: com "OVERLAY" ligado o vídeo cai no palco completo,
+   * onde não havia botão nenhum — o som nascia mudo e não havia o que tocar na
+   * tela para liberar. Aqui em cima, a pergunta é uma só e vale para os dois
+   * caminhos (e para um terceiro, se um dia existir).
+   */
+  const pedindoSom = quadro.card?.kind === 'video' && !som
+
   if (quadro.card?.kind === 'video' && !sobrepondoEsteCartao) {
     const video = quadro.card
     return (
@@ -347,7 +380,13 @@ export function Webview(): React.JSX.Element {
           volume={1}
           previaDoOperador={false}
         />
-        {!som ? <BotaoDeSom onLigar={() => setSom(true)} rotulo={traduzir(idioma, 'web.enableSound')} /> : null}
+        {pedindoSom ? (
+          <BotaoDeSom
+            onLigar={() => setSom(true)}
+            rotulo={traduzir(idioma, 'web.enableSound')}
+            deveTocar={transport.video.tocando}
+          />
+        ) : null}
         {!ligado ? <AvisoDeQueda texto={traduzir(idioma, 'web.offline')} /> : null}
       </div>
     )
@@ -389,6 +428,16 @@ export function Webview(): React.JSX.Element {
         />
       </div>
 
+      {/* IRMÃO do palco, não filho: o palco leva um `scale()` para caber na
+          tela, e um botão lá dentro encolheria junto — num celular viraria um
+          alvo de poucos milímetros. Aqui fora ele mantém o tamanho de toque. */}
+      {pedindoSom ? (
+        <BotaoDeSom
+          onLigar={() => setSom(true)}
+          rotulo={traduzir(idioma, 'web.enableSound')}
+          deveTocar={transport.video.tocando}
+        />
+      ) : null}
       {!ligado ? <AvisoDeQueda texto={traduzir(idioma, 'web.offline')} /> : null}
     </div>
   )
