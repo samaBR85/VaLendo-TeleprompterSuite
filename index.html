@@ -90,6 +90,19 @@
   }
   .btn.primary:hover { background: color-mix(in srgb, var(--go) 26%, transparent); }
 
+  /* chips de versão e downloads: o texto do HTML é o que vale se a API do
+     GitHub não responder — o script só melhora o que já está na página */
+  .chips { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 13px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--ink-1);
+    font-size: 13px; color: var(--fog-2);
+  }
+  .chip b { color: var(--fog-0); font-weight: 600; }
+  .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--fog-3); }
+  .chip.live .dot { background: var(--go); }
+
   figure { margin: 0; }
   figure img {
     width: 100%; height: auto; display: block;
@@ -171,6 +184,10 @@
     <a class="btn primary" href="https://github.com/samaBR85/Valendo-TeleprompterSuite/releases">Download for Windows</a>
     <a class="btn" href="https://github.com/samaBR85/Valendo-TeleprompterSuite">Source on GitHub</a>
     <a class="btn" href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki">Documentation</a>
+  </div>
+  <div class="chips">
+    <span class="chip" id="chip-version"><span class="dot"></span>Version <b>1.0.0</b></span>
+    <span class="chip" id="chip-downloads"><span class="dot"></span><b>No release yet</b></span>
   </div>
   <figure class="shot-wide">
     <img src="shots/02-split.png" alt="The operator window: the script editor on the left, an exact replica of the presenter's screen on the right" />
@@ -391,6 +408,52 @@ npm run dev</code></pre>
     </p>
   </div>
 </footer>
+
+<script>
+/*
+ * Os dois chips do herói, preenchidos pela API pública do GitHub.
+ *
+ * O HTML já chega com um texto que é verdade — "Version 1.0.0" e "No release
+ * yet" — e o script só MELHORA o que está lá. Assim a página continua honesta
+ * quando a API não responde: sem chave, ela permite 60 chamadas por hora por
+ * endereço IP, e um visitante numa rede movimentada pode cair no limite.
+ *
+ * Downloads é a soma de TODOS os arquivos de TODAS as versões, e não só da
+ * última: quem baixou a 1.0.0 no mês passado baixou o app do mesmo jeito, e
+ * zerar essa conta a cada lançamento contaria uma história errada.
+ */
+(function () {
+  var REPO = 'samaBR85/Valendo-TeleprompterSuite'
+  var versao = document.getElementById('chip-version')
+  var baixados = document.getElementById('chip-downloads')
+
+  var formatar = function (n) {
+    return n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace('.0', '') + 'k' : String(n)
+  }
+
+  fetch('https://api.github.com/repos/' + REPO + '/releases')
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status) })
+    .then(function (releases) {
+      if (!Array.isArray(releases) || releases.length === 0) return
+
+      // a primeira que não é rascunho nem pré-lançamento é a que o site anuncia
+      var estavel = releases.filter(function (r) { return !r.draft && !r.prerelease })
+      var atual = estavel[0] || releases[0]
+      if (atual && atual.tag_name) {
+        versao.innerHTML = '<span class="dot"></span>Version <b>' + atual.tag_name.replace(/^v/, '') + '</b>'
+        versao.className = 'chip live'
+      }
+
+      var total = releases.reduce(function (soma, r) {
+        return soma + (r.assets || []).reduce(function (s, a) { return s + (a.download_count || 0) }, 0)
+      }, 0)
+      baixados.innerHTML = '<span class="dot"></span><b>' + formatar(total) + '</b> download' + (total === 1 ? '' : 's')
+    })
+    .catch(function () {
+      // fica o que o HTML já dizia
+    })
+})()
+</script>
 
 </body>
 </html>
