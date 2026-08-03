@@ -42,7 +42,7 @@ describe('composeLines', () => {
   it('dá peso não-zero a direções e capítulos, para a rolagem não pular a altura deles', () => {
     // regressão: com peso zero, o relógio atravessa a linha inteira num
     // instante e o texto salta na tela bem em cima de uma anotação
-    const blocks = doc('§ Abertura', 'duas palavras aqui agora', '[olhar câmera 2]')
+    const blocks = doc('## Abertura', 'duas palavras aqui agora', '[olhar câmera 2]')
 
     for (const rule of [RULE, BY_WORDS]) {
       const lines = composeLines(blocks, rule)
@@ -107,7 +107,7 @@ describe('composeLines', () => {
   })
 
   it('a linha em branco fica presa ao bloco de cima, para saltos caírem no texto', () => {
-    const blocks = doc('primeiro parágrafo aqui', '§ Bloco 2')
+    const blocks = doc('primeiro parágrafo aqui', '## Bloco 2')
     const lines = composeLines(blocks, RULE)
     const blank = lines.find((l) => l.spacer)
 
@@ -186,7 +186,7 @@ describe('velocidade constante com linhas que dobram', () => {
 
 describe('velocidade constante', () => {
   const script = doc(
-    '§ Abertura',
+    '## Abertura',
     'uma frase com bastante texto para render mais de uma linha composta aqui',
     '[pausa]',
     'outra frase, dessa vez curta',

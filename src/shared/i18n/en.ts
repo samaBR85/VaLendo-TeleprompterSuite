@@ -29,13 +29,13 @@ export const en: Dicionario = {
   'mode.deck.hint': 'timeline and rundown for a show with several blocks',
 
   'panel.edit': 'Editing',
-  'panel.edit.hint': '[directions] · § chapters',
+  'panel.edit.hint': '[directions] · ## chapters',
   'panel.broadcasting': 'Broadcast',
   'panel.expand': 'Expand the broadcast · F11',
   'panel.collapse': 'Back to split · F11',
   'panel.livePreview': 'Live preview',
 
-  'editor.chapter': 'Insert chapter — becomes § in the text',
+  'editor.chapter': 'Insert chapter — becomes ## in the text',
   'editor.direction': 'Insert stage direction — becomes [brackets], not read aloud',
   'editor.undo': 'Undo',
   'editor.fontSize': 'Editor font size',
@@ -44,7 +44,7 @@ export const en: Dicionario = {
   'editor.clearFormat': 'Clear formatting: chapters and directions become plain text',
   'editor.redo': 'Redo',
   'editor.placeholder':
-    'Paste or type the script. Where you break the line, it breaks on the presenter’s screen. [brackets] mark directions, § opens a chapter.',
+    'Paste or type the script. Where you break the line, it breaks on the presenter’s screen. [brackets] mark directions, ## opens a chapter.',
 
   'tabs.new': 'New tab',
   'tabs.new.hint': 'New tab · Ctrl+T',
@@ -158,7 +158,7 @@ export const en: Dicionario = {
   'sidebar.chapters': 'Chapters',
   'sidebar.cards': 'Block cards',
   'sidebar.help': 'Quick help',
-  'sidebar.noChapters': 'No chapters yet — open one with § in the script.',
+  'sidebar.noChapters': 'No chapters yet — open one with ## in the script.',
   'sidebar.noCards': 'No cards yet.',
   'sidebar.thumbSize': 'Card thumbnail size',
   'sidebar.help.scrollTitle': 'Scroll button',
@@ -418,12 +418,12 @@ export const en: Dicionario = {
   'content.preset.night': 'Night blue',
   'content.preset.soft': 'Soft',
   'content.sample': [
-    '§ Opening',
+    '## Opening',
     'Good evening. Tonight we are talking about a change that is already happening in studios across the country.',
     '[look at camera 2 · pause]',
     'And the most important part: nobody has to stop the recording to fix a sentence any more.',
     'Let us see how that works in practice. This text can be edited right now, with the broadcast on air, and the word under the reading mark will not move.',
-    '§ Block 2',
+    '## Block 2',
     'Try it: raise the font size, change the margin, change the words per line. Nothing jumps.'
   ].join('\n\n')
 }

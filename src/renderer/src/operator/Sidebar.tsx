@@ -4,6 +4,7 @@ import { composeLines } from '@shared/anchor'
 import { CARD_DRAG_MIME, ESTILOS_DE_OVERLAY } from '@shared/cards'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
+import { CHAPTER_MARK } from '@shared/text'
 import type {
   Cartao,
   CardOverlayStyle,
@@ -88,7 +89,7 @@ function MiniaturaDoCartao({ card, size }: { card: Cartao; size: number }): Reac
 /**
  * A coluna da esquerda: onde o programa está, em vez de onde o texto está.
  *
- * Os capítulos já existem no roteiro (cada `§` é um) e a duração de cada um
+ * Os capítulos já existem no roteiro (cada `##` é um) e a duração de cada um
  * sai da MESMA régua que governa a rolagem — via `buildRundown`, o mesmo
  * cálculo que a Mesa usa. Não é uma conta paralela: se o número aqui e o
  * tempo real divergissem, a coluna viraria uma mentira cronometrada.
@@ -178,7 +179,7 @@ export function Sidebar({
                   }`}
                   style={index === atual ? { color: '#f6d38a' } : undefined}
                 >
-                  {segment.title ? `§ ${segment.title}` : t('deck.noChapter')}
+                  {segment.title ? `${CHAPTER_MARK} ${segment.title}` : t('deck.noChapter')}
                 </span>
                 <span
                   className="flex-none font-mono text-[10px]"

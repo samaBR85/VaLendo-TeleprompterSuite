@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { COMMANDS } from '../commands'
 import { presetsPadrao, roteiroDeExemplo } from '../defaults'
+import { CHAPTER_MARK } from '../text'
 import { dicionario, plural, rotuloDoComando, traduzir } from './index'
 import { pt } from './pt'
 import { idiomaDoSistema, larguraDoPainel, LANGS } from './types'
@@ -146,7 +147,7 @@ describe('conteúdo nasce no idioma, mas não é reescrito depois', () => {
   it('o roteiro de exemplo vem no idioma e mantém a estrutura de capítulos', () => {
     for (const lang of IDIOMAS) {
       const texto = roteiroDeExemplo(lang)
-      expect(texto.split('\n\n').filter((l) => l.startsWith('§')).length, lang).toBe(2)
+      expect(texto.split('\n\n').filter((l) => l.startsWith(CHAPTER_MARK)).length, lang).toBe(2)
       expect(texto, lang).toMatch(/\[.+\]/)
     }
   })

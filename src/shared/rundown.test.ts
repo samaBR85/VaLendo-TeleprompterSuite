@@ -28,8 +28,8 @@ describe('buildRundown', () => {
     expect(segments[0].spokenWords).toBe(totalWordCount(blocks))
   })
 
-  it('cada § vira um trecho, com o título sem o símbolo', () => {
-    const blocks = doc('§ Abertura', 'boa noite a todos', '§ Bloco 2', 'e seguimos em frente')
+  it('cada ## vira um trecho, com o título sem o símbolo', () => {
+    const blocks = doc('## Abertura', 'boa noite a todos', '## Bloco 2', 'e seguimos em frente')
     const lines = composeLines(blocks, RULE)
 
     const segments = buildRundown(blocks, lines, [])
@@ -39,7 +39,7 @@ describe('buildRundown', () => {
   })
 
   it('fala antes do primeiro capítulo vira um trecho líder sem título', () => {
-    const blocks = doc('isso aqui não tem capítulo em cima', '§ Abertura', 'agora sim tem')
+    const blocks = doc('isso aqui não tem capítulo em cima', '## Abertura', 'agora sim tem')
     const lines = composeLines(blocks, RULE)
 
     const segments = buildRundown(blocks, lines, [])
@@ -52,12 +52,12 @@ describe('buildRundown', () => {
 
   it('a régua dos trechos soma exatamente a régua do documento inteiro', () => {
     const blocks = doc(
-      '§ Abertura',
+      '## Abertura',
       'boa noite. hoje a gente vai falar sobre uma mudança grande.',
       '[olhar câmera 2]',
-      '§ Bloco 2',
+      '## Bloco 2',
       'e seguimos com a segunda parte da matéria de hoje.',
-      '§ Encerramento',
+      '## Encerramento',
       'é isso por hoje. até a próxima.'
     )
     const lines = composeLines(blocks, RULE)
@@ -71,7 +71,7 @@ describe('buildRundown', () => {
   })
 
   it('as palavras faladas dos trechos somam exatamente o total do documento', () => {
-    const blocks = doc('§ Abertura', 'primeira fala aqui', '§ Bloco 2', 'segunda fala aqui também')
+    const blocks = doc('## Abertura', 'primeira fala aqui', '## Bloco 2', 'segunda fala aqui também')
     const lines = composeLines(blocks, RULE)
 
     const segments = buildRundown(blocks, lines, [])
@@ -83,7 +83,7 @@ describe('buildRundown', () => {
   it('dois capítulos vizinhos, sem fala entre eles, ainda pesam alguma coisa na régua', () => {
     // regressão do mesmo tipo que anchor.ts já cobre para composeLines: peso
     // zero faria a rolagem atravessar o trecho num instante
-    const blocks = doc('§ Abertura', '§ Bloco 2', 'só aqui tem fala de verdade')
+    const blocks = doc('## Abertura', '## Bloco 2', 'só aqui tem fala de verdade')
     const lines = composeLines(blocks, RULE)
 
     const segments = buildRundown(blocks, lines, [])
@@ -93,7 +93,7 @@ describe('buildRundown', () => {
   })
 
   it('um marcador cai no trecho do bloco em que ele está, não em outro', () => {
-    const blocks = doc('§ Abertura', 'fala do primeiro trecho', '§ Bloco 2', 'fala do segundo trecho')
+    const blocks = doc('## Abertura', 'fala do primeiro trecho', '## Bloco 2', 'fala do segundo trecho')
     const lines = composeLines(blocks, RULE)
     const alvo = blocks[3] // "fala do segundo trecho"
     const marker: Marker = { id: 'm1', blockId: alvo.id, label: 'entra convidado' }
@@ -106,7 +106,7 @@ describe('buildRundown', () => {
   })
 
   it('a posição do marcador na régua é o início do bloco dele — o mesmo que "ir para o marcador" já usa', () => {
-    const blocks = doc('§ Abertura', 'primeira fala aqui', 'segunda fala aqui')
+    const blocks = doc('## Abertura', 'primeira fala aqui', 'segunda fala aqui')
     const lines = composeLines(blocks, RULE)
     const segundoBloco = blocks[2]
     const marker: Marker = { id: 'm1', blockId: segundoBloco.id, label: 'x' }
@@ -118,7 +118,7 @@ describe('buildRundown', () => {
   })
 
   it('marcador em bloco que não existe mais não aparece em trecho nenhum', () => {
-    const blocks = doc('§ Abertura', 'fala qualquer')
+    const blocks = doc('## Abertura', 'fala qualquer')
     const lines = composeLines(blocks, RULE)
     const marker: Marker = { id: 'm1', blockId: 'bloco-que-sumiu', label: 'x' }
 
@@ -129,7 +129,7 @@ describe('buildRundown', () => {
 })
 
 describe('segmentIndexAt', () => {
-  const blocks = doc('§ Abertura', 'fala um', '§ Bloco 2', 'fala dois', '§ Encerramento', 'fala três')
+  const blocks = doc('## Abertura', 'fala um', '## Bloco 2', 'fala dois', '## Encerramento', 'fala três')
   const lines = composeLines(blocks, RULE)
   const segments = buildRundown(blocks, lines, [])
 

@@ -4,7 +4,7 @@ import { defaultFileName, formatOf, toMarkdown, toPlainText } from './exportScri
 import { blocksFromText, serializeBlocks } from './text'
 
 const ROTEIRO = [
-  '§ Abertura',
+  '## Abertura',
   'Boa noite.\nHoje a gente fala de uma mudança.',
   '[olhar câmera 2 · pausa]',
   'E o mais importante: ninguém precisa parar a gravação.'
@@ -51,9 +51,12 @@ describe('salvar como markdown', () => {
     expect(md.startsWith('# Jornal das Dez')).toBe(true)
   })
 
-  it('capítulo vira cabeçalho, sem o §', () => {
+  // desde que a marca do roteiro virou `##`, ela COINCIDE com o cabeçalho de
+  // nível 2 do Markdown — o que antes era conversão virou identidade. O risco
+  // que sobra é o oposto do antigo: marcar duas vezes, gerando `#### Abertura`.
+  it('capítulo vira cabeçalho de nível 2, sem marca dobrada', () => {
     expect(md).toContain('## Abertura')
-    expect(md).not.toContain('§')
+    expect(md).not.toMatch(/^#{3,}/m)
   })
 
   it('direção fica em itálico, mas continua entre colchetes', () => {

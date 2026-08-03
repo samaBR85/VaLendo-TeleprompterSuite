@@ -1,3 +1,5 @@
+import { CHAPTER_MARK } from './text'
+
 export type InsertKind = 'chapter' | 'direction'
 
 export interface InsertResult {
@@ -16,7 +18,7 @@ export const PLACEHOLDERS: Record<InsertKind, string> = {
  * Insere um capítulo ou uma direção no ponto do cursor.
  *
  * O classificador de blocos trabalha por parágrafo, e parágrafo é o que está
- * entre linhas em branco. Sem garantir essas fronteiras, "§ Título" enfiado no
+ * entre linhas em branco. Sem garantir essas fronteiras, "## Título" enfiado no
  * meio de um parágrafo continuaria sendo texto falado — apareceria a marcação
  * na tela do apresentador em vez de virar um capítulo. Por isso as linhas em
  * branco ao redor são acrescentadas só quando ainda não existem.
@@ -32,7 +34,7 @@ export function insertBlock(
 
   const selected = value.slice(start, end).trim()
   const content = selected.length > 0 ? selected : PLACEHOLDERS[kind]
-  const block = kind === 'chapter' ? `§ ${content}` : `[${content}]`
+  const block = kind === 'chapter' ? `${CHAPTER_MARK} ${content}` : `[${content}]`
 
   const before = value.slice(0, start)
   const after = value.slice(end)
@@ -40,9 +42,9 @@ export function insertBlock(
   const prefix = before.length === 0 ? '' : before.endsWith('\n\n') ? '' : before.endsWith('\n') ? '\n' : '\n\n'
   const suffix = after.length === 0 ? '' : after.startsWith('\n\n') ? '' : after.startsWith('\n') ? '\n' : '\n\n'
 
-  // abre o colchete ou o "§ " antes do miolo: o cursor precisa cair no texto,
+  // pula o colchete ou o "## " antes do miolo: o cursor precisa cair no texto,
   // não na marcação
-  const contentOffset = kind === 'chapter' ? 2 : 1
+  const contentOffset = kind === 'chapter' ? CHAPTER_MARK.length + 1 : 1
   const contentStart = before.length + prefix.length + contentOffset
 
   return {

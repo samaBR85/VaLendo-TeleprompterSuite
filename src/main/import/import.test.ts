@@ -32,8 +32,8 @@ describe('importFile — markdown', () => {
     const blocks = blocksFromText(text)
 
     expect(blocks.filter((b) => b.kind === 'chapter').map((b) => b.text)).toEqual([
-      '§ Abertura',
-      '§ Bloco 2'
+      '## Abertura',
+      '## Bloco 2'
     ])
     expect(text).toContain('uma mudança')
     expect(text).not.toContain('**')

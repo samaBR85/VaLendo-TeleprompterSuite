@@ -44,7 +44,7 @@ function useNow(intervalMs = 500): number {
 
 /**
  * A Mesa de comando: acompanhar um programa de vários blocos, não editá-lo.
- * Cada `§` do roteiro já é um trecho — nada novo para o operador escrever. A
+ * Cada `##` do roteiro já é um trecho — nada novo para o operador escrever. A
  * duração de cada um sai da mesma régua que governa a rolagem de verdade
  * (`composeLines`), então o tempo mostrado aqui é o tempo que a leitura vai
  * levar, não uma conta à parte que pode divergir.

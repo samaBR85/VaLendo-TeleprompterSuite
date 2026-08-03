@@ -3,6 +3,7 @@ import {
   anchorFromCaret,
   blockWordCount,
   blocksFromText,
+  chapterTitle,
   hasFormatting,
   reconcileBlocks,
   serializeBlocks,
@@ -13,12 +14,26 @@ import {
 
 describe('classificação de blocos', () => {
   it('reconhece fala, direção e capítulo', () => {
-    const blocks = blocksFromText('§ Abertura\n\nboa noite a todos\n\n[olhar câmera 2]\n\n## Bloco 2')
+    const blocks = blocksFromText('## Abertura\n\nboa noite a todos\n\n[olhar câmera 2]\n\n## Bloco 2')
     expect(blocks.map((b) => b.kind)).toEqual(['chapter', 'speech', 'direction', 'chapter'])
   })
 
+  it('aceita qualquer nível de cabeçalho, de # a ######', () => {
+    const blocks = blocksFromText('# um\n\n### três\n\n###### seis')
+    expect(blocks.map((b) => b.kind)).toEqual(['chapter', 'chapter', 'chapter'])
+    expect(blocks.map(chapterTitle)).toEqual(['um', 'três', 'seis'])
+  })
+
+  it('o § de antes da 173 NÃO é mais capítulo — vira fala', () => {
+    // decisão explícita do operador: não arrastar a marca antiga. Um roteiro
+    // escrito antes da troca abre com os títulos contando tempo como fala,
+    // e é isso que tem que acontecer — não um erro silencioso.
+    const blocks = blocksFromText('§ Abertura\n\nboa noite')
+    expect(blocks.map((b) => b.kind)).toEqual(['speech', 'speech'])
+  })
+
   it('direções e capítulos não contam palavras', () => {
-    const blocks = blocksFromText('§ Abertura\n\numa duas três\n\n[não conta]')
+    const blocks = blocksFromText('## Abertura\n\numa duas três\n\n[não conta]')
     expect(blocks.map(blockWordCount)).toEqual([0, 3, 0])
     expect(totalWordCount(blocks)).toBe(3)
   })
@@ -84,7 +99,7 @@ describe('reconcileBlocks — estabilidade dos ids', () => {
   })
 
   it('sobrevive a ida e volta pelo texto do editor', () => {
-    const blocks = blocksFromText('§ Título\n\nfala aqui\n\n[direção]')
+    const blocks = blocksFromText('## Título\n\nfala aqui\n\n[direção]')
     const round = reconcileBlocks(blocks, serializeBlocks(blocks))
     expect(round.map((b) => b.id)).toEqual(blocks.map((b) => b.id))
     expect(round.map((b) => b.kind)).toEqual(blocks.map((b) => b.kind))
@@ -102,7 +117,7 @@ describe('anchorFromCaret — o "Go To" do rodapé da edição', () => {
   })
 
   it('pousa no início da linha para capítulo e direção, sem contar palavras', () => {
-    const text = '§ Abertura\n\n[olhar câmera 2]'
+    const text = '## Abertura\n\n[olhar câmera 2]'
     const blocks = blocksFromText(text)
 
     const noCapitulo = anchorFromCaret(blocks, text, 5)
@@ -140,13 +155,13 @@ describe('anchorFromCaret — o "Go To" do rodapé da edição', () => {
 describe('remover formatação', () => {
   it('tira as marcas e mantém as palavras', () => {
     // é "remover formatação", como em qualquer editor — e não "apagar trecho"
-    const texto = '§ Abertura\n\nBoa noite.\n\n[olhar câmera 2 · pausa]\n\n## Bloco 2\n\nFim.'
+    const texto = '## Abertura\n\nBoa noite.\n\n[olhar câmera 2 · pausa]\n\n## Bloco 2\n\nFim.'
     expect(stripFormatting(texto)).toBe('Abertura\n\nBoa noite.\n\nolhar câmera 2 · pausa\n\nBloco 2\n\nFim.')
   })
 
   it('tudo vira fala, e por isso o roteiro passa a durar mais', () => {
-    const antes = blocksFromText('§ Abertura\n\n[pausa longa]\n\nBoa noite.')
-    const depois = blocksFromText(stripFormatting('§ Abertura\n\n[pausa longa]\n\nBoa noite.'))
+    const antes = blocksFromText('## Abertura\n\n[pausa longa]\n\nBoa noite.')
+    const depois = blocksFromText(stripFormatting('## Abertura\n\n[pausa longa]\n\nBoa noite.'))
 
     expect(antes.map((b) => b.kind)).toEqual(['chapter', 'direction', 'speech'])
     expect(depois.every((b) => b.kind === 'speech')).toBe(true)
@@ -165,7 +180,7 @@ describe('remover formatação', () => {
     const simples = 'Boa noite.\n\nHoje a gente vai falar sobre uma mudança.'
     expect(stripFormatting(simples)).toBe(simples)
     expect(hasFormatting(blocksFromText(simples))).toBe(false)
-    expect(hasFormatting(blocksFromText('§ Abertura\n\nBoa noite.'))).toBe(true)
+    expect(hasFormatting(blocksFromText('## Abertura\n\nBoa noite.'))).toBe(true)
   })
 
   it('não confunde colchete no meio da frase com direção', () => {

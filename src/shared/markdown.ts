@@ -1,10 +1,14 @@
 import { normalizeTypography } from './cleanup'
+import { CHAPTER_MARK } from './text'
 
 /**
  * Markdown -> roteiro.
  *
- * Não é um renderizador: é uma redução. Título vira capítulo (`§`), o resto
+ * Não é um renderizador: é uma redução. Título vira capítulo (`##`), o resto
  * vira parágrafo falado e a marcação some — ninguém lê asterisco em voz alta.
+ *
+ * Nivelar todo título em `##` é de propósito: o roteiro tem uma hierarquia só,
+ * e um `#` de nível 1 e um `######` de nível 6 valem o mesmo capítulo aqui.
  */
 export function markdownToScript(markdown: string): string {
   const source = normalizeTypography(markdown)
@@ -34,13 +38,13 @@ export function markdownToScript(markdown: string): string {
 
     const heading = /^\s*(#{1,6})\s+(.*)$/.exec(line)
     if (heading) {
-      out.push('', `§ ${inline(heading[2])}`, '')
+      out.push('', `${CHAPTER_MARK} ${inline(heading[2])}`, '')
       continue
     }
 
     const setext = /^\s*(=|-){3,}\s*$/.exec(line)
     if (setext && out.length > 0 && out[out.length - 1].trim().length > 0) {
-      out[out.length - 1] = `§ ${out[out.length - 1].replace(/^§\s*/, '')}`
+      out[out.length - 1] = `${CHAPTER_MARK} ${out[out.length - 1].replace(/^#{1,6}\s*/, '')}`
       continue
     }
 
@@ -88,7 +92,7 @@ export function htmlToScript(html: string): string {
     const tag = match[1].toLowerCase()
     const text = inline(match[2].replace(/<br\s*\/?>/gi, ' '))
     if (text.length === 0) continue
-    blocks.push(tag.startsWith('h') ? `§ ${text}` : text)
+    blocks.push(tag.startsWith('h') ? `${CHAPTER_MARK} ${text}` : text)
   }
 
   if (blocks.length === 0) return normalizeTypography(inline(html))

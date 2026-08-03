@@ -5,6 +5,7 @@ import { formatBinding, parseBinding } from '@shared/commands'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
 import { PPM_MAX, PPM_MIN } from '@shared/ruler'
+import { CHAPTER_MARK } from '@shared/text'
 import type { AppState, DisplayInfo, Tab, TransportPosition } from '@shared/types'
 import { Icon } from '../ui/Icon'
 import { Digito, Lcd, Poco, Tecla } from '../ui/console'
@@ -507,7 +508,7 @@ export function BarraDeArquivo({
 /**
  * O progresso do roteiro, como um fio de fora a fora da janela.
  *
- * Era um mostrador de LCD com legenda ("§ CAPÍTULO · PREVISÃO · ALVO") no meio
+ * Era um mostrador de LCD com legenda ("CAPÍTULO · PREVISÃO · ALVO") no meio
  * da barra do topo, disputando largura com o teclado e a velocidade. Virou uma
  * linha sem rótulo nenhum, encostada embaixo da barra: usa a largura que já
  * sobrava de graça — a da própria janela — e não tira espaço de mais nada. O
@@ -754,7 +755,7 @@ export function BarraDeTransporte({
 
   // o que a legenda do antigo mostrador dizia, agora no hover da linha:
   // capítulo corrente e quanto o roteiro inteiro leva no ritmo de agora
-  const legenda = [capitulo ? `§ ${capitulo}` : '', `${t('lcd.forecast')} ${formatClock(total)}`]
+  const legenda = [capitulo ? `${CHAPTER_MARK} ${capitulo}` : '', `${t('lcd.forecast')} ${formatClock(total)}`]
     .filter(Boolean)
     .join(' · ')
 

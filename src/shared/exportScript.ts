@@ -45,7 +45,7 @@ export function formatOf(filePath: string): ExportFormat {
  * O .txt é o texto do editor, letra por letra.
  *
  * Nada de reformatar: as linhas em branco são a diagramação que o operador
- * escolheu, e `[direções]` e `§ capítulos` são a marcação que o próprio app lê
+ * escolheu, e `[direções]` e `## capítulos` são a marcação que o próprio app lê
  * de volta. Salvar e reimportar tem que devolver o mesmo roteiro.
  */
 export function toPlainText(blocks: Block[]): string {

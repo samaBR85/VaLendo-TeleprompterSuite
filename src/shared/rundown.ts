@@ -32,7 +32,7 @@ export interface Segment {
 /**
  * Corta o roteiro em trechos por capítulo, para o rundown e a linha do tempo.
  *
- * Cada `§` já delimita um trecho — nada novo para o operador escrever. A
+ * Cada `##` já delimita um trecho — nada novo para o operador escrever. A
  * duração de cada um sai da mesma régua que já governa a rolagem (`lines`,
  * vinda de `composeLines`), não de uma conta paralela: é a garantia de que o
  * tempo mostrado aqui bate com o tempo que a rolagem de verdade vai levar.
@@ -62,7 +62,7 @@ export function buildRundown(blocks: Block[], lines: LineSpec[], markers: Marker
 
   // roteiro que começa com fala antes do primeiro capítulo (ou sem capítulo
   // nenhum) ainda precisa de um primeiro trecho — sem título, porque não há
-  // um `§` para tirar um
+  // um `##` para tirar um
   if (boundaries.length === 0 || boundaries[0].blockIndex > 0) {
     boundaries.unshift({ blockIndex: 0, blockId: blocks[0].id, title: '' })
   }

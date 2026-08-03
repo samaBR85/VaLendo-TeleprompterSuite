@@ -5,12 +5,12 @@ import { blocksFromText } from './text'
 describe('markdownToScript', () => {
   it('transforma título em capítulo', () => {
     const script = markdownToScript('# Abertura\n\nboa noite a todos')
-    expect(script).toBe('§ Abertura\n\nboa noite a todos')
+    expect(script).toBe('## Abertura\n\nboa noite a todos')
     expect(blocksFromText(script).map((b) => b.kind)).toEqual(['chapter', 'speech'])
   })
 
   it('aceita título sublinhado no estilo setext', () => {
-    expect(markdownToScript('Abertura\n========\n\nfala aqui')).toBe('§ Abertura\n\nfala aqui')
+    expect(markdownToScript('Abertura\n========\n\nfala aqui')).toBe('## Abertura\n\nfala aqui')
   })
 
   it('tira a marcação de ênfase sem comer o texto', () => {
@@ -46,7 +46,7 @@ describe('markdownToScript', () => {
 describe('htmlToScript', () => {
   it('mapeia títulos para capítulo e parágrafos para fala', () => {
     const html = '<h1>Abertura</h1><p>boa noite</p><li>um item</li>'
-    expect(htmlToScript(html)).toBe('§ Abertura\n\nboa noite\n\num item')
+    expect(htmlToScript(html)).toBe('## Abertura\n\nboa noite\n\num item')
   })
 
   it('descarta tags vazias e converte quebra de linha', () => {

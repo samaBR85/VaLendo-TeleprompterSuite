@@ -29,13 +29,13 @@ export const es: Dicionario = {
   'mode.deck.hint': 'línea de tiempo y escaleta de un programa con varios bloques',
 
   'panel.edit': 'Edición',
-  'panel.edit.hint': '[acotaciones] · § capítulos',
+  'panel.edit.hint': '[acotaciones] · ## capítulos',
   'panel.broadcasting': 'Emisión',
   'panel.expand': 'Ampliar la emisión · F11',
   'panel.collapse': 'Volver al split · F11',
   'panel.livePreview': 'Vista previa en vivo',
 
-  'editor.chapter': 'Insertar capítulo — se convierte en § en el texto',
+  'editor.chapter': 'Insertar capítulo — se convierte en ## en el texto',
   'editor.direction': 'Insertar acotación — se convierte en [corchetes], no se lee',
   'editor.undo': 'Deshacer',
   'editor.fontSize': 'Tamaño de fuente del editor',
@@ -44,7 +44,7 @@ export const es: Dicionario = {
   'editor.clearFormat': 'Quitar formato: los capítulos y las indicaciones pasan a texto simple',
   'editor.redo': 'Rehacer',
   'editor.placeholder':
-    'Pega o escribe el guion. Donde cortes la línea, se corta en la pantalla del presentador. [corchetes] marcan acotaciones, § abre capítulo.',
+    'Pega o escribe el guion. Donde cortes la línea, se corta en la pantalla del presentador. [corchetes] marcan acotaciones, ## abre capítulo.',
 
   'tabs.new': 'Pestaña nueva',
   'tabs.new.hint': 'Pestaña nueva · Ctrl+T',
@@ -159,7 +159,7 @@ export const es: Dicionario = {
   'sidebar.chapters': 'Capítulos',
   'sidebar.cards': 'Tarjetas del bloque',
   'sidebar.help': 'Ayuda rápida',
-  'sidebar.noChapters': 'Ningún capítulo todavía — abre uno con § en el guion.',
+  'sidebar.noChapters': 'Ningún capítulo todavía — abre uno con ## en el guion.',
   'sidebar.noCards': 'Ninguna tarjeta todavía.',
   'sidebar.thumbSize': 'Tamaño de las miniaturas de las tarjetas',
   'sidebar.help.scrollTitle': 'Botón de desplazamiento',
@@ -420,12 +420,12 @@ export const es: Dicionario = {
   'content.preset.night': 'Azul noche',
   'content.preset.soft': 'Suave',
   'content.sample': [
-    '§ Apertura',
+    '## Apertura',
     'Buenas noches. Hoy vamos a hablar de un cambio que ya está pasando en los estudios de todo el país.',
     '[mirar cámara 2 · pausa]',
     'Y lo más importante: ya nadie tiene que parar la grabación para corregir una frase.',
     'Veamos cómo funciona en la práctica. Este texto se puede editar ahora mismo, con la emisión al aire, y la palabra que está bajo la marca de lectura no se va a mover.',
-    '§ Bloque 2',
+    '## Bloque 2',
     'Prueba: sube el cuerpo de la fuente, cambia el margen, cambia las palabras por línea. Nada salta.'
   ].join('\n\n')
 }

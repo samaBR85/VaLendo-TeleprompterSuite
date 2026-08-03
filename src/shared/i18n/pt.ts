@@ -38,14 +38,14 @@ export const pt = {
 
   /* ---------------------------------------------------------------- painéis */
   'panel.edit': 'Edição',
-  'panel.edit.hint': '[direções] · § capítulos',
+  'panel.edit.hint': '[direções] · ## capítulos',
   'panel.broadcasting': 'Transmissão',
   'panel.expand': 'Expandir a transmissão · F11',
   'panel.collapse': 'Voltar ao split · F11',
   'panel.livePreview': 'Prévia ao vivo',
 
   /* ----------------------------------------------------------------- editor */
-  'editor.chapter': 'Inserir capítulo — vira § no texto',
+  'editor.chapter': 'Inserir capítulo — vira ## no texto',
   'editor.direction': 'Inserir direção de cena — vira [colchetes], não é lida',
   'editor.undo': 'Desfazer',
   'editor.fontSize': 'Tamanho da fonte do editor',
@@ -54,7 +54,7 @@ export const pt = {
   'editor.clearFormat': 'Remover formatação: capítulos e direções viram texto simples',
   'editor.redo': 'Refazer',
   'editor.placeholder':
-    'Cole ou digite o roteiro. Onde você quebrar a linha, ela quebra na tela do apresentador. [colchetes] marcam direções, § abre capítulo.',
+    'Cole ou digite o roteiro. Onde você quebrar a linha, ela quebra na tela do apresentador. [colchetes] marcam direções, ## abre capítulo.',
 
   /* ------------------------------------------------------------------- abas */
   'tabs.new': 'Nova aba',
@@ -172,7 +172,7 @@ export const pt = {
   'sidebar.chapters': 'Capítulos',
   'sidebar.cards': 'Cartões do bloco',
   'sidebar.help': 'Ajuda rápida',
-  'sidebar.noChapters': 'Nenhum capítulo ainda — abra um com § no roteiro.',
+  'sidebar.noChapters': 'Nenhum capítulo ainda — abra um com ## no roteiro.',
   'sidebar.noCards': 'Nenhum cartão ainda.',
   'sidebar.thumbSize': 'Tamanho das miniaturas dos cartões',
   'sidebar.help.scrollTitle': 'Botão de rolagem',
@@ -446,12 +446,12 @@ export const pt = {
   'content.preset.night': 'Azul noite',
   'content.preset.soft': 'Suave',
   'content.sample': [
-    '§ Abertura',
+    '## Abertura',
     'Boa noite. Hoje a gente vai falar sobre uma mudança que já está acontecendo nos estúdios do país inteiro.',
     '[olhar câmera 2 · pausa]',
     'E o mais importante: ninguém precisa mais parar a gravação para corrigir uma frase.',
     'Vamos ver como isso funciona na prática. Este texto pode ser editado agora, com a transmissão no ar, e a palavra que está sob a marca de leitura não vai se mexer.',
-    '§ Bloco 2',
+    '## Bloco 2',
     'Experimente: aumente o corpo da fonte, mude a margem, troque as palavras por linha. Nada salta.'
   ].join('\n\n')
 } as const

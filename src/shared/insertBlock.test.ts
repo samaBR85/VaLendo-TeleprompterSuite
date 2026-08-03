@@ -29,13 +29,13 @@ describe('insertBlock — fronteiras de parágrafo', () => {
     const cursor = 'parágrafo um\n\n'.length
     const { text } = insertBlock(value, cursor, cursor, 'chapter')
 
-    expect(text).toBe('parágrafo um\n\n§ Título do capítulo\n\nparágrafo dois')
+    expect(text).toBe('parágrafo um\n\n## Título do capítulo\n\nparágrafo dois')
     expect(kindsOf(text)).toEqual(['speech', 'chapter', 'speech'])
   })
 
   it('não abre linha em branco no começo do documento', () => {
     const { text } = insertBlock('', 0, 0, 'chapter')
-    expect(text).toBe('§ Título do capítulo')
+    expect(text).toBe('## Título do capítulo')
     expect(kindsOf(text)).toEqual(['chapter'])
   })
 
@@ -52,8 +52,8 @@ describe('insertBlock — conteúdo e seleção', () => {
     const value = 'Abertura do programa'
     const { text } = insertBlock(value, 0, 'Abertura'.length, 'chapter')
 
-    expect(text.startsWith('§ Abertura')).toBe(true)
-    expect(text).not.toContain('§ Título do capítulo')
+    expect(text.startsWith('## Abertura')).toBe(true)
+    expect(text).not.toContain('## Título do capítulo')
   })
 
   it('deixa o miolo selecionado, sem pegar a marcação junto', () => {

@@ -29,13 +29,13 @@ export const de: Dicionario = {
   'mode.deck.hint': 'Zeitleiste und Ablaufplan einer Sendung mit mehreren Blöcken',
 
   'panel.edit': 'Bearbeitung',
-  'panel.edit.hint': '[Regieanweisungen] · § Kapitel',
+  'panel.edit.hint': '[Regieanweisungen] · ## Kapitel',
   'panel.broadcasting': 'Sendung',
   'panel.expand': 'Sendung vergrößern · F11',
   'panel.collapse': 'Zurück zum Split · F11',
   'panel.livePreview': 'Live-Vorschau',
 
-  'editor.chapter': 'Kapitel einfügen — wird im Text zu §',
+  'editor.chapter': 'Kapitel einfügen — wird im Text zu ##',
   'editor.direction': 'Regieanweisung einfügen — wird zu [Klammern], wird nicht gelesen',
   'editor.undo': 'Rückgängig',
   'editor.fontSize': 'Schriftgröße des Editors',
@@ -44,7 +44,7 @@ export const de: Dicionario = {
   'editor.clearFormat': 'Formatierung entfernen: Kapitel und Regieanweisungen werden zu einfachem Text',
   'editor.redo': 'Wiederholen',
   'editor.placeholder':
-    'Skript einfügen oder tippen. Wo Sie die Zeile umbrechen, bricht sie auch auf dem Bildschirm des Sprechers. [Klammern] kennzeichnen Regieanweisungen, § öffnet ein Kapitel.',
+    'Skript einfügen oder tippen. Wo Sie die Zeile umbrechen, bricht sie auch auf dem Bildschirm des Sprechers. [Klammern] kennzeichnen Regieanweisungen, ## öffnet ein Kapitel.',
 
   'tabs.new': 'Neuer Tab',
   'tabs.new.hint': 'Neuer Tab · Strg+T',
@@ -159,7 +159,7 @@ export const de: Dicionario = {
   'sidebar.chapters': 'Kapitel',
   'sidebar.cards': 'Karten des Blocks',
   'sidebar.help': 'Schnellhilfe',
-  'sidebar.noChapters': 'Noch keine Kapitel — eröffne eines mit § im Text.',
+  'sidebar.noChapters': 'Noch keine Kapitel — eröffne eines mit ## im Text.',
   'sidebar.noCards': 'Noch keine Karten.',
   'sidebar.thumbSize': 'Größe der Kartenvorschaubilder',
   'sidebar.help.scrollTitle': 'Lauftaste',
@@ -422,12 +422,12 @@ export const de: Dicionario = {
   'content.preset.night': 'Nachtblau',
   'content.preset.soft': 'Sanft',
   'content.sample': [
-    '§ Eröffnung',
+    '## Eröffnung',
     'Guten Abend. Heute sprechen wir über eine Veränderung, die in Studios im ganzen Land bereits stattfindet.',
     '[in Kamera 2 schauen · Pause]',
     'Und das Wichtigste: niemand muss mehr die Aufnahme anhalten, um einen Satz zu korrigieren.',
     'Sehen wir uns an, wie das in der Praxis funktioniert. Dieser Text lässt sich jetzt bearbeiten, während die Sendung läuft, und das Wort unter der Lesemarke bewegt sich nicht.',
-    '§ Block 2',
+    '## Block 2',
     'Probieren Sie es: Schrift vergrößern, Rand ändern, Wörter pro Zeile ändern. Nichts springt.'
   ].join('\n\n')
 }

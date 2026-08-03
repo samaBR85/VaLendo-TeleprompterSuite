@@ -29,13 +29,13 @@ export const fr: Dicionario = {
   'mode.deck.hint': 'chronologie et conducteur d’une émission à plusieurs blocs',
 
   'panel.edit': 'Édition',
-  'panel.edit.hint': '[indications] · § chapitres',
+  'panel.edit.hint': '[indications] · ## chapitres',
   'panel.broadcasting': 'Diffusion',
   'panel.expand': 'Agrandir la diffusion · F11',
   'panel.collapse': 'Revenir au split · F11',
   'panel.livePreview': 'Aperçu en direct',
 
-  'editor.chapter': 'Insérer un chapitre — devient § dans le texte',
+  'editor.chapter': 'Insérer un chapitre — devient ## dans le texte',
   'editor.direction': 'Insérer une indication — devient [crochets], non lue',
   'editor.undo': 'Annuler',
   'editor.fontSize': 'Taille de police de l’éditeur',
@@ -44,7 +44,7 @@ export const fr: Dicionario = {
   'editor.clearFormat': 'Effacer la mise en forme : chapitres et indications deviennent du texte simple',
   'editor.redo': 'Rétablir',
   'editor.placeholder':
-    'Collez ou tapez le texte. Là où vous coupez la ligne, elle se coupe sur l’écran du présentateur. Les [crochets] marquent les indications, § ouvre un chapitre.',
+    'Collez ou tapez le texte. Là où vous coupez la ligne, elle se coupe sur l’écran du présentateur. Les [crochets] marquent les indications, ## ouvre un chapitre.',
 
   'tabs.new': 'Nouvel onglet',
   'tabs.new.hint': 'Nouvel onglet · Ctrl+T',
@@ -159,7 +159,7 @@ export const fr: Dicionario = {
   'sidebar.chapters': 'Chapitres',
   'sidebar.cards': 'Cartons du bloc',
   'sidebar.help': 'Aide rapide',
-  'sidebar.noChapters': 'Aucun chapitre pour l’instant — ouvrez-en un avec § dans le texte.',
+  'sidebar.noChapters': 'Aucun chapitre pour l’instant — ouvrez-en un avec ## dans le texte.',
   'sidebar.noCards': 'Aucun carton pour l’instant.',
   'sidebar.thumbSize': 'Taille des miniatures des cartons',
   'sidebar.help.scrollTitle': 'Bouton de défilement',
@@ -422,12 +422,12 @@ export const fr: Dicionario = {
   'content.preset.night': 'Bleu nuit',
   'content.preset.soft': 'Doux',
   'content.sample': [
-    '§ Ouverture',
+    '## Ouverture',
     'Bonsoir. Ce soir, nous parlons d’un changement qui est déjà en cours dans les studios du pays entier.',
     '[regarder caméra 2 · pause]',
     'Et le plus important : plus personne n’a besoin d’arrêter l’enregistrement pour corriger une phrase.',
     'Voyons comment cela fonctionne en pratique. Ce texte peut être modifié maintenant, en pleine diffusion, et le mot sous le repère de lecture ne bougera pas.',
-    '§ Bloc 2',
+    '## Bloc 2',
     'Essayez : augmentez le corps, changez la marge, changez les mots par ligne. Rien ne saute.'
   ].join('\n\n')
 }

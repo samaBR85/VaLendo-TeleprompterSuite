@@ -1,5 +1,22 @@
 import type { Anchor, Block, BlockKind } from './types'
 
+/**
+ * A marca que o app **escreve** ao abrir um capítulo.
+ *
+ * Era `§` até a versão 173 — impossível de digitar em teclado normal. Agora é
+ * `##`, que é Shift+3 duas vezes em qualquer layout, e de brinde é o mesmo
+ * cabeçalho do Markdown, então roteiro colado de fora já chega marcado.
+ */
+export const CHAPTER_MARK = '##'
+
+/**
+ * Toda marca de capítulo ACEITA na leitura: de `#` a `######`.
+ *
+ * O `§` NÃO entra — foi decisão explícita do operador de não arrastar a forma
+ * antiga. Um roteiro escrito antes da 173 abre com os títulos virando fala.
+ */
+const CHAPTER_RE = /^#{1,6}\s+/
+
 export function words(text: string): string[] {
   return text.trim().length === 0 ? [] : text.trim().split(/\s+/)
 }
@@ -18,12 +35,12 @@ export function totalWordCount(blocks: Block[]): number {
 function classify(paragraph: string): BlockKind {
   const t = paragraph.trim()
   if (/^\[[\s\S]*\]$/.test(t)) return 'direction'
-  if (/^(#{1,6}|§)\s+/.test(t)) return 'chapter'
+  if (CHAPTER_RE.test(t)) return 'chapter'
   return 'speech'
 }
 
 export function chapterTitle(block: Block): string {
-  return block.text.replace(/^(#{1,6}|§)\s+/, '').trim()
+  return block.text.replace(CHAPTER_RE, '').trim()
 }
 
 let idCounter = 0
@@ -133,7 +150,7 @@ export function serializeBlocks(blocks: Block[]): string {
 }
 
 /**
- * Tira a marcação e devolve o texto simples: sem `§`/`#` de capítulo e sem os
+ * Tira a marcação e devolve o texto simples: sem o `##` de capítulo e sem os
  * colchetes de direção.
  *
  * As PALAVRAS ficam — é "remover formatação", como em qualquer editor, e não
@@ -151,7 +168,7 @@ export function stripFormatting(text: string): string {
     .map((paragrafo) => {
       const limpo = paragrafo.trim()
       if (/^\[[\s\S]*\]$/.test(limpo)) return limpo.slice(1, -1).trim()
-      if (/^(#{1,6}|§)\s+/.test(limpo)) return limpo.replace(/^(#{1,6}|§)\s+/, '')
+      if (CHAPTER_RE.test(limpo)) return limpo.replace(CHAPTER_RE, '')
       return limpo
     })
     .filter((paragrafo) => paragrafo.length > 0)

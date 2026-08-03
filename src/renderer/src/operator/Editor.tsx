@@ -236,7 +236,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     return lines.map((line, index) => {
       const trimmed = line.trim()
       const isDirection = /^\[[\s\S]*\]$/.test(trimmed)
-      const isChapter = /^(#{1,6}|§)\s+/.test(trimmed)
+      const isChapter = /^#{1,6}\s+/.test(trimmed)
       const color = isDirection
         ? 'var(--color-link)'
         : isChapter

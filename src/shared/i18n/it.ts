@@ -29,13 +29,13 @@ export const it: Dicionario = {
   'mode.deck.hint': 'linea del tempo e scaletta di un programma con più blocchi',
 
   'panel.edit': 'Modifica',
-  'panel.edit.hint': '[indicazioni] · § capitoli',
+  'panel.edit.hint': '[indicazioni] · ## capitoli',
   'panel.broadcasting': 'Trasmissione',
   'panel.expand': 'Ingrandisci la trasmissione · F11',
   'panel.collapse': 'Torna allo split · F11',
   'panel.livePreview': 'Anteprima dal vivo',
 
-  'editor.chapter': 'Inserisci capitolo — diventa § nel testo',
+  'editor.chapter': 'Inserisci capitolo — diventa ## nel testo',
   'editor.direction': 'Inserisci indicazione di regia — diventa [parentesi], non si legge',
   'editor.undo': 'Annulla',
   'editor.fontSize': 'Dimensione del carattere dell’editor',
@@ -44,7 +44,7 @@ export const it: Dicionario = {
   'editor.clearFormat': 'Rimuovi formattazione: capitoli e indicazioni diventano testo semplice',
   'editor.redo': 'Ripeti',
   'editor.placeholder':
-    'Incolla o scrivi il copione. Dove spezzi la riga, si spezza sullo schermo del presentatore. Le [parentesi] segnano le indicazioni, § apre un capitolo.',
+    'Incolla o scrivi il copione. Dove spezzi la riga, si spezza sullo schermo del presentatore. Le [parentesi] segnano le indicazioni, ## apre un capitolo.',
 
   'tabs.new': 'Nuova scheda',
   'tabs.new.hint': 'Nuova scheda · Ctrl+T',
@@ -159,7 +159,7 @@ export const it: Dicionario = {
   'sidebar.chapters': 'Capitoli',
   'sidebar.cards': 'Cartelli del blocco',
   'sidebar.help': 'Aiuto rapido',
-  'sidebar.noChapters': 'Nessun capitolo ancora — aprine uno con § nel testo.',
+  'sidebar.noChapters': 'Nessun capitolo ancora — aprine uno con ## nel testo.',
   'sidebar.noCards': 'Nessun cartello ancora.',
   'sidebar.thumbSize': 'Dimensione delle miniature dei cartelli',
   'sidebar.help.scrollTitle': 'Pulsante di scorrimento',
@@ -422,12 +422,12 @@ export const it: Dicionario = {
   'content.preset.night': 'Blu notte',
   'content.preset.soft': 'Morbido',
   'content.sample': [
-    '§ Apertura',
+    '## Apertura',
     'Buonasera. Oggi parliamo di un cambiamento che sta già avvenendo negli studi di tutto il paese.',
     '[guardare camera 2 · pausa]',
     'E la cosa più importante: nessuno deve più fermare la registrazione per correggere una frase.',
     'Vediamo come funziona nella pratica. Questo testo si può modificare adesso, con la trasmissione in onda, e la parola sotto il segno di lettura non si muoverà.',
-    '§ Blocco 2',
+    '## Blocco 2',
     'Prova: aumenta il corpo del carattere, cambia il margine, cambia le parole per riga. Niente salta.'
   ].join('\n\n')
 }
