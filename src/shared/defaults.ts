@@ -47,7 +47,25 @@ export const EDITION_SPLIT_DEFAULT = 0.46
 /** miniaturas da coluna de Assets */
 export const THUMB_MIN = 40
 export const THUMB_MAX = 96
-export const THUMB_DEFAULT = 40
+/**
+ * Meio da faixa, e não o mínimo: o slider nasce no centro, então o operador
+ * descobre que dá para ir para os DOIS lados. Encostado no mínimo, ele parecia
+ * um controle já no fim do curso.
+ */
+export const THUMB_DEFAULT = Math.round((THUMB_MIN + THUMB_MAX) / 2)
+
+/**
+ * Quanto anda um clique nos ícones das pontas: um décimo do curso.
+ *
+ * A conta é em PORCENTAGEM da faixa, não em pixels, para os degraus caírem
+ * sempre na mesma grade de 0/10/20…100% — somar pixels arredondados iria
+ * derivando e nunca fecharia exatamente nas pontas.
+ */
+export function passoDaMiniatura(atual: number, direcao: 1 | -1): number {
+  const pct = ((atual - THUMB_MIN) / (THUMB_MAX - THUMB_MIN)) * 100
+  const alvo = Math.min(100, Math.max(0, Math.round(pct / 10) * 10 + direcao * 10))
+  return Math.round(THUMB_MIN + (alvo / 100) * (THUMB_MAX - THUMB_MIN))
+}
 
 /** corpo da fonte de DIGITAR, no editor — nunca a da saída */
 export const EDITOR_FONT_MIN = 11

@@ -517,11 +517,13 @@ export function BarraDeArquivo({
  */
 function LinhaDeProgresso({
   fracao,
-  ticks,
+  capitulos,
+  marcadores,
   titulo
 }: {
   fracao: number
-  ticks: number[]
+  capitulos: number[]
+  marcadores: number[]
   titulo: string
 }): React.JSX.Element {
   return (
@@ -537,16 +539,29 @@ function LinhaDeProgresso({
           background: 'linear-gradient(90deg, #2b7d52, var(--color-go))'
         }}
       />
-      {/* 4px, e não 2: num fio de 5px de altura atravessando a janela inteira,
-          um traço de 2px some contra o verde do progresso — e achar o próximo
-          capítulo de relance é justamente para o que ele existe. O `-2px` de
+      {/* Duas famílias de marca, e a cor é o que as separa: capítulo em âmbar
+          (estrutura do roteiro, sempre lá) e marcador em vermelho (ponto que o
+          operador cravou à mão). Os vermelhos vêm DEPOIS no DOM de propósito:
+          quando um marcador cai exatamente na virada de capítulo, quem tem que
+          aparecer é ele — foi o único dos dois que alguém escolheu marcar.
+
+          4px, e não 2: num fio de 5px de altura atravessando a janela inteira,
+          um traço de 2px some contra o verde do progresso — e achar a próxima
+          marca de relance é justamente para o que ela existe. O `-2px` de
           margem recentra a marca no ponto exato, senão ela cresceria só para a
-          direita e passaria a apontar depois do capítulo */}
-      {ticks.map((tick, index) => (
+          direita e passaria a apontar depois do lugar certo. */}
+      {capitulos.map((marca, index) => (
         <div
-          key={index}
+          key={`cap-${index}`}
           className="absolute top-0 bottom-0 -ml-[2px] w-[4px] rounded-[1px] bg-[var(--color-warn)]"
-          style={{ left: `${Math.min(100, tick * 100)}%` }}
+          style={{ left: `${Math.min(100, marca * 100)}%` }}
+        />
+      ))}
+      {marcadores.map((marca, index) => (
+        <div
+          key={`marc-${index}`}
+          className="absolute top-0 bottom-0 -ml-[2px] w-[4px] rounded-[1px] bg-[var(--color-live)]"
+          style={{ left: `${Math.min(100, marca * 100)}%` }}
         />
       ))}
     </div>
@@ -748,7 +763,10 @@ export function BarraDeTransporte({
   const elapsed = secondsForWords(lidas, transport.ppm)
   const fracao = ruler > 0 ? lidas / ruler : 0
   const capitulo = segments[segmentIndexAt(segments, lidas)]?.title ?? ''
-  const ticks = ruler > 0 ? segments.flatMap((s) => s.markers).map((m) => m.rulerStart / ruler) : []
+  // o primeiro trecho pode não ter título — é o pedaço antes do primeiro
+  // capítulo, e não há virada nenhuma para marcar ali
+  const marcasDeCapitulo = ruler > 0 ? segments.filter((s) => s.title).map((s) => s.rulerStart / ruler) : []
+  const marcasDeMarcador = ruler > 0 ? segments.flatMap((s) => s.markers).map((m) => m.rulerStart / ruler) : []
 
   const compacto = position === 'regua'
   const corpo = compacto ? 19 : 27
@@ -842,7 +860,14 @@ export function BarraDeTransporte({
       run={run}
     />
   )
-  const linha = <LinhaDeProgresso fracao={fracao} ticks={ticks} titulo={legenda} />
+  const linha = (
+    <LinhaDeProgresso
+      fracao={fracao}
+      capitulos={marcasDeCapitulo}
+      marcadores={marcasDeMarcador}
+      titulo={legenda}
+    />
+  )
 
   if (position === 'topo') {
     // os cinco grupos da barra, cada um marcado para a medição. São os MESMOS

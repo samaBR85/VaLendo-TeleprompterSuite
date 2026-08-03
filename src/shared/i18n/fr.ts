@@ -162,6 +162,8 @@ export const fr: Dicionario = {
   'sidebar.noChapters': 'Aucun chapitre pour l’instant — ouvrez-en un avec ## dans le texte.',
   'sidebar.noCards': 'Aucun carton pour l’instant.',
   'sidebar.thumbSize': 'Taille des miniatures des cartons',
+  'sidebar.thumbSmaller': 'Miniatures plus petites (10%)',
+  'sidebar.thumbBigger': 'Miniatures plus grandes (10%)',
   'sidebar.help.scrollTitle': 'Bouton de défilement',
   'sidebar.help.scroll': 'La plus grande cible de l’écran : à sa gauche le rythme, à sa droite le temps. Espace démarre et met en pause.',
 
@@ -386,7 +388,7 @@ export const fr: Dicionario = {
   'cards.videoUnmute': 'Rétablir le son',
   'cards.videoLoop': 'boucle',
   'cards.overlay': 'OVERLAY',
-  'cards.overlayStyleLabel': 'Overlay :',
+  'cards.overlayStyleLabel': 'Effect :',
   'cards.overlayForced': 'Forcé par l’OVERLAY de la colonne Assets',
   'cards.overlayShort': 'O',
   'cards.overlayHint':

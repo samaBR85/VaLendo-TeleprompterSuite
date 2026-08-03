@@ -162,6 +162,8 @@ export const de: Dicionario = {
   'sidebar.noChapters': 'Noch keine Kapitel — eröffne eines mit ## im Text.',
   'sidebar.noCards': 'Noch keine Karten.',
   'sidebar.thumbSize': 'Größe der Kartenvorschaubilder',
+  'sidebar.thumbSmaller': 'Kleinere Vorschaubilder (10%)',
+  'sidebar.thumbBigger': 'Größere Vorschaubilder (10%)',
   'sidebar.help.scrollTitle': 'Lauftaste',
   'sidebar.help.scroll': 'Das größte Ziel auf dem Schirm: links davon das Tempo, rechts die Zeit. Leertaste startet und pausiert.',
 
@@ -386,7 +388,7 @@ export const de: Dicionario = {
   'cards.videoUnmute': 'Stummschaltung aufheben',
   'cards.videoLoop': 'wiederholen',
   'cards.overlay': 'OVERLAY',
-  'cards.overlayStyleLabel': 'Overlay:',
+  'cards.overlayStyleLabel': 'Effect:',
   'cards.overlayForced': 'Durch das OVERLAY der Assets-Spalte erzwungen',
   'cards.overlayShort': 'O',
   'cards.overlayHint':

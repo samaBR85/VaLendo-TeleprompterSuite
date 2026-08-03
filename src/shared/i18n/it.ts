@@ -162,6 +162,8 @@ export const it: Dicionario = {
   'sidebar.noChapters': 'Nessun capitolo ancora — aprine uno con ## nel testo.',
   'sidebar.noCards': 'Nessun cartello ancora.',
   'sidebar.thumbSize': 'Dimensione delle miniature dei cartelli',
+  'sidebar.thumbSmaller': 'Miniature più piccole (10%)',
+  'sidebar.thumbBigger': 'Miniature più grandi (10%)',
   'sidebar.help.scrollTitle': 'Pulsante di scorrimento',
   'sidebar.help.scroll': 'Il bersaglio più grande dello schermo: a sinistra il ritmo, a destra il tempo. Spazio avvia e mette in pausa.',
 
@@ -386,7 +388,7 @@ export const it: Dicionario = {
   'cards.videoUnmute': 'Riattiva audio',
   'cards.videoLoop': 'ripeti',
   'cards.overlay': 'OVERLAY',
-  'cards.overlayStyleLabel': 'Overlay:',
+  'cards.overlayStyleLabel': 'Effect:',
   'cards.overlayForced': 'Forzato dall’OVERLAY della colonna assets',
   'cards.overlayShort': 'O',
   'cards.overlayHint':

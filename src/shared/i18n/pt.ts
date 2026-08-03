@@ -175,6 +175,8 @@ export const pt = {
   'sidebar.noChapters': 'Nenhum capítulo ainda — abra um com ## no roteiro.',
   'sidebar.noCards': 'Nenhum cartão ainda.',
   'sidebar.thumbSize': 'Tamanho das miniaturas dos cartões',
+  'sidebar.thumbSmaller': 'Miniaturas menores (10%)',
+  'sidebar.thumbBigger': 'Miniaturas maiores (10%)',
   'sidebar.help.scrollTitle': 'Botão de rolagem',
   'sidebar.help.scroll': 'É o maior alvo da tela: à esquerda dele o ritmo, à direita o tempo. Espaço toca e pausa.',
 
@@ -410,7 +412,7 @@ export const pt = {
   'cards.videoUnmute': 'Com áudio',
   'cards.videoLoop': 'repetir',
   'cards.overlay': 'OVERLAY',
-  'cards.overlayStyleLabel': 'Overlay:',
+  'cards.overlayStyleLabel': 'Effect:',
   'cards.overlayForced': 'Forçado pelo OVERLAY da coluna de assets',
   'cards.overlayShort': 'O',
   'cards.overlayHint':

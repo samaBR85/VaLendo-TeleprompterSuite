@@ -161,6 +161,8 @@ export const en: Dicionario = {
   'sidebar.noChapters': 'No chapters yet — open one with ## in the script.',
   'sidebar.noCards': 'No cards yet.',
   'sidebar.thumbSize': 'Card thumbnail size',
+  'sidebar.thumbSmaller': 'Smaller thumbnails (10%)',
+  'sidebar.thumbBigger': 'Bigger thumbnails (10%)',
   'sidebar.help.scrollTitle': 'Scroll button',
   'sidebar.help.scroll': 'The biggest target on screen: pace to its left, time to its right. Space plays and pauses.',
 
@@ -382,7 +384,7 @@ export const en: Dicionario = {
   'cards.videoUnmute': 'Unmute',
   'cards.videoLoop': 'loop',
   'cards.overlay': 'OVERLAY',
-  'cards.overlayStyleLabel': 'Overlay:',
+  'cards.overlayStyleLabel': 'Effect:',
   'cards.overlayForced': 'Forced by the assets column OVERLAY',
   'cards.overlayShort': 'O',
   'cards.overlayHint':

@@ -162,6 +162,8 @@ export const es: Dicionario = {
   'sidebar.noChapters': 'Ningún capítulo todavía — abre uno con ## en el guion.',
   'sidebar.noCards': 'Ninguna tarjeta todavía.',
   'sidebar.thumbSize': 'Tamaño de las miniaturas de las tarjetas',
+  'sidebar.thumbSmaller': 'Miniaturas más pequeñas (10%)',
+  'sidebar.thumbBigger': 'Miniaturas más grandes (10%)',
   'sidebar.help.scrollTitle': 'Botón de desplazamiento',
   'sidebar.help.scroll': 'El mayor objetivo de la pantalla: a su izquierda el ritmo, a su derecha el tiempo. Espacio inicia y pausa.',
 
@@ -384,7 +386,7 @@ export const es: Dicionario = {
   'cards.videoUnmute': 'Reactivar sonido',
   'cards.videoLoop': 'repetir',
   'cards.overlay': 'OVERLAY',
-  'cards.overlayStyleLabel': 'Overlay:',
+  'cards.overlayStyleLabel': 'Effect:',
   'cards.overlayForced': 'Forzado por el OVERLAY de la columna de assets',
   'cards.overlayShort': 'O',
   'cards.overlayHint':

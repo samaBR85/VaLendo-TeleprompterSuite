@@ -15,7 +15,7 @@ import type {
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
 import { CabecalhoDePainel, Ficha, SliderConsole } from '../ui/console'
-import { THUMB_MAX, THUMB_MIN } from '@shared/defaults'
+import { passoDaMiniatura, THUMB_MAX, THUMB_MIN } from '@shared/defaults'
 import { useNow } from '../ui/useNow'
 
 /**
@@ -87,6 +87,36 @@ function MiniaturaDoCartao({ card, size }: { card: Cartao; size: number }): Reac
 }
 
 /**
+ * Um dos cartõezinhos das pontas do slider de miniatura, que anda 10% do curso
+ * por clique. O tamanho do próprio glifo diz para que lado ele anda — igual aos
+ * "aA" do slider de fonte do editor.
+ */
+function DegrauDaMiniatura({
+  label,
+  size,
+  disabled,
+  onClick
+}: {
+  label: string
+  size: number
+  disabled?: boolean
+  onClick: () => void
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="flex-none rounded px-0.5 leading-none text-[var(--color-fog-3)] hover:text-[var(--color-fog-0)] disabled:opacity-30 disabled:hover:text-[var(--color-fog-3)]"
+    >
+      <Icon name="card" size={size} />
+    </button>
+  )
+}
+
+/**
  * A coluna da esquerda: onde o programa está, em vez de onde o texto está.
  *
  * Os capítulos já existem no roteiro (cada `##` é um) e a duração de cada um
@@ -112,6 +142,7 @@ export function Sidebar({
   // conforto desta máquina, e não dado do projeto: sobrevive a fechar o app
   // (vai no workspace) mas nunca entra no .valendo — ver `semMaquina`
   const { thumbSize, ajudaAberta } = maquina
+  const mudarMiniatura = (thumbSize: number): void => dispatch({ type: 'maquina/patch', patch: { thumbSize } })
   const [arrasto, setArrasto] = useState<{ cardId: string; sobre: number; alturaSlot: number } | null>(null)
 
   const lines = useMemo(
@@ -357,17 +388,30 @@ export function Sidebar({
           o rótulo, que continua truncando dentro da largura fixa da coluna —
           o mesmo material do slider de fonte do editor */}
       <div className="flex flex-none items-center gap-2 border-t border-[var(--color-edge)] bg-[#131316] px-3 py-1.5">
-        <Icon name="card" size={10} className="flex-none text-[var(--color-fog-3)]" />
+        {/* os cartõezinhos das pontas são botões: um clique anda 10% do curso.
+            Mesmo raciocínio dos "aA" do slider de fonte — arrastar atravessa a
+            faixa num gesto, mas parar num tamanho redondo é sorte */}
+        <DegrauDaMiniatura
+          label={t('sidebar.thumbSmaller')}
+          size={10}
+          disabled={thumbSize <= THUMB_MIN}
+          onClick={() => mudarMiniatura(passoDaMiniatura(thumbSize, -1))}
+        />
         <SliderConsole
           value={thumbSize}
           min={THUMB_MIN}
           max={THUMB_MAX}
           cor="var(--color-accent-2)"
           aria-label={t('sidebar.thumbSize')}
-          onValue={(thumbSize) => dispatch({ type: 'maquina/patch', patch: { thumbSize } })}
+          onValue={mudarMiniatura}
           className="w-full"
         />
-        <Icon name="card" size={16} className="flex-none text-[var(--color-fog-3)]" />
+        <DegrauDaMiniatura
+          label={t('sidebar.thumbBigger')}
+          size={16}
+          disabled={thumbSize >= THUMB_MAX}
+          onClick={() => mudarMiniatura(passoDaMiniatura(thumbSize, 1))}
+        />
       </div>
 
       {/* a ajuda fica ancorada no rodapé da coluna, e não no meio do fluxo:
