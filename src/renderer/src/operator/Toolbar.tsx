@@ -774,8 +774,27 @@ export function BarraDeTransporte({
   // progresso fora daqui (virou a linha de fora a fora), uma caixa só para
   // dois números seria moldura sem conteúdo. A legenda embaixo de cada um
   // continua sendo quem diz qual é qual.
+  /*
+   * O RESTANTE fica à mesma distância do DECORRIDO e do teclado.
+   *
+   * O par é alinhado à direita da própria coluna, então o RESTANTE encostava
+   * no poço do transporte: sobravam 22px de um lado e só os 8px da grade do
+   * outro, e ele lia como se pertencesse ao teclado em vez de ao relógio.
+   *
+   * Em vez de empurrar o par inteiro (o que levaria o DECORRIDO junto), o vão
+   * interno encolhe e a mesma diferença vira margem à direita — as duas
+   * medidas somadas não mudam, então o DECORRIDO fica onde estava e só o
+   * RESTANTE anda para a esquerda, parando no meio exato entre os dois.
+   *
+   * Os números saem daí: metade da soma do vão de antes com o da grade —
+   * (22+8)/2 na régua, (28+10)/2 no topo —, e a margem é o que sobra para a
+   * grade completar o mesmo valor.
+   */
   const relogios = (
-    <div className={`flex flex-none items-center ${compacto ? 'gap-[22px]' : 'gap-7'}`}>
+    <div
+      data-relogios
+      className={`flex flex-none items-center ${compacto ? 'mr-[7px] gap-[15px]' : 'mr-[9px] gap-[19px]'}`}
+    >
       {decorrido}
       {restante}
     </div>
