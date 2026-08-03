@@ -50,40 +50,40 @@ export function UnsavedConfirm({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55" onMouseDown={onCancel}>
       <div
         onMouseDown={(event) => event.stopPropagation()}
-        style={{ width: 630 }}
-        className="flex flex-col overflow-hidden rounded-[18px] border border-[var(--color-warn)]/40 bg-[var(--color-ink-1)]"
+        style={{ width: 504 }}
+        className="flex flex-col overflow-hidden rounded-[14px] border border-[var(--color-warn)]/40 bg-[var(--color-ink-1)]"
       >
-        <div className="flex items-start gap-[18px] px-6 py-6">
-          <span className="mt-[3px] flex-none text-[var(--color-warn)]">
-            <Icon name="alert" size={30} />
+        <div className="flex items-start gap-[14px] px-[19px] py-[19px]">
+          <span className="mt-[2px] flex-none text-[var(--color-warn)]">
+            <Icon name="alert" size={24} />
           </span>
           <div>
-            <div className="text-[19.5px] font-medium text-[var(--color-fog-0)]">{t('unsaved.title')}</div>
-            <div className="mt-1.5 text-[18px] leading-relaxed text-[var(--color-fog-1)]">
+            <div className="text-[15.5px] font-medium text-[var(--color-fog-0)]">{t('unsaved.title')}</div>
+            <div className="mt-[5px] text-[14.5px] leading-relaxed text-[var(--color-fog-1)]">
               {detalhe ?? t('unsaved.detail')}
             </div>
           </div>
         </div>
-        <div className="flex justify-end gap-3 border-t border-[var(--color-line)] px-6 py-[18px]">
+        <div className="flex justify-end gap-[10px] border-t border-[var(--color-line)] px-[19px] py-[14px]">
           <button
             type="button"
             autoFocus
             onClick={onCancel}
-            className="rounded-md px-[18px] py-[9px] text-[18px] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+            className="rounded-md px-[14px] py-[7px] text-[14.5px] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
             {t('unsaved.cancel')}
           </button>
           <button
             type="button"
             onClick={onDiscard}
-            className="rounded-md bg-[var(--color-live)]/16 px-[18px] py-[9px] text-[18px] font-medium text-[var(--color-live)] hover:bg-[var(--color-live)]/24"
+            className="rounded-md bg-[var(--color-live)]/16 px-[14px] py-[7px] text-[14.5px] font-medium text-[var(--color-live)] hover:bg-[var(--color-live)]/24"
           >
             {rotuloDescartar ?? t('unsaved.discard')}
           </button>
           <button
             type="button"
             onClick={onSave}
-            className="rounded-md bg-[var(--color-go)]/16 px-[18px] py-[9px] text-[18px] font-medium text-[var(--color-go)] hover:bg-[var(--color-go)]/24"
+            className="rounded-md bg-[var(--color-go)]/16 px-[14px] py-[7px] text-[14.5px] font-medium text-[var(--color-go)] hover:bg-[var(--color-go)]/24"
           >
             {rotuloSalvar ?? t('unsaved.save')}
           </button>
