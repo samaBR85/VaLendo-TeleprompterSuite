@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Uma página só, e é isso mesmo.
+
+  A wiki mora em github.com, outro host: um sitemap só pode listar endereços
+  do próprio site, então as páginas dela não entram aqui. Quem chega pelo
+  Google cai nesta página e segue os links.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://samabr85.github.io/Valendo-TeleprompterSuite/</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

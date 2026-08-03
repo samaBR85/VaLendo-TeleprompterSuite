@@ -1,0 +1,19 @@
+# Nada aqui é secreto: o site inteiro pode ser rastreado.
+User-agent: *
+Allow: /
+
+Sitemap: https://samabr85.github.io/Valendo-TeleprompterSuite/sitemap.xml
+
+# ATENÇÃO, quem vier mexer nisto depois:
+#
+# Este arquivo NÃO é lido pelos rastreadores. robots.txt só vale na raiz do
+# domínio — https://samabr85.github.io/robots.txt —, e essa raiz pertence à
+# conta do GitHub, não a este repositório. Só um repositório chamado
+# samabr85.github.io poderia servi-la.
+#
+# Ele fica aqui por dois motivos honestos: não atrapalha nada, e no dia em
+# que o site ganhar domínio próprio (valendo.app, o que for) ele passa a
+# valer sozinho, sem ninguém precisar lembrar de escrevê-lo.
+#
+# Enquanto isso, o caminho que funciona de verdade é enviar o sitemap direto
+# no Google Search Console, na propriedade de prefixo do URL.
