@@ -53,22 +53,49 @@ describe('importFile — docx', () => {
   })
 })
 
+/*
+ * Um minuto de prazo, e não os 5 s padrão do vitest.
+ *
+ * O primeiro destes três paga o carregamento do pdf.js, que é caro: 17 s numa
+ * máquina de CI ocupada, contra 25 ms nos dois seguintes, já com a biblioteca
+ * quente. O limite padrão derrubava o build por lentidão da máquina, não por
+ * defeito do código — e um teste que acusa o que não é falha ensina a equipe a
+ * ignorar teste vermelho.
+ *
+ * O prazo é generoso de propósito: quando tudo está saudável ele não custa
+ * nada, porque o teste termina em milissegundos. Ele só entra em cena quando a
+ * máquina está sufocada, que é justamente quando NÃO se quer um alarme falso.
+ */
+const PRAZO_PDF = 60_000
+
 describe('importFile — pdf', () => {
-  it('extrai o texto, tira cabeçalho repetido e número de página', async () => {
-    const { text } = await importFile(fixture('roteiro.pdf'))
+  it(
+    'extrai o texto, tira cabeçalho repetido e número de página',
+    async () => {
+      const { text } = await importFile(fixture('roteiro.pdf'))
 
-    expect(text).not.toContain('JORNAL DA NOITE')
-    expect(text).not.toMatch(/^\s*[123]\s*$/m)
-    expect(text).toContain('Boa noite')
-  })
+      expect(text).not.toContain('JORNAL DA NOITE')
+      expect(text).not.toMatch(/^\s*[123]\s*$/m)
+      expect(text).toContain('Boa noite')
+    },
+    PRAZO_PDF
+  )
 
-  it('costura a frase que atravessa a virada de página', async () => {
-    const { text } = await importFile(fixture('roteiro.pdf'))
-    expect(text).toContain('atravessa a virada de pagina')
-  })
+  it(
+    'costura a frase que atravessa a virada de página',
+    async () => {
+      const { text } = await importFile(fixture('roteiro.pdf'))
+      expect(text).toContain('atravessa a virada de pagina')
+    },
+    PRAZO_PDF
+  )
 
-  it('não avisa de OCR quando existe camada de texto', async () => {
-    const { warnings } = await importFile(fixture('roteiro.pdf'))
-    expect(warnings).toEqual([])
-  })
+  it(
+    'não avisa de OCR quando existe camada de texto',
+    async () => {
+      const { warnings } = await importFile(fixture('roteiro.pdf'))
+      expect(warnings).toEqual([])
+    },
+    PRAZO_PDF
+  )
 })
