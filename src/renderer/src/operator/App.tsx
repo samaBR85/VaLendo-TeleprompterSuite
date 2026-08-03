@@ -1015,7 +1015,7 @@ function AppConteudo({
                     style={{ color: 'var(--color-go)' }}
                     onClick={goToCaret}
                   >
-                    <Icon name="play" size={13} filled />
+                    <Icon name="goTo" size={13} filled />
                   </Tecla>
                   <span className="mx-0.5 h-4 w-px flex-none bg-[var(--color-edge)]" />
                   {/* segunda porta para a mesma ação do Create Marker do

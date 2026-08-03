@@ -1,5 +1,6 @@
 export type IconName =
   | 'play'
+  | 'goTo'
   | 'pause'
   | 'restart'
   | 'up'
@@ -50,6 +51,13 @@ const PATHS: Record<IconName, string> = {
   volumeOff: 'M4 9v6h4l5 4V5L8 9zM15 9l6 6M21 9l-6 6',
   trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6',
   play: 'M8 5l11 7-11 7z',
+  /**
+   * O "Go To": a seta do play com uma barra encostada à direita — o mesmo
+   * desenho universal de "pula até aqui" de qualquer player. Dois subpaths
+   * FECHADOS, porque este ícone é desenhado com `filled`: uma barra feita de
+   * linha (como a do pause) não teria área e sumiria.
+   */
+  goTo: 'M4.5 5L15 12 4.5 19z M17 5h2.5v14H17z',
   pause: 'M9 5v14M15 5v14',
   restart: 'M4 12a8 8 0 1 0 8-8M4 12V6M4 12h6',
   up: 'M12 19V5M6 11l6-6 6 6',
