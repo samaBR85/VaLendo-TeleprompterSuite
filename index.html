@@ -62,10 +62,20 @@
 
   /* ------------------------------------------------------------- herói */
   .hero { padding: 76px 0 48px; text-align: center; }
+  /* A logomarca, escrita como o app escreve: "Va" no cinza claro e "lendo" no
+     quase-branco. As duas sílabas do nome continuam marcadas pelo tom, que é
+     o que sobrou depois que o L maiúsculo do meio saiu. */
+  .hero .wordmark {
+    display: block; margin: 0 0 6px;
+    font-size: clamp(52px, 9vw, 92px); line-height: 1;
+    letter-spacing: -.035em; font-weight: 500;
+    color: var(--fog-1);
+  }
+  .hero .wordmark b { color: var(--fog-0); font-weight: 500; }
   .hero h1 {
     margin: 0 0 18px;
-    font-size: clamp(34px, 5.6vw, 60px); line-height: 1.08;
-    letter-spacing: -.03em; color: var(--fog-0); font-weight: 650;
+    font-size: clamp(21px, 3.2vw, 32px); line-height: 1.15;
+    letter-spacing: -.02em; color: var(--fog-0); font-weight: 500;
   }
   .hero p.lead {
     margin: 0 auto 12px; max-width: 740px;
@@ -222,6 +232,7 @@
 </header>
 
 <div id="top" class="wrap hero">
+  <span class="wordmark">Va<b>lendo</b></span>
   <h1>A full teleprompter suite.</h1>
   <p class="lead">
     Script, timing, cards, monitors and the local network in one app for Windows and macOS —
