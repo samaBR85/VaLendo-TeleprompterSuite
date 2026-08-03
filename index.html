@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Valendo — A Teleprompter Suite</title>
+<meta name="description" content="A teleprompter where the operator rewrites the script while the show is on the air. The reading position is an anchor in the text, not a pixel on the screen." />
+<link rel="icon" href="icon.png" />
+<meta property="og:title" content="Valendo — A Teleprompter Suite" />
+<meta property="og:description" content="Rewrite the script while the show is on the air. The reading position is an anchor in the text, not a pixel on the screen." />
+<meta property="og:image" content="shots/02-split.png" />
+<meta property="og:type" content="website" />
+<style>
+  :root {
+    --ink-0: #0e0e10;
+    --ink-1: #141417;
+    --ink-2: #1b1b1f;
+    --ink-3: #26262b;
+    --line: #2e2e35;
+    --fog-0: #f2f2f4;
+    --fog-1: #b9b9c2;
+    --fog-2: #82828e;
+    --fog-3: #5a5a64;
+    --go: #22c55e;
+    --warn: #f0a83c;
+    --link: #6aa8ff;
+    --live: #ef4444;
+    --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--ink-0);
+    color: var(--fog-1);
+    font: 16px/1.65 system-ui, "Segoe UI", -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--link); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------------------------------------------------------- cabeçalho */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(14,14,16,.86);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  header .wrap {
+    display: flex; align-items: center; gap: 20px;
+    height: 60px;
+  }
+  .mark {
+    font-size: 24px; font-weight: 600; letter-spacing: -.02em;
+    color: var(--fog-0); text-decoration: none;
+  }
+  .mark span { color: var(--go); }
+  header nav { margin-left: auto; display: flex; gap: 20px; font-size: 14.5px; }
+  header nav a { color: var(--fog-2); text-decoration: none; }
+  header nav a:hover { color: var(--fog-0); }
+
+  /* ------------------------------------------------------------- herói */
+  .hero { padding: 76px 0 48px; text-align: center; }
+  .hero h1 {
+    margin: 0 0 18px;
+    font-size: clamp(34px, 5.6vw, 60px); line-height: 1.08;
+    letter-spacing: -.03em; color: var(--fog-0); font-weight: 650;
+  }
+  .hero p.lead {
+    margin: 0 auto 12px; max-width: 720px;
+    font-size: clamp(17px, 2.2vw, 20px); color: var(--fog-1);
+  }
+  .quote {
+    margin: 26px auto 0; max-width: 660px;
+    padding: 14px 20px; border-left: 3px solid var(--go);
+    background: var(--ink-1); border-radius: 0 8px 8px 0;
+    color: var(--fog-0); font-size: 16.5px; text-align: left;
+  }
+  .buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+  .btn {
+    display: inline-block; padding: 11px 20px; border-radius: 9px;
+    font-size: 15px; font-weight: 500; text-decoration: none;
+    border: 1px solid var(--line); color: var(--fog-0);
+  }
+  .btn:hover { background: var(--ink-3); }
+  .btn.primary {
+    background: color-mix(in srgb, var(--go) 16%, transparent);
+    border-color: color-mix(in srgb, var(--go) 45%, transparent);
+    color: var(--go);
+  }
+  .btn.primary:hover { background: color-mix(in srgb, var(--go) 26%, transparent); }
+
+  figure { margin: 0; }
+  figure img {
+    width: 100%; height: auto; display: block;
+    border: 1px solid var(--line); border-radius: 12px;
+    background: var(--ink-1);
+  }
+  figcaption { margin-top: 10px; font-size: 13.5px; color: var(--fog-3); }
+  .shot-wide { margin: 44px 0 0; }
+
+  /* ----------------------------------------------------------- seções */
+  section { padding: 64px 0; border-top: 1px solid var(--line); }
+  section h2 {
+    margin: 0 0 8px; font-size: clamp(24px, 3.4vw, 32px);
+    letter-spacing: -.02em; color: var(--fog-0); font-weight: 620;
+  }
+  section h3 { margin: 34px 0 8px; font-size: 19px; color: var(--fog-0); font-weight: 600; }
+  section p { margin: 0 0 14px; max-width: 760px; }
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--fog-3); margin-bottom: 10px;
+  }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; align-items: center; }
+  .split.reverse > figure { order: -1; }
+  @media (max-width: 860px) { .split, .split.reverse { grid-template-columns: 1fr; }
+    .split.reverse > figure { order: 0; } }
+
+  /* ------------------------------------------------------------ grade */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 26px; }
+  .card {
+    padding: 18px 18px 16px; border: 1px solid var(--line);
+    border-radius: 11px; background: var(--ink-1);
+  }
+  .card h4 { margin: 0 0 6px; font-size: 15.5px; color: var(--fog-0); font-weight: 600; }
+  .card p { margin: 0; font-size: 14px; color: var(--fog-2); }
+  .card .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; }
+
+  /* ------------------------------------------------------------ código */
+  code, pre {
+    font-family: "Cascadia Mono", "SF Mono", Consolas, monospace;
+  }
+  code { font-size: .92em; background: var(--ink-2); padding: 2px 6px; border-radius: 5px; color: var(--fog-0); }
+  pre {
+    background: var(--ink-1); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 18px; overflow-x: auto; font-size: 14px; color: var(--fog-0);
+    max-width: 560px;
+  }
+  pre code { background: none; padding: 0; }
+
+  footer {
+    border-top: 1px solid var(--line); padding: 40px 0 56px;
+    font-size: 14px; color: var(--fog-3);
+  }
+  footer a { color: var(--fog-2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="mark" href="#top">Va<span>lendo</span></a>
+    <nav>
+      <a href="#what">Features</a>
+      <a href="#idea">The idea</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki">Docs</a>
+      <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div id="top" class="wrap hero">
+  <h1>Rewrite the script<br />while the show is on the air.</h1>
+  <p class="lead">
+    A teleprompter for Windows and macOS where the operator edits the text live, watching the
+    editor and an exact replica of the presenter's screen side by side.
+  </p>
+  <div class="quote">The reading position is an anchor in the text, not a pixel on the screen.</div>
+  <div class="buttons">
+    <a class="btn primary" href="https://github.com/samaBR85/Valendo-TeleprompterSuite/releases">Download for Windows</a>
+    <a class="btn" href="https://github.com/samaBR85/Valendo-TeleprompterSuite">Source on GitHub</a>
+    <a class="btn" href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki">Documentation</a>
+  </div>
+  <figure class="shot-wide">
+    <img src="shots/02-split.png" alt="The operator window: the script editor on the left, an exact replica of the presenter's screen on the right" />
+    <figcaption>The operator's console. Editor on the left, the presenter's screen on the right, at its real resolution.</figcaption>
+  </figure>
+</div>
+
+<section id="idea">
+  <div class="wrap">
+    <div class="eyebrow">Why it exists</div>
+    <h2>Other teleprompters make you stop to edit</h2>
+    <p>
+      They store the scroll position <strong>in pixels</strong>. Any change to the text, the typeface or
+      the margin reflows the layout, and pixel 4,200 is suddenly a different sentence — the text jumps
+      in the presenter's face. That is not a missing feature; it is the storage model.
+    </p>
+    <p>
+      Valendo stores the position as a <strong>semantic anchor</strong>: <code>{ blockId, wordOffset }</code>.
+      Block seven, word thirty-four. After any reflow the pixel is recomputed from it. Insert paragraphs
+      above the reading point, raise the type size, change the margin — the word being read does not move.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <h4><span class="dot" style="background:var(--go)"></span>A clock, not messages</h4>
+        <p>The main process keeps three numbers: pace, where the reading started, and when. Each window solves the same equation. Nothing is sent per frame, so nothing can drift.</p>
+      </div>
+      <div class="card">
+        <h4><span class="dot" style="background:var(--warn)"></span>One component, two screens</h4>
+        <p>The same code draws the broadcast and the operator's preview. The preview runs at the output's real viewport and only gets a scale. The replica is exact by construction.</p>
+      </div>
+      <div class="card">
+        <h4><span class="dot" style="background:var(--link)"></span>Lines composed by words</h4>
+        <p>A word rule decides where a line breaks, not the browser. Changing the type size changes the height of a line and nothing else.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="what">
+  <div class="wrap">
+    <div class="eyebrow">Cards</div>
+    <h2>Over the script, or instead of it</h2>
+    <div class="split">
+      <div>
+        <p>
+          Images, video and messages go to the presenter's screen with one click or a number key.
+          Each card either <strong>replaces</strong> the script or <strong>rides over it</strong> — which
+          is how a lower third and a caption share one screen.
+        </p>
+        <p>
+          Legibility over a card is a three-way choice: a dark band, a shadow behind each letter,
+          or nothing at all.
+        </p>
+        <p>
+          Video plays the file as it arrived whenever the browser can handle it. When it cannot,
+          ffmpeg first tries to change only the container — seconds, no pixel touched — and re-encodes
+          only when the content genuinely will not fit an mp4.
+        </p>
+      </div>
+      <figure>
+        <img src="shots/05-overlay-video.png" alt="A video card on air with the script scrolling over it on a dark band" />
+        <figcaption>A clip on air, with the script riding over it.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Three ways to work</div>
+    <h2>Split, Focus, Desk</h2>
+    <div class="split reverse">
+      <div>
+        <p>
+          <strong>Split</strong> is the picture at the top of this page — the editor and the presenter's
+          screen together, which is how a show is operated.
+        </p>
+        <p>
+          <strong>Focus</strong> hides everything except the script and the transport, for the last
+          rehearsal before air.
+        </p>
+        <p>
+          <strong>Desk</strong> turns the script into a rundown: every block with its word count,
+          duration and on-air status, and a timeline across the top.
+        </p>
+      </div>
+      <figure>
+        <img src="shots/07-desk.png" alt="Desk mode: a rundown of blocks with word counts and durations, and a timeline" />
+        <figcaption>Desk mode.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Output</div>
+    <h2>The presenter's screen</h2>
+    <div class="split">
+      <div>
+        <p>
+          Any connected monitor, identified on screen before you send a show to it. Mirror on either
+          axis for teleprompter glass, 90° rotation for a screen mounted sideways, blackout and freeze
+          on a key.
+        </p>
+        <p>
+          If that monitor is unplugged mid-show, Valendo closes the output rather than leaving a window
+          at coordinates that no longer exist.
+        </p>
+      </div>
+      <figure>
+        <img src="shots/09-broadcast.png" alt="The presenter's screen: the reading line, the current sentence bright, what is coming dimmed" />
+        <figcaption>What the presenter reads. Mirror is off here so it is legible on this page.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Local network</div>
+    <h2>Anyone on the wi-fi can follow along</h2>
+    <div class="split reverse">
+      <div>
+        <p>
+          One switch publishes the reading to a page on the local network. A phone points its camera at
+          the QR code and follows the same scroll, with the same cards, exactly as the presenter sees it.
+          Nothing to install.
+        </p>
+        <p>
+          Video going out can be throttled to five weight profiles, because a phone on wi-fi is not a
+          monitor on a cable. The presenter's screen always gets the original.
+        </p>
+      </div>
+      <figure>
+        <img src="shots/08-network.png" alt="The network panel with the address, a QR code and the video weight profiles" />
+        <figcaption>Only the tab that is on air is published.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Privacy</div>
+    <h2>It opens without opening your work</h2>
+    <div class="split">
+      <div>
+        <p>
+          Valendo never restores the last script by itself. Opening a teleprompter in a studio that is
+          not yours, or with the machine already mirrored to a wall, would otherwise put the previous
+          show in front of whoever is in the room — and a script is a client's material.
+        </p>
+        <p>
+          The screen starts blank. <strong>Pick up where I left off</strong> is a deliberate click, and
+          the list of recent projects can be emptied for good.
+        </p>
+      </div>
+      <figure>
+        <img src="shots/01-welcome.png" alt="The welcome screen with the language choice, recent projects and four ways in" />
+        <figcaption>Every launch, not only the first one.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Everything else</div>
+    <h2>What is in the box</h2>
+    <div class="grid">
+      <div class="card"><h4>Reading</h4><p>Chapters, markers, reading line, go-to-cursor, up to ten tabs, infinite undo kept across sessions.</p></div>
+      <div class="card"><h4>Transport</h4><p>Play/pause on Space, a words-per-minute ruler, nudge, loop with a delay, auto-pause at the end.</p></div>
+      <div class="card"><h4>Pacing</h4><p>Formula, stopwatch or free run. Elapsed, remaining and a target duration that adjusts the pace to fit.</p></div>
+      <div class="card"><h4>Appearance</h4><p>Family, size, weight, spacing, ALL CAPS, margin, position, words per line, colour presets, invert.</p></div>
+      <div class="card"><h4>Files</h4><p>Import and export txt, md, docx and pdf. Projects in a single <code>.valendo</code> file. Autosave underneath.</p></div>
+      <div class="card"><h4>Console</h4><p>Command palette, every key remappable, interface scale, transport at the top or in the footer.</p></div>
+      <div class="card"><h4>Six languages</h4><p>English, Portuguese (Brazil), Spanish, German, French, Italian — picked from the system on first run.</p></div>
+      <div class="card"><h4>Free software</h4><p>GPL-3.0-or-later. Use it, study it, change it, sell services around it. It cannot be closed.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <div class="eyebrow">Install</div>
+    <h2>Two ways in</h2>
+    <h3>Windows installer</h3>
+    <p>
+      Download the latest <code>Valendo-setup.exe</code> from
+      <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/releases">Releases</a>.
+      It installs per user, so it does not ask for an administrator password.
+    </p>
+    <h3>From source</h3>
+<pre><code>git clone https://github.com/samaBR85/Valendo-TeleprompterSuite.git
+cd Valendo-TeleprompterSuite
+npm install
+npm run dev</code></pre>
+    <p>
+      The rest — the other commands, the project layout, the tests — is in
+      <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki/Building-from-Source">Building from Source</a>.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>
+      <strong style="color:var(--fog-1)">Valendo — A Teleprompter Suite.</strong>
+      GNU General Public License, version 3 or later.
+      The installer redistributes a GPL build of ffmpeg 6.1.1;
+      <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki/Building-from-Source#redistributed-ffmpeg">source and build flags here</a>.
+    </p>
+    <p>
+      <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite">Repository</a> ·
+      <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki">Wiki</a> ·
+      <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/issues">Issues</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
