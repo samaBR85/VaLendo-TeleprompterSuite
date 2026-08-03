@@ -507,6 +507,57 @@ function AppConteudo({
     }
   }, [])
 
+  /**
+   * A roda do mouse muda o ritmo em QUALQUER lugar da mesa — menos onde ela
+   * já tem dono.
+   *
+   * Antes valia só sobre a prévia e sobre a régua de velocidade, o que obriga
+   * a mirar num alvo específico para acelerar no meio de um programa. Agora o
+   * ouvinte é da janela, e a regra é a inversa: a roda pertence ao ritmo, a
+   * não ser que o que está sob o ponteiro precise mesmo dela.
+   *
+   * Quem fica de fora:
+   * - o editor, os atalhos e a paleta de comandos, ditos pelo operador: nos
+   *   três a roda é o jeito de percorrer o conteúdo;
+   * - qualquer painel que ROLE DE VERDADE naquele instante — os Ajustes e a
+   *   coluna de Assets são listas altas, e sem esta parte da regra a metade
+   *   de baixo delas ficaria inalcançável. Não é um item a mais da lista do
+   *   operador: é a mesma razão que já justificava os três, aplicada a quem
+   *   também rola;
+   * - o que já foi tratado por outro handler (`defaultPrevented`) — a régua
+   *   de velocidade tem o seu próprio, e sem esta guarda um giro sobre ela
+   *   contaria duas vezes.
+   */
+  useEffect(() => {
+    const rolavel = (alvo: EventTarget | null): boolean => {
+      let no = alvo instanceof HTMLElement ? alvo : null
+      while (no && no !== document.body) {
+        // `data-sem-roda` marca as ilhas onde a roda é do conteúdo mesmo
+        // quando elas ainda não têm o que rolar (uma paleta com dois
+        // resultados, por exemplo) — senão a regra ligaria e desligaria
+        // conforme o tamanho da lista
+        if (no.dataset.semRoda !== undefined) return true
+        const estilo = getComputedStyle(no)
+        const podeRolar = /auto|scroll/.test(estilo.overflowY) && no.scrollHeight > no.clientHeight + 1
+        if (podeRolar) return true
+        no = no.parentElement
+      }
+      return false
+    }
+
+    const naRoda = (event: WheelEvent): void => {
+      if (event.defaultPrevented || event.ctrlKey) return
+      if (rolavel(event.target)) return
+      event.preventDefault()
+      dispatch({ type: 'transport/nudgePpm', delta: event.deltaY < 0 ? 1 : -1 })
+    }
+
+    // `passive: false` porque a intenção é justamente tomar a roda do
+    // navegador; sem isso o `preventDefault` é ignorado
+    window.addEventListener('wheel', naRoda, { passive: false })
+    return () => window.removeEventListener('wheel', naRoda)
+  }, [dispatch])
+
   // desligar cancela o salto que ainda estava para acontecer — senão um
   // clique em CATCH bem no meio da espera dispararia um Go To indesejado
   useEffect(() => {
@@ -601,7 +652,6 @@ function AppConteudo({
       marginGuides
       card={cartaoNoAr(state)}
       cardOverlay={state.cardOverlay}
-      onSpeed={(delta) => dispatch({ type: 'transport/nudgePpm', delta })}
       onMetrics={handleMetrics}
     />
   )

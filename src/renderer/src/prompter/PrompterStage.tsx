@@ -17,13 +17,12 @@ interface Props {
   cardOverlay?: { enabled: boolean; style: CardOverlayStyle }
   /** nível do som do vídeo nesta prévia, 0 a 1 — preferência da máquina */
   cardVolume?: number
-  /**
-   * Roda do mouse sobre a prévia muda o ritmo: para cima acelera.
-   *
-   * Só aqui e na régua, e não na janela inteira — sobre o editor a roda tem de
-   * continuar rolando o texto, que é o que ela faz em qualquer editor.
+  /*
+   * A roda do mouse mudava o ritmo só aqui, e agora vale na janela inteira —
+   * o ouvinte mora em `App.tsx`, junto da regra de onde ela NÃO vale (editor,
+   * modais, painéis que precisam rolar). Ter um `onWheel` próprio aqui faria
+   * o mesmo giro contar duas vezes sobre a prévia.
    */
-  onSpeed?: (delta: 1 | -1) => void
   onMetrics?: (metrics: PrompterMetrics) => void
 }
 
@@ -33,9 +32,6 @@ interface Props {
  * prévia siga sendo o mesmo desenho da transmissão.
  */
 export function PrompterStage(props: Props): React.JSX.Element {
-  // `onSpeed` é da moldura, não do desenho: repassar sujaria o canvas com uma
-  // prop que ele não usa
-  const { onSpeed: _roda, ...semRoda } = props
   const boxRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(0.1)
 
@@ -64,18 +60,7 @@ export function PrompterStage(props: Props): React.JSX.Element {
   // mas não o tamanho de layout, então um canvas de 1920px em fluxo normal
   // estouraria a largura da janela e empurraria o inspetor para fora
   return (
-    <div
-      ref={boxRef}
-      onWheel={
-        props.onSpeed
-          ? (event) => {
-              event.preventDefault()
-              props.onSpeed?.(event.deltaY < 0 ? 1 : -1)
-            }
-          : undefined
-      }
-      className="relative min-h-0 min-w-0 flex-1 overflow-hidden"
-    >
+    <div ref={boxRef} className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
       <div
         style={{
           position: 'absolute',
@@ -96,7 +81,7 @@ export function PrompterStage(props: Props): React.JSX.Element {
             componente É a prévia — só o Split e a Mesa o usam, e nunca os dois
             ao mesmo tempo. Deixar a cargo de quem chama seria abrir a porta
             para um dia a transmissão herdar som. */}
-        <PrompterCanvas {...semRoda} readingMark previaDoOperador />
+        <PrompterCanvas {...props} readingMark previaDoOperador />
       </div>
     </div>
   )

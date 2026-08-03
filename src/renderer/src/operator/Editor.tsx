@@ -273,7 +273,11 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
   // — os dois passam a quebrar linha em pontos diferentes, e selecionar texto
   // revela o textarea real desalinhado por baixo do texto colorido.
   return (
-    <div className="relative min-h-0 flex-1 overflow-hidden">
+    // `data-sem-roda`: sobre o texto que se está escrevendo a roda rola o
+    // roteiro, como em qualquer editor — nunca o ritmo da leitura. A marca
+    // fica aqui e não no textarea porque o `<pre>` colorido por baixo também
+    // está nesta caixa
+    <div data-sem-roda className="relative min-h-0 flex-1 overflow-hidden">
       <pre
         ref={preRef}
         aria-hidden="true"

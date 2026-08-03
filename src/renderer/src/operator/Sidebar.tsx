@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { composeLines } from '@shared/anchor'
-import { CARD_DRAG_MIME } from '@shared/cards'
+import { CARD_DRAG_MIME, ESTILOS_DE_OVERLAY } from '@shared/cards'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
 import type {
@@ -53,11 +53,6 @@ interface Props {
   dispatch: (action: Action) => void
 }
 
-const ESTILOS_DE_OVERLAY: { style: CardOverlayStyle; letra: string; rotulo: 'cards.overlayStyle.faixa' | 'cards.overlayStyle.sombra' | 'cards.overlayStyle.nenhum' }[] = [
-  { style: 'faixa', letra: 'F', rotulo: 'cards.overlayStyle.faixa' },
-  { style: 'sombra', letra: 'S', rotulo: 'cards.overlayStyle.sombra' },
-  { style: 'nenhum', letra: 'N', rotulo: 'cards.overlayStyle.nenhum' }
-]
 
 /**
  * A arte do cartão, em 5:3 no tamanho que o slider do rodapé pedir: imagem
@@ -203,22 +198,11 @@ export function Sidebar({
           className="border-t border-t-[var(--color-edge)]"
           acao={
             <>
-              {/* "OVERLAY" ligado FORÇA o texto por cima de qualquer cartão,
-                  mesmo com o toggle dele desligado — a garantia do operador.
-                  Desligado, cada cartão decide sozinho pelo próprio toggle. */}
-              <button
-                type="button"
-                title={t('cards.overlayHint')}
-                aria-pressed={cardOverlay.enabled}
-                onClick={() => dispatch({ type: 'cardOverlay/set', enabled: !cardOverlay.enabled })}
-                className={`flex-none rounded-[4px] px-1 py-0.5 text-[8px] font-bold tracking-[0.04em] transition-colors ${
-                  cardOverlay.enabled
-                    ? 'bg-[var(--color-accent-2)] text-[#1c1020]'
-                    : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
-                }`}
-              >
-                {t('cards.overlay')}
-              </button>
+              {/* as fichas vêm ANTES do botão: assim o "OVERLAY" fica sempre
+                  na mesma ponta da direita, ligado ou desligado, e ligá-lo
+                  não empurra o próprio botão para o lado — antes ele saltava
+                  de lugar no instante do clique, e o segundo clique (para
+                  desligar) caía no vazio */}
               {cardOverlay.enabled ? (
                 <span className="flex flex-none gap-[2px]">
                   {ESTILOS_DE_OVERLAY.map((opcao) => (
@@ -234,6 +218,23 @@ export function Sidebar({
                   ))}
                 </span>
               ) : null}
+              {/* "OVERLAY" ligado FORÇA o texto por cima de qualquer cartão,
+                  mesmo com o toggle dele desligado — a garantia do operador.
+                  Desligado, cada cartão decide sozinho pelo próprio toggle. */}
+              <button
+                type="button"
+                data-overlay-global
+                title={t('cards.overlayHint')}
+                aria-pressed={cardOverlay.enabled}
+                onClick={() => dispatch({ type: 'cardOverlay/set', enabled: !cardOverlay.enabled })}
+                className={`flex-none rounded-[4px] px-1 py-0.5 text-[8px] font-bold tracking-[0.04em] transition-colors ${
+                  cardOverlay.enabled
+                    ? 'bg-[var(--color-accent-2)] text-[#1c1020]'
+                    : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+                }`}
+              >
+                {t('cards.overlay')}
+              </button>
             </>
           }
         />

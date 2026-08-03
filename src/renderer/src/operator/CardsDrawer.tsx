@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
-import { CARD_DRAG_MIME, CARTOES_COM_ATALHO, novoCartaoId } from '@shared/cards'
+import { CARD_DRAG_MIME, CARTOES_COM_ATALHO, ESTILOS_DE_OVERLAY, novoCartaoId } from '@shared/cards'
 import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN } from '@shared/defaults'
 import type { CardConvertProgress } from '@shared/api'
 import { perfilPorId, type PerfilDeRede } from '@shared/proxy'
@@ -8,7 +8,7 @@ import type { CardOverlayStyle, Cartao, VideoClock } from '@shared/types'
 import { posicaoDoVideo, tempoDeVideo } from '@shared/video'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
-import { CabecalhoDePainel, SliderConsole } from '../ui/console'
+import { CabecalhoDePainel, Ficha, SliderConsole } from '../ui/console'
 
 type CartaoVideo = Extract<Cartao, { kind: 'video' }>
 
@@ -276,6 +276,30 @@ export function CardsDrawer({
           />
           <BotaoAdicionar atributo="text" rotulo={t('cards.addText')} onClick={adicionarRecado} />
         </div>
+
+        {/* o estilo de legibilidade do overlay, aqui também.
+            É a MESMA escolha do cabeçalho "Cartões do bloco" da coluna de
+            assets — mas lá ela só aparece com o switch global ligado, e o
+            estilo vale igualmente para um cartão que sobrepõe pelo próprio
+            toggle. Sem esta cópia, escolher entre faixa e sombra num cartão
+            avulso obrigava a ligar o global (mudando o comportamento de
+            todos) só para alcançar o controle. */}
+        <span className="mx-1 h-3.5 w-px flex-none bg-[var(--color-line)]" />
+        <span className="k-microcaps flex-none text-[var(--color-fog-3)]">{t('cards.overlayStyleLabel')}</span>
+        <span className="flex flex-none gap-[2px]">
+          {ESTILOS_DE_OVERLAY.map((opcao) => (
+            <Ficha
+              key={opcao.style}
+              data-drawer-overlay-style={opcao.style}
+              ativa={cardOverlay.style === opcao.style}
+              title={t(opcao.rotulo)}
+              onClick={() => dispatch({ type: 'cardOverlay/style', style: opcao.style })}
+              className="h-4 w-4 rounded-[3px] p-0 text-[8px] leading-none"
+            >
+              {opcao.letra}
+            </Ficha>
+          ))}
+        </span>
 
         {convertendo ? (
           <span className="flex min-w-0 flex-1 items-center gap-2 text-[10px] text-[var(--color-fog-1)]">

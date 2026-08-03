@@ -1,4 +1,4 @@
-import type { AppState, Cartao } from './types'
+import type { AppState, CardOverlayStyle, Cartao } from './types'
 
 /**
  * Quantos cartões ganham atalho de teclado: Ctrl+Shift+1 a 9.
@@ -33,3 +33,27 @@ export function novoCartaoId(agora: number, semente: number): string {
  * os dois tipos de solta, cada um com sua reação própria.
  */
 export const CARD_DRAG_MIME = 'application/x-valendo-card'
+
+/**
+ * Os três estilos de legibilidade do OVERLAY, na ordem em que aparecem.
+ *
+ * Mora aqui, e não em quem desenha, porque agora TRÊS lugares oferecem a
+ * mesma escolha: o cabeçalho "Cartões do bloco" da coluna de assets, o
+ * cabeçalho da gaveta e — pelo `style` do estado — a saída em si. Repetir a
+ * lista em cada um era garantir que uma hora elas ficassem em ordens
+ * diferentes, ou que um estilo novo entrasse só em duas.
+ *
+ * A letra é a inicial em português (Faixa, Sombra, Nenhum) e não é traduzida:
+ * são três botões de 16px, e o rótulo por extenso vive no `title`. Trocar a
+ * letra por idioma faria o operador reaprender a posição ao trocar de língua,
+ * que é justamente o que uma marca curta e fixa evita.
+ */
+export const ESTILOS_DE_OVERLAY: {
+  style: CardOverlayStyle
+  letra: string
+  rotulo: 'cards.overlayStyle.faixa' | 'cards.overlayStyle.sombra' | 'cards.overlayStyle.nenhum'
+}[] = [
+  { style: 'faixa', letra: 'F', rotulo: 'cards.overlayStyle.faixa' },
+  { style: 'sombra', letra: 'S', rotulo: 'cards.overlayStyle.sombra' },
+  { style: 'nenhum', letra: 'N', rotulo: 'cards.overlayStyle.nenhum' }
+]

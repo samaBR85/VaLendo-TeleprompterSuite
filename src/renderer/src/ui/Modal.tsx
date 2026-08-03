@@ -22,7 +22,11 @@ export function Modal({ title, subtitle, width = 560, onClose, children }: Props
   }, [onClose])
 
   return (
+    // `data-sem-roda`: dentro de um modal a roda é de percorrer a lista, nunca
+    // de mexer no ritmo da leitura — vale para a paleta de comandos, o editor
+    // de atalhos e qualquer modal que venha depois, sem cada um ter de lembrar
     <div
+      data-sem-roda
       className="fixed inset-0 z-50 flex items-start justify-center bg-black/55 pt-[12vh]"
       onMouseDown={onClose}
     >

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { composeLines, totalWords } from '@shared/anchor'
 import { formatBinding, parseBinding } from '@shared/commands'
@@ -333,6 +333,15 @@ export function PocoDeSaida({
   grande?: boolean
 }): React.JSX.Element {
   const { t } = useT()
+  const [identificarAberto, setIdentificarAberto] = useState(false)
+
+  // fecha ao clicar em qualquer outro lugar — mesmo desenho do menu de salvar
+  useEffect(() => {
+    if (!identificarAberto) return
+    const fechar = (): void => setIdentificarAberto(false)
+    window.addEventListener('mousedown', fechar)
+    return () => window.removeEventListener('mousedown', fechar)
+  }, [identificarAberto])
 
   return (
     <Poco className="gap-[7px]" data-pill="saida">
@@ -340,24 +349,49 @@ export function PocoDeSaida({
           alinhado tanto no topo (grande) quanto na régua. Desativado com a
           transmissão no ar: identificar pisca o número em cada monitor,
           inclusive no que está ao vivo — um descuido aqui vazaria para quem
-          está assistindo */}
-      <button
-        type="button"
-        data-identify-monitor
-        disabled={output.enabled}
-        title={t('toolbar.identify')}
-        aria-label={t('toolbar.identify')}
-        onClick={() => window.valendo.identifyDisplays()}
-        className={`grid flex-none place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] transition-[filter] hover:brightness-115 disabled:opacity-30 disabled:hover:brightness-100 ${
-          grande ? 'h-8 w-8' : 'h-6 w-6'
-        }`}
-        style={!output.enabled ? { color: 'var(--color-accent-2)' } : undefined}
-      >
-        <Icon name="monitor" size={grande ? 15 : 12} />
-      </button>
+          está assistindo.
+
+          Vira dropdown porque o ícone sozinho não conta o que faz, e um
+          `title` só aparece depois de segundos parado em cima. Abrindo, o
+          nome por extenso fica à vista e ainda dá para desistir sem disparar
+          nada — o que importa num botão que pisca número em todo monitor,
+          inclusive no que o apresentador está lendo. */}
+      <div className="relative flex items-stretch" onMouseDown={(event) => event.stopPropagation()}>
+        <button
+          type="button"
+          data-identify-monitor
+          disabled={output.enabled}
+          aria-expanded={identificarAberto}
+          aria-label={t('toolbar.identify')}
+          onClick={() => setIdentificarAberto((aberto) => !aberto)}
+          className={`grid flex-none place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] transition-[filter] hover:brightness-115 disabled:opacity-30 disabled:hover:brightness-100 ${
+            grande ? 'h-8 w-8' : 'h-6 w-6'
+          }`}
+          style={!output.enabled ? { color: 'var(--color-accent-2)' } : undefined}
+        >
+          <Icon name="monitor" size={grande ? 15 : 12} />
+        </button>
+        {identificarAberto ? (
+          <div className="absolute top-full left-0 z-50 mt-1 min-w-max rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] py-1 shadow-lg">
+            <button
+              type="button"
+              data-identify-monitor-run
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] whitespace-nowrap text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+              onClick={() => {
+                setIdentificarAberto(false)
+                window.valendo.identifyDisplays()
+              }}
+            >
+              <Icon name="monitor" size={12} />
+              {t('toolbar.identifyAction')}
+            </button>
+          </div>
+        ) : null}
+      </div>
 
       <select
         value={output.displayId ?? ''}
+        title={t('toolbar.pickMonitor')}
         onChange={(event) => {
           const value = event.target.value
           dispatch({
@@ -366,12 +400,21 @@ export function PocoDeSaida({
             enabled: value !== '' && output.enabled
           })
         }}
-        // largura determinística (natural, com um teto): quem decide se a
-        // barra cabe numa linha só é uma MEDIDA da soma dos grupos, e um
-        // seletor que encolhe sozinho faria essa soma mentir — a barra
-        // acharia que coube quando na verdade só truncou o nome do monitor
-        className={`flex-none rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] text-[var(--color-fog-2)] ${
-          grande ? 'h-8 max-w-[320px] px-2.5 text-[12px]' : 'h-6 max-w-[190px] px-2 text-[10px]'
+        /*
+         * Largura FECHADA, e não natural com um teto.
+         *
+         * Cabe "Monitor 3 · horizontal" e corta o resto — a resolução é o que
+         * menos se lê de relance, e era ela que fazia a caixa esticar por meia
+         * barra quando o monitor tinha nome comprido. Aberto, o dropdown
+         * mostra cada linha inteira; parado, o nome e a orientação bastam para
+         * saber para onde o programa vai.
+         *
+         * Fechada também é o que mantém honesta a medida que decide se a barra
+         * do topo cabe numa linha: um seletor que muda de tamanho com o nome
+         * do monitor faria a mesma janela caber ou não conforme o estúdio.
+         */
+        className={`flex-none truncate rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] text-[var(--color-fog-2)] ${
+          grande ? 'h-8 w-[196px] px-2.5 text-[12px]' : 'h-6 w-[150px] px-2 text-[10px]'
         }`}
       >
         <option value="">{t('toolbar.pickMonitor')}</option>
@@ -493,10 +536,15 @@ function LinhaDeProgresso({
           background: 'linear-gradient(90deg, #2b7d52, var(--color-go))'
         }}
       />
+      {/* 4px, e não 2: num fio de 5px de altura atravessando a janela inteira,
+          um traço de 2px some contra o verde do progresso — e achar o próximo
+          capítulo de relance é justamente para o que ele existe. O `-2px` de
+          margem recentra a marca no ponto exato, senão ela cresceria só para a
+          direita e passaria a apontar depois do capítulo */}
       {ticks.map((tick, index) => (
         <div
           key={index}
-          className="absolute top-0 bottom-0 w-[2px] bg-[var(--color-warn)]"
+          className="absolute top-0 bottom-0 -ml-[2px] w-[4px] rounded-[1px] bg-[var(--color-warn)]"
           style={{ left: `${Math.min(100, tick * 100)}%` }}
         />
       ))}
@@ -573,20 +621,28 @@ function useCabeEmUmaLinha(): [React.RefObject<HTMLDivElement | null>, boolean] 
 function TecladoDeTransporte({
   playing,
   loop,
+  compacto,
   keymap,
   run
 }: {
   playing: boolean
   /** com o loop ligado, o Reiniciar acende — é ele quem a leitura chama sozinha ao voltar ao início */
   loop: boolean
+  /** na régua do rodapé tudo sai 20% menor — ver `BarraDeTransporte` */
+  compacto: boolean
   keymap: Map<string, string>
   run: (commandId: string) => void
 }): React.JSX.Element {
   const { t } = useT()
-  const lado = 'h-11 w-12 rounded-lg'
+  const lado = compacto ? 'h-[35px] w-[38px] rounded-md' : 'h-11 w-12 rounded-lg'
+  const glifo = compacto ? 14 : 17
 
   return (
-    <Poco fundo className="gap-[7px] p-[5px]" data-grupo="transporte">
+    <Poco
+      fundo
+      className={compacto ? 'gap-[6px] p-1' : 'gap-[7px] p-[5px]'}
+      data-grupo="transporte"
+    >
       <Tecla
         title={`${t('toolbar.restart')}${hint(keymap, 'transport.restart')}`}
         aria-label={t('toolbar.restart')}
@@ -596,7 +652,7 @@ function TecladoDeTransporte({
         style={!loop ? { color: 'var(--color-go)' } : undefined}
         onClick={() => run('transport.restart')}
       >
-        <Icon name="restart" size={17} />
+        <Icon name="restart" size={glifo} />
       </Tecla>
       <Tecla
         title={`${t('toolbar.back')}${hint(keymap, 'transport.jumpBack')}`}
@@ -604,7 +660,7 @@ function TecladoDeTransporte({
         className={lado}
         onClick={() => run('transport.jumpBack')}
       >
-        <Icon name="up" size={17} />
+        <Icon name="up" size={glifo} />
       </Tecla>
       <Tecla
         play
@@ -612,17 +668,18 @@ function TecladoDeTransporte({
         aria-label={playing ? t('toolbar.pause') : t('toolbar.play')}
         // 60px, contra os 44 das vizinhas: é a tecla que decide se o programa
         // anda, e a única que se procura sem olhar. A altura é o que a
-        // distingue de longe — a largura já era maior e não bastava
-        className="h-[60px] w-[86px] rounded-lg"
+        // distingue de longe — a largura já era maior e não bastava. Na régua
+        // do rodapé a mesma proporção, 20% menor
+        className={compacto ? 'h-[48px] w-[69px] rounded-md' : 'h-[60px] w-[86px] rounded-lg'}
         onClick={() => run('transport.playPause')}
       >
         {playing ? (
-          <Icon name="pause" size={20} />
+          <Icon name="pause" size={compacto ? 16 : 20} />
         ) : (
           // preenchido, e não contorno: um triângulo fino sobre o verde vivo
           // some de tão claro — o play é a única tecla que precisa de um
           // glifo sólido para ler de longe
-          <Icon name="play" size={20} filled style={{ color: '#000' }} />
+          <Icon name="play" size={compacto ? 16 : 20} filled style={{ color: '#000' }} />
         )}
       </Tecla>
       <Tecla
@@ -631,7 +688,7 @@ function TecladoDeTransporte({
         className={lado}
         onClick={() => run('transport.jumpForward')}
       >
-        <Icon name="down" size={17} />
+        <Icon name="down" size={glifo} />
       </Tecla>
       <Tecla
         title={`${t('toolbar.marker')}${hint(keymap, 'marker.create')}`}
@@ -641,7 +698,7 @@ function TecladoDeTransporte({
         style={{ color: 'var(--color-live)' }}
         onClick={() => run('marker.create')}
       >
-        <Icon name="marker" size={17} />
+        <Icon name="marker" size={glifo} />
       </Tecla>
     </Poco>
   )
@@ -693,7 +750,7 @@ export function BarraDeTransporte({
   const ticks = ruler > 0 ? segments.flatMap((s) => s.markers).map((m) => m.rulerStart / ruler) : []
 
   const compacto = position === 'regua'
-  const corpo = compacto ? 24 : 27
+  const corpo = compacto ? 19 : 27
 
   // o que a legenda do antigo mostrador dizia, agora no hover da linha:
   // capítulo corrente e quanto o roteiro inteiro leva no ritmo de agora
@@ -718,7 +775,7 @@ export function BarraDeTransporte({
   // dois números seria moldura sem conteúdo. A legenda embaixo de cada um
   // continua sendo quem diz qual é qual.
   const relogios = (
-    <div className="flex flex-none items-center gap-7">
+    <div className={`flex flex-none items-center ${compacto ? 'gap-[22px]' : 'gap-7'}`}>
       {decorrido}
       {restante}
     </div>
@@ -729,7 +786,7 @@ export function BarraDeTransporte({
     // régua empurraria o Transmitir para fora da janela em vez de usar a
     // sobra. Quem equilibra as duas pontas — e com isso centraliza o play —
     // é a grade, não o conteúdo.
-    <Lcd className={`${compacto ? 'h-12' : 'h-[52px]'} min-w-0 flex-none`}>
+    <Lcd className={`${compacto ? 'h-[38px]' : 'h-[52px]'} min-w-0 flex-none`}>
       {/* metade da largura de antes (186px). A palavra "VELOCIDADE" saiu da
           legenda junto: no espaço que sobrou ela truncaria, e ela já era a
           menos necessária das três coisas ali — o mostrador ao lado diz PPM
@@ -737,7 +794,9 @@ export function BarraDeTransporte({
           que a régua mostra; o nome inteiro continua no hover */}
       <div
         title={t('lcd.speed')}
-        className="flex w-[93px] flex-col justify-center gap-1.5 border-r border-[var(--color-lcd-line)] px-2.5"
+        className={`flex flex-col justify-center border-r border-[var(--color-lcd-line)] ${
+          compacto ? 'w-[74px] gap-1 px-2' : 'w-[93px] gap-1.5 px-2.5'
+        }`}
       >
         <SpeedRuler ppm={transport.ppm} onChange={(ppm) => dispatch({ type: 'transport/ppm', ppm })} />
         <div className="k-microcaps flex justify-between tracking-[0.1em] text-[var(--color-lcd-caption)]">
@@ -745,11 +804,24 @@ export function BarraDeTransporte({
           <span>{PPM_MAX}</span>
         </div>
       </div>
-      <Digito valor={String(transport.ppm)} rotulo={t('toolbar.ppm')} tamanho={corpo} className="px-5" />
+      <Digito
+        valor={String(transport.ppm)}
+        rotulo={t('toolbar.ppm')}
+        tamanho={corpo}
+        className={compacto ? 'px-4' : 'px-5'}
+      />
     </Lcd>
   )
 
-  const teclado = <TecladoDeTransporte playing={transport.playing} loop={transport.loop} keymap={keymap} run={run} />
+  const teclado = (
+    <TecladoDeTransporte
+      playing={transport.playing}
+      loop={transport.loop}
+      compacto={compacto}
+      keymap={keymap}
+      run={run}
+    />
+  )
   const linha = <LinhaDeProgresso fracao={fracao} ticks={ticks} titulo={legenda} />
 
   if (position === 'topo') {
@@ -860,10 +932,10 @@ export function BarraDeTransporte({
       {linha}
       <div
         data-transporte="regua"
-        // 84px, e não os 70 de antes: com o play em 60 o poço do teclado passa
-        // a medir exatamente 70 (60 + os 5 de folga de cada lado), e ele
-        // encostaria nas duas bordas da régua
-        className="relative z-[2] grid h-[84px] flex-none items-center gap-2.5 border-t border-[var(--color-edge)] px-2.5"
+        // 67px: os mesmos 84 de antes, 20% menores junto com tudo que mora
+        // dentro. O poço do teclado passa a medir 56 (play de 48 + os 4 de
+        // folga de cada lado), então sobram ~5px acima e abaixo dele
+        className="relative z-[2] grid h-[67px] flex-none items-center gap-2 border-t border-[var(--color-edge)] px-2"
         style={{
           gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
           background: 'linear-gradient(#2c2c31, #1e1e22)',

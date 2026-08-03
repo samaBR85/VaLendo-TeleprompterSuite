@@ -147,7 +147,6 @@ export function Deck({
             card={card}
             cardOverlay={cardOverlay}
             cardVolume={cardVolume}
-            onSpeed={(delta) => dispatch({ type: 'transport/nudgePpm', delta })}
             onMetrics={onMetrics}
           />
         </div>

@@ -64,6 +64,7 @@ export const de: Dicionario = {
   'toolbar.blackout': 'Schwarzbild',
   'toolbar.freeze': 'Ausgabe einfrieren',
   'toolbar.identify': 'Zeigt auf jedem Monitor eine große Zahl',
+  'toolbar.identifyAction': 'Monitore identifizieren',
   'toolbar.webviewOn': 'Im lokalen Netz veröffentlicht — wer im WLAN ist, liest mit',
   'toolbar.webviewOff': 'Im lokalen Netz ansehen',
   'toolbar.pickMonitor': 'Monitor wählen',
@@ -385,6 +386,7 @@ export const de: Dicionario = {
   'cards.videoUnmute': 'Stummschaltung aufheben',
   'cards.videoLoop': 'wiederholen',
   'cards.overlay': 'OVERLAY',
+  'cards.overlayStyleLabel': 'Overlay:',
   'cards.overlayForced': 'Durch das OVERLAY der Assets-Spalte erzwungen',
   'cards.overlayShort': 'O',
   'cards.overlayHint':
