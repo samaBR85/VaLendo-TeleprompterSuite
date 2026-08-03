@@ -121,10 +121,12 @@ export function PocosDeArquivo({
         </Tecla>
       </Poco>
 
-      {/* afastado do PROJETO por mais que o respiro comum da barra: são dois
-          arquivos diferentes (o programa inteiro e o roteiro da aba), e colados
-          eles liam como um grupo só de quatro teclas */}
-      <Poco rotulo={t('toolbar.group.script')} cor="var(--color-warn)" className="ml-3" data-pill="roteiro">
+      {/* o respiro comum da barra (gap-2.5) já separa dos dois lados — de
+          PROJETO à esquerda e da primeira aba à direita — pela mesma
+          distância, o que centraliza o grupo no vão entre os dois. Um
+          `ml` a mais aqui empurrava só para um lado, e ROTEIRO ficava colado
+          nas abas */}
+      <Poco rotulo={t('toolbar.group.script')} cor="var(--color-warn)" data-pill="roteiro">
         {/* mesma pasta do PROJETO: abrir um roteiro também é abrir um
             arquivo, e as duas teclas precisam ler como a mesma ação */}
         <Tecla title={t('toolbar.import')} aria-label={t('toolbar.import')} className="h-6 w-7" onClick={onImport}>

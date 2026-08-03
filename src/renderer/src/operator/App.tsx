@@ -26,7 +26,7 @@ import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
 import { Sidebar } from './Sidebar'
 import { StatusBar } from './StatusBar'
-import { BarraDeArquivo, BarraDeTransporte, PocoDoAr } from './Toolbar'
+import { BarraDeArquivo, BarraDeTransporte, PocoDoAr, hint } from './Toolbar'
 import { WebviewPanel } from './WebviewPanel'
 import { useCommands } from './useCommands'
 
@@ -368,7 +368,16 @@ function AppConteudo({
   const [notice, setNotice] = useState<Notice | null>(null)
   const [closeConfirm, setCloseConfirm] = useState(false)
   const [unsavedConfirm, setUnsavedConfirm] = useState(false)
-  const mainRef = useRef<HTMLElement>(null)
+  /**
+   * CATCH: com ele ligado, a marca de leitura persegue o cursor do editor
+   * sozinha — um "Go To" que nunca desliga. Preferência de sessão, como a
+   * aba ativa do editor de nome: não sobrevive a fechar o app, e não é do
+   * projeto — é só um jeito de operar que o operador liga quando quer.
+   */
+  const [catchAtivo, setCatchAtivo] = useState(false)
+  const catchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** a divisória Edição×Transmissão mede a fração contra ESTE container — só as duas seções, nunca a Sidebar nem o Inspetor */
+  const splitRef = useRef<HTMLDivElement>(null)
   const editorRef = useRef<EditorHandle>(null)
 
   useEffect(() => {
@@ -477,6 +486,35 @@ function AppConteudo({
     dispatch({ type: 'transport/seekAnchor', anchor })
   }, [state, dispatch])
 
+  /**
+   * O CATCH: cada movimento do cursor rearma um `goToCaret` daqui a pouco,
+   * em vez de disparar na hora.
+   *
+   * Sem o atraso, digitar em ritmo normal mandaria um `seekAnchor` por letra
+   * — o cursor anda a cada tecla, tanto quanto no clique ou na seta. Com ele,
+   * uma rajada de teclas só dispara UM salto, depois que os dedos param —
+   * o mesmo respiro que o próprio texto já usa antes de mandar para o main.
+   */
+  const onCaretMove = useCallback(() => {
+    if (!catchAtivo) return
+    if (catchTimer.current) clearTimeout(catchTimer.current)
+    catchTimer.current = setTimeout(goToCaret, 220)
+  }, [catchAtivo, goToCaret])
+
+  useEffect(() => {
+    return () => {
+      if (catchTimer.current) clearTimeout(catchTimer.current)
+    }
+  }, [])
+
+  // desligar cancela o salto que ainda estava para acontecer — senão um
+  // clique em CATCH bem no meio da espera dispararia um Go To indesejado
+  useEffect(() => {
+    if (catchAtivo || !catchTimer.current) return
+    clearTimeout(catchTimer.current)
+    catchTimer.current = null
+  }, [catchAtivo])
+
   const ui = useMemo(
     () => ({
       openPalette: () => setPalette(true),
@@ -576,6 +614,7 @@ function AppConteudo({
       clock={state.transport.video}
       volume={state.maquina.cardVolume}
       videoPerfil={state.webview.videoPerfil}
+      cardOverlay={state.cardOverlay}
       altura={state.cardsHeight}
       dispatch={dispatch}
       onClose={() => dispatch({ type: 'layout/cards', visible: false })}
@@ -640,7 +679,7 @@ function AppConteudo({
   /** Arrasta a divisória: dá ao operador o controle do quanto cada painel ocupa. */
   const startDrag = (): void => {
     const onMove = (event: MouseEvent): void => {
-      const box = mainRef.current?.getBoundingClientRect()
+      const box = splitRef.current?.getBoundingClientRect()
       if (!box) return
       const ratio = Math.min(0.72, Math.max(0.2, (event.clientX - box.left) / box.width))
       dispatch({ type: 'layout/split', ratio })
@@ -652,6 +691,9 @@ function AppConteudo({
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
   }
+
+  /** Duplo clique na divisória: devolve o meio exato, sem precisar arrastar de olho. */
+  const resetSplit = (): void => dispatch({ type: 'layout/split', ratio: 0.5 })
 
   return (
     <div className="relative flex h-full flex-col bg-[var(--color-ink-0)]">
@@ -783,34 +825,51 @@ function AppConteudo({
           {markerStrip}
         </main>
       ) : focusMode ? (
-        /* só a operação: no Foco não há editor nenhum. Escrever é trabalho do
-           Split, e uma gaveta de edição aqui só tirava altura da única coisa
-           que este modo existe para mostrar — a tela do apresentador */
-        <main className="flex min-h-0 flex-1 flex-col">
-          <PanelHeader
-            label={t('panel.broadcasting')}
-            cor="var(--color-live)"
-            ponto
-            action={
-              <>
-                <span className="font-mono text-[10px] text-[var(--color-fog-3)]">{`${viewport.width} × ${viewport.height}`}</span>
-                <button
-                  type="button"
-                  onClick={toggleFocusMode}
-                  title={t('panel.collapse')}
-                  className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
-                >
-                  <Icon name="collapse" size={14} />
-                </button>
-              </>
-            }
-          />
-          {stage}
-          {markerStrip}
-          {cardsDrawer}
+        /* a operação, sem o editor: escrever é trabalho do Split, e uma
+           gaveta de edição aqui só tiraria altura da única coisa que este
+           modo existe para mostrar — a tela do apresentador. Mas Assets é um
+           PAINEL como os outros (Cards, Ajustes), não uma escrita — o
+           operador pode querer o standby ou os capítulos à mão sem sair do
+           Foco, então a coluna acende aqui do mesmo jeito que no Split */
+        <main className="flex min-h-0 flex-1">
+          {state.sidebarVisible ? (
+            <Sidebar
+              tab={tab}
+              transport={state.transport}
+              cards={state.cards}
+              cardOverlay={state.cardOverlay}
+              rows={rows}
+              sidebarWidth={state.sidebarWidth}
+              maquina={state.maquina}
+              dispatch={dispatch}
+            />
+          ) : null}
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            <PanelHeader
+              label={t('panel.broadcasting')}
+              cor="var(--color-live)"
+              ponto
+              action={
+                <>
+                  <span className="font-mono text-[10px] text-[var(--color-fog-3)]">{`${viewport.width} × ${viewport.height}`}</span>
+                  <button
+                    type="button"
+                    onClick={toggleFocusMode}
+                    title={t('panel.collapse')}
+                    className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
+                  >
+                    <Icon name="collapse" size={14} />
+                  </button>
+                </>
+              }
+            />
+            {stage}
+            {markerStrip}
+            {cardsDrawer}
+          </div>
         </main>
       ) : (
-        <main ref={mainRef} className="flex min-h-0 flex-1">
+        <main className="flex min-h-0 flex-1">
           {/* só no Split: no Foco a tela é do apresentador e na Mesa o rundown
               já mostra os mesmos capítulos, em maior e com linha do tempo —
               ter as duas coisas ao mesmo tempo seria dizer duas vezes. E só
@@ -835,7 +894,16 @@ function AppConteudo({
               inteiros até o rodapé, como na maquete, em vez de os dois
               pararem onde a gaveta (antes irmã da `main`) começava. */}
           <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-            <div className="flex min-h-0 flex-1">
+            {/* o ref do arrasto precisa ser DESTE container — o que envolve só
+                as duas seções e a divisória —, nunca do `<main>` de fora, que
+                também inclui a Sidebar e o Inspetor. Com o ref no `<main>`,
+                `box.left` vinha deslocado pela largura da Sidebar (e
+                `box.width` inchado pela do Inspetor também), e a conta
+                `(clientX - box.left) / box.width` calculava a fração contra
+                uma régua errada — a divisória pousava a alguma distância do
+                cursor, não onde o clique foi, e o primeiro pulo lia como um
+                piscar */}
+            <div ref={splitRef} className="flex min-h-0 flex-1">
               <section className="flex min-w-0 flex-col" style={{ flex: `${state.editionSplit} 1 0` }}>
                 <PanelHeader
                   label={t('panel.edit')}
@@ -843,13 +911,34 @@ function AppConteudo({
                   detail={<MetaDaEdicao tab={tab} rows={rows} ppm={state.transport.ppm} />}
                   action={editorTools}
                 />
-                <Editor ref={editorRef} tab={tab} fontSize={editorFontSize} dispatch={dispatch} />
+                <Editor
+                  ref={editorRef}
+                  tab={tab}
+                  fontSize={editorFontSize}
+                  dispatch={dispatch}
+                  onCaretMove={onCaretMove}
+                />
 
                 {/* fonte de DIGITAR, não a da SAÍDA — essa mexe só no
                     textarea, para o operador que prefere letra maior (ou
                     menor) enquanto escreve. O texto continua quebrando pela
                     largura da caixa, igual a qualquer editor. */}
                 <div className="flex flex-none items-center gap-2 border-t border-[var(--color-edge)] bg-[#17171a] px-3 py-1.5">
+                  {/* CATCH: liga um Go To que nunca desliga sozinho — a
+                      marca de leitura persegue o cursor do editor a cada
+                      pausa na digitação. Antes do Go To, não depois: é o que
+                      decide SE o salto acontece, o Go To é o salto único */}
+                  <Tecla
+                    title={t('toolbar.catchHint')}
+                    aria-label={t('toolbar.catch')}
+                    acesa={catchAtivo}
+                    cor="var(--color-go)"
+                    className="h-6 w-8 text-[9px] font-bold tracking-[0.04em]"
+                    style={!catchAtivo ? { color: 'var(--color-go)' } : undefined}
+                    onClick={() => setCatchAtivo((v) => !v)}
+                  >
+                    <Icon name="catch" size={13} />
+                  </Tecla>
                   <Tecla
                     title="Go To"
                     aria-label="Go To"
@@ -859,6 +948,20 @@ function AppConteudo({
                     onClick={goToCaret}
                   >
                     <Icon name="play" size={13} filled />
+                  </Tecla>
+                  <span className="mx-0.5 h-4 w-px flex-none bg-[var(--color-edge)]" />
+                  {/* segunda porta para a mesma ação do Create Marker do
+                      transporte — útil aqui, perto de onde o operador já
+                      está olhando o roteiro, sem precisar alcançar o console */}
+                  <Tecla
+                    title={`${t('toolbar.marker')}${hint(keymap, 'marker.create')}`}
+                    aria-label={t('toolbar.marker')}
+                    cor="var(--color-live)"
+                    className="h-6 w-7"
+                    style={{ color: 'var(--color-live)' }}
+                    onClick={() => run('marker.create')}
+                  >
+                    <Icon name="marker" size={13} />
                   </Tecla>
                   <span className="mx-0.5 h-4 w-px flex-none bg-[var(--color-edge)]" />
                   {/* loop: ao chegar no fim, volta ao início e continua
@@ -936,6 +1039,8 @@ function AppConteudo({
 
               <div
                 onMouseDown={startDrag}
+                onDoubleClick={resetSplit}
+                title={t('app.splitReset')}
                 className="w-1 flex-none cursor-col-resize bg-[var(--color-line)] hover:bg-[var(--color-fog-2)]"
               />
 

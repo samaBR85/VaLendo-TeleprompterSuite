@@ -4,7 +4,7 @@ import { CARD_DRAG_MIME, CARTOES_COM_ATALHO, novoCartaoId } from '@shared/cards'
 import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN } from '@shared/defaults'
 import type { CardConvertProgress } from '@shared/api'
 import { perfilPorId, type PerfilDeRede } from '@shared/proxy'
-import type { Cartao, VideoClock } from '@shared/types'
+import type { CardOverlayStyle, Cartao, VideoClock } from '@shared/types'
 import { posicaoDoVideo, tempoDeVideo } from '@shared/video'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
@@ -49,6 +49,8 @@ interface Props {
   volume: number
   /** peso escolhido para a rede, para o cartão dizer o que está sendo servido */
   videoPerfil: PerfilDeRede
+  /** o interruptor "OVERLAY" global — força o texto por cima de qualquer cartão */
+  cardOverlay: { enabled: boolean; style: CardOverlayStyle }
   altura: number
   dispatch: (action: Action) => void
   onClose: () => void
@@ -74,6 +76,7 @@ export function CardsDrawer({
   clock,
   volume,
   videoPerfil,
+  cardOverlay,
   altura,
   dispatch,
   onClose
@@ -315,6 +318,7 @@ export function CardsDrawer({
               clock={clock}
               volume={volume}
               videoPerfil={videoPerfil}
+              cardOverlay={cardOverlay}
               dispatch={dispatch}
               onFalha={setRecusa}
             />
@@ -505,6 +509,7 @@ function CartaoNaGaveta({
   clock,
   volume,
   videoPerfil,
+  cardOverlay,
   dispatch,
   onFalha
 }: {
@@ -514,6 +519,7 @@ function CartaoNaGaveta({
   clock: VideoClock
   volume: number
   videoPerfil: PerfilDeRede
+  cardOverlay: { enabled: boolean; style: CardOverlayStyle }
   dispatch: (action: Action) => void
   onFalha: (mensagem: string) => void
 }): React.JSX.Element {
@@ -823,17 +829,32 @@ function CartaoNaGaveta({
         <span className="ml-auto flex flex-none items-center gap-1">
           {/* "OVERLAY" por cartão: com o switch global (na coluna de assets)
               desligado, decide sozinho se o texto sobrepõe este cartão em
-              vez de substituí-lo. Ligado o global, força para todos — este
-              toggle continua editável, para deixar pré-configurado. */}
-          <label title={t('cards.overlay')} className="flex-none cursor-pointer">
+              vez de substituí-lo. Ligado o global, força para TODOS — este
+              toggle mostra o forçado (mesma cor de ligado) e trava: editá-lo
+              não mudaria nada enquanto o global mandar, e deixá-lo clicável
+              sugeriria o contrário */}
+          <label
+            title={cardOverlay.enabled ? t('cards.overlayForced') : t('cards.overlay')}
+            className={`flex-none ${cardOverlay.enabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+          >
             <input
               type="checkbox"
               data-card-overlay={card.id}
-              checked={card.overlay ?? false}
+              checked={cardOverlay.enabled || (card.overlay ?? false)}
+              disabled={cardOverlay.enabled}
               onChange={(event) => dispatch({ type: 'card/overlay', cardId: card.id, overlay: event.target.checked })}
               className="peer sr-only"
             />
-            <span className="grid h-[18px] w-6 place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[var(--color-ink-2)] text-[9px] font-bold text-[var(--color-fog-2)] peer-checked:border-[var(--color-accent-2)] peer-checked:bg-[var(--color-accent-2)]/18 peer-checked:text-[#d9bdf0]">
+            {/* forçado pelo global: mesmo sólido roxo/escuro do botão "OVERLAY"
+                da coluna de assets — não o tingido translúcido de quando é só
+                este cartão que decidiu por si */}
+            <span
+              className={`grid h-[18px] w-6 place-items-center rounded-[5px] border text-[9px] font-bold ${
+                cardOverlay.enabled
+                  ? 'border-[var(--color-accent-2)] bg-[var(--color-accent-2)] text-[#1c1020]'
+                  : 'border-[var(--color-edge)] bg-[var(--color-ink-2)] text-[var(--color-fog-2)] peer-checked:border-[var(--color-accent-2)] peer-checked:bg-[var(--color-accent-2)]/18 peer-checked:text-[#d9bdf0]'
+              }`}
+            >
               {t('cards.overlayShort')}
             </span>
           </label>
@@ -1034,6 +1055,25 @@ function PlayerDoCartao({
           <Icon name={tocando ? 'pause' : 'play'} size={8} />
         </button>
 
+        {/* sobe o vídeo já PARADO no quadro em que estava, em vez de tocar
+            sozinho — pré-posiciona antes de ir ao ar de verdade. Fora do ar,
+            se já estava tocando, primeiro pausa; se já estava no ar, sempre
+            pausa — nunca reinicia o que está rolando */}
+        <button
+          type="button"
+          data-card-video-pause={card.id}
+          aria-label={t('cards.videoStartPaused')}
+          title={t('cards.videoStartPaused')}
+          onClick={() => {
+            if (!noAr) dispatch({ type: 'card/show', cardId: card.id, paused: true })
+            else dispatch({ type: 'card/videoPlay', tocando: false })
+          }}
+          className="grid h-[18px] w-[18px] flex-none place-items-center rounded-full border border-[var(--color-edge)] text-[var(--color-fog-2)]"
+          style={{ background: 'linear-gradient(#2a2a2f, #202024)' }}
+        >
+          <Icon name="pause" size={8} />
+        </button>
+
         <SliderConsole
           mini
           data-card-video-seek={card.id}
@@ -1053,19 +1093,6 @@ function PlayerDoCartao({
           onBlur={soltar}
           className="min-w-0 flex-1 disabled:opacity-40"
         />
-
-        <label title={t('cards.videoLoop')} className="flex-none cursor-pointer">
-          <input
-            type="checkbox"
-            data-card-loop={card.id}
-            checked={card.loop ?? false}
-            onChange={(event) => dispatch({ type: 'card/videoLoop', cardId: card.id, loop: event.target.checked })}
-            className="peer sr-only"
-          />
-          <span className="grid h-[18px] w-6 place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[var(--color-ink-2)] text-[11px] text-[var(--color-fog-2)] peer-checked:border-[var(--color-accent-2)] peer-checked:bg-[var(--color-accent-2)]/18 peer-checked:text-[#d9bdf0]">
-            ↻
-          </span>
-        </label>
       </div>
 
       {/* volume e tempo corrente, sempre visíveis — não só com o cartão no
@@ -1101,6 +1128,22 @@ function PlayerDoCartao({
         <span className="flex-none font-mono text-[9px] font-semibold text-[var(--color-fog-2)]">
           {tempoDeVideo(posicao)}
         </span>
+
+        {/* repetir: saiu da linha do scrub — ali brigava por espaço com o
+            PAUSE novo — e mora aqui, à direita do tempo, junto do resto do
+            que se pré-configura antes de subir o vídeo */}
+        <label title={t('cards.videoLoop')} className="flex-none cursor-pointer">
+          <input
+            type="checkbox"
+            data-card-loop={card.id}
+            checked={card.loop ?? false}
+            onChange={(event) => dispatch({ type: 'card/videoLoop', cardId: card.id, loop: event.target.checked })}
+            className="peer sr-only"
+          />
+          <span className="grid h-[18px] w-6 place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[var(--color-ink-2)] text-[11px] text-[var(--color-fog-2)] peer-checked:border-[var(--color-accent-2)] peer-checked:bg-[var(--color-accent-2)]/18 peer-checked:text-[#d9bdf0]">
+            ↻
+          </span>
+        </label>
       </div>
     </div>
   )

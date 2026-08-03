@@ -319,22 +319,27 @@ export function Sidebar({
                       {card.nome || (card.kind === 'text' ? card.texto : '') || t('cards.title')}
                     </span>
                   </button>
-                  {/* toggle por cartão: independente do switch global, que
-                      quando ligado vale para todos sem precisar mexer aqui */}
+                  {/* toggle por cartão: com o global desligado, decide sozinho.
+                      Ligado o global, força para TODOS — o botão mostra o
+                      forçado e trava, para não sugerir um controle que não
+                      manda mais nada enquanto o global está no comando */}
                   <button
                     type="button"
                     data-sidebar-card-overlay={card.id}
                     data-no-card-drag
-                    title={t('cards.overlay')}
-                    aria-pressed={card.overlay ?? false}
+                    title={cardOverlay.enabled ? t('cards.overlayForced') : t('cards.overlay')}
+                    aria-pressed={cardOverlay.enabled || (card.overlay ?? false)}
+                    disabled={cardOverlay.enabled}
                     onClick={(event) => {
                       event.stopPropagation()
                       dispatch({ type: 'card/overlay', cardId: card.id, overlay: !(card.overlay ?? false) })
                     }}
                     className={`flex-none rounded-[4px] px-1 py-0.5 text-[8px] font-bold tracking-[0.04em] transition-colors ${
-                      card.overlay
-                        ? 'bg-[var(--color-accent-2)] text-[#1c1020]'
-                        : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+                      cardOverlay.enabled
+                        ? 'cursor-not-allowed bg-[var(--color-accent-2)] text-[#1c1020]'
+                        : card.overlay
+                          ? 'bg-[var(--color-accent-2)] text-[#1c1020]'
+                          : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
                     }`}
                   >
                     {t('cards.overlayShort')}

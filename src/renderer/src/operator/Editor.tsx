@@ -22,6 +22,12 @@ interface Props {
   /** tamanho da fonte do textarea editável — não é a fonte da SAÍDA, só de digitar */
   fontSize: number
   dispatch: (action: Action) => void
+  /**
+   * O cursor mudou de lugar — clique, seta, ou a digitação também empurra o
+   * cursor. Quem usa é o CATCH: com ele ligado, cada aviso destes dispara um
+   * "Go To" automático. Sem ouvinte, não custa nada além do evento em si.
+   */
+  onCaretMove?: () => void
 }
 
 export interface EditorHandle {
@@ -43,7 +49,10 @@ export interface EditorHandle {
  * — cursor, seleção, teclado do sistema. Um textarea transparente sobre um
  * `pre` colorido dá as duas coisas.
  */
-export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, fontSize, dispatch }, ref) {
+export const Editor = forwardRef<EditorHandle, Props>(function Editor(
+  { tab, fontSize, dispatch, onCaretMove },
+  ref
+) {
   const { t } = useT()
   const incoming = useMemo(() => serializeBlocks(tab.blocks), [tab.blocks])
   const [draft, setDraft] = useState(incoming)
@@ -279,6 +288,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, fon
         value={draft}
         onChange={onChange}
         onBlur={() => push(draft, 0)}
+        onSelect={onCaretMove}
         onScroll={() => {
           if (preRef.current && areaRef.current) preRef.current.scrollTop = areaRef.current.scrollTop
         }}

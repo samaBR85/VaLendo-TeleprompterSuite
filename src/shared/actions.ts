@@ -44,8 +44,14 @@ export type Action =
   | { type: 'card/text'; cardId: string; texto: string }
   /** o operador reimportou a arte de um cartão de imagem cujo arquivo sumiu */
   | { type: 'card/imageFile'; cardId: string; arquivo: string }
-  /** mostra o cartão; passar o que já está no ar tira ele da tela */
-  | { type: 'card/show'; cardId: string | null }
+  /**
+   * Mostra o cartão; passar o que já está no ar tira ele da tela.
+   *
+   * `paused`: só vale para vídeo, e só na hora de subir — entra no ar
+   * parado no quadro em que estava, em vez de tocar sozinho. É o botão
+   * PAUSE do player, para pré-posicionar antes de ir ao ar de verdade.
+   */
+  | { type: 'card/show'; cardId: string | null; paused?: boolean }
   | { type: 'card/videoPlay'; tocando: boolean }
   /**
    * `arrastando` distingue a barra na mão do operador de um pulo já decidido:

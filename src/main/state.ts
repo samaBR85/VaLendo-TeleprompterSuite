@@ -560,7 +560,7 @@ export class Store {
               escolhido?.kind === 'video'
                 ? {
                     ...this.state.transport.video,
-                    tocando: true,
+                    tocando: !action.paused,
                     base: escolhido.pausedAt ?? 0,
                     comecouEm: Date.now(),
                     arrastando: false

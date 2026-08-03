@@ -11,12 +11,16 @@ interface Props {
 }
 
 /**
- * As fichas dos roteiros: pontinho colorido, nome, × só na ativa.
+ * As fichas dos roteiros: pontinho colorido, nome, ×.
  *
  * A ativa é a única em relevo — fundo mais claro com fio de luz —, as outras
  * são superfícies chatas: numa fila de dez, o olho precisa achar "qual está
  * valendo" sem ler nada. Cada ficha estica para dividir a linha (como na
  * maquete), com um teto de largura para duas abas não virarem dois tapetes.
+ *
+ * O × existe em qualquer aba, ativa ou não: fechar uma aba de fundo era um
+ * clique a mais (ativar, depois fechar) por nenhum motivo — a única regra é
+ * nunca fechar a última, para o programa não ficar sem roteiro nenhum.
  */
 export function Tabs({ state, dispatch }: Props): React.JSX.Element {
   const { t } = useT()
@@ -56,7 +60,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
             ) : (
               <span className="min-w-0 flex-1 truncate">{tab.title}</span>
             )}
-            {active && state.tabs.length > 1 ? (
+            {state.tabs.length > 1 ? (
               <button
                 type="button"
                 aria-label={t('tabs.close', { title: tab.title })}
