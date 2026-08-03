@@ -52,7 +52,7 @@ export const pt = {
   'editor.fontSmaller': 'Diminuir a fonte do editor',
   'editor.fontBigger': 'Aumentar a fonte do editor',
   'editor.clearFormat': 'Remover formatação: capítulos e direções viram texto simples',
-  'editor.allCaps': 'CAIXA ALTA no editor — só a exibição, o texto não muda',
+  'editor.allCaps': 'CAIXA ALTA no editor — só a exibição, não muda a transmissão',
   'editor.redo': 'Refazer',
   'editor.placeholder':
     'Cole ou digite o roteiro. Onde você quebrar a linha, ela quebra na tela do apresentador. [colchetes] marcam direções, ## abre capítulo.',
@@ -123,6 +123,7 @@ export const pt = {
   'insp.weight': 'Peso',
   'insp.lineHeight': 'Entrelinha',
   'insp.letterSpacing': 'Entre letras',
+  'insp.allCaps': 'CAIXA ALTA na transmissão — só a exibição, o roteiro não muda',
   'insp.alignLeft': 'Esquerda',
   'insp.alignCenter': 'Centro',
   'insp.alignRight': 'Direita',

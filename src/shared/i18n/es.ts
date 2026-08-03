@@ -42,7 +42,7 @@ export const es: Dicionario = {
   'editor.fontSmaller': 'Reducir la fuente del editor',
   'editor.fontBigger': 'Aumentar la fuente del editor',
   'editor.clearFormat': 'Quitar formato: los capítulos y las indicaciones pasan a texto simple',
-  'editor.allCaps': 'MAYÚSCULAS en el editor — solo la vista, el texto no cambia',
+  'editor.allCaps': 'MAYÚSCULAS en el editor — solo la vista, no cambia la emisión',
   'editor.redo': 'Rehacer',
   'editor.placeholder':
     'Pega o escribe el guion. Donde cortes la línea, se corta en la pantalla del presentador. [corchetes] marcan acotaciones, ## abre capítulo.',
@@ -110,6 +110,7 @@ export const es: Dicionario = {
   'insp.weight': 'Grosor',
   'insp.lineHeight': 'Interlineado',
   'insp.letterSpacing': 'Entre letras',
+  'insp.allCaps': 'MAYÚSCULAS en la emisión — solo la vista, el guion no cambia',
   'insp.alignLeft': 'Izquierda',
   'insp.alignCenter': 'Centrado',
   'insp.alignRight': 'Derecha',

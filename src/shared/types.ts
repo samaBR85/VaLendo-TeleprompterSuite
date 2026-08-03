@@ -46,16 +46,17 @@ export interface Appearance extends PacingRule {
   lineHeight: number
   letterSpacing: number
   /**
-   * Mostrar o roteiro todo em CAIXA ALTA.
+   * Mostrar o roteiro em CAIXA ALTA na SAÍDA.
+   *
+   * As três superfícies que o `PrompterCanvas` desenha: a tela do
+   * apresentador, a prévia do operador e a página da rede. O editor tem o
+   * próprio interruptor (`maquina.editorAllCaps`), independente deste —
+   * quem digita e quem lê no vidro não precisam da mesma caixa.
    *
    * É `text-transform`, ou seja PINTURA: o texto guardado não muda uma letra,
    * e desligar devolve as maiúsculas que já existiam. Por isso mora aqui,
-   * junto de `align` e `letterSpacing` — é uma propriedade tipográfica da
+   * junto de `align` e `letterSpacing` — é propriedade tipográfica da
    * aparência, não uma edição do roteiro.
-   *
-   * Vale para a tela do apresentador, a prévia e a página da rede, além do
-   * editor: quem lê no vidro é quem decide se prefere maiúsculas, e a prévia
-   * do operador tem que mostrar a mesma coisa que está indo ao ar.
    */
   allCaps: boolean
   /** margem lateral em % da largura do viewport */
@@ -450,6 +451,18 @@ export interface PreferenciasDaMaquina {
   thumbSize: number
   /** corpo da fonte de DIGITAR, no editor — nunca a da saída */
   editorFontSize: number
+  /**
+   * CAIXA ALTA no EDITOR, e só nele.
+   *
+   * Tem um irmão em `Appearance.allCaps`, que faz o mesmo na saída. São dois
+   * interruptores de propósito, cada um dono de uma superfície: um mesmo
+   * booleano nos dois lugares seria um interruptor com duas alavancas, e
+   * mexer numa mexeria na outra sem o operador pedir.
+   *
+   * Este é conforto de quem digita, então mora aqui, na máquina, e não viaja
+   * no `.valendo` — o da SAÍDA é que é decisão do programa.
+   */
+  editorAllCaps: boolean
   /** volume da prévia dos cartões de vídeo, 0 a 1; a transmissão é sempre muda */
   cardVolume: number
   /** a caixa "Ajuda rápida", no rodapé da coluna, está aberta */

@@ -84,6 +84,7 @@ export const MAQUINA_PADRAO: PreferenciasDaMaquina = {
   window: null,
   thumbSize: THUMB_DEFAULT,
   editorFontSize: EDITOR_FONT_DEFAULT,
+  editorAllCaps: false,
   cardVolume: 1,
   ajudaAberta: true,
   abaDosAjustes: 'texto'

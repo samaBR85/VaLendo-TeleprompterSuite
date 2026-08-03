@@ -674,21 +674,17 @@ function AppConteudo({
         disabled={!hasFormatting(tab.blocks)}
         onClick={() => run('edit.clearFormat')}
       />
-      {/* CAIXA ALTA: pintura, não conteúdo — o texto guardado não muda, então
-          desligar devolve as maiúsculas originais. Vale para o editor E para a
-          saída, que é onde o apresentador lê; por isso vive na aparência da
-          aba, junto do alinhamento e do corpo, e não nas preferências desta
-          máquina */}
+      {/* CAIXA ALTA do EDITOR. Tem um irmão nos Ajustes › Texto que faz o
+          mesmo na SAÍDA, e os dois são independentes de propósito: quem
+          digita e quem lê no vidro não precisam da mesma caixa. Ligá-los ao
+          mesmo booleano seria um interruptor com duas alavancas.
+          Pintura nos dois casos — o texto guardado não muda uma letra */}
       <EditorTool
         texto="AA"
         label={t('editor.allCaps')}
-        acesa={tab.appearance.allCaps}
+        acesa={state.maquina.editorAllCaps}
         onClick={() =>
-          dispatch({
-            type: 'appearance/patch',
-            tabId: tab.id,
-            patch: { allCaps: !tab.appearance.allCaps }
-          })
+          dispatch({ type: 'maquina/patch', patch: { editorAllCaps: !state.maquina.editorAllCaps } })
         }
       />
       <span className="mx-0.5 h-3.5 w-px bg-[var(--color-line)]" />
@@ -1031,7 +1027,7 @@ function AppConteudo({
                   ref={editorRef}
                   tab={tab}
                   fontSize={editorFontSize}
-                  allCaps={tab.appearance.allCaps}
+                  allCaps={state.maquina.editorAllCaps}
                   dispatch={dispatch}
                   onCaretMove={onCaretMove}
                   onPendenteChange={setTextoPendente}

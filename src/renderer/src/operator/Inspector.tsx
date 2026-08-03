@@ -299,17 +299,35 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
       {aba === 'texto' ? (
         <>
       <Group>
-        <select
-          value={a.fontFamily}
-          onChange={(event) => patch({ fontFamily: event.target.value })}
-          className="w-full rounded-md border border-[var(--color-edge)] bg-[#212126] px-2 py-1.5 text-[11px] text-[var(--color-fog-05)]"
-        >
-          {FONT_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {t(option.chave)}
-            </option>
-          ))}
-        </select>
+        {/* a família e a caixa alta na mesma fileira: as duas dizem com que
+            LETRA a saída é desenhada, e a segunda cabe num "AA" ao lado sem
+            gastar uma linha do painel */}
+        <div className="flex items-stretch gap-1.5">
+          <select
+            value={a.fontFamily}
+            onChange={(event) => patch({ fontFamily: event.target.value })}
+            className="min-w-0 flex-1 rounded-md border border-[var(--color-edge)] bg-[#212126] px-2 py-1.5 text-[11px] text-[var(--color-fog-05)]"
+          >
+            {FONT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {t(option.chave)}
+              </option>
+            ))}
+          </select>
+          {/* independente do "AA" do cabeçalho da Edição: aquele pinta o
+              editor, este pinta a SAÍDA. Cada um dono de uma superfície —
+              mexer num nunca move o outro */}
+          <Ficha
+            ativa={a.allCaps}
+            title={t('insp.allCaps')}
+            aria-label={t('insp.allCaps')}
+            aria-pressed={a.allCaps}
+            onClick={() => patch({ allCaps: !a.allCaps })}
+            className="flex-none px-2.5 text-[11px] font-bold tracking-[0.06em]"
+          >
+            AA
+          </Ficha>
+        </div>
         <Slider label={t('insp.body')} value={a.fontSize} min={16} max={260} suffix="px" onChange={(fontSize) => patch({ fontSize })} />
         <Slider label={t('insp.weight')} value={a.fontWeight} min={300} max={800} step={100} onChange={(fontWeight) => patch({ fontWeight })} />
         <Slider label={t('insp.lineHeight')} value={a.lineHeight} min={1} max={2.4} step={0.05} onChange={(lineHeight) => patch({ lineHeight })} />

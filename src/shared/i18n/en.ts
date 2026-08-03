@@ -42,7 +42,7 @@ export const en: Dicionario = {
   'editor.fontSmaller': 'Smaller editor font',
   'editor.fontBigger': 'Larger editor font',
   'editor.clearFormat': 'Clear formatting: chapters and directions become plain text',
-  'editor.allCaps': 'ALL CAPS in the editor — display only, the text is unchanged',
+  'editor.allCaps': 'ALL CAPS in the editor — display only, does not change the broadcast',
   'editor.redo': 'Redo',
   'editor.placeholder':
     'Paste or type the script. Where you break the line, it breaks on the presenter’s screen. [brackets] mark directions, ## opens a chapter.',
@@ -110,6 +110,7 @@ export const en: Dicionario = {
   'insp.weight': 'Weight',
   'insp.lineHeight': 'Line height',
   'insp.letterSpacing': 'Letter spacing',
+  'insp.allCaps': 'ALL CAPS on the broadcast — display only, the script is unchanged',
   'insp.alignLeft': 'Left',
   'insp.alignCenter': 'Centred',
   'insp.alignRight': 'Right',

@@ -42,7 +42,7 @@ export const fr: Dicionario = {
   'editor.fontSmaller': 'Réduire la police de l’éditeur',
   'editor.fontBigger': 'Agrandir la police de l’éditeur',
   'editor.clearFormat': 'Effacer la mise en forme : chapitres et indications deviennent du texte simple',
-  'editor.allCaps': 'MAJUSCULES dans l’éditeur — affichage seul, le texte ne change pas',
+  'editor.allCaps': 'MAJUSCULES dans l’éditeur — affichage seul, ne change pas la diffusion',
   'editor.redo': 'Rétablir',
   'editor.placeholder':
     'Collez ou tapez le texte. Là où vous coupez la ligne, elle se coupe sur l’écran du présentateur. Les [crochets] marquent les indications, ## ouvre un chapitre.',
@@ -110,6 +110,7 @@ export const fr: Dicionario = {
   'insp.weight': 'Graisse',
   'insp.lineHeight': 'Interligne',
   'insp.letterSpacing': 'Interlettrage',
+  'insp.allCaps': 'MAJUSCULES sur la diffusion — affichage seul, le texte ne change pas',
   'insp.alignLeft': 'Gauche',
   'insp.alignCenter': 'Centré',
   'insp.alignRight': 'Droite',

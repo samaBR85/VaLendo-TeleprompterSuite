@@ -42,7 +42,7 @@ export const de: Dicionario = {
   'editor.fontSmaller': 'Editorschrift verkleinern',
   'editor.fontBigger': 'Editorschrift vergrößern',
   'editor.clearFormat': 'Formatierung entfernen: Kapitel und Regieanweisungen werden zu einfachem Text',
-  'editor.allCaps': 'GROSSBUCHSTABEN im Editor — nur die Anzeige, der Text bleibt',
+  'editor.allCaps': 'GROSSBUCHSTABEN im Editor — nur die Anzeige, ändert die Sendung nicht',
   'editor.redo': 'Wiederholen',
   'editor.placeholder':
     'Skript einfügen oder tippen. Wo Sie die Zeile umbrechen, bricht sie auch auf dem Bildschirm des Sprechers. [Klammern] kennzeichnen Regieanweisungen, ## öffnet ein Kapitel.',
@@ -110,6 +110,7 @@ export const de: Dicionario = {
   'insp.weight': 'Stärke',
   'insp.lineHeight': 'Zeilenabstand',
   'insp.letterSpacing': 'Laufweite',
+  'insp.allCaps': 'GROSSBUCHSTABEN in der Sendung — nur die Anzeige, das Skript bleibt',
   'insp.alignLeft': 'Linksbündig',
   'insp.alignCenter': 'Zentriert',
   'insp.alignRight': 'Rechts',
