@@ -139,6 +139,51 @@ const ico = empacotarIco(
 writeFileSync(join(raiz, 'build', 'icon.ico'), ico)
 console.log(`\nbuild/icon.ico · ${NO_ICO.length} tamanhos · ${(ico.length / 1024).toFixed(1)} kB`)
 
-// o macOS e o Linux partem deste; o electron-builder deriva o .icns dele
+/**
+ * O .icns do macOS, pelo mesmo motivo do .ico.
+ *
+ * Deixar o electron-builder derivá-lo do PNG de 1024 daria arte única reduzida
+ * — o Mac receberia, a 16pt, a arte de três linhas espremida, que é justamente
+ * o que se evitou no Windows.
+ *
+ * Cada slot é um tamanho FÍSICO com um significado de tela: `icp4` é o ícone de
+ * 16 pontos numa tela comum, `ic11` é o mesmo 16 pontos numa tela retina, com
+ * 32 pixels para gastar. Por isso o retina de 16pt leva a arte MÉDIA e não a
+ * pequena: o espaço lógico é o mesmo, mas o pixel disponível dobrou.
+ */
+const SLOTS = [
+  ['icp4', 16], // 16pt
+  ['ic11', 32], // 16pt @2x
+  ['icp5', 32], // 32pt
+  ['ic12', 64], // 32pt @2x
+  ['ic07', 128], // 128pt
+  ['ic13', 256], // 128pt @2x
+  ['ic08', 256], // 256pt
+  ['ic14', 512], // 256pt @2x
+  ['ic09', 512], // 512pt
+  ['ic10', 1024] // 512pt @2x
+]
+
+function empacotarIcns(slots) {
+  const blocos = slots.map(([tipo, px]) => {
+    const dados = readFileSync(join(saida, `icon-${px}.png`))
+    const cabecalho = Buffer.alloc(8)
+    cabecalho.write(tipo, 0, 4, 'ascii')
+    // o comprimento inclui os 8 bytes do próprio cabeçalho
+    cabecalho.writeUInt32BE(dados.length + 8, 4)
+    return Buffer.concat([cabecalho, dados])
+  })
+  const corpo = Buffer.concat(blocos)
+  const topo = Buffer.alloc(8)
+  topo.write('icns', 0, 4, 'ascii')
+  topo.writeUInt32BE(corpo.length + 8, 4)
+  return Buffer.concat([topo, corpo])
+}
+
+const icns = empacotarIcns(SLOTS)
+writeFileSync(join(raiz, 'build', 'icon.icns'), icns)
+console.log(`build/icon.icns · ${SLOTS.length} slots · ${(icns.length / 1024).toFixed(1)} kB`)
+
+// Linux parte deste, e ele também é o retrato da marca para o README e o site
 writeFileSync(join(raiz, 'build', 'icon.png'), readFileSync(join(saida, 'icon-1024.png')))
 console.log('build/icon.png · 1024px, arte de três linhas')
