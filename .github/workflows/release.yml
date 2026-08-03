@@ -1,0 +1,77 @@
+# Constrói os instaladores dos dois sistemas e anexa na release da tag.
+#
+# Existe porque o macOS não pode ser construído a partir do Windows: as
+# ferramentas de assinatura da Apple só rodam em macOS. Em vez de exigir que
+# alguém tenha as duas máquinas ligadas na hora de lançar, a tag dispara os
+# dois builds em runners da GitHub — `macos-14` é Apple Silicon, que é onde o
+# `.dmg` arm64 tem de nascer.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  # para reconstruir um artefato sem criar tag nova
+  workflow_dispatch:
+
+# o build anexa arquivos na release, e para isso precisa escrever no repositório
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      # um sistema falhar não pode cancelar o outro: metade dos usuários ainda
+      # ganha o instalador, e o erro fica isolado onde aconteceu
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: dist:win
+            artefatos: dist/*-setup.exe
+          - os: macos-14
+            script: dist:mac
+            artefatos: dist/*.dmg
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `ci` e não `install`: o lock manda, e o build de release não é hora de
+      # descobrir que uma dependência subiu de versão sozinha
+      - run: npm ci
+
+      - run: npm run typecheck
+      - run: npm test
+
+      - name: Build
+        run: npm run ${{ matrix.script }}
+        env:
+          # sem isto o electron-builder vasculha o chaveiro do runner atrás de
+          # um certificado da Apple, não acha, e demora ou falha por causa
+          # de algo que este projeto deliberadamente não tem. A assinatura
+          # ad-hoc — a que faz o app abrir em Apple Silicon — continua sendo
+          # aplicada; é o certificado pago que fica de fora.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Anexar na release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.artefatos }}
+          fail_on_unmatched_files: true
+
+      # sem tag (workflow_dispatch) o artefato fica guardado no próprio job,
+      # para baixar e testar antes de decidir que vira release
+      - name: Guardar para download
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: valendo-${{ matrix.os }}
+          path: ${{ matrix.artefatos }}

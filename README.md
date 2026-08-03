@@ -82,7 +82,21 @@ The app never restores the last script by itself. Opening Valendo in someone els
 
 ## Install
 
-**Windows** — run `Valendo-1.0.0-setup.exe`. It installs per user, so it does not ask for an administrator password.
+**Windows** — run `Valendo-1.0.0-setup.exe`. It installs per user, so it does not ask for an administrator password. SmartScreen warns about an unrecognised publisher; **More info → Run anyway**.
+
+**macOS** — open the `.dmg` for your chip (`arm64` for Apple Silicon, `x64` for Intel) and drag Valendo to Applications. The app is **not notarised**, so the first launch is blocked:
+
+1. Open it once. macOS refuses.
+2. **System Settings → Privacy & Security**, scroll down, **Open Anyway**.
+3. Confirm on the next prompt. It never asks again.
+
+If that button does not appear, one line in Terminal does the same thing:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Valendo.app
+```
+
+This is the price of not paying Apple's yearly developer fee. The app is signed ad-hoc, which is what lets it run at all on Apple Silicon; what is missing is Apple's notarisation stamp, which only a paid account can obtain. Building from source has no such block.
 
 **From source** —
 

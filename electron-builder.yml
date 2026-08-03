@@ -41,3 +41,37 @@ nsis:
   createStartMenuShortcut: true
   shortcutName: Valendo
   artifactName: ${productName}-${version}-setup.${ext}
+
+# ---------------------------------------------------------------------- macOS
+#
+# Os dois arquivos: `arm64` para os Macs com chip da Apple, `x64` para os
+# Intel que ainda estão em estúdio. Universal sairia num .dmg só, mas ele
+# carrega as DUAS cópias do Electron — 250 MB para entregar 130 a cada
+# usuário, e ninguém baixa a arquitetura que não vai usar.
+#
+# NÃO há `identity: null` aqui de propósito. Sem certificado da Apple, o
+# electron-builder assina em modo ad-hoc sozinho, e isso é obrigatório: um
+# binário sem assinatura NENHUMA nem inicia em Apple Silicon. `identity: null`
+# desligaria justamente essa assinatura e produziria um app que não abre nem
+# na máquina que o construiu.
+#
+# O que a assinatura ad-hoc não resolve é a quarentena do download: o app não
+# é notarizado, e o Gatekeeper barra na primeira abertura. Isso é decisão
+# tomada — o projeto não tem conta paga de desenvolvedor Apple —, e as
+# instruções de desbloqueio estão no README e nas notas da release.
+mac:
+  target:
+    - target: dmg
+      arch:
+        - arm64
+        - x64
+  category: public.app-category.video
+  # o teleprompter mede e reposiciona janelas em telas que o operador escolhe;
+  # a lista de monitores vem do Electron, mas o app precisa poder abrir janela
+  # em tela cheia em qualquer uma delas
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+dmg:
+  artifactName: ${productName}-${version}-${arch}.${ext}
