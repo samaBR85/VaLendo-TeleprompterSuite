@@ -19,7 +19,7 @@ import { PROJECT_FILTERS, markProjectClean, openProject, projectFileName, projec
 import { onWebviewChange, publish, startWebview, stopWebview, webviewInfo } from './webview'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
 import { cartaoNoAr } from '@shared/cards'
-import { traduzir } from '@shared/i18n'
+import { idiomaDoSistema, traduzir } from '@shared/i18n'
 import {
   autorizarVideo,
   caminhoDoVideo,
@@ -40,7 +40,15 @@ import { converterParaMp4, gerarProxy, temFfmpeg } from './ffmpeg'
 import { ehVideo, VIDEO_EXTENSIONS } from '@shared/video'
 import { perfilPorId } from '@shared/proxy'
 import { Store } from './state'
-import { flushState, log, onStorageHealth, storageHealth, userDataRoot, workspaceIntegro } from './storage'
+import {
+  ehEstreia,
+  flushState,
+  log,
+  onStorageHealth,
+  storageHealth,
+  userDataRoot,
+  workspaceIntegro
+} from './storage'
 import { loadUiScale, saveUiScale } from './uiScale'
 import { buildBroadcastMenu } from './broadcastMenu'
 import {
@@ -95,7 +103,8 @@ function snapshot(): StateSnapshot {
     history: store.historyInfo(),
     rows: store.activeRows(),
     storage: storageHealth(),
-    webview: webviewInfo()
+    webview: webviewInfo(),
+    estreia: ehEstreia()
   }
 }
 
@@ -142,8 +151,12 @@ function registerIpc(): void {
     }
     store.dispatch(action)
     // um projeto em branco nasce limpo — nada digitado nele ainda para
-    // acusar como mudança não salva
-    if (action.type === 'project/new') markProjectClean(store.getState())
+    // acusar como mudança não salva. O mesmo vale para a amostra refeita no
+    // idioma escolhido nas boas-vindas: quem só escolheu a língua não deve
+    // levar um "há mudanças não salvas" ao fechar
+    if (action.type === 'project/new' || action.type === 'estreia/language') {
+      markProjectClean(store.getState())
+    }
   })
   ipcMain.handle(CHANNELS.projectIsDirty, () => projectIsDirty(store.getState()))
   ipcMain.handle(CHANNELS.displaysList, () => listDisplays())
@@ -641,6 +654,26 @@ function bootstrap(): void {
       store.dispatch({ type: 'output/set', displayId: null, enabled: false })
     }
   })
+
+  /*
+   * O idioma do sistema, agora que dá para perguntar — e antes da janela nascer.
+   *
+   * `app.getLocale()` só responde depois do `whenReady`, e o `Store` é criado
+   * no carregamento do módulo, muito antes. Por isso a instalação nova nasce em
+   * inglês e é corrigida aqui: `estreia/language` refaz a amostra, o nome da
+   * aba e as predefinições no idioma certo. Como acontece antes de
+   * `createOperatorWindow`, a primeira pintura já sai traduzida — não há um
+   * quadro em inglês piscando para quem tem o Windows em outra língua.
+   *
+   * Tentei ler o idioma sem esperar, pelo ICU do Node, para poder fazer isso lá
+   * no construtor do `Store`. Funcionava — e não funcionava: duas aberturas
+   * seguidas da MESMA instalação deram idiomas diferentes, porque naquele
+   * instante o ICU ainda não tinha necessariamente pegado o idioma do sistema.
+   * Perguntar na hora certa é a única resposta estável.
+   */
+  if (ehEstreia()) {
+    store.dispatch({ type: 'estreia/language', language: idiomaDoSistema(app.getLocale()) })
+  }
 
   createOperatorWindow(store.getState().maquina.window, loadUiScale(userDataRoot()))
   syncOutput(store.getState())

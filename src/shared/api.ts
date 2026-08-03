@@ -15,6 +15,15 @@ export interface StateSnapshot {
   rows: number[]
   storage: StorageHealth
   webview: WebviewInfo
+  /**
+   * É a primeira abertura do app nesta máquina — quem manda no modal de
+   * boas-vindas.
+   *
+   * Viaja aqui, e não dentro do `AppState`, porque o estado inteiro vai parar
+   * no `.valendo`: seria a diferença entre "este computador nunca abriu o app"
+   * e "este arquivo nasceu num computador que nunca tinha aberto o app".
+   */
+  estreia: boolean
 }
 
 /**

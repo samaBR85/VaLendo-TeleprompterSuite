@@ -113,9 +113,11 @@ describe('idioma do sistema, só no primeiro uso', () => {
     expect(idiomaDoSistema('it-CH')).toBe('it')
   })
 
-  it('cai no português quando não fala a língua', () => {
-    expect(idiomaDoSistema('ja-JP')).toBe('pt-BR')
-    expect(idiomaDoSistema('')).toBe('pt-BR')
+  it('cai no inglês quando não fala a língua', () => {
+    // quem tem o Windows em japonês não fala português nem inglês, mas tem
+    // muito mais chance de se virar com o segundo
+    expect(idiomaDoSistema('ja-JP')).toBe('en')
+    expect(idiomaDoSistema('')).toBe('en')
   })
 })
 

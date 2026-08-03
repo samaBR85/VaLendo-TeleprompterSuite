@@ -115,19 +115,39 @@ export function workspaceIntegro(): boolean {
 }
 
 /**
+ * É a PRIMEIRA vez que este app abre nesta máquina.
+ *
+ * Vale só quando não havia `workspace.json` nenhum — instalação nova de
+ * verdade. Um workspace ilegível NÃO conta: ali houve trabalho antes, ele é que
+ * se perdeu, e receber boas-vindas em cima do estrago seria deboche.
+ *
+ * Fica aqui e não no `AppState` de propósito: tudo que entra no estado viaja
+ * dentro do `.valendo`, e o modal de boas-vindas reapareceria na máquina de
+ * quem abrisse o projeto de um colega.
+ */
+let estreia = false
+
+export function ehEstreia(): boolean {
+  return estreia
+}
+
+/**
  * Carrega o workspace, e nunca descarta em silêncio o que não conseguiu ler.
  *
  * Começar do zero é indistinguível, para quem está olhando, de "o app abriu
  * normal" — só que o roteiro sumiu. Se o arquivo existe e não dá para ler, ele
  * é guardado com outro nome e o operador é avisado.
  */
-export function loadState(defaults: UserDefaults, locale = 'pt-BR'): AppState {
+export function loadState(defaults: UserDefaults, locale = 'en'): AppState {
   const path = workspacePath()
   // só na instalação nova: a partir daí vale o que o operador escolheu, e
   // trocar o idioma do Windows não pode mexer no app já configurado
   const fresh = (): AppState => createInitialState(defaults, idiomaDoSistema(locale))
 
-  if (!existsSync(path)) return fresh()
+  if (!existsSync(path)) {
+    estreia = true
+    return fresh()
+  }
 
   let saved: Partial<AppState>
   try {

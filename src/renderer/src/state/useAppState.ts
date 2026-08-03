@@ -13,6 +13,8 @@ export interface AppBinding {
   storage: StorageHealth
   /** endereços da página da rede local */
   webview: WebviewInfo
+  /** é a primeira abertura do app nesta máquina */
+  estreia: boolean
   dispatch: (action: Action) => void
 }
 
@@ -31,6 +33,15 @@ export function useAppState(): AppBinding {
   const [rows, setRows] = useState<number[]>([])
   const [storage, setStorage] = useState<StorageHealth>(HEALTHY)
   const [webview, setWebview] = useState<WebviewInfo>(SEM_REDE)
+  /*
+   * Lido UMA vez, no primeiro retrato, e nunca mais.
+   *
+   * O main continua respondendo `estreia: true` a sessão inteira — ele conta
+   * sobre a abertura, não sobre o modal. Se isto acompanhasse cada mensagem de
+   * estado, escolher um idioma (que muda o estado) traria as boas-vindas de
+   * volta na cara de quem acabou de dispensá-las.
+   */
+  const [estreia, setEstreia] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -42,6 +53,7 @@ export function useAppState(): AppBinding {
       setRows(snapshot.rows)
       setStorage(snapshot.storage)
       setWebview(snapshot.webview)
+      setEstreia(snapshot.estreia)
     })
     void window.valendo.listDisplays().then((list) => {
       if (alive) setDisplays(list)
@@ -78,7 +90,7 @@ export function useAppState(): AppBinding {
 
   const dispatch = useCallback((action: Action) => window.valendo.dispatch(action), [])
 
-  return { state, history, displays, rows, storage, webview, dispatch }
+  return { state, history, displays, rows, storage, webview, estreia, dispatch }
 }
 
 function sameRows(a: number[], b: number[]): boolean {

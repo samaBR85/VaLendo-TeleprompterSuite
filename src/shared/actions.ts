@@ -100,6 +100,17 @@ export type Action =
   | { type: 'tab/activate'; tabId: string }
   | { type: 'tab/rename'; tabId: string; title: string }
   | { type: 'app/language'; language: Lang }
+  /**
+   * Idioma escolhido no modal de boas-vindas — troca a língua E reescreve o
+   * roteiro de demonstração, o nome da aba e as predefinições de cor nela.
+   *
+   * Separada de `app/language` porque a diferença é o que se pode destruir sem
+   * medo. No globo do cabeçalho o roteiro já pode ter sido escrito, e traduzir
+   * por cima apagaria o trabalho de quem digitou; por isso lá o texto nunca é
+   * tocado. Aqui a única coisa na tela é a amostra que o próprio app acabou de
+   * pôr, e mostrá-la na língua escolhida É o ponto do modal.
+   */
+  | { type: 'estreia/language'; language: Lang }
   | { type: 'layout/mode'; mode: LayoutMode }
   | { type: 'layout/transportPosition'; position: TransportPosition }
   | { type: 'layout/inspector'; visible: boolean }

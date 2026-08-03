@@ -1,4 +1,3 @@
-import { app } from 'electron'
 import type { Action, HistoryInfo } from '@shared/actions'
 import {
   anchorFromWordIndex,
@@ -68,6 +67,7 @@ function sameRows(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((value, index) => value === b[index])
 }
 
+
 export class Store {
   private state: AppState
   private readonly histories = new Map<string, History<Tab>>()
@@ -89,7 +89,16 @@ export class Store {
     this.defaults = loaded.defaults
     // recalculado na abertura, nunca lido do workspace: o arquivo de padrões
     // pode ter sido apagado com o app fechado
-    this.state = { ...loadState(loaded.defaults, app.getLocale()), customDefaults: loaded.custom }
+    /*
+     * Sem idioma nenhum aqui, de propósito: a instalação nova nasce em inglês.
+     *
+     * `app.getLocale()` estava nesta linha e devolvia string VAZIA — ele só
+     * responde depois do `whenReady`, e este construtor roda no carregamento do
+     * módulo. A detecção nunca acontecia; toda instalação nova do mundo caía na
+     * reserva. Quem corrige é o `bootstrap` em index.ts, que pergunta na hora
+     * certa e refaz a amostra antes da janela abrir.
+     */
+    this.state = { ...loadState(loaded.defaults), customDefaults: loaded.custom }
   }
 
   getState(): AppState {
@@ -765,6 +774,25 @@ export class Store {
       case 'app/language':
         this.state = { ...this.state, language: action.language }
         break
+
+      /*
+       * Refaz a instalação inteira no idioma escolhido, e não só a etiqueta.
+       *
+       * Só chega aqui pelo modal de boas-vindas, quando a única coisa na tela é
+       * a amostra que o próprio app pôs — por isso pode jogar fora sem
+       * perguntar. `maquina` e `customDefaults` sobrevivem pelo mesmo motivo de
+       * `project/new`: são desta máquina e deste operador, não do roteiro.
+       */
+      case 'estreia/language': {
+        this.histories.clear()
+        this.rows.clear()
+        this.state = {
+          ...createInitialState(this.defaults, action.language),
+          customDefaults: this.state.customDefaults,
+          maquina: this.state.maquina
+        }
+        break
+      }
 
       case 'layout/mode':
         this.state = { ...this.state, layoutMode: action.mode }

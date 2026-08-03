@@ -228,7 +228,7 @@ export const TAB_COLORS = ['#EE7AB4', '#C07BF0', '#F0B429', '#46D17F', '#6AA8FF'
 
 export function createInitialState(
   defaults: { appearance: Appearance; ppm: number } = { appearance: DEFAULT_APPEARANCE, ppm: SPEED_PRESETS[1] },
-  lang: Lang = 'pt-BR'
+  lang: Lang = 'en'
 ): AppState {
   const tab = createTab(
     traduzir(lang, 'content.firstTab'),

@@ -31,6 +31,11 @@ export function larguraDoPainel(lang: Lang): number {
  *
  * Só serve para o primeiro uso: depois disso vale o que o operador escolheu, e
  * trocar o idioma do Windows não pode mexer no app que já estava configurado.
+ *
+ * A reserva é o INGLÊS, e não o português: quem tem o Windows em japonês, russo
+ * ou polonês não fala nenhum dos dois, mas tem muito mais chance de se virar em
+ * inglês. Para o brasileiro nada muda — `pt` é reconhecido logo na primeira
+ * linha, e a reserva nem chega a ser consultada.
  */
 export function idiomaDoSistema(locale: string): Lang {
   const base = locale.toLowerCase()
@@ -40,5 +45,5 @@ export function idiomaDoSistema(locale: string): Lang {
   if (base.startsWith('fr')) return 'fr'
   if (base.startsWith('it')) return 'it'
   if (base.startsWith('en')) return 'en'
-  return 'pt-BR'
+  return 'en'
 }

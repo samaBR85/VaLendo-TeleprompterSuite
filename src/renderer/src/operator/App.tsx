@@ -17,6 +17,7 @@ import { Wordmark, versionLabel } from '../ui/Wordmark'
 import { UI_SCALE_MAX, UI_SCALE_MIN, UI_SCALE_STEP, applyUiScale, clampUiScale, loadUiScale } from '../ui/uiScale'
 import { CloseConfirm } from './CloseConfirm'
 import { UnsavedConfirm } from './UnsavedConfirm'
+import { Welcome } from './Welcome'
 import { CardsDrawer } from './CardsDrawer'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
@@ -363,9 +364,19 @@ function AppConteudo({
   rows,
   storage,
   webview,
+  estreia,
   dispatch
 }: ReturnType<typeof useAppState>): React.JSX.Element {
   const { t } = useT()
+  /*
+   * As boas-vindas só na primeira abertura, e só até a pessoa decidir.
+   *
+   * O `estreia` do main continua verdadeiro a sessão inteira — ele conta sobre
+   * a instalação, não sobre este modal. Quem fecha o guarda é este estado
+   * local, senão escolher um idioma (que mexe no estado) traria a tela de volta
+   * na cara de quem acabou de sair dela.
+   */
+  const [boasVindasFeitas, setBoasVindasFeitas] = useState(false)
   const [webviewOpen, setWebviewOpen] = useState(false)
   const [palette, setPalette] = useState(false)
   const [keymapOpen, setKeymapOpen] = useState(false)
@@ -1324,6 +1335,24 @@ function AppConteudo({
             const ok = await project('salvar')
             setUnsavedConfirm(false)
             if (ok) dispatch({ type: 'project/new' })
+          }}
+        />
+      ) : null}
+      {/* por último no DOM, e sem concorrente: na primeira abertura não existe
+          nada salvo para confirmar nem transmissão para fechar */}
+      {estreia && !boasVindasFeitas ? (
+        <Welcome
+          lang={state.language}
+          onLang={(language) => dispatch({ type: 'estreia/language', language })}
+          onDemo={() => setBoasVindasFeitas(true)}
+          onNovo={() => {
+            setBoasVindasFeitas(true)
+            dispatch({ type: 'project/new' })
+          }}
+          onAbrir={async () => {
+            // o modal sai só se a pessoa realmente escolheu um arquivo:
+            // cancelar o seletor tem que devolver a escolha, não a tela vazia
+            if (await project('abrir')) setBoasVindasFeitas(true)
           }}
         />
       ) : null}
