@@ -183,7 +183,7 @@ export function GruposDeVisao({
             style={state.transportPosition !== posicao ? { color: 'var(--color-go)' } : undefined}
             onClick={() => dispatch({ type: 'layout/transportPosition', position: posicao })}
           >
-            <Icon name={posicao === 'topo' ? 'layoutSplit' : 'layoutDeck'} size={16} />
+            <Icon name={posicao === 'topo' ? 'transportTop' : 'transportBottom'} size={16} />
           </Tecla>
         ))}
       </Poco>

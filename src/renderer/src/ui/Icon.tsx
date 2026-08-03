@@ -33,6 +33,8 @@ export type IconName =
   | 'layoutSplit'
   | 'layoutFocus'
   | 'layoutDeck'
+  | 'transportTop'
+  | 'transportBottom'
   | 'text'
   | 'readingLine'
   | 'globe'
@@ -60,7 +62,22 @@ const PATHS: Record<IconName, string> = {
    */
   goTo: 'M4.5 5L15 12 4.5 19z M17 5h2.5v14H17z',
   pause: 'M9 5v14M15 5v14',
-  restart: 'M4 12a8 8 0 1 0 8-8M4 12V6M4 12h6',
+  /**
+   * Voltar ao início: a volta anti-horária com a ponta de seta no canto.
+   *
+   * O desenho antigo era `M4 12a8 8 0 1 0 8-8M4 12V6M4 12h6` — o arco estava
+   * certo, mas os dois traços seguintes tinham 6 unidades cada e saíam do
+   * ponto onde o arco COMEÇA, formando um "L" gigante pendurado fora do
+   * círculo em vez de uma seta.
+   *
+   * O que segura o desenho agora é a ABERTURA do arco. Ele vai de (3.51,15)
+   * até (5.64,5.64) pelo caminho longo, deixando o pedaço de cima à esquerda
+   * sem traço — e é exatamente ali que a seta mora. Sem essa abertura a perna
+   * horizontal cruzaria o círculo (em x≈3.2 na altura y=10) e a ponta ficaria
+   * encostada nele, que era o defeito. As pernas têm 4,5 unidades: o
+   * suficiente para ler como seta, sem virar um "L".
+   */
+  restart: 'M2.5 5.5v4.5h4.5M3.51 15a9 9 0 1 0 2.13-9.36L2.5 10',
   up: 'M12 19V5M6 11l6-6 6 6',
   down: 'M12 5v14M6 13l6 6 6-6',
   mirror: 'M12 3v18M8 7L4 12l4 5M16 7l4 5-4 5',
@@ -101,6 +118,20 @@ const PATHS: Record<IconName, string> = {
   layoutSplit: 'M3 5h8v14H3zM13 5h8v14H13z',
   layoutFocus: 'M3 5h18v10H3zM7 19h10',
   layoutDeck: 'M3 4h18v5H3zM3 13h8M3 17h8M13 13h8M13 17h5',
+  /**
+   * Onde a barra de transporte fica: a janela inteira, com a faixa do console
+   * destacada em cima ou embaixo, e os botõezinhos dentro dela.
+   *
+   * Estes dois botões reusavam `layoutSplit` e `layoutDeck` — ícones do MODO
+   * DE LAYOUT, que é outra decisão (quantos painéis aparecem). O desenho não
+   * dizia nada sobre a posição da barra, que é o que eles de fato mudam.
+   *
+   * O que muda entre os dois é só a altura da faixa e a das teclas: a moldura
+   * é idêntica, para o par ser lido como "em cima" contra "embaixo" e não
+   * como dois desenhos diferentes.
+   */
+  transportTop: 'M3 5h18v14H3zM3 10h18M6.5 7.5h3M11.5 7.5h6',
+  transportBottom: 'M3 5h18v14H3zM3 14h18M6.5 16.5h3M11.5 16.5h6',
   text: 'M4 6h16M4 12h11M4 18h14',
   // linhas de texto atravessadas pela marca de leitura, com as cunhas das pontas
   readingLine: 'M7 6h10M7 18h10M2 12h20M4 10l2 2-2 2M20 10l-2 2 2 2',
