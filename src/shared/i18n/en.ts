@@ -427,6 +427,10 @@ export const en: Dicionario = {
   'cmd.card.hide': 'Take the card off screen',
   'cmd.card.show': 'Show card {n}',
 
+  'welcome.continue': 'Pick up where I left off',
+  'welcome.continueHint': 'Brings back last time’s script, exactly as you left it.',
+  'welcome.recent': 'Recent projects',
+  'welcome.clearRecent': 'clear',
   'welcome.title': 'Welcome to Valendo',
   'welcome.subtitle': 'A teleprompter where the script can be rewritten while you are on the air. Pick your language and where to start.',
   'welcome.language': 'Language',

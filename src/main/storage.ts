@@ -250,7 +250,26 @@ function writeAtomic(path: string, contents: string): void {
 let pending: NodeJS.Timeout | null = null
 let lastState: AppState | null = null
 
+/**
+ * O autosave fica TRAVADO até as boas-vindas serem resolvidas.
+ *
+ * Desde que o app deixou de restaurar o trabalho sozinho, ele abre numa aba em
+ * branco com o `workspace.json` guardado de lado, esperando o operador decidir.
+ * Sem esta trava, o autosave gravaria essa aba em branco por cima do arquivo em
+ * meio segundo — e "Continuar de onde parei" restauraria o nada, tendo apagado
+ * justamente o que existia para recuperar.
+ *
+ * Solta no primeiro dos quatro caminhos do modal, seja ele qual for: a partir
+ * daí o que está na tela é o que o operador escolheu, e gravar é o certo.
+ */
+let travado = true
+
+export function liberarAutosave(): void {
+  travado = false
+}
+
 export function saveState(state: AppState, delayMs = 500): void {
+  if (travado) return
   lastState = state
   if (pending) return
   pending = setTimeout(() => {
@@ -260,7 +279,7 @@ export function saveState(state: AppState, delayMs = 500): void {
 }
 
 export function flushState(): void {
-  if (!lastState) return
+  if (!lastState || travado) return
   try {
     writeAtomic(workspacePath(), JSON.stringify(lastState, null, 2))
     reportStorageProblem(null)

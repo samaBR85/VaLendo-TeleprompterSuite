@@ -431,6 +431,10 @@ export const it: Dicionario = {
   'cmd.card.hide': 'Togli il cartello dallo schermo',
   'cmd.card.show': 'Mostra il cartello {n}',
 
+  'welcome.continue': 'Riprendi da dove ero',
+  'welcome.continueHint': 'Riporta il copione dell’ultima volta, esattamente com’era.',
+  'welcome.recent': 'Progetti recenti',
+  'welcome.clearRecent': 'svuota',
   'welcome.title': 'Benvenuto in Valendo',
   'welcome.subtitle': 'Un gobbo in cui il copione si può riscrivere mentre la trasmissione è in onda. Scegli la lingua e da dove iniziare.',
   'welcome.language': 'Lingua',

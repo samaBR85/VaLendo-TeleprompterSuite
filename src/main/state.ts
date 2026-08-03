@@ -67,6 +67,26 @@ function sameRows(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((value, index) => value === b[index])
 }
 
+/**
+ * Programa em branco: uma aba vazia, no idioma e com as preferências de máquina
+ * que `base` carrega.
+ *
+ * Serve a três chamadores que querem a mesma coisa por motivos diferentes — a
+ * partida do app, o botão "Novo" das boas-vindas e o "Novo projeto" da barra. É
+ * função solta, e não método, porque o construtor precisa dela antes de existir
+ * um `this` completo.
+ */
+function emBranco(defaults: UserDefaults, base: AppState): AppState {
+  const tab = createTab('Aba 1', '', TAB_COLORS[0], defaults.appearance)
+  return {
+    ...createInitialState(defaults, base.language),
+    tabs: [tab],
+    activeTabId: tab.id,
+    customDefaults: base.customDefaults,
+    maquina: base.maquina
+  }
+}
+
 
 export class Store {
   private state: AppState
@@ -84,6 +104,16 @@ export class Store {
   /** Com o que uma aba nova nasce. Vive fora do workspace, ver userDefaults.ts. */
   private defaults: UserDefaults
 
+  /**
+   * O trabalho gravado, de lado, esperando o operador pedir.
+   *
+   * O app NÃO o põe mais na tela sozinho. Abrir o Valendo num estúdio alheio,
+   * ou com a tela já espelhada no telão, mostrava o roteiro anterior sem
+   * ninguém ter pedido — e roteiro é material de cliente. Agora quem revela é
+   * "Continuar de onde parei", um clique deliberado.
+   */
+  private guardado: AppState
+
   constructor() {
     const loaded = loadUserDefaults(userDataRoot())
     this.defaults = loaded.defaults
@@ -98,7 +128,15 @@ export class Store {
      * reserva. Quem corrige é o `bootstrap` em index.ts, que pergunta na hora
      * certa e refaz a amostra antes da janela abrir.
      */
-    this.state = { ...loadState(loaded.defaults), customDefaults: loaded.custom }
+    this.guardado = { ...loadState(loaded.defaults), customDefaults: loaded.custom }
+    /*
+     * A tela começa em BRANCO, e o gravado espera de lado.
+     *
+     * `maquina` vem do guardado porque nada ali é confidencial e tudo ali é
+     * conforto: tamanho e posição da janela, altura da gaveta, aba dos Ajustes.
+     * Perder isso a cada abertura seria pagar um preço sem comprar nada.
+     */
+    this.state = emBranco(this.defaults, this.guardado)
   }
 
   getState(): AppState {
@@ -776,21 +814,18 @@ export class Store {
         break
 
       /*
-       * Refaz a instalação inteira no idioma escolhido, e não só a etiqueta.
+       * Troca a língua da partida inteira, e não só a etiqueta: o nome da aba e
+       * as predefinições de cor nascem traduzidos junto.
        *
-       * Só chega aqui pelo modal de boas-vindas, quando a única coisa na tela é
-       * a amostra que o próprio app pôs — por isso pode jogar fora sem
-       * perguntar. `maquina` e `customDefaults` sobrevivem pelo mesmo motivo de
-       * `project/new`: são desta máquina e deste operador, não do roteiro.
+       * Só chega aqui pelo modal de boas-vindas, com a tela ainda em branco —
+       * por isso pode refazer sem perguntar. O guardado NÃO é tocado: quem
+       * escolher "Continuar" depois ainda encontra o trabalho como estava, no
+       * idioma em que estava.
        */
       case 'estreia/language': {
         this.histories.clear()
         this.rows.clear()
-        this.state = {
-          ...createInitialState(this.defaults, action.language),
-          customDefaults: this.state.customDefaults,
-          maquina: this.state.maquina
-        }
+        this.state = emBranco(this.defaults, { ...this.state, language: action.language })
         break
       }
 
@@ -1035,15 +1070,37 @@ export class Store {
       case 'project/new': {
         this.histories.clear()
         this.rows.clear()
-        const tab = createTab('Aba 1', '', TAB_COLORS[0], this.defaults.appearance)
+        this.state = emBranco(this.defaults, this.state)
+        this.dispatch({ type: 'tab/activate', tabId: this.state.activeTabId })
+        return
+      }
+
+      /*
+       * "Continuar de onde parei" — o único caminho que revela o gravado.
+       *
+       * Não há nada a limpar antes: a tela estava em branco desde a partida, e
+       * o que entra aqui é exatamente o que o disco tinha. `maquina` vem do
+       * guardado também, e não do estado atual, porque os dois são o mesmo
+       * objeto — o construtor já o copiou de lá.
+       */
+      case 'estreia/continuar': {
+        this.histories.clear()
+        this.rows.clear()
+        this.state = this.guardado
+        this.dispatch({ type: 'tab/activate', tabId: this.state.activeTabId })
+        return
+      }
+
+      /* O roteiro de demonstração, no idioma que estiver escolhido. */
+      case 'estreia/demo': {
+        this.histories.clear()
+        this.rows.clear()
         this.state = {
           ...createInitialState(this.defaults, this.state.language),
-          tabs: [tab],
-          activeTabId: tab.id,
           customDefaults: this.state.customDefaults,
           maquina: this.state.maquina
         }
-        this.dispatch({ type: 'tab/activate', tabId: tab.id })
+        this.dispatch({ type: 'tab/activate', tabId: this.state.activeTabId })
         return
       }
 

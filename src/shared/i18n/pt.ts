@@ -455,6 +455,10 @@ export const pt = {
   'cmd.card.hide': 'Tirar o cartão da tela',
   'cmd.card.show': 'Mostrar o cartão {n}',
 
+  'welcome.continue': 'Continuar de onde parei',
+  'welcome.continueHint': 'Traz de volta o roteiro da última vez, com tudo como estava.',
+  'welcome.recent': 'Projetos recentes',
+  'welcome.clearRecent': 'limpar',
   'welcome.title': 'Bem-vindo ao Valendo',
   'welcome.subtitle': 'Um teleprompter em que o roteiro pode ser reescrito com a transmissão no ar. Escolha o idioma e por onde começar.',
   'welcome.language': 'Idioma',

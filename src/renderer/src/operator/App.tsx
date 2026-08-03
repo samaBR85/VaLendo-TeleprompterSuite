@@ -1351,13 +1351,23 @@ function AppConteudo({
           }}
         />
       ) : null}
-      {/* por último no DOM, e sem concorrente: na primeira abertura não existe
-          nada salvo para confirmar nem transmissão para fechar */}
-      {estreia && !boasVindasFeitas ? (
+      {/* por último no DOM, e sem concorrente: na abertura não existe nada
+          salvo para confirmar nem transmissão para fechar */}
+      {!boasVindasFeitas ? (
         <Welcome
           lang={state.language}
           onLang={(language) => dispatch({ type: 'estreia/language', language })}
-          onDemo={() => setBoasVindasFeitas(true)}
+          // `estreia` é o app abrindo pela primeira vez nesta máquina: não há
+          // workspace nenhum, e portanto nada a continuar
+          temSalvo={!estreia}
+          onContinuar={() => {
+            setBoasVindasFeitas(true)
+            dispatch({ type: 'estreia/continuar' })
+          }}
+          onDemo={() => {
+            setBoasVindasFeitas(true)
+            dispatch({ type: 'estreia/demo' })
+          }}
           onNovo={() => {
             setBoasVindasFeitas(true)
             dispatch({ type: 'project/new' })
@@ -1366,6 +1376,9 @@ function AppConteudo({
             // o modal sai só se a pessoa realmente escolheu um arquivo:
             // cancelar o seletor tem que devolver a escolha, não a tela vazia
             if (await project('abrir')) setBoasVindasFeitas(true)
+          }}
+          onAbrirRecente={async (caminho) => {
+            if (await project('abrir', caminho)) setBoasVindasFeitas(true)
           }}
         />
       ) : null}

@@ -46,6 +46,7 @@ const api: ValendoApi = {
   openProjectPath: (caminho: string) =>
     ipcRenderer.invoke(CHANNELS.projectOpenPath, caminho) as Promise<ProjectResult | null>,
   listRecentProjects: () => ipcRenderer.invoke(CHANNELS.projectRecents) as Promise<ProjetoRecente[]>,
+  clearRecentProjects: () => ipcRenderer.invoke(CHANNELS.projectClearRecents) as Promise<ProjetoRecente[]>,
   projectIsDirty: () => ipcRenderer.invoke(CHANNELS.projectIsDirty) as Promise<boolean>,
   openExternal: (url: string) => ipcRenderer.send(CHANNELS.openExternal, url),
   // `webFrame` é o desta janela, sem IPC — a resposta ao slider é imediata.

@@ -431,6 +431,10 @@ export const de: Dicionario = {
   'cmd.card.hide': 'Karte vom Bildschirm nehmen',
   'cmd.card.show': 'Karte {n} zeigen',
 
+  'welcome.continue': 'Dort weitermachen, wo ich war',
+  'welcome.continueHint': 'Holt das Skript vom letzten Mal zurück, genau wie es war.',
+  'welcome.recent': 'Zuletzt verwendet',
+  'welcome.clearRecent': 'leeren',
   'welcome.title': 'Willkommen bei Valendo',
   'welcome.subtitle': 'Ein Teleprompter, bei dem das Skript während der Sendung umgeschrieben werden kann. Wähle die Sprache und den Startpunkt.',
   'welcome.language': 'Sprache',

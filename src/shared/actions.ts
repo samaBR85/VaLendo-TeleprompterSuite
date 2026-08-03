@@ -111,6 +111,10 @@ export type Action =
    * pôr, e mostrá-la na língua escolhida É o ponto do modal.
    */
   | { type: 'estreia/language'; language: Lang }
+  /** revela o trabalho gravado, que esperava de lado desde a partida */
+  | { type: 'estreia/continuar' }
+  /** põe o roteiro de demonstração no idioma escolhido */
+  | { type: 'estreia/demo' }
   | { type: 'layout/mode'; mode: LayoutMode }
   | { type: 'layout/transportPosition'; position: TransportPosition }
   | { type: 'layout/inspector'; visible: boolean }
@@ -158,6 +162,7 @@ export const CHANNELS = {
   /** abre um caminho já conhecido, sem passar pelo diálogo — os recentes */
   projectOpenPath: 'project:openPath',
   projectRecents: 'project:recents',
+  projectClearRecents: 'project:clearRecents',
   projectIsDirty: 'project:isDirty',
   openExternal: 'app:openExternal',
   /** escala da interface do operador — preferência da máquina, fora do AppState */

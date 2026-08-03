@@ -16,7 +16,7 @@ import type { AppState } from '@shared/types'
 import { IMPORT_FILTERS, importFile } from './import'
 import { EXPORT_FILTERS, defaultFileName, exportScript } from './export'
 import { PROJECT_FILTERS, markProjectClean, openProject, projectFileName, projectIsDirty, saveProject } from './project'
-import { loadRecentes, registrarRecente } from './recentes'
+import { limparRecentes, loadRecentes, registrarRecente } from './recentes'
 import { onWebviewChange, publish, startWebview, stopWebview, webviewInfo } from './webview'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
 import { cartaoNoAr } from '@shared/cards'
@@ -44,6 +44,7 @@ import { Store } from './state'
 import {
   ehEstreia,
   flushState,
+  liberarAutosave,
   log,
   onStorageHealth,
   storageHealth,
@@ -156,6 +157,23 @@ function registerIpc(): void {
     // idioma escolhido nas boas-vindas: quem só escolheu a língua não deve
     // levar um "há mudanças não salvas" ao fechar
     if (action.type === 'project/new' || action.type === 'estreia/language') {
+      markProjectClean(store.getState())
+    }
+    /*
+     * Boas-vindas resolvidas: o autosave pode voltar a gravar.
+     *
+     * Até aqui ele estava travado, senão a aba em branco da partida teria sido
+     * escrita por cima do `workspace.json` em meio segundo — e "Continuar de
+     * onde parei" restauraria o nada, tendo apagado o que havia para recuperar.
+     * Os quatro caminhos do modal passam por uma destas ações.
+     */
+    if (
+      action.type === 'estreia/continuar' ||
+      action.type === 'estreia/demo' ||
+      action.type === 'project/new' ||
+      action.type === 'project/replace'
+    ) {
+      liberarAutosave()
       markProjectClean(store.getState())
     }
   })
@@ -306,6 +324,12 @@ function registerIpc(): void {
   // o mesmo abrir, sem o diálogo: quem escolheu já sabe qual arquivo quer
   ipcMain.handle(CHANNELS.projectOpenPath, (_event, caminho: string) => abrirCaminho(caminho))
   ipcMain.handle(CHANNELS.projectRecents, () => loadRecentes(userDataRoot()))
+  // esvaziar a lista é a resposta para quem opera em máquina emprestada: os
+  // nomes dos arquivos contam quase tanto quanto o roteiro dentro deles
+  ipcMain.handle(CHANNELS.projectClearRecents, () => {
+    limparRecentes(userDataRoot())
+    return []
+  })
 
   // só http(s), e sempre no navegador do sistema: o app nunca navega para fora
   // do próprio conteúdo

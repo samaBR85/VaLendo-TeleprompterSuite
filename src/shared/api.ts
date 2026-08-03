@@ -198,6 +198,8 @@ export interface ValendoApi {
   openProjectPath(caminho: string): Promise<ProjectResult | null>
   /** os últimos projetos abertos ou salvos, já sem os que sumiram do disco */
   listRecentProjects(): Promise<ProjetoRecente[]>
+  /** esvazia a lista — devolve a lista vazia, para a tela não precisar perguntar de novo */
+  clearRecentProjects(): Promise<ProjetoRecente[]>
   /** o projeto aberto tem mudança que não foi para o arquivo ainda? */
   projectIsDirty(): Promise<boolean>
   openExternal(url: string): void

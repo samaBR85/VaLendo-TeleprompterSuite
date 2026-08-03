@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import type { ProjetoRecente } from '@shared/api'
 import { LANGS, type Lang } from '@shared/i18n'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
@@ -6,51 +7,75 @@ import { Icon } from '../ui/Icon'
 interface Props {
   /** o idioma em vigor — já vem detectado do sistema, então quase sempre está certo */
   lang: Lang
-  /** trocar aqui reescreve a amostra na hora; ver a ação `estreia/language` */
+  /** trocar aqui refaz a partida traduzida; ver a ação `estreia/language` */
   onLang: (lang: Lang) => void
+  /**
+   * Existe trabalho gravado esperando de lado.
+   *
+   * Quando é falso — instalação nova, ou primeira abertura depois de limpar os
+   * dados — não há o que continuar, e o botão nem aparece.
+   */
+  temSalvo: boolean
+  /** revela o trabalho gravado */
+  onContinuar: () => void
   /** começar com o editor em branco */
   onNovo: () => void
-  /** ficar com o roteiro de demonstração que já está na tela */
+  /** pôr o roteiro de demonstração */
   onDemo: () => void
-  /** abrir um .valendo salvo */
+  /** abrir um .valendo pelo seletor de arquivo */
   onAbrir: () => void
+  /** abrir um dos recentes, direto pelo caminho */
+  onAbrirRecente: (caminho: string) => void
 }
 
 /**
- * As boas-vindas da primeira abertura — o único momento em que este modal
- * aparece na vida da instalação.
+ * As boas-vindas de toda abertura.
  *
- * Existe por duas razões que se resolvem no mesmo lugar. A primeira é o idioma:
- * o app adivinha pelo Windows e acerta quase sempre, mas "quase" não serve para
- * quem opera em outra língua que a do computador do estúdio, e trocar depois
- * não desfaz a primeira impressão de abrir num idioma estrangeiro. A segunda é
- * que hoje o app abre direto num roteiro de demonstração, sem dizer que é
- * demonstração — quem instala não sabe se aquilo é dele, se pode apagar, nem
- * onde estaria o próprio roteiro.
+ * Aparecem SEMPRE, e não só na estreia, porque o app deixou de restaurar o
+ * trabalho sozinho. Abrir o Valendo num estúdio alheio, ou com a tela já
+ * espelhada no telão, mostrava o roteiro anterior sem ninguém ter pedido — e
+ * roteiro é material de cliente. Agora a tela começa em branco e quem revela é
+ * "Continuar de onde parei", um clique deliberado.
  *
- * Escapar por Escape ou clicando fora vale como DEMO, nunca como "em branco":
- * uma tela vazia é o resultado mais assustador dos três, e não pode ser o que
- * acontece por acidente.
+ * Escapar por Escape ou clicando fora cai no caminho MENOS destrutivo que
+ * houver: continuar, quando há o que continuar; a demonstração, quando não há.
+ * Nunca a tela em branco — essa apaga a recuperação, e nada que apaga pode ser
+ * o que acontece por acidente.
  */
-export function Welcome({ lang, onLang, onNovo, onDemo, onAbrir }: Props): React.JSX.Element {
+export function Welcome({
+  lang,
+  onLang,
+  temSalvo,
+  onContinuar,
+  onNovo,
+  onDemo,
+  onAbrir,
+  onAbrirRecente
+}: Props): React.JSX.Element {
   const { t } = useT()
+  const [recentes, setRecentes] = useState<ProjetoRecente[]>([])
+  const escapar = temSalvo ? onContinuar : onDemo
+
+  useEffect(() => {
+    void window.valendo.listRecentProjects().then(setRecentes)
+  }, [])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
         event.stopPropagation()
-        onDemo()
+        escapar()
       }
     }
     window.addEventListener('keydown', onKeyDown, true)
     return () => window.removeEventListener('keydown', onKeyDown, true)
-  }, [onDemo])
+  }, [escapar])
 
   return (
     <div
       data-welcome
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-      onMouseDown={onDemo}
+      onMouseDown={escapar}
     >
       <div
         onMouseDown={(event) => event.stopPropagation()}
@@ -87,31 +112,80 @@ export function Welcome({ lang, onLang, onNovo, onDemo, onAbrir }: Props): React
               </button>
             ))}
           </div>
+
+          {recentes.length > 0 ? (
+            <>
+              <div className="mt-[20px] flex items-baseline justify-between">
+                <span className="text-[10.5px] font-semibold tracking-[0.14em] text-[var(--color-fog-2)] uppercase">
+                  {t('welcome.recent')}
+                </span>
+                {/* os NOMES dos arquivos já contam quase tanto quanto o roteiro
+                    dentro deles: quem opera em máquina emprestada precisa de um
+                    jeito de apagar essa vitrine */}
+                <button
+                  type="button"
+                  data-welcome-limpar
+                  onClick={() => void window.valendo.clearRecentProjects().then(setRecentes)}
+                  className="text-[11.5px] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]"
+                >
+                  {t('welcome.clearRecent')}
+                </button>
+              </div>
+              <div className="mt-[9px] flex flex-wrap gap-[7px]">
+                {recentes.map((projeto) => (
+                  <button
+                    key={projeto.caminho}
+                    type="button"
+                    data-welcome-recente
+                    // o caminho inteiro no hover: dois projetos podem ter o
+                    // mesmo nome em pastas diferentes, e o chip só mostra o nome
+                    title={projeto.caminho}
+                    onClick={() => onAbrirRecente(projeto.caminho)}
+                    className="max-w-[280px] truncate rounded-full border border-[var(--color-line)] px-[13px] py-[6px] text-[12.5px] text-[var(--color-fog-1)] hover:border-[var(--color-link)] hover:text-[var(--color-fog-0)]"
+                  >
+                    {projeto.nome}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : null}
         </div>
 
-        <div className="grid grid-cols-3 gap-[10px] border-t border-[var(--color-line)] bg-[var(--color-ink-0)] px-[26px] py-[20px]">
-          <Caminho
-            icone="project"
-            data="novo"
-            titulo={t('welcome.new')}
-            detalhe={t('welcome.newHint')}
-            onClick={onNovo}
-          />
-          <Caminho
-            icone="play"
-            data="demo"
-            titulo={t('welcome.demo')}
-            detalhe={t('welcome.demoHint')}
-            destaque
-            onClick={onDemo}
-          />
-          <Caminho
-            icone="projectOpen"
-            data="abrir"
-            titulo={t('welcome.open')}
-            detalhe={t('welcome.openHint')}
-            onClick={onAbrir}
-          />
+        <div className="border-t border-[var(--color-line)] bg-[var(--color-ink-0)] px-[26px] py-[20px]">
+          <div className={`grid gap-[10px] ${temSalvo ? 'grid-cols-4' : 'grid-cols-3'}`}>
+            {temSalvo ? (
+              <Caminho
+                icone="restart"
+                data="continuar"
+                titulo={t('welcome.continue')}
+                detalhe={t('welcome.continueHint')}
+                destaque
+                onClick={onContinuar}
+              />
+            ) : null}
+            <Caminho
+              icone="project"
+              data="novo"
+              titulo={t('welcome.new')}
+              detalhe={t('welcome.newHint')}
+              onClick={onNovo}
+            />
+            <Caminho
+              icone="play"
+              data="demo"
+              titulo={t('welcome.demo')}
+              detalhe={t('welcome.demoHint')}
+              destaque={!temSalvo}
+              onClick={onDemo}
+            />
+            <Caminho
+              icone="projectOpen"
+              data="abrir"
+              titulo={t('welcome.open')}
+              detalhe={t('welcome.openHint')}
+              onClick={onAbrir}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -140,7 +214,7 @@ function Caminho({
       autoFocus={destaque}
       onClick={onClick}
       className={
-        'flex flex-col items-start gap-[7px] rounded-[10px] border px-[14px] py-[13px] text-left ' +
+        'flex flex-col items-start gap-[7px] rounded-[10px] border px-[13px] py-[12px] text-left ' +
         (destaque
           ? 'border-[var(--color-go)]/45 bg-[var(--color-go)]/12 hover:bg-[var(--color-go)]/20'
           : 'border-[var(--color-line)] hover:border-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]')
@@ -151,12 +225,12 @@ function Caminho({
       </span>
       <span
         className={
-          'text-[14px] font-medium ' + (destaque ? 'text-[var(--color-go)]' : 'text-[var(--color-fog-0)]')
+          'text-[13.5px] font-medium ' + (destaque ? 'text-[var(--color-go)]' : 'text-[var(--color-fog-0)]')
         }
       >
         {titulo}
       </span>
-      <span className="text-[12px] leading-snug text-[var(--color-fog-2)]">{detalhe}</span>
+      <span className="text-[11.5px] leading-snug text-[var(--color-fog-2)]">{detalhe}</span>
     </button>
   )
 }

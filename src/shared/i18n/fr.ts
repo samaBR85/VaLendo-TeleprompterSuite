@@ -431,6 +431,10 @@ export const fr: Dicionario = {
   'cmd.card.hide': 'Retirer le carton de l’écran',
   'cmd.card.show': 'Afficher le carton {n}',
 
+  'welcome.continue': 'Reprendre où j’en étais',
+  'welcome.continueHint': 'Ramène le texte de la dernière fois, tel quel.',
+  'welcome.recent': 'Projets récents',
+  'welcome.clearRecent': 'effacer',
   'welcome.title': 'Bienvenue dans Valendo',
   'welcome.subtitle': 'Un prompteur où le texte peut être réécrit pendant la diffusion. Choisissez la langue et par où commencer.',
   'welcome.language': 'Langue',

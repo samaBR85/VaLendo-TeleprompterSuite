@@ -429,6 +429,10 @@ export const es: Dicionario = {
   'cmd.card.hide': 'Quitar la tarjeta de la pantalla',
   'cmd.card.show': 'Mostrar la tarjeta {n}',
 
+  'welcome.continue': 'Continuar donde lo dejé',
+  'welcome.continueHint': 'Devuelve el guión de la última vez, tal como estaba.',
+  'welcome.recent': 'Proyectos recientes',
+  'welcome.clearRecent': 'limpiar',
   'welcome.title': 'Bienvenido a Valendo',
   'welcome.subtitle': 'Un teleprompter en el que el guión se puede reescribir con la emisión en el aire. Elige el idioma y por dónde empezar.',
   'welcome.language': 'Idioma',
