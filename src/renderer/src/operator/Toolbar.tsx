@@ -387,6 +387,13 @@ export function PocoDoAr({
       >
         <Icon name="freeze" size={13} />
       </Tecla>
+      {/* Divisor: à esquerda dele o que age sobre a TELA do apresentador
+          (apagar, congelar); à direita, o que age sobre a REDE. Duas famílias
+          no mesmo poço, e sem a linha as quatro teclas se liam como uma fila
+          só de interruptores sem parentesco. */}
+      {/* `--color-line`, e não `--color-edge`: edge é preto, e preto sobre a
+          cama escura do poço não aparece — o divisor sumia. */}
+      <span className="mx-1 h-4 w-px flex-none self-center bg-[var(--color-line)]" />
       {/* aceso pelo que está acontecendo, não pelo que foi pedido: com a porta
           ocupada, o verde diria que há uma página no ar quando não há */}
       <Tecla
