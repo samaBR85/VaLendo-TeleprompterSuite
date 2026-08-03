@@ -50,6 +50,11 @@ jobs:
       - run: npm run typecheck
       - run: npm test
 
+      # os scripts levam `--publish never` de propósito: numa CI o
+      # electron-builder decide publicar a release sozinho, e aí exige um
+      # GH_TOKEN que este workflow não dá a ele. Quem anexa os arquivos é o
+      # passo abaixo, com a permissão que o próprio GitHub já concede ao job —
+      # dois publicadores para a mesma release seria pedir conflito.
       - name: Build
         run: npm run ${{ matrix.script }}
         env:
