@@ -177,7 +177,11 @@ export function createInitialState(
     projectPath: null,
     language: lang,
     layoutMode: 'split',
-    transportPosition: 'topo',
+    // a régua no rodapé é a visão de fábrica: durante o programa o olho está
+    // no roteiro e na prévia, e o transporte logo abaixo deles fica no caminho
+    // da mão — no topo ele obriga a subir a tela inteira para dar um play. Quem
+    // preferir o contrário troca uma vez (F8) e a escolha fica gravada
+    transportPosition: 'regua',
     inspectorVisible: true,
     sidebarVisible: true,
     sidebarWidth: SIDEBAR_WIDTH_DEFAULT,
