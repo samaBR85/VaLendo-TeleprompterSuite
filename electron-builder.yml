@@ -1,5 +1,5 @@
 appId: com.samabr85.valendo
-productName: VaLendo
+productName: Valendo
 copyright: Copyright © samaBR — GPL-3.0-or-later
 
 directories:
@@ -39,5 +39,5 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: VaLendo
+  shortcutName: Valendo
   artifactName: ${productName}-${version}-setup.${ext}
