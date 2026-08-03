@@ -44,6 +44,7 @@ export type IconName =
   | 'uiScale'
   | 'clearFormat'
   | 'catch'
+  | 'loop'
 
 const PATHS: Record<IconName, string> = {
   volume: 'M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6',
@@ -117,7 +118,17 @@ const PATHS: Record<IconName, string> = {
   clearFormat: 'M4 6V4h9v2M8.5 4v13M6 17h5M15 12l6 6M21 12l-6 6',
   // uma mira: o alvo que a rolagem persegue continuamente enquanto o CATCH
   // está ligado — quatro travessões em volta de um ponto central
-  catch: 'M12 3v4M12 17v4M3 12h4M17 12h4M12 12m-4 0a4 4 0 1 0 8 0 4 4 0 1 0-8 0M12 12h.01'
+  catch: 'M12 3v4M12 17v4M3 12h4M17 12h4M12 12m-4 0a4 4 0 1 0 8 0 4 4 0 1 0-8 0M12 12h.01',
+  /**
+   * O loop de reprodução: as duas setas em ciclo de qualquer player.
+   *
+   * Era o caractere `∞` escrito como texto no botão — e um glifo é desenhado
+   * dentro da caixa da LETRA, que tem alto e fundo que o infinito não usa;
+   * ele ficava visivelmente acima do meio, ao lado de vizinhos que são todos
+   * SVG. Como ícone, o desenho ocupa o `viewBox` de 2 a 22, simétrico em
+   * torno de 12, e centra sozinho em qualquer escala da interface.
+   */
+  loop: 'M17 2l4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3'
 }
 
 interface Props {

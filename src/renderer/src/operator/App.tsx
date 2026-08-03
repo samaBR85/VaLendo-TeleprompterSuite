@@ -1040,11 +1040,11 @@ function AppConteudo({
                     aria-label={t('toolbar.loop')}
                     acesa={state.transport.loop}
                     cor="var(--color-go)"
-                    className="h-6 w-7 text-[13px] leading-none"
+                    className="h-6 w-7"
                     style={!state.transport.loop ? { color: 'var(--color-go)' } : undefined}
                     onClick={() => dispatch({ type: 'transport/loop' })}
                   >
-                    ∞
+                    <Icon name="loop" size={15} />
                   </Tecla>
                   {/* atraso do loop: quanto esperar parado no fim antes de
                       reiniciar — só importa com o loop ligado, mas fica
