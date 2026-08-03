@@ -158,33 +158,13 @@ export function Welcome({
                 icone="restart"
                 data="continuar"
                 titulo={t('welcome.continue')}
-                detalhe={t('welcome.continueHint')}
                 destaque
                 onClick={onContinuar}
               />
             ) : null}
-            <Caminho
-              icone="project"
-              data="novo"
-              titulo={t('welcome.new')}
-              detalhe={t('welcome.newHint')}
-              onClick={onNovo}
-            />
-            <Caminho
-              icone="play"
-              data="demo"
-              titulo={t('welcome.demo')}
-              detalhe={t('welcome.demoHint')}
-              destaque={!temSalvo}
-              onClick={onDemo}
-            />
-            <Caminho
-              icone="projectOpen"
-              data="abrir"
-              titulo={t('welcome.open')}
-              detalhe={t('welcome.openHint')}
-              onClick={onAbrir}
-            />
+            <Caminho icone="project" data="novo" titulo={t('welcome.new')} onClick={onNovo} />
+            <Caminho icone="play" data="demo" titulo={t('welcome.demo')} destaque={!temSalvo} onClick={onDemo} />
+            <Caminho icone="projectOpen" data="abrir" titulo={t('welcome.open')} onClick={onAbrir} />
           </div>
         </div>
       </div>
@@ -192,18 +172,24 @@ export function Welcome({
   )
 }
 
+/**
+ * Um caminho: ícone e nome, e nada mais.
+ *
+ * Tinha uma linha de explicação embaixo de cada um — "abre o editor vazio,
+ * para colar ou digitar o seu texto". Saiu: os quatro nomes já dizem o que
+ * fazem, e quatro parágrafos lado a lado transformavam uma escolha de um
+ * segundo numa página para ler.
+ */
 function Caminho({
   icone,
   data,
   titulo,
-  detalhe,
   destaque,
   onClick
 }: {
   icone: React.ComponentProps<typeof Icon>['name']
   data: string
   titulo: string
-  detalhe: string
   destaque?: boolean
   onClick: () => void
 }): React.JSX.Element {
@@ -214,7 +200,7 @@ function Caminho({
       autoFocus={destaque}
       onClick={onClick}
       className={
-        'flex flex-col items-start gap-[7px] rounded-[10px] border px-[13px] py-[12px] text-left ' +
+        'flex flex-col items-start gap-[9px] rounded-[10px] border px-[13px] py-[13px] text-left ' +
         (destaque
           ? 'border-[var(--color-go)]/45 bg-[var(--color-go)]/12 hover:bg-[var(--color-go)]/20'
           : 'border-[var(--color-line)] hover:border-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]')
@@ -225,12 +211,12 @@ function Caminho({
       </span>
       <span
         className={
-          'text-[13.5px] font-medium ' + (destaque ? 'text-[var(--color-go)]' : 'text-[var(--color-fog-0)]')
+          'text-[13.5px] leading-snug font-medium ' +
+          (destaque ? 'text-[var(--color-go)]' : 'text-[var(--color-fog-0)]')
         }
       >
         {titulo}
       </span>
-      <span className="text-[11.5px] leading-snug text-[var(--color-fog-2)]">{detalhe}</span>
     </button>
   )
 }
