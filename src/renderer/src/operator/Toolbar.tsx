@@ -341,12 +341,14 @@ export function PocoDoAr({
   webviewLive,
   keymap,
   run,
+  dispatch,
   onOpenWebview
 }: {
   state: AppState
   webviewLive: boolean
   keymap: Map<string, string>
   run: (commandId: string) => void
+  dispatch: (action: Action) => void
   onOpenWebview: () => void
 }): React.JSX.Element {
   const { t } = useT()
@@ -398,7 +400,58 @@ export function PocoDoAr({
       >
         <Icon name="webview" size={13} />
       </Tecla>
+      {/* Colada na tecla da rede, e não solta ao lado: é a rota do áudio DESSA
+          publicação, e as duas juntas se leem de relance — "no ar, com som" ou
+          "no ar, mudo". Solta, seria mais um ícone num poço que já tem três.
+
+          Com a rede desligada ela fica apagada e não responde: não há para
+          onde mandar áudio, e um botão que troca de cor sem efeito nenhum
+          ensina a coisa errada. */}
+      <TeclaDeSomDaRede
+        noAr={webviewLive}
+        som={state.webview.som}
+        className={lado}
+        onAlternar={() => dispatch({ type: 'webview/som', som: !state.webview.som })}
+      />
     </Poco>
+  )
+}
+
+/**
+ * A rota do áudio pela rede, como tecla.
+ *
+ * Mora aqui, e não dentro de um dos dois donos, porque aparece em DOIS lugares
+ * com o mesmo desenho: colada à tecla da rede no poço AR, e à esquerda de
+ * publicar na modal. Duas cópias divergiriam no primeiro ajuste de cor.
+ */
+export function TeclaDeSomDaRede({
+  noAr,
+  som,
+  className,
+  onAlternar
+}: {
+  noAr: boolean
+  som: boolean
+  className?: string
+  onAlternar: () => void
+}): React.JSX.Element {
+  const { t } = useT()
+  const rotulo = !noAr ? t('web.audioIdle') : som ? t('web.audioOn') : t('web.audioOff')
+  return (
+    <Tecla
+      data-web-audio={!noAr ? 'apagado' : som ? 'passando' : 'cortado'}
+      title={rotulo}
+      aria-label={rotulo}
+      aria-pressed={noAr ? som : undefined}
+      disabled={!noAr}
+      acesa={noAr}
+      cor={som ? 'var(--color-accent-2)' : 'var(--color-live)'}
+      className={`${className ?? ''} ${noAr ? 'k-tecla-solida' : ''}`}
+      style={!noAr ? { color: 'var(--color-fog-3)' } : undefined}
+      onClick={onAlternar}
+    >
+      <Icon name={som ? 'volume' : 'volumeOff'} size={13} />
+    </Tecla>
   )
 }
 

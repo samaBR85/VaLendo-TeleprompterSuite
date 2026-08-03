@@ -785,6 +785,7 @@ function AppConteudo({
         webviewLive={state.webview.enabled && webview.running && !webview.error}
         keymap={keymap}
         run={run}
+        dispatch={dispatch}
         onOpenWebview={() => setWebviewOpen(true)}
       />
     </div>

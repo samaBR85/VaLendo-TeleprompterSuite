@@ -6,6 +6,7 @@ import type { Chave } from '@shared/i18n'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
 import { QrCode } from '../ui/QrCode'
+import { TeclaDeSomDaRede } from './Toolbar'
 
 interface Props {
   info: WebviewInfo
@@ -71,31 +72,41 @@ export function WebviewPanel({
           </button>
         </div>
 
-        <p className="mb-4 text-[12px] leading-relaxed text-[var(--color-fog-1)]">
-          {t('web.intro')}
-        </p>
+        {/* O que era um parágrafo de abertura saiu daqui: explicava para quem
+            já abriu o painel o que o painel faz. Esse texto é de manual, e
+            manual tem lugar — o `?` no rodapé leva para lá. */}
 
-        <button
-          type="button"
-          data-webview-toggle
-          onClick={() => dispatch({ type: 'webview/set', enabled: !enabled })}
-          className={`mb-4 flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-[13px] transition-colors ${
-            noAr
-              ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
-              : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
-          }`}
-        >
-          {/* verde nos DOIS estados: é o rótulo do que este botão publica, e o
-              verde é a cor do "no ar" em todo o app. Quem diz se está ligado
-              continua sendo a moldura tingida e o ponto à direita — o texto
-              apagado em cinza fazia o botão parecer indisponível */}
-          <span className="text-[var(--color-go)]">{noAr ? t('web.live') : t('web.publish')}</span>
-          <span
-            className={`h-2.5 w-2.5 flex-none rounded-full ${
-              noAr ? 'bg-[var(--color-go)]' : 'border border-[var(--color-line)]'
-            }`}
+        <div className="mb-4 flex items-stretch gap-2">
+          {/* a rota do áudio à ESQUERDA e mais estreita: quem manda nesta caixa
+              é publicar, e o áudio é um qualificador do que ela publica */}
+          <TeclaDeSomDaRede
+            noAr={noAr}
+            som={som}
+            className="h-auto w-12 rounded-lg"
+            onAlternar={() => dispatch({ type: 'webview/som', som: !som })}
           />
-        </button>
+          <button
+            type="button"
+            data-webview-toggle
+            onClick={() => dispatch({ type: 'webview/set', enabled: !enabled })}
+            className={`flex min-w-0 flex-1 items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-[13px] transition-colors ${
+              noAr
+                ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
+                : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
+            }`}
+          >
+            {/* verde nos DOIS estados: é o rótulo do que este botão publica, e o
+                verde é a cor do "no ar" em todo o app. Quem diz se está ligado
+                continua sendo a moldura tingida e o ponto à direita — o texto
+                apagado em cinza fazia o botão parecer indisponível */}
+            <span className="text-[var(--color-go)]">{noAr ? t('web.live') : t('web.publish')}</span>
+            <span
+              className={`h-2.5 w-2.5 flex-none rounded-full ${
+                noAr ? 'bg-[var(--color-go)]' : 'border border-[var(--color-line)]'
+              }`}
+            />
+          </button>
+        </div>
 
         {/* o peso do vídeo mora aqui, e não nos ajustes de saída, porque é
             assunto da rede: a tela do apresentador recebe sempre o original */}
@@ -137,37 +148,6 @@ export function WebviewPanel({
           </p>
         </div>
 
-        {/* Rota do áudio, e só isso.
-            Vizinho dos perfis de peso porque é da mesma família: decisões que
-            valem para a rede e não encostam na tela do apresentador nem no
-            fone de quem opera. O NÍVEL continua sendo de cada ponta — o slider
-            da gaveta é o fone da mesa, e o volume do celular é de quem assiste.
-            Por isso é interruptor, não potenciômetro. */}
-        <div className="mb-4">
-          <button
-            type="button"
-            data-web-audio
-            aria-pressed={som}
-            onClick={() => dispatch({ type: 'webview/som', som: !som })}
-            className={`flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-[12px] transition-colors ${
-              som
-                ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
-                : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <Icon name={som ? 'volume' : 'volumeOff'} size={13} />
-              {t('web.audio')}
-            </span>
-            <span
-              className={`h-2.5 w-2.5 flex-none rounded-full ${
-                som ? 'bg-[var(--color-go)]' : 'border border-[var(--color-line)]'
-              }`}
-            />
-          </button>
-          <p className="mt-1.5 text-[11px] text-[var(--color-fog-2)]">{t('web.audioHint')}</p>
-        </div>
-
         {info.error ? (
           <p className="mb-3 rounded-md border border-[var(--color-warn)]/40 bg-[var(--color-warn)]/10 px-3 py-2 text-[11px] text-[var(--color-warn)]">
             {info.error}
@@ -177,11 +157,13 @@ export function WebviewPanel({
         {noAr ? (
           info.addresses.length > 0 ? (
             <div className="flex flex-col gap-1.5">
-              <div className="text-[11px] text-[var(--color-fog-2)]">
-                {info.addresses.length > 1
-                  ? t('web.multiNet')
-                  : t('web.pointCamera')}
-              </div>
+              {/* "aponte a câmera" sai quando há um endereço só: o QR ao lado
+                  de um endereço já diz isso sozinho. Com duas redes a frase
+                  volta, porque aí há uma ESCOLHA a fazer — apontar para o
+                  código errado dá uma página que não carrega */}
+              {info.addresses.length > 1 ? (
+                <div className="text-[11px] text-[var(--color-fog-2)]">{t('web.multiNet')}</div>
+              ) : null}
               {info.addresses.map((address) => {
                 const url = `http://${address}:${info.port}`
                 return (
@@ -212,10 +194,25 @@ export function WebviewPanel({
           )
         ) : null}
 
-        {/* dito uma vez, sem alarde: é uma página aberta, e quem tem o endereço lê */}
-        <p className="mt-4 border-t border-[var(--color-line)] pt-3 text-[11px] leading-relaxed text-[var(--color-fog-2)]">
-          {t('web.warning')}
-        </p>
+        {/* Uma linha, e um `?` para quem quiser o resto.
+            O parágrafo que morava aqui explicava porta, senha e quais abas
+            saem — verdade toda ela, mas é texto de manual num painel que o
+            operador abre no meio de uma gravação. A wiki tem espaço; esta
+            caixa não. */}
+        <div className="mt-4 flex items-center gap-2 border-t border-[var(--color-line)] pt-3 text-[11px] text-[var(--color-fog-2)]">
+          <Icon name="alert" size={13} className="flex-none" />
+          <span className="min-w-0 flex-1">{t('web.warning')}</span>
+          <a
+            href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki/Output-and-Network"
+            target="_blank"
+            rel="noreferrer"
+            title={t('web.learnMore')}
+            aria-label={t('web.learnMore')}
+            className="flex-none rounded px-1 text-[var(--color-fog-3)] hover:text-[var(--color-fog-0)]"
+          >
+            <Icon name="info" size={13} />
+          </a>
+        </div>
       </div>
     </div>
   )
