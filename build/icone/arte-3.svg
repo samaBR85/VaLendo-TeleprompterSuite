@@ -1,0 +1,33 @@
+<!--
+  Ícone do Valendo — arte GRANDE (64px para cima).
+
+  "Va" é a sílaba que o nome destaca; no app ela é destacada por TOM, e aqui
+  por COR, porque tom não sobrevive a 16px entre vinte ícones na bandeja.
+
+  As três linhas abaixo são a leitura: a branca é o que está sendo lido, e as
+  de baixo é o que ainda vem, apagando — é o mesmo desenho que a tela do
+  apresentador faz. As artes menores (arte-2, arte-1) cortam linhas de baixo
+  para cima, na ordem em que elas deixam de ser legíveis.
+
+  Medidas na grade de 1024, derivadas da maquete de 96px (×10,667):
+  traço 3px → 32, folga 2px → 21, largura 44px → 469, canto 22% → 235.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <rect x="0" y="0" width="1024" height="1024" rx="235" ry="235" fill="#101013" />
+  <rect x="5" y="5" width="1014" height="1014" rx="230" ry="230" fill="none" stroke="#46d17f" stroke-opacity="0.45" stroke-width="10" />
+
+  <text
+    x="512"
+    y="598"
+    text-anchor="middle"
+    font-family="'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif"
+    font-size="460"
+    font-weight="500"
+    letter-spacing="-12"
+    fill="#46d17f"
+  >Va</text>
+
+  <rect x="277" y="619" width="469" height="32" rx="16" fill="#f2f2f4" />
+  <rect x="277" y="672" width="469" height="32" rx="16" fill="#f2f2f4" fill-opacity="0.34" />
+  <rect x="362" y="725" width="299" height="32" rx="16" fill="#f2f2f4" fill-opacity="0.16" />
+</svg>

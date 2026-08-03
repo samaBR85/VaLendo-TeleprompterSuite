@@ -1,0 +1,34 @@
+<!--
+  Ícone do Valendo — arte PEQUENA (16 e 24px).
+
+  Uma linha só, e o "Va" bem maior. Neste tamanho o ícone inteiro tem 256
+  pixels; gastar metade deles com linhas que o olho não separa é gastar por
+  nada. Sobra o que responde à única pergunta que se faz aqui — onde está o
+  app: a sílaba verde, e a linha de leitura debaixo dela.
+
+  SEM a moldura verde das artes maiores, e isso foi medido, não escolhido: a
+  1px ela vira um anel que compete com as próprias letras verdes, e o trabalho
+  dela — separar o ícone do fundo — o quadrado escuro já faz sozinho contra a
+  barra de tarefas, que é mais clara que ele.
+
+  As medidas saem da grade de 16px (×64), e não da de 96: aqui elas precisam
+  cair em pixel inteiro. Meio pixel o Windows pinta de cinza lavado, e o traço
+  vira sujeira em vez de linha — foi o que aconteceu na primeira tentativa,
+  com o traço partido em duas metades cinzentas.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <rect x="0" y="0" width="1024" height="1024" rx="256" ry="256" fill="#101013" />
+
+  <text
+    x="512"
+    y="640"
+    text-anchor="middle"
+    font-family="'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif"
+    font-size="576"
+    font-weight="500"
+    letter-spacing="-26"
+    fill="#46d17f"
+  >Va</text>
+
+  <rect x="192" y="768" width="640" height="64" fill="#f2f2f4" />
+</svg>

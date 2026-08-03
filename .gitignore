@@ -10,3 +10,8 @@ Thumbs.db
 
 # o ffmpeg compilado na CI para o macOS; é artefato de build, não fonte
 .ffmpeg-build/
+
+# os PNG intermediários do ícone: saem dos SVG de build/icone/ rodando
+# `node scripts/gerar-icones.mjs`. O que entra no repositório é a FONTE (os
+# três SVG) e o que o empacotador consome (icon.ico, icon.png)
+build/icone/png/
