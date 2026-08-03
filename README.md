@@ -82,7 +82,7 @@ The app never restores the last script by itself. Opening Valendo in someone els
 
 ## Install
 
-**Windows** — run `Valendo-1.0.0-setup.exe`. It installs per user, so it does not ask for an administrator password. SmartScreen warns about an unrecognised publisher; **More info → Run anyway**.
+**Windows** — run the `-setup.exe` from [Releases](https://github.com/samaBR85/Valendo-TeleprompterSuite/releases). It installs per user, so it does not ask for an administrator password. SmartScreen warns about an unrecognised publisher; **More info → Run anyway**.
 
 **macOS** — open the `.dmg` for your chip (`arm64` for Apple Silicon, `x64` for Intel), drag Valendo to Applications, then run this once in Terminal:
 
