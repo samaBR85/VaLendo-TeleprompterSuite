@@ -45,8 +45,7 @@ export const VIDEO_PARADO: VideoClock = {
   tocando: false,
   base: 0,
   comecouEm: 0,
-  arrastando: false,
-  volume: 1
+  arrastando: false
 }
 
 /**

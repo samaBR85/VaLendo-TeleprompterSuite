@@ -20,7 +20,8 @@ import { CardsDrawer } from './CardsDrawer'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
 import { Deck } from './deck/Deck'
-import { EDITOR_FONT_DEFAULT, EDITOR_FONT_MAX, EDITOR_FONT_MIN, Editor, type EditorHandle } from './Editor'
+import { EDITOR_FONT_MAX, EDITOR_FONT_MIN } from '@shared/defaults'
+import { Editor, type EditorHandle } from './Editor'
 import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
 import { Sidebar } from './Sidebar'
@@ -354,10 +355,6 @@ function AppConteudo({
   const [webviewOpen, setWebviewOpen] = useState(false)
   const [palette, setPalette] = useState(false)
   const [keymapOpen, setKeymapOpen] = useState(false)
-  // tamanho da fonte de EDITAR, não da SAÍDA (essa é aparência do roteiro,
-  // em tab.appearance) — é conforto de digitação, e nasce igual ao que
-  // sempre foi (14px), sem persistir entre sessões
-  const [editorFontSize, setEditorFontSize] = useState(EDITOR_FONT_DEFAULT)
   // escala da interface: preferência da MÁQUINA, não do projeto — o valor já
   // foi aplicado antes do primeiro render (main.tsx); aqui só se guarda o que
   // está valendo, para o slider e o indicador mostrarem a verdade
@@ -517,6 +514,11 @@ function AppConteudo({
   }
 
   const tab = activeTabOf(state)
+  // corpo da fonte de EDITAR, não da SAÍDA (essa é aparência do roteiro, em
+  // tab.appearance): conforto desta máquina, guardado com as outras
+  const editorFontSize = state.maquina.editorFontSize
+  const mudarFonteDoEditor = (editorFontSize: number): void =>
+    dispatch({ type: 'maquina/patch', patch: { editorFontSize } })
   // nome do projeto para o centro do cabeçalho: só o arquivo, sem pasta nem
   // extensão — o caminho inteiro não cabe ali e não é o que identifica o
   // programa para quem está olhando de longe
@@ -552,6 +554,7 @@ function AppConteudo({
 
   const stage = (
     <PrompterStage
+      cardVolume={state.maquina.cardVolume}
       blocks={tab.blocks}
       appearance={tab.appearance}
       transport={state.transport}
@@ -571,6 +574,7 @@ function AppConteudo({
       noAr={state.transport.card}
       blackout={state.transport.blackout}
       clock={state.transport.video}
+      volume={state.maquina.cardVolume}
       videoPerfil={state.webview.videoPerfil}
       altura={state.cardsHeight}
       dispatch={dispatch}
@@ -772,6 +776,7 @@ function AppConteudo({
             viewport={viewport}
             card={cartaoNoAr(state)}
             cardOverlay={state.cardOverlay}
+            cardVolume={state.maquina.cardVolume}
             dispatch={dispatch}
             onMetrics={handleMetrics}
           />
@@ -819,6 +824,7 @@ function AppConteudo({
               cardOverlay={state.cardOverlay}
               rows={rows}
               sidebarWidth={state.sidebarWidth}
+              maquina={state.maquina}
               dispatch={dispatch}
             />
           ) : null}
@@ -905,7 +911,7 @@ function AppConteudo({
                     label={t('editor.fontSmaller')}
                     size={10}
                     disabled={editorFontSize <= EDITOR_FONT_MIN}
-                    onClick={() => setEditorFontSize((v) => Math.max(EDITOR_FONT_MIN, v - 1))}
+                    onClick={() => mudarFonteDoEditor(editorFontSize - 1)}
                   />
                   <SliderConsole
                     value={editorFontSize}
@@ -913,14 +919,14 @@ function AppConteudo({
                     max={EDITOR_FONT_MAX}
                     cor="var(--color-warn)"
                     aria-label={t('editor.fontSize')}
-                    onValue={setEditorFontSize}
+                    onValue={mudarFonteDoEditor}
                     className="w-24 flex-none"
                   />
                   <FontStep
                     label={t('editor.fontBigger')}
                     size={16}
                     disabled={editorFontSize >= EDITOR_FONT_MAX}
-                    onClick={() => setEditorFontSize((v) => Math.min(EDITOR_FONT_MAX, v + 1))}
+                    onClick={() => mudarFonteDoEditor(editorFontSize + 1)}
                   />
                   <span className="ml-1 w-8 flex-none text-right font-mono text-[10px] text-[var(--color-fog-2)] tabular-nums">
                     {editorFontSize}px
@@ -981,6 +987,7 @@ function AppConteudo({
               presets={state.presets}
               metrics={metrics}
               customDefaults={state.customDefaults}
+              maquina={state.maquina}
               dispatch={dispatch}
             />
           ) : null}

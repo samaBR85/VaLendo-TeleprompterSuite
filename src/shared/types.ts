@@ -303,8 +303,6 @@ export interface VideoClock {
    * vira um borrão no ar.
    */
   arrastando: boolean
-  /** volume da prévia do operador, 0 a 1 — a transmissão é sempre muda */
-  volume: number
 }
 
 export interface Transport {
@@ -405,6 +403,48 @@ export type LayoutMode = 'split' | 'focus' | 'deck'
  */
 export type TransportPosition = 'topo' | 'regua'
 
+/** As três abas do painel de Ajustes. */
+export type AbaDosAjustes = 'texto' | 'leitura' | 'saida'
+
+/**
+ * O que é do OPERADOR NESTA MÁQUINA, e não do programa.
+ *
+ * Tudo aqui sobrevive a fechar o app (vai no `workspace.json`, como o resto do
+ * estado) mas **nunca entra no `.valendo`** — `semMaquina`, em `project.ts`,
+ * corta este campo inteiro na hora de gravar o projeto. É por isso que são um
+ * grupo e não campos soltos: qualquer preferência acrescentada aqui já nasce
+ * fora do arquivo de projeto, sem ninguém precisar lembrar de atualizar o
+ * filtro — e o filtro não tem como envelhecer.
+ *
+ * A régua para decidir se algo pertence aqui: o valor depende do MONITOR, do
+ * OLHO ou do HÁBITO de quem opera? Então é da máquina. Depende do programa que
+ * vai ao ar? Então é do projeto. Largura da coluna e altura da gaveta ficaram
+ * do lado do projeto de propósito: elas desenham o espaço de trabalho daquele
+ * programa (quantos cartões, quantos capítulos), não o conforto de quem olha.
+ *
+ * A escala da interface não está aqui: ela precisa ser lida ANTES da janela
+ * existir, para nascer no tamanho certo, e por isso mora em `ui.json`, lido
+ * pelo processo principal (ver `main/uiScale.ts`).
+ */
+export interface PreferenciasDaMaquina {
+  /**
+   * Posição e tamanho da janela do operador, para reabrir onde ficou.
+   * `null` até a primeira vez que o operador mover ou redimensionar —
+   * antes disso, a janela nasce no padrão centralizado de sempre.
+   */
+  window: { width: number; height: number; x: number; y: number } | null
+  /** corpo das miniaturas na coluna de Assets, em pixels */
+  thumbSize: number
+  /** corpo da fonte de DIGITAR, no editor — nunca a da saída */
+  editorFontSize: number
+  /** volume da prévia dos cartões de vídeo, 0 a 1; a transmissão é sempre muda */
+  cardVolume: number
+  /** a caixa "Ajuda rápida", no rodapé da coluna, está aberta */
+  ajudaAberta: boolean
+  /** em qual aba o painel de Ajustes reabre */
+  abaDosAjustes: AbaDosAjustes
+}
+
 export interface AppState {
   tabs: Tab[]
   activeTabId: string
@@ -440,12 +480,8 @@ export interface AppState {
   cardsHeight: number
   /** fração da largura que a Edição ocupa contra a Transmissão, no Split (0 a 1) */
   editionSplit: number
-  /**
-   * Posição e tamanho da janela do operador, para reabrir onde ficou.
-   * `null` até a primeira vez que o operador mover ou redimensionar —
-   * antes disso, a janela nasce no padrão centralizado de sempre.
-   */
-  window: { width: number; height: number; x: number; y: number } | null
+  /** o conforto desta máquina — nunca entra no .valendo (ver `semMaquina`) */
+  maquina: PreferenciasDaMaquina
   transport: Transport
   output: OutputConfig
   presets: ColorPreset[]

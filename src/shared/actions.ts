@@ -1,5 +1,14 @@
 import type { Lang } from './i18n/types'
-import type { Anchor, Appearance, AppState, Cartao, CardOverlayStyle, LayoutMode, TransportPosition } from './types'
+import type {
+  Anchor,
+  Appearance,
+  AppState,
+  Cartao,
+  CardOverlayStyle,
+  LayoutMode,
+  PreferenciasDaMaquina,
+  TransportPosition
+} from './types'
 import type { PerfilDeRede } from './proxy'
 
 /**
@@ -48,7 +57,6 @@ export type Action =
    * seguem.
    */
   | { type: 'card/videoSeek'; cardId: string; segundo: number; arrastando: boolean }
-  | { type: 'card/videoVolume'; volume: number }
   | { type: 'card/videoLoop'; cardId: string; loop: boolean }
   /** o texto da Transmissão sobrepõe este cartão em vez de substituí-lo */
   | { type: 'card/overlay'; cardId: string; overlay: boolean }
@@ -73,6 +81,12 @@ export type Action =
   | { type: 'layout/split'; ratio: number }
   /** posição/tamanho da janela do operador, capturado ao mover/redimensionar/fechar */
   | { type: 'window/bounds'; bounds: { width: number; height: number; x: number; y: number } }
+  /**
+   * Conforto desta máquina: miniaturas, fonte do editor, volume da prévia,
+   * ajuda aberta, aba dos Ajustes. Uma ação só para o grupo inteiro — são
+   * preferências do mesmo tipo, e uma ação por slider só encheria o registro.
+   */
+  | { type: 'maquina/patch'; patch: Partial<PreferenciasDaMaquina> }
   | { type: 'marker/add'; tabId: string; blockId: string; label: string }
   | { type: 'marker/remove'; tabId: string; markerId: string }
   | { type: 'tab/add' }

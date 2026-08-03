@@ -12,13 +12,13 @@ import { join } from 'node:path'
 import type { StorageHealth } from '@shared/api'
 import type { HistoryStep } from '@shared/history'
 import { parseHistoryLines } from '@shared/history'
-import { createInitialState } from '@shared/defaults'
+import { MAQUINA_PADRAO, createInitialState } from '@shared/defaults'
 import { idiomaDoSistema } from '@shared/i18n'
 import { CRONOMETRO_PARADO } from '@shared/pacing'
 import { VIDEO_PARADO } from '@shared/video'
 import { mergeAppearance } from './mergeAppearance'
 import type { UserDefaults } from './userDefaults'
-import type { AppState } from '@shared/types'
+import type { AppState, PreferenciasDaMaquina } from '@shared/types'
 
 export function userDataRoot(): string {
   return app.getPath('userData')
@@ -158,6 +158,23 @@ export function loadState(defaults: UserDefaults, locale = 'pt-BR'): AppState {
     // não tem os campos que vieram depois, e um booleano ausente viraria
     // `false` — o app assumiria o oposto do padrão sem avisar
     const state: AppState = { ...fresh(), ...saved } as AppState
+
+    /*
+     * As preferências da máquina eram campos soltos: a janela morava no topo
+     * do estado e o resto nem existia (viviam como `useState` na tela, e
+     * reiniciavam a cada abertura). Agora são um grupo só.
+     *
+     * A janela é migrada em vez de descartada: quem já tinha o app na posição
+     * certa não pode encontrá-lo centralizado do nada só porque o campo mudou
+     * de casa. O merge de cima já garante o resto vindo do padrão.
+     */
+    const janelaAntiga = (saved as { window?: PreferenciasDaMaquina['window'] }).window ?? null
+    state.maquina = {
+      ...MAQUINA_PADRAO,
+      ...saved.maquina,
+      window: saved.maquina?.window ?? janelaAntiga
+    }
+    delete (state as { window?: unknown }).window
 
     // nada transitório volta ligado depois de um fechamento inesperado
     state.transport = {

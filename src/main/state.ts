@@ -13,8 +13,12 @@ import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
 import {
   CARDS_HEIGHT_MAX,
   CARDS_HEIGHT_MIN,
+  EDITOR_FONT_MAX,
+  EDITOR_FONT_MIN,
   SIDEBAR_WIDTH_MAX,
   SIDEBAR_WIDTH_MIN,
+  THUMB_MAX,
+  THUMB_MIN,
   TAB_COLORS,
   createInitialState,
   createTab
@@ -627,16 +631,6 @@ export class Store {
         break
       }
 
-      case 'card/videoVolume':
-        this.state = {
-          ...this.state,
-          transport: {
-            ...this.state.transport,
-            video: { ...this.state.transport.video, volume: Math.min(1, Math.max(0, action.volume)) }
-          }
-        }
-        break
-
       case 'card/videoLoop':
         this.state = {
           ...this.state,
@@ -814,8 +808,34 @@ export class Store {
         break
 
       case 'window/bounds':
-        this.state = { ...this.state, window: action.bounds }
+        this.state = { ...this.state, maquina: { ...this.state.maquina, window: action.bounds } }
         break
+
+      /**
+       * Os limites moram aqui, e não no componente: o valor chega de um
+       * slider, mas também pode chegar de um workspace gravado por uma versão
+       * em que a faixa era outra. Limitar num lugar só é o que garante que a
+       * interface nunca receba um tamanho que ela não sabe desenhar.
+       */
+      case 'maquina/patch': {
+        const { patch } = action
+        const atual = this.state.maquina
+        this.state = {
+          ...this.state,
+          maquina: {
+            ...atual,
+            ...patch,
+            thumbSize: clamp(patch.thumbSize ?? atual.thumbSize, THUMB_MIN, THUMB_MAX),
+            editorFontSize: clamp(
+              patch.editorFontSize ?? atual.editorFontSize,
+              EDITOR_FONT_MIN,
+              EDITOR_FONT_MAX
+            ),
+            cardVolume: clamp(patch.cardVolume ?? atual.cardVolume, 0, 1)
+          }
+        }
+        break
+      }
 
       case 'layout/rows': {
         const previous = this.rows.get(action.tabId)
@@ -964,7 +984,15 @@ export class Store {
         const ativa = aberto.tabs.some((t) => t.id === aberto.activeTabId)
           ? aberto.activeTabId
           : aberto.tabs[0].id
-        this.state = { ...aberto, activeTabId: ativa, customDefaults: this.state.customDefaults }
+        // `maquina` sobrevive pelo mesmo motivo de `customDefaults`: e do
+        // operador nesta maquina, e o projeto que chega nao tem opiniao sobre
+        // o monitor de quem o abriu
+        this.state = {
+          ...aberto,
+          activeTabId: ativa,
+          customDefaults: this.state.customDefaults,
+          maquina: this.state.maquina
+        }
         this.dispatch({ type: 'tab/activate', tabId: ativa })
         return
       }
@@ -984,7 +1012,8 @@ export class Store {
           ...createInitialState(this.defaults, this.state.language),
           tabs: [tab],
           activeTabId: tab.id,
-          customDefaults: this.state.customDefaults
+          customDefaults: this.state.customDefaults,
+          maquina: this.state.maquina
         }
         this.dispatch({ type: 'tab/activate', tabId: tab.id })
         return

@@ -1,5 +1,12 @@
 import { traduzir, type Lang } from './i18n'
-import type { Appearance, AppState, CardOverlayStyle, ColorPreset, Tab } from './types'
+import type {
+  Appearance,
+  AppState,
+  CardOverlayStyle,
+  ColorPreset,
+  PreferenciasDaMaquina,
+  Tab
+} from './types'
 import { blocksFromText } from './text'
 import { CRONOMETRO_PARADO } from './pacing'
 import { VIDEO_PARADO } from './video'
@@ -34,6 +41,35 @@ export const SIDEBAR_WIDTH_MAX = 420
 
 /** a divisória Edição×Transmissão no Split — fração que a Edição ocupa */
 export const EDITION_SPLIT_DEFAULT = 0.46
+
+/* ------------------------------------------- o conforto desta máquina */
+
+/** miniaturas da coluna de Assets */
+export const THUMB_MIN = 40
+export const THUMB_MAX = 96
+export const THUMB_DEFAULT = 40
+
+/** corpo da fonte de DIGITAR, no editor — nunca a da saída */
+export const EDITOR_FONT_MIN = 11
+export const EDITOR_FONT_MAX = 28
+export const EDITOR_FONT_DEFAULT = 14
+
+/**
+ * Como a máquina nasce: tudo no mesmo lugar de sempre.
+ *
+ * Estes valores viviam soltos como `useState` dentro dos componentes e
+ * reiniciavam a cada abertura. Vindos daqui, o reducer consegue guardá-los e
+ * limitá-los num lugar só — e `semMaquina` consegue cortá-los do `.valendo`
+ * como um bloco.
+ */
+export const MAQUINA_PADRAO: PreferenciasDaMaquina = {
+  window: null,
+  thumbSize: THUMB_DEFAULT,
+  editorFontSize: EDITOR_FONT_DEFAULT,
+  cardVolume: 1,
+  ajudaAberta: true,
+  abaDosAjustes: 'texto'
+}
 
 /**
  * O padrão de fábrica do overlay: desligado, e faixa escura pronta para
@@ -188,7 +224,7 @@ export function createInitialState(
     cardsVisible: false,
     cardsHeight: CARDS_HEIGHT_DEFAULT,
     editionSplit: EDITION_SPLIT_DEFAULT,
-    window: null,
+    maquina: MAQUINA_PADRAO,
     transport: {
       playing: false,
       ppm: defaults.ppm,

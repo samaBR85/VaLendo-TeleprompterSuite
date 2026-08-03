@@ -17,10 +17,6 @@ const TYPE_SETTINGS: React.CSSProperties = {
   tabSize: 2
 }
 
-export const EDITOR_FONT_MIN = 11
-export const EDITOR_FONT_MAX = 28
-export const EDITOR_FONT_DEFAULT = 14
-
 interface Props {
   tab: Tab
   /** tamanho da fonte do textarea editável — não é a fonte da SAÍDA, só de digitar */

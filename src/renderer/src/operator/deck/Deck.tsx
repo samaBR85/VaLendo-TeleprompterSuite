@@ -18,6 +18,8 @@ interface Props {
   card?: Cartao | null
   /** o interruptor "OVERLAY" — decide se o texto sobrepõe o cartão acima */
   cardOverlay?: { enabled: boolean; style: CardOverlayStyle }
+  /** som do vídeo nesta prévia — o mesmo nível do resto do app */
+  cardVolume?: number
   rows: number[]
   viewport: Viewport
   dispatch: (action: Action) => void
@@ -62,6 +64,7 @@ export function Deck({
   viewport,
   card = null,
   cardOverlay,
+  cardVolume,
   dispatch,
   onMetrics
 }: Props): React.JSX.Element {
@@ -143,6 +146,7 @@ export function Deck({
             rows={rows}
             card={card}
             cardOverlay={cardOverlay}
+            cardVolume={cardVolume}
             onSpeed={(delta) => dispatch({ type: 'transport/nudgePpm', delta })}
             onMetrics={onMetrics}
           />

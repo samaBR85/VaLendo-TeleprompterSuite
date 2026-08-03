@@ -15,6 +15,8 @@ interface Props {
   card?: Cartao | null
   /** o interruptor "OVERLAY" — decide se o texto sobrepõe o cartão acima */
   cardOverlay?: { enabled: boolean; style: CardOverlayStyle }
+  /** nível do som do vídeo nesta prévia, 0 a 1 — preferência da máquina */
+  cardVolume?: number
   /**
    * Roda do mouse sobre a prévia muda o ritmo: para cima acelera.
    *

@@ -8,7 +8,14 @@ import {
   formatAlvo,
   segundosParaBufferDoAlvo
 } from '@shared/pacing'
-import { TIMER_POSITIONS, type Appearance, type ColorPreset, type Tab } from '@shared/types'
+import {
+  TIMER_POSITIONS,
+  type AbaDosAjustes,
+  type Appearance,
+  type ColorPreset,
+  type PreferenciasDaMaquina,
+  type Tab
+} from '@shared/types'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { larguraDoPainel, type Chave } from '@shared/i18n'
 import { useT } from '../i18n'
@@ -21,6 +28,8 @@ interface Props {
   metrics: PrompterMetrics | null
   /** o operador já gravou um padrão próprio? */
   customDefaults: boolean
+  /** conforto desta máquina: em qual aba o painel reabre */
+  maquina: PreferenciasDaMaquina
   dispatch: (action: Action) => void
 }
 
@@ -51,7 +60,7 @@ function Group({
   )
 }
 
-type AbaId = 'texto' | 'leitura' | 'saida'
+type AbaId = AbaDosAjustes
 
 /**
  * Três abas em vez de uma pilha de 1500px.
@@ -231,7 +240,7 @@ function Toggle({
   )
 }
 
-export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: Props): React.JSX.Element {
+export function Inspector({ tab, presets, metrics, customDefaults, maquina, dispatch }: Props): React.JSX.Element {
   const { t, lang } = useT()
   const a = tab.appearance
   const patch = (value: Partial<Appearance>): void =>
@@ -246,7 +255,10 @@ export function Inspector({ tab, presets, metrics, customDefaults, dispatch }: P
     return () => clearTimeout(timer)
   }, [salvou])
 
-  const [aba, setAba] = useState<AbaId>('texto')
+  // em qual aba o painel reabre: conforto desta máquina, junto das outras
+  // preferências locais — nunca entra no .valendo
+  const aba = maquina.abaDosAjustes
+  const setAba = (abaDosAjustes: AbaId): void => dispatch({ type: 'maquina/patch', patch: { abaDosAjustes } })
 
   // alemão e francês crescem ~35% sobre o português, e oito rótulos daqui
   // cortavam nos 214px. Alargar só nesses dois sai mais barato que encurtar a

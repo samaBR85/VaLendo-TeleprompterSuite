@@ -4,15 +4,18 @@ import { composeLines } from '@shared/anchor'
 import { CARD_DRAG_MIME } from '@shared/cards'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
-import type { Cartao, CardOverlayStyle, Tab, Transport } from '@shared/types'
+import type {
+  Cartao,
+  CardOverlayStyle,
+  PreferenciasDaMaquina,
+  Tab,
+  Transport
+} from '@shared/types'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
 import { CabecalhoDePainel, Ficha, SliderConsole } from '../ui/console'
+import { THUMB_MAX, THUMB_MIN } from '@shared/defaults'
 import { useNow } from '../ui/useNow'
-
-const THUMB_MIN = 40
-const THUMB_MAX = 96
-const THUMB_DEFAULT = 40
 
 /**
  * Quanto (em px) a linha no índice `i` desliza verticalmente para revelar o
@@ -45,6 +48,8 @@ interface Props {
   rows: number[]
   /** largura da coluna em pixels, ajustada pelo operador na divisória direita */
   sidebarWidth: number
+  /** conforto desta máquina: miniaturas e a caixa de ajuda */
+  maquina: PreferenciasDaMaquina
   dispatch: (action: Action) => void
 }
 
@@ -103,14 +108,14 @@ export function Sidebar({
   cardOverlay,
   rows,
   sidebarWidth,
+  maquina,
   dispatch
 }: Props): React.JSX.Element {
   const { t } = useT()
   const now = useNow()
-  // conforto de visualização da coluna, como o tamanho de fonte do editor —
-  // não é dado do projeto, não persiste entre sessões
-  const [thumbSize, setThumbSize] = useState(THUMB_DEFAULT)
-  const [ajudaAberta, setAjudaAberta] = useState(true)
+  // conforto desta máquina, e não dado do projeto: sobrevive a fechar o app
+  // (vai no workspace) mas nunca entra no .valendo — ver `semMaquina`
+  const { thumbSize, ajudaAberta } = maquina
   const [arrasto, setArrasto] = useState<{ cardId: string; sobre: number; alturaSlot: number } | null>(null)
 
   const lines = useMemo(
@@ -352,7 +357,7 @@ export function Sidebar({
           max={THUMB_MAX}
           cor="var(--color-accent-2)"
           aria-label={t('sidebar.thumbSize')}
-          onValue={setThumbSize}
+          onValue={(thumbSize) => dispatch({ type: 'maquina/patch', patch: { thumbSize } })}
           className="w-full"
         />
         <Icon name="card" size={16} className="flex-none text-[var(--color-fog-3)]" />
@@ -368,7 +373,7 @@ export function Sidebar({
           type="button"
           data-sidebar-help-toggle
           aria-expanded={ajudaAberta}
-          onClick={() => setAjudaAberta((v) => !v)}
+          onClick={() => dispatch({ type: 'maquina/patch', patch: { ajudaAberta: !ajudaAberta } })}
           className="flex h-[26px] w-full items-center gap-1.5 border-b border-[var(--color-edge)] px-2.5 text-left"
         >
           <span className="grid h-3.5 w-3.5 flex-none place-items-center rounded-full border border-[#5b6470] text-[9px] font-bold text-[#8b95a3]">

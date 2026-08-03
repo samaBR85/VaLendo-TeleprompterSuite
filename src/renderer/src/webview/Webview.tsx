@@ -343,6 +343,8 @@ export function Webview(): React.JSX.Element {
           clock={transport.video}
           src={`/video/${encodeURIComponent(video.id)}?v=${encodeURIComponent(video.convertido ?? 'orig')}`}
           comSom={som}
+          // na rede quem manda no som é o botão do próprio aparelho
+          volume={1}
           previaDoOperador={false}
         />
         {!som ? <BotaoDeSom onLigar={() => setSom(true)} rotulo={traduzir(idioma, 'web.enableSound')} /> : null}

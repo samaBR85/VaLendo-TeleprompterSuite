@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { DEFAULT_CARD_OVERLAY, EDITION_SPLIT_DEFAULT, SIDEBAR_WIDTH_DEFAULT } from '@shared/defaults'
-import { PROJECT_EXTENSION, readProject, semTransitorio, serializeProject } from '@shared/project'
+import { PROJECT_EXTENSION, readProject, semMaquina, semTransitorio, serializeProject } from '@shared/project'
 import type { AppState } from '@shared/types'
 import { readCardImage, writeCardImage } from './cards'
 import { mergeAppearance } from './mergeAppearance'
@@ -43,14 +43,25 @@ export async function saveProject(filePath: string, state: AppState): Promise<vo
  */
 let ultimoRetrato: string | null = null
 
+/**
+ * Os dois filtros juntos, e sempre os dois.
+ *
+ * `semMaquina` entra aqui pelo mesmo motivo que entra na gravacao: arrastar o
+ * slider das miniaturas nao pode acender o aviso de "ha mudanca nao salva" —
+ * aquilo nunca vai parar no arquivo, entao nao ha nada de novo para salvar.
+ */
+function retrato(state: AppState): AppState {
+  return semMaquina(semTransitorio(state))
+}
+
 export function markProjectClean(state: AppState): void {
-  ultimoRetrato = JSON.stringify(semTransitorio(state))
+  ultimoRetrato = JSON.stringify(retrato(state))
 }
 
 /** Sem retrato ainda, não há como acusar sujeira — o mais seguro é dizer que não há. */
 export function projectIsDirty(state: AppState): boolean {
   if (ultimoRetrato === null) return false
-  return JSON.stringify(semTransitorio(state)) !== ultimoRetrato
+  return JSON.stringify(retrato(state)) !== ultimoRetrato
 }
 
 export async function openProject(filePath: string): Promise<{ state: AppState | null; error: string | null }> {
@@ -85,7 +96,6 @@ export async function openProject(filePath: string): Promise<{ state: AppState |
       cardOverlay: state.cardOverlay ?? DEFAULT_CARD_OVERLAY,
       sidebarWidth: state.sidebarWidth ?? SIDEBAR_WIDTH_DEFAULT,
       editionSplit: state.editionSplit ?? EDITION_SPLIT_DEFAULT,
-      window: state.window ?? null,
       transport: {
         ...state.transport,
         loop: state.transport.loop ?? false,

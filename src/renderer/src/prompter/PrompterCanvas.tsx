@@ -110,6 +110,8 @@ interface Props {
    * acompanha a barra ao vivo enquanto o operador arrasta.
    */
   previaDoOperador?: boolean
+  /** nível do som na prévia do operador, 0 a 1 — cheio quando não é dito */
+  cardVolume?: number
   /**
    * Tocar o som do vídeo nesta superfície.
    *
@@ -155,12 +157,22 @@ export function VideoCartao({
   clock,
   src,
   comSom,
+  volume,
   previaDoOperador
 }: {
   card: Extract<Cartao, { kind: 'video' }>
   clock: VideoClock
   src: string
   comSom: boolean
+  /**
+   * Nível do som na prévia do operador, 0 a 1.
+   *
+   * Prop, e não campo do relógio compartilhado: o relógio diz ONDE o vídeo
+   * está, e isso as duas janelas precisam concordar; o volume é do fone de
+   * quem opera, e a transmissão nunca o ouve. Enquanto morou no relógio, ele
+   * era zerado junto com o resto a cada abertura e a cada troca de projeto.
+   */
+  volume: number
   previaDoOperador: boolean
 }): React.JSX.Element {
   const ref = useRef<HTMLVideoElement>(null)
@@ -223,8 +235,8 @@ export function VideoCartao({
   useEffect(() => {
     const video = ref.current
     if (!video || !previaDoOperador) return
-    video.volume = clock.volume
-  }, [clock.volume, previaDoOperador])
+    video.volume = volume
+  }, [volume, previaDoOperador])
 
   /*
    * Reencontro periódico.
@@ -284,6 +296,7 @@ export function PrompterCanvas({
   videoBaseUrl = 'valendo://video/',
   previaDoOperador = false,
   cardAudio,
+  cardVolume = 1,
   onMetrics
 }: Props): React.JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -762,6 +775,7 @@ export function PrompterCanvas({
                    resposta antiga. O servidor ignora a parte depois do `?`. */
                 src={`${videoBaseUrl}${encodeURIComponent(card.id)}?v=${encodeURIComponent(card.convertido ?? 'orig')}`}
                 comSom={cardAudio ?? previaDoOperador}
+                volume={cardVolume}
                 previaDoOperador={previaDoOperador}
               />
             ) : (

@@ -3,7 +3,7 @@
   "productName": "Valendo",
   "author": "samaBR85",
   "version": "1.0.0",
-  "buildNumber": 167,
+  "buildNumber": 168,
   "description": "Valendo — A Teleprompter Suite. Teleprompter com edição de texto ao vivo durante a transmissão.",
   "main": "out/main/index.js",
   "type": "commonjs",

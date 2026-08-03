@@ -45,6 +45,8 @@ interface Props {
   blackout: boolean
   /** o relógio do vídeo no ar — o player do cartão manda nele */
   clock: VideoClock
+  /** volume da prévia, 0 a 1 — preferência desta máquina, não do projeto */
+  volume: number
   /** peso escolhido para a rede, para o cartão dizer o que está sendo servido */
   videoPerfil: PerfilDeRede
   altura: number
@@ -70,6 +72,7 @@ export function CardsDrawer({
   noAr,
   blackout,
   clock,
+  volume,
   videoPerfil,
   altura,
   dispatch,
@@ -310,6 +313,7 @@ export function CardsDrawer({
               atalho={index < CARTOES_COM_ATALHO ? index + 1 : null}
               noAr={noAr === card.id}
               clock={clock}
+              volume={volume}
               videoPerfil={videoPerfil}
               dispatch={dispatch}
               onFalha={setRecusa}
@@ -499,6 +503,7 @@ function CartaoNaGaveta({
   atalho,
   noAr,
   clock,
+  volume,
   videoPerfil,
   dispatch,
   onFalha
@@ -507,6 +512,7 @@ function CartaoNaGaveta({
   atalho: number | null
   noAr: boolean
   clock: VideoClock
+  volume: number
   videoPerfil: PerfilDeRede
   dispatch: (action: Action) => void
   onFalha: (mensagem: string) => void
@@ -770,6 +776,7 @@ function CartaoNaGaveta({
         <PlayerDoCartao
           card={card}
           clock={clock}
+          volume={volume}
           noAr={noAr}
           dispatch={dispatch}
           arrastando={arrastando}
@@ -912,6 +919,7 @@ function PreviaDoArrasto({
 function PlayerDoCartao({
   card,
   clock,
+  volume,
   noAr,
   dispatch,
   arrastando,
@@ -920,6 +928,8 @@ function PlayerDoCartao({
 }: {
   card: CartaoVideo
   clock: VideoClock
+  /** volume da prévia — preferência desta máquina, não do cartão nem do projeto */
+  volume: number
   noAr: boolean
   dispatch: (action: Action) => void
   /** a barra na mão do operador; mora no cartão, não aqui, porque a miniatura também precisa */
@@ -992,13 +1002,13 @@ function PlayerDoCartao({
     onSoltarArrasto()
   }
 
-  const mudo = clock.volume === 0
+  const mudo = volume === 0
   const alternarMudo = (): void => {
     if (mudo) {
-      dispatch({ type: 'card/videoVolume', volume: volumeAnterior.current || 1 })
+      dispatch({ type: 'maquina/patch', patch: { cardVolume: volumeAnterior.current || 1 } })
     } else {
-      volumeAnterior.current = clock.volume
-      dispatch({ type: 'card/videoVolume', volume: 0 })
+      volumeAnterior.current = volume
+      dispatch({ type: 'maquina/patch', patch: { cardVolume: 0 } })
     }
   }
 
@@ -1080,10 +1090,10 @@ function PlayerDoCartao({
             min={0}
             max={1}
             step={0.05}
-            value={clock.volume}
+            value={volume}
             cor="var(--color-fog-2)"
             aria-label={t('cards.videoVolume')}
-            onValue={(volume) => dispatch({ type: 'card/videoVolume', volume })}
+            onValue={(cardVolume) => dispatch({ type: 'maquina/patch', patch: { cardVolume } })}
             className="w-full"
           />
         </span>

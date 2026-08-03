@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createInitialState } from './defaults'
-import { readProject, serializeProject } from './project'
+import { MAQUINA_PADRAO, createInitialState } from './defaults'
+import { readProject, semMaquina, semTransitorio, serializeProject } from './project'
 import type { AppState } from './types'
 
 function programa(): AppState {
@@ -17,7 +17,14 @@ function programa(): AppState {
       loopDelaySeconds: 4
     },
     output: { displayId: 7, enabled: true, viewport: { width: 864, height: 1537 } },
-    window: { width: 1_800, height: 1_000, x: 40, y: 20 },
+    maquina: {
+      window: { width: 1_800, height: 1_000, x: 40, y: 20 },
+      thumbSize: 72,
+      editorFontSize: 20,
+      cardVolume: 0.4,
+      ajudaAberta: false,
+      abaDosAjustes: 'saida'
+    },
     sidebarWidth: 260,
     editionSplit: 0.6,
     tabs: state.tabs.map((tab) => ({
@@ -55,12 +62,11 @@ describe('salvar e abrir o projeto', () => {
     expect(state?.transport.startedAt).toBe(0)
   })
 
-  it('guarda a janela, a divisória, a coluna de assets e o loop — não são "no ar"', () => {
-    // o único recorte de semTransitorio é o status de transmissão; tudo o
-    // mais é preferência ou lugar das coisas, e precisa sobreviver ao salvar
+  it('guarda a divisória, a coluna de assets e o loop — não são "no ar"', () => {
+    // semTransitorio só recorta o status de transmissão; tudo o mais que
+    // desenha o PROGRAMA é preferência ou lugar das coisas, e sobrevive
     const { state } = readProject(serializeProject(programa(), 0))
 
-    expect(state?.window).toEqual({ width: 1_800, height: 1_000, x: 40, y: 20 })
     expect(state?.sidebarWidth).toBe(260)
     expect(state?.editionSplit).toBe(0.6)
     expect(state?.transport.loop).toBe(true)
@@ -97,5 +103,53 @@ describe('arquivo que não dá para abrir', () => {
       expect(readProject(ruim).state, ruim).toBeNull()
       expect(readProject(ruim).error, ruim).toBeTruthy()
     }
+  })
+})
+
+describe('o que é da máquina não entra no projeto', () => {
+  it('o arquivo sai com as preferências de fábrica, não com as de quem salvou', () => {
+    // o mesmo .valendo abre no notebook de quem escreveu e na estação do
+    // estúdio: se carregasse a janela e o tamanho das miniaturas, abrir o
+    // programa de um colega refaria a mesa de quem abriu
+    const arquivo = JSON.parse(serializeProject(programa(), 0)) as { state: AppState }
+
+    expect(arquivo.state.maquina).toEqual(MAQUINA_PADRAO)
+    expect(arquivo.state.maquina.window).toBeNull()
+    expect(arquivo.state.maquina.thumbSize).toBe(MAQUINA_PADRAO.thumbSize)
+  })
+
+  it('e um projeto gravado antes da separação não traz a janela de volta', () => {
+    // arquivo de uma versão anterior, com a janela ainda dentro do estado
+    const antigo = JSON.parse(serializeProject(programa(), 0)) as {
+      state: AppState & { window?: unknown }
+    }
+    antigo.state.maquina = {
+      window: { width: 900, height: 700, x: -1_400, y: 300 },
+      thumbSize: 96,
+      editorFontSize: 28,
+      cardVolume: 0,
+      ajudaAberta: false,
+      abaDosAjustes: 'leitura'
+    }
+
+    const { state } = readProject(JSON.stringify(antigo))
+    expect(state?.maquina).toEqual(MAQUINA_PADRAO)
+  })
+
+  it('mexer no conforto da máquina não deixa o projeto sujo', () => {
+    // o slider das miniaturas não muda nada que vá para o arquivo; acender o
+    // aviso de "não salvo" por causa dele seria pedir para salvar o nada
+    // o MESMO programa nas duas pontas: `programa()` gera ids novos a cada
+    // chamada, e dois roteiros diferentes provariam outra coisa
+    const base = programa()
+    const antes = semMaquina(semTransitorio(base))
+    const depois = semMaquina(
+      semTransitorio({
+        ...base,
+        maquina: { ...base.maquina, thumbSize: 40, editorFontSize: 11, ajudaAberta: true }
+      })
+    )
+
+    expect(JSON.stringify(depois)).toBe(JSON.stringify(antes))
   })
 })

@@ -638,7 +638,7 @@ function bootstrap(): void {
     }
   })
 
-  createOperatorWindow(store.getState().window, loadUiScale(userDataRoot()))
+  createOperatorWindow(store.getState().maquina.window, loadUiScale(userDataRoot()))
   syncOutput(store.getState())
 }
 
@@ -662,7 +662,7 @@ if (!app.requestSingleInstanceLock()) {
   void app.whenReady().then(bootstrap)
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createOperatorWindow(store.getState().window, loadUiScale(userDataRoot()))
+    if (BrowserWindow.getAllWindows().length === 0) createOperatorWindow(store.getState().maquina.window, loadUiScale(userDataRoot()))
   })
 
   app.on('window-all-closed', () => {

@@ -1,4 +1,5 @@
 import type { AppState } from './types'
+import { MAQUINA_PADRAO } from './defaults'
 import { CRONOMETRO_PARADO } from './pacing'
 import { VIDEO_PARADO } from './video'
 
@@ -57,6 +58,29 @@ export function semTransitorio(state: AppState): AppState {
   }
 }
 
+/**
+ * O que é da MÁQUINA, e não do programa: sai do arquivo de projeto.
+ *
+ * Filtro separado do `semTransitorio` porque a pergunta é outra. Aquele
+ * responde "isto é estado de momento?" e vale para os dois destinos — o
+ * `workspace.json` e o `.valendo`. Este responde "isto é do computador de
+ * quem opera?" e vale só para o `.valendo`: o workspace guarda tudo, senão a
+ * escolha morreria ao fechar o app, que é justamente o que se quer evitar.
+ *
+ * O motivo é o projeto atravessar máquinas. O mesmo `.valendo` abre no
+ * notebook de quem escreveu e na estação do estúdio, com monitores, olhos e
+ * hábitos diferentes; se ele carregasse a posição da janela e o tamanho das
+ * miniaturas, abrir o programa de um colega refaria a mesa de quem abriu.
+ *
+ * Devolve o padrão de fábrica em vez de apagar o campo: o formato do arquivo
+ * segue o mesmo em qualquer projeto, e é isso que permite comparar dois
+ * estados para saber se há mudança não salva — sem isto, arrastar o slider das
+ * miniaturas marcaria o projeto como sujo.
+ */
+export function semMaquina(state: AppState): AppState {
+  return { ...state, maquina: MAQUINA_PADRAO }
+}
+
 export function buildProject(
   state: AppState,
   agora: number,
@@ -66,7 +90,7 @@ export function buildProject(
     app: MARCA,
     formato: FORMATO,
     salvoEm: new Date(agora).toISOString(),
-    state: semTransitorio(state),
+    state: semMaquina(semTransitorio(state)),
     // só entra quando há o que guardar: um programa sem cartão continua
     // gerando o mesmo arquivo enxuto de antes
     ...(Object.keys(imagens).length > 0 ? { imagens } : {})
@@ -121,5 +145,8 @@ export function readProject(contents: string): ProjectReadResult {
     return { state: null, error: 'O projeto está sem roteiro dentro.', imagens: {} }
   }
 
-  return { state: semTransitorio(state), error: null, imagens: parsed.imagens ?? {} }
+  // o `semMaquina` na leitura é cinto e suspensório: um arquivo gravado por
+  // versão anterior a esta separação carrega a janela de quem o salvou, e sem
+  // isto ela entraria no estado de quem abre
+  return { state: semMaquina(semTransitorio(state)), error: null, imagens: parsed.imagens ?? {} }
 }
