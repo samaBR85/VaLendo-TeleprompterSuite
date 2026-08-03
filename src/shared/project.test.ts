@@ -7,7 +7,15 @@ function programa(): AppState {
   const state = createInitialState()
   return {
     ...state,
-    transport: { ...state.transport, ppm: 260, playing: true, startedAt: 12_345, blackout: true, loop: true },
+    transport: {
+      ...state.transport,
+      ppm: 260,
+      playing: true,
+      startedAt: 12_345,
+      blackout: true,
+      loop: true,
+      loopDelaySeconds: 4
+    },
     output: { displayId: 7, enabled: true, viewport: { width: 864, height: 1537 } },
     window: { width: 1_800, height: 1_000, x: 40, y: 20 },
     sidebarWidth: 260,
@@ -56,6 +64,7 @@ describe('salvar e abrir o projeto', () => {
     expect(state?.sidebarWidth).toBe(260)
     expect(state?.editionSplit).toBe(0.6)
     expect(state?.transport.loop).toBe(true)
+    expect(state?.transport.loopDelaySeconds).toBe(4)
     expect(state?.tabs[0].appearance.positionPct).toBe(30)
   })
 

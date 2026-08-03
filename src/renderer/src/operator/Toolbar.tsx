@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { composeLines, totalWords } from '@shared/anchor'
 import { formatBinding, parseBinding } from '@shared/commands'
-import { formatClock, ppmForTarget, secondsForWords, wordIndexAt } from '@shared/pacing'
+import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
 import { PPM_MAX, PPM_MIN } from '@shared/ruler'
 import type { AppState, DisplayInfo, Tab, TransportPosition } from '@shared/types'
@@ -39,14 +39,6 @@ export function hint(keymap: Map<string, string>, commandId: string): string {
 /** Nome do arquivo, sem o caminho todo, para caber no rótulo do botão. */
 function fileName(path: string): string {
   return path.split(/[\\/]/).pop() ?? path
-}
-
-/** "M:SS" digitado ou segundos crus — o mesmo aceite do campo antigo do rodapé. */
-function parseDuration(text: string): number | null {
-  const match = /^(\d+):([0-5]?\d)$/.exec(text.trim())
-  if (match) return Number(match[1]) * 60 + Number(match[2])
-  const seconds = Number(text.trim())
-  return Number.isFinite(seconds) && seconds > 0 ? seconds : null
 }
 
 /**
@@ -129,7 +121,10 @@ export function PocosDeArquivo({
         </Tecla>
       </Poco>
 
-      <Poco rotulo={t('toolbar.group.script')} cor="var(--color-warn)" data-pill="roteiro">
+      {/* afastado do PROJETO por mais que o respiro comum da barra: são dois
+          arquivos diferentes (o programa inteiro e o roteiro da aba), e colados
+          eles liam como um grupo só de quatro teclas */}
+      <Poco rotulo={t('toolbar.group.script')} cor="var(--color-warn)" className="ml-3" data-pill="roteiro">
         {/* mesma pasta do PROJETO: abrir um roteiro também é abrir um
             arquivo, e as duas teclas precisam ler como a mesma ação */}
         <Tecla title={t('toolbar.import')} aria-label={t('toolbar.import')} className="h-6 w-7" onClick={onImport}>
@@ -152,8 +147,90 @@ export function PocosDeArquivo({
 }
 
 /**
+ * Os dois grupos de VER: onde o transporte mora (topo ou régua) e quais
+ * painéis estão abertos (Assets, Cartões, Ajustes).
+ *
+ * Moravam no cabeçalho, ao lado do wordmark. Desceram para a linha das abas
+ * porque decidir o que aparece na tela é vizinho de decidir qual roteiro está
+ * na frente — e não do nome do programa. A posição vem ANTES dos painéis: ela
+ * é o que reorganiza a mesa inteira; os painéis só acendem ou apagam uma
+ * coluna. Cada tecla mantém a cor do que controla, acesa ou não, para o olho
+ * achar a certa sem ler o ícone.
+ */
+export function GruposDeVisao({
+  state,
+  keymap,
+  dispatch,
+  run
+}: Pick<Props, 'state' | 'keymap' | 'dispatch' | 'run'>): React.JSX.Element {
+  const { t } = useT()
+
+  return (
+    <div data-paineis className="flex flex-none items-center gap-2">
+      <Poco>
+        {(['topo', 'regua'] as const).map((posicao) => (
+          <Tecla
+            key={posicao}
+            data-transport-position={posicao}
+            title={`${t(posicao === 'topo' ? 'app.transportTop' : 'app.transportStrip')}${hint(keymap, 'view.transportPosition')}`}
+            aria-pressed={state.transportPosition === posicao}
+            acesa={state.transportPosition === posicao}
+            cor="var(--color-go)"
+            className="h-7 w-9"
+            style={state.transportPosition !== posicao ? { color: 'var(--color-go)' } : undefined}
+            onClick={() => dispatch({ type: 'layout/transportPosition', position: posicao })}
+          >
+            <Icon name={posicao === 'topo' ? 'layoutSplit' : 'layoutDeck'} size={16} />
+          </Tecla>
+        ))}
+      </Poco>
+
+      <Poco>
+        <Tecla
+          data-toggle-sidebar
+          title={`${t('app.assets')}${hint(keymap, 'view.sidebar')}`}
+          aria-pressed={state.sidebarVisible}
+          acesa={state.sidebarVisible}
+          cor="var(--color-warn)"
+          className="h-7 w-9"
+          style={!state.sidebarVisible ? { color: 'var(--color-warn)' } : undefined}
+          onClick={() => run('view.sidebar')}
+        >
+          <Icon name="sidebarLeft" size={16} />
+        </Tecla>
+        <Tecla
+          data-toggle-cards
+          title={`${t('cards.toolbar')}${hint(keymap, 'view.cards')}`}
+          aria-pressed={state.cardsVisible}
+          acesa={state.cardsVisible}
+          cor="var(--color-accent-2)"
+          className="h-7 w-9"
+          style={!state.cardsVisible ? { color: 'var(--color-accent-2)' } : undefined}
+          onClick={() => run('view.cards')}
+        >
+          <Icon name="card" size={16} />
+        </Tecla>
+        <Tecla
+          data-toggle-settings
+          title={`${t('app.settings')}${hint(keymap, 'view.inspector')}`}
+          aria-pressed={state.inspectorVisible}
+          acesa={state.inspectorVisible}
+          cor="var(--color-accent)"
+          className="h-7 w-9"
+          style={!state.inspectorVisible ? { color: 'var(--color-accent)' } : undefined}
+          onClick={() => run('view.inspector')}
+        >
+          <Icon name="sliders" size={16} />
+        </Tecla>
+      </Poco>
+    </div>
+  )
+}
+
+/**
  * O poço AR: o que age sobre a tela do apresentador com o programa correndo —
- * tela preta, congelar, rede local, identificar monitores.
+ * tela preta, congelar, rede local. Identificar monitores mora no poço SAÍDA,
+ * junto do seletor que ele ajuda a preencher.
  *
  * A maquete não desenha este grupo (o roteiro dela não precisava), mas o app
  * precisa: ele ganha o mesmo material dos outros poços, e cada tecla mantém a
@@ -177,30 +254,33 @@ export function PocoDoAr({
 }): React.JSX.Element {
   const { t } = useT()
   const { transport } = state
+  // mora numa fileira fina, colado na base da prévia: as teclas acompanham a
+  // altura dela, não a das barras do topo, de onde este grupo veio
+  const lado = 'h-6 w-7'
 
   return (
-    <Poco data-pill="ar">
+    <Poco data-pill="ar" className="flex-none">
       <Tecla
         title={`${t('toolbar.blackout')}${hint(keymap, 'output.blackout')}`}
         aria-label={t('toolbar.blackout')}
         acesa={transport.blackout}
         cor="var(--color-live)"
-        className="h-9 w-10"
+        className={lado}
         style={!transport.blackout ? { color: 'var(--color-live)' } : undefined}
         onClick={() => run('output.blackout')}
       >
-        <Icon name="blackout" size={17} />
+        <Icon name="blackout" size={13} />
       </Tecla>
       <Tecla
         title={`${t('toolbar.freeze')}${hint(keymap, 'transport.freeze')}`}
         aria-label={t('toolbar.freeze')}
         acesa={transport.frozen}
         cor="var(--color-go)"
-        className="h-9 w-10"
+        className={lado}
         style={!transport.frozen ? { color: 'var(--color-link)' } : undefined}
         onClick={() => run('transport.freeze')}
       >
-        <Icon name="freeze" size={17} />
+        <Icon name="freeze" size={13} />
       </Tecla>
       {/* aceso pelo que está acontecendo, não pelo que foi pedido: com a porta
           ocupada, o verde diria que há uma página no ar quando não há */}
@@ -209,20 +289,11 @@ export function PocoDoAr({
         aria-label={t('toolbar.webviewOff')}
         acesa={webviewLive}
         cor="var(--color-go)"
-        className="h-9 w-10"
+        className={lado}
         style={!webviewLive ? { color: 'var(--color-go)' } : undefined}
         onClick={onOpenWebview}
       >
-        <Icon name="webview" size={17} />
-      </Tecla>
-      <Tecla
-        title={t('toolbar.identify')}
-        aria-label={t('toolbar.identify')}
-        className="h-9 w-10"
-        style={{ color: 'var(--color-accent-2)' }}
-        onClick={() => window.valendo.identifyDisplays()}
-      >
-        <Icon name="monitor" size={17} />
+        <Icon name="webview" size={13} />
       </Tecla>
     </Poco>
   )
@@ -263,6 +334,26 @@ export function PocoDeSaida({
 
   return (
     <Poco className="gap-[7px]" data-pill="saida">
+      {/* mesma altura do seletor ao lado — ela é quem manda, para o par ficar
+          alinhado tanto no topo (grande) quanto na régua. Desativado com a
+          transmissão no ar: identificar pisca o número em cada monitor,
+          inclusive no que está ao vivo — um descuido aqui vazaria para quem
+          está assistindo */}
+      <button
+        type="button"
+        data-identify-monitor
+        disabled={output.enabled}
+        title={t('toolbar.identify')}
+        aria-label={t('toolbar.identify')}
+        onClick={() => window.valendo.identifyDisplays()}
+        className={`grid flex-none place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] transition-[filter] hover:brightness-115 disabled:opacity-30 disabled:hover:brightness-100 ${
+          grande ? 'h-8 w-8' : 'h-6 w-6'
+        }`}
+        style={!output.enabled ? { color: 'var(--color-accent-2)' } : undefined}
+      >
+        <Icon name="monitor" size={grande ? 15 : 12} />
+      </button>
+
       <select
         value={output.displayId ?? ''}
         onChange={(event) => {
@@ -273,8 +364,12 @@ export function PocoDeSaida({
             enabled: value !== '' && output.enabled
           })
         }}
+        // largura determinística (natural, com um teto): quem decide se a
+        // barra cabe numa linha só é uma MEDIDA da soma dos grupos, e um
+        // seletor que encolhe sozinho faria essa soma mentir — a barra
+        // acharia que coube quando na verdade só truncou o nome do monitor
         className={`flex-none rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] text-[var(--color-fog-2)] ${
-          grande ? 'h-8 max-w-[340px] px-2.5 text-[12px]' : 'h-6 max-w-[190px] px-2 text-[10px]'
+          grande ? 'h-8 max-w-[320px] px-2.5 text-[12px]' : 'h-6 max-w-[190px] px-2 text-[10px]'
         }`}
       >
         <option value="">{t('toolbar.pickMonitor')}</option>
@@ -339,20 +434,24 @@ export function BarraDeArquivo({
   dispatch,
   run,
   onImport,
-  onNewProject,
-  webviewLive,
-  onOpenWebview
-}: Omit<Props, 'rows'>): React.JSX.Element {
+  onNewProject
+}: Omit<Props, 'rows' | 'webviewLive' | 'onOpenWebview'>): React.JSX.Element {
   return (
     <div className="flex flex-none items-center gap-2.5 border-b border-[var(--color-edge)] bg-[#17171a] px-2.5 py-[5px]">
-      <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={onImport} onNewProject={onNewProject} />
+      {/* com o transporte no topo, PROJETO e ROTEIRO moram na barra dele,
+          junto do resto do que se opera; na régua, aquela barra desce para o
+          rodapé e levar os arquivos junto os deixaria longe demais — então
+          ficam aqui, como antes */}
+      {state.transportPosition === 'regua' ? (
+        <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={onImport} onNewProject={onNewProject} />
+      ) : null}
 
       <Tabs state={state} dispatch={dispatch} />
 
-      <PocoDoAr state={state} webviewLive={webviewLive} keymap={keymap} run={run} onOpenWebview={onOpenWebview} />
+      <GruposDeVisao state={state} keymap={keymap} dispatch={dispatch} run={run} />
 
-      {/* com o transporte no topo, a SAÍDA fecha a barra do console; na
-          régua, ela sobe para cá, à direita do AR */}
+      {/* na régua, a SAÍDA sobe para cá — lá embaixo ela ficaria descolada do
+          resto do que prepara o programa */}
       {state.transportPosition === 'regua' ? (
         <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} />
       ) : null}
@@ -360,10 +459,31 @@ export function BarraDeArquivo({
   )
 }
 
-/** A barra de progresso do mostrador: quanto já rolou, com os marcadores em âmbar. */
-function BarraDeProgresso({ fracao, ticks }: { fracao: number; ticks: number[] }): React.JSX.Element {
+/**
+ * O progresso do roteiro, como um fio de fora a fora da janela.
+ *
+ * Era um mostrador de LCD com legenda ("§ CAPÍTULO · PREVISÃO · ALVO") no meio
+ * da barra do topo, disputando largura com o teclado e a velocidade. Virou uma
+ * linha sem rótulo nenhum, encostada embaixo da barra: usa a largura que já
+ * sobrava de graça — a da própria janela — e não tira espaço de mais nada. O
+ * que a legenda dizia continua legível no `title` (e o alvo, que era clicável
+ * ali, já existe por extenso no rodapé).
+ */
+function LinhaDeProgresso({
+  fracao,
+  ticks,
+  titulo
+}: {
+  fracao: number
+  ticks: number[]
+  titulo: string
+}): React.JSX.Element {
   return (
-    <div className="relative h-[7px] overflow-hidden rounded-[4px] bg-[var(--color-lcd-track)]">
+    <div
+      data-progresso
+      title={titulo}
+      className="relative h-[5px] flex-none overflow-hidden bg-[var(--color-lcd-track)]"
+    >
       <div
         className="absolute inset-y-0 left-0"
         style={{
@@ -382,62 +502,69 @@ function BarraDeProgresso({ fracao, ticks }: { fracao: number; ticks: number[] }
   )
 }
 
-/**
- * O "ALVO" da legenda do mostrador: clica, digita a duração, o ritmo se
- * ajusta para caber nela — a mesma conta que morava no rodapé. O texto fica
- * guardado depois de aplicar, porque a legenda é o lembrete do combinado:
- * "PREVISÃO" diz onde o ritmo atual leva, "ALVO" diz o que foi pedido.
+/*
+ * O "ALVO" clicável saiu daqui junto com o mostrador de progresso: ele era a
+ * segunda metade daquela legenda ("PREVISÃO" diz onde o ritmo leva, "ALVO" diz
+ * o que foi pedido), e sem ela não tinha onde morar. A mesma conta continua
+ * inteira no rodapé, no campo "Duração-alvo" — que sempre foi o original.
  */
-function AlvoDoLcd({
-  ruler,
-  dispatch
-}: {
-  ruler: number
-  dispatch: (action: Action) => void
-}): React.JSX.Element {
-  const { t } = useT()
-  const [editando, setEditando] = useState(false)
-  const [alvo, setAlvo] = useState<string | null>(null)
 
-  const aplicar = (texto: string): void => {
-    const seconds = parseDuration(texto)
-    if (seconds && ruler > 0) {
-      dispatch({ type: 'transport/ppm', ppm: Math.round(ppmForTarget(ruler, seconds)) })
-      setAlvo(formatClock(seconds))
+/**
+ * Decide se a barra cabe numa linha só — e, quando não cabe, parte em duas.
+ *
+ * Nada encolhe em nenhum dos dois arranjos: o operador pediu que, numa janela
+ * larga, tudo fique no tamanho de sempre. Então a única saída para a janela
+ * estreita é a barra ganhar uma segunda linha.
+ *
+ * Somar a largura dos grupos não serve para decidir: a grade de três colunas
+ * força as duas pontas a terem a MESMA largura (é isso que mantém o play no
+ * centro geométrico), então quem manda é o lado mais largo, não a soma — a
+ * conta dava "cabe" a 1700px numa barra que vazava 90px pela direita.
+ *
+ * Em vez de remontar essa regra à mão (e errar de novo quando o nome de um
+ * monitor ou a tradução mudar de tamanho), quem responde é o próprio
+ * navegador: montada em uma linha, se `scrollWidth` passar de `clientWidth`
+ * é porque não coube — e o `scrollWidth` daquele momento É a largura mínima
+ * que uma linha exige. Guardamos esse número como limiar e só voltamos a uma
+ * linha quando a janela o alcança. Auto-calibra e não oscila: cada troca
+ * acontece dentro do `useLayoutEffect`, antes de pintar, então o operador
+ * nunca vê o estado intermediário.
+ */
+function useCabeEmUmaLinha(): [React.RefObject<HTMLDivElement | null>, boolean] {
+  const barraRef = useRef<HTMLDivElement | null>(null)
+  /** menor largura em que uma linha coube; `null` enquanto não se sabe */
+  const limiar = useRef<number | null>(null)
+  const [cabe, setCabe] = useState(true)
+
+  useLayoutEffect(() => {
+    const barra = barraRef.current
+    if (!barra) return
+
+    const medir = (): void => {
+      const disponivel = barra.clientWidth
+      if (cabe) {
+        // sub-pixel: 1px de tolerância para não trocar de arranjo por
+        // arredondamento de escala de tela
+        if (barra.scrollWidth > disponivel + 1) {
+          limiar.current = barra.scrollWidth
+          setCabe(false)
+        }
+        return
+      }
+      if (limiar.current !== null && disponivel >= limiar.current) setCabe(true)
     }
-    setEditando(false)
-  }
 
-  if (editando) {
-    return (
-      <span className="flex items-center gap-1">
-        <span>{t('lcd.target')}</span>
-        <input
-          autoFocus
-          data-lcd-alvo
-          placeholder="2:00"
-          onBlur={(event) => aplicar(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') event.currentTarget.blur()
-            if (event.key === 'Escape') setEditando(false)
-          }}
-          className="w-10 border-b border-[var(--color-lcd-caption)] bg-transparent text-center font-mono text-[10px] text-[var(--color-fog-05)] outline-none"
-        />
-      </span>
-    )
-  }
+    const observador = new ResizeObserver(medir)
+    observador.observe(barra)
+    // os grupos também: a janela parada não impede a conta de mudar — o
+    // relógio virar de "0:59" para "10:00", ou trocar de monitor, muda a
+    // largura exigida sem a barra se mexer
+    for (const grupo of barra.querySelectorAll<HTMLElement>('[data-grupo-barra]')) observador.observe(grupo)
+    medir()
+    return () => observador.disconnect()
+  })
 
-  return (
-    <button
-      type="button"
-      data-lcd-alvo
-      title={t('status.target')}
-      onClick={() => setEditando(true)}
-      className="k-microcaps cursor-pointer tracking-[0.1em] text-[var(--color-lcd-caption)] hover:text-[var(--color-fog-1)]"
-    >
-      {t('lcd.target')} {alvo ?? '—'}
-    </button>
-  )
+  return [barraRef, cabe]
 }
 
 /** O teclado de transporte: teclas físicas num poço fundo, o play maior e verde. */
@@ -481,7 +608,10 @@ function TecladoDeTransporte({
         play
         title={`${playing ? t('toolbar.pause') : t('toolbar.play')}${hint(keymap, 'transport.playPause')}`}
         aria-label={playing ? t('toolbar.pause') : t('toolbar.play')}
-        className="h-[46px] w-[86px] rounded-lg"
+        // 60px, contra os 44 das vizinhas: é a tecla que decide se o programa
+        // anda, e a única que se procura sem olhar. A altura é o que a
+        // distingue de longe — a largura já era maior e não bastava
+        className="h-[60px] w-[86px] rounded-lg"
         onClick={() => run('transport.playPause')}
       >
         {playing ? (
@@ -504,7 +634,9 @@ function TecladoDeTransporte({
       <Tecla
         title={`${t('toolbar.marker')}${hint(keymap, 'marker.create')}`}
         aria-label={t('toolbar.marker')}
+        cor="var(--color-live)"
         className={lado}
+        style={{ color: 'var(--color-live)' }}
         onClick={() => run('marker.create')}
       >
         <Icon name="marker" size={17} />
@@ -530,13 +662,19 @@ export function BarraDeTransporte({
   rows,
   dispatch,
   run,
-  position
-}: Pick<Props, 'state' | 'tab' | 'displays' | 'keymap' | 'rows' | 'dispatch' | 'run'> & {
+  position,
+  onImport,
+  onNewProject
+}: Pick<
+  Props,
+  'state' | 'tab' | 'displays' | 'keymap' | 'rows' | 'dispatch' | 'run' | 'onImport' | 'onNewProject'
+> & {
   position: TransportPosition
 }): React.JSX.Element {
   const { t } = useT()
   const { transport } = state
   const now = useNow()
+  const [barraRef, cabeEmUmaLinha] = useCabeEmUmaLinha()
 
   const lines = useMemo(
     () => composeLines(tab.blocks, tab.appearance, rows),
@@ -553,16 +691,16 @@ export function BarraDeTransporte({
   const ticks = ruler > 0 ? segments.flatMap((s) => s.markers).map((m) => m.rulerStart / ruler) : []
 
   const compacto = position === 'regua'
-  const corpo = compacto ? 24 : 26
+  const corpo = compacto ? 24 : 27
+
+  // o que a legenda do antigo mostrador dizia, agora no hover da linha:
+  // capítulo corrente e quanto o roteiro inteiro leva no ritmo de agora
+  const legenda = [capitulo ? `§ ${capitulo}` : '', `${t('lcd.forecast')} ${formatClock(total)}`]
+    .filter(Boolean)
+    .join(' · ')
 
   const decorrido = (
-    <Digito
-      valor={formatClock(elapsed)}
-      rotulo={t('toolbar.elapsed')}
-      cor="var(--color-go)"
-      tamanho={corpo}
-      className={`border-r border-[var(--color-lcd-line)] ${compacto ? 'px-3' : 'px-5'}`}
-    />
+    <Digito valor={formatClock(elapsed)} rotulo={t('toolbar.elapsed')} cor="var(--color-go)" tamanho={corpo} />
   )
   const restante = (
     <Digito
@@ -570,105 +708,161 @@ export function BarraDeTransporte({
       rotulo={t('toolbar.remaining')}
       cor="var(--color-live-soft)"
       tamanho={corpo}
-      className={`border-r border-[var(--color-lcd-line)] ${compacto ? 'px-3' : 'px-5'}`}
     />
   )
 
+  // soltos no fundo da barra, sem o vidro do LCD em volta: com o mostrador de
+  // progresso fora daqui (virou a linha de fora a fora), uma caixa só para
+  // dois números seria moldura sem conteúdo. A legenda embaixo de cada um
+  // continua sendo quem diz qual é qual.
+  const relogios = (
+    <div className="flex flex-none items-center gap-7">
+      {decorrido}
+      {restante}
+    </div>
+  )
+
   const velocidade = (
-    // na régua a largura vem da coluna do grid, não de `flex-1`: as duas
-    // pontas da barra (este LCD e o de decorrido/restante+progresso) usam a
-    // MESMA coluna `1fr`, o que garante as duas do mesmo tamanho sempre —
-    // é o que deixa o play exatamente no meio, não uma sobra do que os
-    // conteúdos de cada lado pediam
-    <Lcd className={`${compacto ? 'h-12' : 'h-[52px] flex-1'} min-w-0`}>
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 border-r border-[var(--color-lcd-line)] px-4">
+    // largura fixa, e não `flex-1`: com a saída na mesma ponta, esticar a
+    // régua empurraria o Transmitir para fora da janela em vez de usar a
+    // sobra. Quem equilibra as duas pontas — e com isso centraliza o play —
+    // é a grade, não o conteúdo.
+    <Lcd className={`${compacto ? 'h-12' : 'h-[52px]'} min-w-0 flex-none`}>
+      {/* metade da largura de antes (186px). A palavra "VELOCIDADE" saiu da
+          legenda junto: no espaço que sobrou ela truncaria, e ela já era a
+          menos necessária das três coisas ali — o mostrador ao lado diz PPM
+          por extenso. As pontas da faixa ficam, que são o que dá escala ao
+          que a régua mostra; o nome inteiro continua no hover */}
+      <div
+        title={t('lcd.speed')}
+        className="flex w-[93px] flex-col justify-center gap-1.5 border-r border-[var(--color-lcd-line)] px-2.5"
+      >
         <SpeedRuler ppm={transport.ppm} onChange={(ppm) => dispatch({ type: 'transport/ppm', ppm })} />
-        <div className="k-microcaps flex justify-between gap-2 tracking-[0.1em] text-[var(--color-lcd-caption)]">
+        <div className="k-microcaps flex justify-between tracking-[0.1em] text-[var(--color-lcd-caption)]">
           <span>{PPM_MIN}</span>
-          <span className="truncate">{t('lcd.speed')}</span>
           <span>{PPM_MAX}</span>
         </div>
       </div>
-      <Digito valor={String(transport.ppm)} rotulo={t('toolbar.ppm')} tamanho={corpo} className="px-6" />
+      <Digito valor={String(transport.ppm)} rotulo={t('toolbar.ppm')} tamanho={corpo} className="px-5" />
     </Lcd>
   )
 
+  const teclado = <TecladoDeTransporte playing={transport.playing} loop={transport.loop} keymap={keymap} run={run} />
+  const linha = <LinhaDeProgresso fracao={fracao} ticks={ticks} titulo={legenda} />
+
   if (position === 'topo') {
-    return (
-      // grade de 3 colunas, como na régua: duas colunas `1fr` IGUAIS nas
-      // pontas garantem o play centralizado em QUALQUER largura de janela.
-      // Uma razão de flex ajustada à mão (`flex-[2.25_1_0%]`) funcionava só
-      // na largura em que foi medida — a janela maximizada tinha espaço
-      // sobrando extra demais para aquela razão, e o play saía do centro.
-      <div
-        data-transporte="topo"
-        className="grid flex-none items-center gap-2.5 border-b border-[var(--color-edge)] px-2.5 py-2"
-        style={{
-          gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
-          background: 'linear-gradient(#1b1b1f, #161618)'
-        }}
-      >
-        <div className="flex min-w-0 items-center gap-2.5">
-          <Lcd className="h-[52px] min-w-0 flex-1">
-            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-4">
-              <BarraDeProgresso fracao={fracao} ticks={ticks} />
-              <div className="k-microcaps flex items-center justify-between gap-3 tracking-[0.1em] text-[var(--color-lcd-caption)]">
-                <span className="min-w-0 truncate">{capitulo ? `§ ${capitulo}` : ''}</span>
-                <span className="flex flex-none items-center gap-1">
-                  <span>
-                    {t('lcd.forecast')} {formatClock(total)} ·
-                  </span>
-                  <AlvoDoLcd ruler={ruler} dispatch={dispatch} />
-                </span>
-              </div>
-            </div>
-          </Lcd>
-
-          {decorrido}
-          {restante}
-        </div>
-
-        <TecladoDeTransporte playing={transport.playing} loop={transport.loop} keymap={keymap} run={run} />
-
-        <div className="flex min-w-0 items-center justify-end gap-2.5">
-          {velocidade}
-          <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} grande />
-        </div>
+    // os cinco grupos da barra, cada um marcado para a medição. São os MESMOS
+    // elementos nos dois arranjos, no mesmo tamanho — o que muda é só onde
+    // cada um assenta
+    const grupoArquivo = (
+      <div data-grupo-barra className="flex flex-none items-center gap-2.5">
+        <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={onImport} onNewProject={onNewProject} />
       </div>
+    )
+    const grupoRelogios = (
+      <div data-grupo-barra className="flex flex-none">
+        {relogios}
+      </div>
+    )
+    const grupoTeclado = (
+      <div data-grupo-barra className="flex flex-none">
+        {teclado}
+      </div>
+    )
+    const grupoVelocidade = (
+      <div data-grupo-barra className="flex flex-none">
+        {velocidade}
+      </div>
+    )
+    const grupoSaida = (
+      <div data-grupo-barra className="flex flex-none">
+        <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} grande />
+      </div>
+    )
+
+    // a grade de 3 colunas: duas `1fr` IGUAIS nas pontas garantem o play no
+    // centro geométrico em QUALQUER largura. Uma razão de flex ajustada à mão
+    // funcionava só na largura em que foi medida — a janela maximizada tinha
+    // sobra demais, e o play saía do centro.
+    const grade = 'minmax(0,1fr) auto minmax(0,1fr)'
+    const fundo = 'linear-gradient(#1b1b1f, #161618)'
+
+    return (
+      <>
+        {cabeEmUmaLinha ? (
+          // couberam todos: a barra de sempre, numa linha. O que é do MOMENTO
+          // (relógios, velocidade) encosta no teclado, no meio; o que é de
+          // PREPARAÇÃO (arquivos) ou de DESTINO (saída) vai para a borda.
+          <div
+            ref={barraRef}
+            data-transporte="topo"
+            data-linhas="1"
+            className="grid flex-none items-center gap-2.5 border-b border-[var(--color-edge)] px-3 py-2"
+            style={{ gridTemplateColumns: grade, background: fundo }}
+          >
+            <div className="flex min-w-0 items-center gap-2.5">
+              {grupoArquivo}
+              <div className="min-w-0 flex-1" />
+              {grupoRelogios}
+            </div>
+            {grupoTeclado}
+            <div className="flex min-w-0 items-center gap-2.5">
+              {grupoVelocidade}
+              <div className="min-w-0 flex-1" />
+              {grupoSaida}
+            </div>
+          </div>
+        ) : (
+          // não couberam: parte em duas, sem encolher nada. Em cima o que ARMA
+          // o programa (arquivos e para onde ele vai); embaixo o console que se
+          // toca com ele correndo, com o play de novo no centro geométrico
+          <div
+            ref={barraRef}
+            data-transporte="topo"
+            data-linhas="2"
+            className="flex flex-none flex-col border-b border-[var(--color-edge)]"
+            style={{ background: fundo }}
+          >
+            <div className="flex items-center gap-2.5 px-3 pt-2 pb-1">
+              {grupoArquivo}
+              <div className="min-w-0 flex-1" />
+              {grupoSaida}
+            </div>
+            <div className="grid items-center gap-2.5 px-3 pt-1 pb-2" style={{ gridTemplateColumns: grade }}>
+              <div className="flex min-w-0 items-center justify-end">{grupoRelogios}</div>
+              {grupoTeclado}
+              <div className="flex min-w-0 items-center">{grupoVelocidade}</div>
+            </div>
+          </div>
+        )}
+        {linha}
+      </>
     )
   }
 
   return (
-    // grade de 3 colunas, e não `flex`: duas colunas `1fr` IGUAIS nas pontas
-    // garantem que o teclado de transporte (coluna do meio, `auto`) cai no
-    // centro geométrico da régua sempre — com `flex-1` simples, cada ponta
-    // cresce a partir do próprio conteúdo, e o lado mais cheio (decorrido +
-    // restante + progresso) sobra maior que o outro, empurrando o play para
-    // fora do centro
-    <div
-      data-transporte="regua"
-      className="relative z-[2] grid h-[70px] flex-none items-center gap-2.5 border-y border-[var(--color-edge)] px-2.5"
-      style={{
-        gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
-        background: 'linear-gradient(#2c2c31, #1e1e22)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,.08), 0 6px 14px rgba(0,0,0,.45)'
-      }}
-    >
-      <Lcd className="h-12 min-w-0">
-        {decorrido}
-        {restante}
-        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-3">
-          <BarraDeProgresso fracao={fracao} ticks={ticks} />
-          <div className="k-microcaps flex items-center justify-between gap-3 tracking-[0.1em] text-[var(--color-lcd-caption)]">
-            <span className="min-w-0 truncate">{capitulo}</span>
-            <AlvoDoLcd ruler={ruler} dispatch={dispatch} />
-          </div>
-        </div>
-      </Lcd>
-
-      <TecladoDeTransporte playing={transport.playing} loop={transport.loop} keymap={keymap} run={run} />
-
-      {velocidade}
-    </div>
+    // mesma grade de 3 colunas do topo, pelo mesmo motivo: as pontas `1fr`
+    // iguais são o que mantém o teclado no centro geométrico da régua. Aqui
+    // os arquivos e a saída não descem junto — eles são preparação, e ficam
+    // na barra de cima, perto das abas.
+    <>
+      <div
+        data-transporte="regua"
+        // 84px, e não os 70 de antes: com o play em 60 o poço do teclado passa
+        // a medir exatamente 70 (60 + os 5 de folga de cada lado), e ele
+        // encostaria nas duas bordas da régua
+        className="relative z-[2] grid h-[84px] flex-none items-center gap-2.5 border-t border-[var(--color-edge)] px-2.5"
+        style={{
+          gridTemplateColumns: 'minmax(0,1fr) auto minmax(0,1fr)',
+          background: 'linear-gradient(#2c2c31, #1e1e22)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,.08), 0 6px 14px rgba(0,0,0,.45)'
+        }}
+      >
+        <div className="flex min-w-0 items-center justify-end">{relogios}</div>
+        {teclado}
+        <div className="flex min-w-0 items-center">{velocidade}</div>
+      </div>
+      {linha}
+    </>
   )
 }

@@ -5,14 +5,15 @@ import { PrompterStage } from '../prompter/PrompterStage'
 import { composeLines, totalWords } from '@shared/anchor'
 import { cartaoNoAr } from '@shared/cards'
 import { formatClock, secondsForWords } from '@shared/pacing'
-import { anchorFromCaret, totalWordCount } from '@shared/text'
+import { anchorFromCaret, hasFormatting, totalWordCount } from '@shared/text'
 import type { Tab } from '@shared/types'
 import { LANGS, type Lang } from '@shared/i18n'
 import { ProvedorDeIdioma, useT } from '../i18n'
 import { activeTabOf, useAppState } from '../state/useAppState'
 import { Icon, type IconName } from '../ui/Icon'
-import { CabecalhoDePainel, Poco, SliderConsole, Tecla } from '../ui/console'
+import { CabecalhoDePainel, SliderConsole, Tecla } from '../ui/console'
 import { Wordmark, versionLabel } from '../ui/Wordmark'
+import { UI_SCALE_MAX, UI_SCALE_MIN, UI_SCALE_STEP, applyUiScale, clampUiScale, loadUiScale } from '../ui/uiScale'
 import { CloseConfirm } from './CloseConfirm'
 import { UnsavedConfirm } from './UnsavedConfirm'
 import { CardsDrawer } from './CardsDrawer'
@@ -24,7 +25,7 @@ import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
 import { Sidebar } from './Sidebar'
 import { StatusBar } from './StatusBar'
-import { BarraDeArquivo, BarraDeTransporte, hint } from './Toolbar'
+import { BarraDeArquivo, BarraDeTransporte, PocoDoAr } from './Toolbar'
 import { WebviewPanel } from './WebviewPanel'
 import { useCommands } from './useCommands'
 
@@ -104,6 +105,36 @@ function EditorTool({
 }
 
 /**
+ * Um "aA" das pontas do slider de fonte, que anda um ponto por clique. O
+ * tamanho do próprio glifo diz para que lado ele anda — o menor diminui.
+ */
+function FontStep({
+  label,
+  size,
+  disabled,
+  onClick
+}: {
+  label: string
+  size: number
+  disabled?: boolean
+  onClick: () => void
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+      style={{ fontSize: size }}
+      className="flex-none rounded px-1 leading-none text-[var(--color-fog-3)] hover:text-[var(--color-fog-0)] disabled:opacity-30 disabled:hover:text-[var(--color-fog-3)]"
+    >
+      Aa
+    </button>
+  )
+}
+
+/**
  * O globo fica com os outros ícones do app — ajustes, atalhos, paleta,
  * créditos —, e não nos Ajustes: aquele painel é aparência da aba, e idioma é
  * do programa inteiro. Cada idioma aparece escrito nele mesmo, porque quem
@@ -167,6 +198,93 @@ function LanguagePicker({
               {item.nome}
             </button>
           ))}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+/**
+ * A escala da interface do operador — o app inteiro, não só as letras.
+ *
+ * Fica com os outros controles do PROGRAMA (atalhos, busca, idioma) porque é
+ * disso que se trata: não é aparência do roteiro, é o tamanho da mesa para o
+ * olho de quem opera. O porquê de escalar tudo junto, e de isso nunca alcançar
+ * a transmissão, está em `ui/uiScale.ts`.
+ *
+ * O gatilho mostra a porcentagem quando ela não é 100%: uma interface fora da
+ * escala natural muda TODA medida da tela, e o operador precisa poder
+ * descobrir isso olhando, sem abrir nada.
+ */
+function ScalePicker({
+  scale,
+  onChange
+}: {
+  scale: number
+  onChange: (scale: number) => void
+}): React.JSX.Element {
+  const { t } = useT()
+  const [aberto, setAberto] = useState(false)
+  const porcento = Math.round(scale * 100)
+
+  useEffect(() => {
+    if (!aberto) return
+    const fechar = (): void => setAberto(false)
+    window.addEventListener('mousedown', fechar)
+    return () => window.removeEventListener('mousedown', fechar)
+  }, [aberto])
+
+  return (
+    <div className="relative" onMouseDown={(event) => event.stopPropagation()}>
+      <button
+        type="button"
+        data-ui-scale-picker
+        title={`${t('app.uiScale')} — ${porcento}%`}
+        aria-label={t('app.uiScale')}
+        onClick={() => setAberto((v) => !v)}
+        className={`flex h-8 items-center gap-1 rounded-md px-2 hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] ${
+          aberto ? 'text-[var(--color-fog-0)]' : 'text-[var(--color-fog-2)]'
+        }`}
+      >
+        <Icon name="uiScale" size={20} />
+        {porcento === 100 ? null : (
+          <span className="font-mono text-[10px] tabular-nums">{porcento}%</span>
+        )}
+      </button>
+
+      {aberto ? (
+        <div
+          data-ui-scale-menu
+          className="absolute top-full right-0 z-50 mt-1 w-[236px] rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-3"
+        >
+          <div className="mb-2 flex items-baseline justify-between">
+            <span className="text-[11px] text-[var(--color-fog-1)]">{t('app.uiScale')}</span>
+            <span className="font-mono text-[12px] text-[var(--color-fog-0)] tabular-nums">{porcento}%</span>
+          </div>
+          <SliderConsole
+            value={scale}
+            min={UI_SCALE_MIN}
+            max={UI_SCALE_MAX}
+            step={UI_SCALE_STEP}
+            cor="var(--color-accent)"
+            aria-label={t('app.uiScale')}
+            onValue={onChange}
+            className="w-full"
+          />
+          <div className="mt-2 flex items-center justify-between">
+            <span className="k-microcaps text-[var(--color-fog-3)]">
+              {Math.round(UI_SCALE_MIN * 100)}% · {Math.round(UI_SCALE_MAX * 100)}%
+            </span>
+            <button
+              type="button"
+              data-ui-scale-reset
+              disabled={porcento === 100}
+              onClick={() => onChange(1)}
+              className="rounded border border-[var(--color-line)] px-2 py-0.5 text-[11px] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] disabled:opacity-30 disabled:hover:bg-transparent"
+            >
+              {t('app.uiScaleReset')}
+            </button>
+          </div>
         </div>
       ) : null}
     </div>
@@ -240,6 +358,14 @@ function AppConteudo({
   // em tab.appearance) — é conforto de digitação, e nasce igual ao que
   // sempre foi (14px), sem persistir entre sessões
   const [editorFontSize, setEditorFontSize] = useState(EDITOR_FONT_DEFAULT)
+  // escala da interface: preferência da MÁQUINA, não do projeto — o valor já
+  // foi aplicado antes do primeiro render (main.tsx); aqui só se guarda o que
+  // está valendo, para o slider e o indicador mostrarem a verdade
+  const [uiScale, setUiScale] = useState(loadUiScale)
+  // espelho da escala para os atalhos: o `ui` dos comandos é memoizado, e sem
+  // isso o `+` leria sempre a escala do render em que foi montado
+  const escalaAtual = useRef(uiScale)
+  escalaAtual.current = uiScale
   const [metrics, setMetrics] = useState<PrompterMetrics | null>(null)
   const [credits, setCredits] = useState(false)
   const [notice, setNotice] = useState<Notice | null>(null)
@@ -329,6 +455,11 @@ function AppConteudo({
     dispatch({ type: 'project/new' })
   }, [dispatch])
 
+  /** Aplica, grava e reflete no slider — a mesma porta para o slider e para os atalhos. */
+  const mudarEscala = useCallback((escala: number) => {
+    setUiScale(applyUiScale(escala))
+  }, [])
+
   const toggleFocusMode = useCallback(() => {
     if (!state) return
     dispatch({ type: 'layout/mode', mode: state.layoutMode === 'focus' ? 'split' : 'focus' })
@@ -356,11 +487,16 @@ function AppConteudo({
       toggleFocusMode,
       flushEditor: () => editorRef.current?.flush(),
       insertBlock: (kind: InsertKind) => editorRef.current?.insert(kind),
+      removerFormatacao: () => editorRef.current?.removerFormatacao(),
       exportDocument: (saveAs: boolean) => void exportDocument(saveAs),
       project: (acao: 'salvar' | 'salvarComo' | 'abrir') => void project(acao),
-      novoProjeto: () => void novoProjeto()
+      novoProjeto: () => void novoProjeto(),
+      // o atalho lê a escala de agora por referência, e não da closure: dois
+      // toques seguidos precisam somar dois degraus, não repetir o primeiro
+      escala: (delta: 1 | -1 | 0) =>
+        mudarEscala(delta === 0 ? 1 : clampUiScale(escalaAtual.current + delta * UI_SCALE_STEP))
     }),
-    [toggleFocusMode, exportDocument, project, novoProjeto]
+    [toggleFocusMode, exportDocument, project, novoProjeto, mudarEscala]
   )
 
   // a prévia do operador é quem mede as fileiras e devolve ao main, para que
@@ -399,6 +535,15 @@ function AppConteudo({
     <>
       <EditorTool icon="chapter" label={t('editor.chapter')} onClick={() => run('insert.chapter')} />
       <EditorTool icon="direction" label={t('editor.direction')} onClick={() => run('insert.direction')} />
+      {/* volta tudo a texto simples: sem capítulo, sem direção. Apagado
+          quando não há marcação nenhuma para tirar — assim o botão nunca é
+          um clique que não faz nada. As palavras ficam; o Mod+Z devolve */}
+      <EditorTool
+        icon="clearFormat"
+        label={t('editor.clearFormat')}
+        disabled={!hasFormatting(tab.blocks)}
+        onClick={() => run('edit.clearFormat')}
+      />
       <span className="mx-0.5 h-3.5 w-px bg-[var(--color-line)]" />
       <EditorTool icon="undo" label={t('editor.undo')} disabled={!history.canUndo} onClick={() => run('edit.undo')} />
       <EditorTool icon="redo" label={t('editor.redo')} disabled={!history.canRedo} onClick={() => run('edit.redo')} />
@@ -433,9 +578,15 @@ function AppConteudo({
     />
   ) : null
 
-  const markerStrip =
-    tab.markers.length > 0 ? (
-      <div className="flex flex-none items-center gap-1.5 overflow-x-auto border-t border-[var(--color-line)] px-3 py-1.5">
+  // A fileira embaixo da prévia: marcadores à esquerda, AR à direita.
+  //
+  // O AR morava lá em cima, na barra de arquivo — mas tela preta, congelar e
+  // rede agem sobre o que está NA PRÉVIA, e ficam mais à mão colados nela do
+  // que a três barras de distância. A fileira existe mesmo sem marcador
+  // nenhum, porque o AR não depende deles.
+  const markerStrip = (
+    <div className="flex flex-none items-center gap-1.5 border-t border-[var(--color-line)] px-3 py-1.5">
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
         {tab.markers.map((marker, index) => (
           <button
             key={marker.id}
@@ -448,12 +599,21 @@ function AppConteudo({
             }}
             className="flex flex-none items-center gap-1 rounded border border-[var(--color-line)] px-1.5 py-0.5 text-[10px] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]"
           >
-            <Icon name="marker" size={11} />
+            <Icon name="marker" size={11} style={{ color: 'var(--color-live)' }} />
             {marker.label}
           </button>
         ))}
       </div>
-    ) : null
+
+      <PocoDoAr
+        state={state}
+        webviewLive={state.webview.enabled && webview.running && !webview.error}
+        keymap={keymap}
+        run={run}
+        onOpenWebview={() => setWebviewOpen(true)}
+      />
+    </div>
+  )
 
   /** Importa para uma aba nova, a menos que a atual esteja vazia. */
   const importDocument = async (): Promise<void> => {
@@ -528,72 +688,11 @@ function AppConteudo({
           </div>
         ) : null}
 
+        {/* só o que é do app inteiro fica aqui: atalhos, busca e idioma. Os
+            painéis e a posição do transporte desceram para a linha das abas —
+            decidir o que aparece na tela é vizinho de decidir qual roteiro
+            está na frente, não do nome do programa */}
         <div className="ml-auto flex flex-none items-center gap-2">
-          {/* os painéis do app: Assets (coluna esquerda), Cards (gaveta) e
-              Ajustes são liga-desliga — cada tecla mantém a cor do painel que
-              controla, acesa ou não, para reconhecer de longe qual está
-              aberto sem ler o ícone. Depois do traço, o transporte escolhe
-              ONDE morar, não SE aparece — por isso fica separado dos três. */}
-          <div data-paineis className="flex flex-none items-center gap-[7px]">
-            <span className="k-microcaps text-[var(--color-fog-2)]">{t('app.panels')}</span>
-            <Poco>
-              <Tecla
-                data-toggle-sidebar
-                title={`${t('app.assets')}${hint(keymap, 'view.sidebar')}`}
-                aria-pressed={state.sidebarVisible}
-                acesa={state.sidebarVisible}
-                cor="var(--color-warn)"
-                className="h-6 w-8"
-                style={!state.sidebarVisible ? { color: 'var(--color-warn)' } : undefined}
-                onClick={() => run('view.sidebar')}
-              >
-                <Icon name="sidebarLeft" size={15} />
-              </Tecla>
-              <Tecla
-                data-toggle-cards
-                title={`${t('cards.toolbar')}${hint(keymap, 'view.cards')}`}
-                aria-pressed={state.cardsVisible}
-                acesa={state.cardsVisible}
-                cor="var(--color-accent-2)"
-                className="h-6 w-8"
-                style={!state.cardsVisible ? { color: 'var(--color-accent-2)' } : undefined}
-                onClick={() => run('view.cards')}
-              >
-                <Icon name="card" size={15} />
-              </Tecla>
-              <Tecla
-                data-toggle-settings
-                title={`${t('app.settings')}${hint(keymap, 'view.inspector')}`}
-                aria-pressed={state.inspectorVisible}
-                acesa={state.inspectorVisible}
-                cor="var(--color-accent)"
-                className="h-6 w-8"
-                style={!state.inspectorVisible ? { color: 'var(--color-accent)' } : undefined}
-                onClick={() => run('view.inspector')}
-              >
-                <Icon name="sliders" size={15} />
-              </Tecla>
-
-              <span className="mx-0.5 h-4 w-px flex-none bg-[var(--color-edge)]" />
-
-              {(['topo', 'regua'] as const).map((posicao) => (
-                <Tecla
-                  key={posicao}
-                  data-transport-position={posicao}
-                  title={`${t(posicao === 'topo' ? 'app.transportTop' : 'app.transportStrip')}${hint(keymap, 'view.transportPosition')}`}
-                  aria-pressed={state.transportPosition === posicao}
-                  acesa={state.transportPosition === posicao}
-                  cor="var(--color-go)"
-                  className="h-6 w-8"
-                  style={state.transportPosition !== posicao ? { color: 'var(--color-go)' } : undefined}
-                  onClick={() => dispatch({ type: 'layout/transportPosition', position: posicao })}
-                >
-                  <Icon name={posicao === 'topo' ? 'layoutSplit' : 'layoutDeck'} size={15} />
-                </Tecla>
-              ))}
-            </Poco>
-          </div>
-
           <button
             type="button"
             onClick={() => setKeymapOpen(true)}
@@ -610,6 +709,7 @@ function AppConteudo({
           >
             <Icon name="search" size={20} />
           </button>
+          <ScalePicker scale={uiScale} onChange={mudarEscala} />
           <LanguagePicker
             lang={state.language}
             onChange={(language) => dispatch({ type: 'app/language', language })}
@@ -641,8 +741,6 @@ function AppConteudo({
         run={run}
         onImport={importDocument}
         onNewProject={novoProjeto}
-        webviewLive={state.webview.enabled && webview.running && !webview.error}
-        onOpenWebview={() => setWebviewOpen(true)}
       />
 
       {/* no topo, o transporte vem logo abaixo do arquivo e as duas barras
@@ -656,21 +754,29 @@ function AppConteudo({
           rows={rows}
           dispatch={dispatch}
           run={run}
+          onImport={importDocument}
+          onNewProject={novoProjeto}
           position="topo"
         />
       ) : null}
 
       {state.layoutMode === 'deck' ? (
-        <Deck
-          tab={tab}
-          transport={state.transport}
-          rows={rows}
-          viewport={viewport}
-          card={cartaoNoAr(state)}
-          cardOverlay={state.cardOverlay}
-          dispatch={dispatch}
-          onMetrics={handleMetrics}
-        />
+        /* a Mesa tem o rundown no lugar do editor, mas o AR vale para os três
+           modos: sem esta fileira, tela preta e congelar sumiriam justo no
+           modo em que o operador só acompanha o programa correr */
+        <main className="flex min-h-0 flex-1 flex-col">
+          <Deck
+            tab={tab}
+            transport={state.transport}
+            rows={rows}
+            viewport={viewport}
+            card={cartaoNoAr(state)}
+            cardOverlay={state.cardOverlay}
+            dispatch={dispatch}
+            onMetrics={handleMetrics}
+          />
+          {markerStrip}
+        </main>
       ) : focusMode ? (
         /* só a operação: no Foco não há editor nenhum. Escrever é trabalho do
            Split, e uma gaveta de edição aqui só tirava altura da única coisa
@@ -748,6 +854,7 @@ function AppConteudo({
                   >
                     <Icon name="play" size={13} filled />
                   </Tecla>
+                  <span className="mx-0.5 h-4 w-px flex-none bg-[var(--color-edge)]" />
                   {/* loop: ao chegar no fim, volta ao início e continua
                       tocando — o Reiniciar do transporte acende junto,
                       mesmo aceso que este botão usa */}
@@ -762,7 +869,44 @@ function AppConteudo({
                   >
                     ∞
                   </Tecla>
-                  <span className="text-[10px] text-[var(--color-fog-3)]">Aa</span>
+                  {/* atraso do loop: quanto esperar parado no fim antes de
+                      reiniciar — só importa com o loop ligado, mas fica
+                      sempre visível para o operador pré-configurar */}
+                  <label
+                    title={t('toolbar.loopDelay')}
+                    className="flex flex-none items-center gap-1 text-[10px] text-[var(--color-fog-3)]"
+                  >
+                    <input
+                      type="number"
+                      min={0}
+                      max={60}
+                      step={1}
+                      value={state.transport.loopDelaySeconds}
+                      aria-label={t('toolbar.loopDelay')}
+                      onChange={(event) =>
+                        dispatch({ type: 'transport/loopDelay', seconds: Number(event.target.value) })
+                      }
+                      // as setas do spinner nativo não ajudam num campo de 0
+                      // a 60 — só ocupam espaço que o campo não tem sobrando
+                      className="w-9 rounded border border-[var(--color-edge)] bg-[var(--color-ink-2)] px-1 py-[1px] text-center font-mono text-[10px] text-[var(--color-fog-0)] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
+                    s
+                  </label>
+                  {/* empurra o tamanho da fonte para a ponta direita: à
+                      esquerda ficam as ações sobre a LEITURA (para onde a
+                      marca vai, se volta ao início), aqui só o conforto de
+                      quem digita — e as duas famílias param de se confundir */}
+                  <div className="min-w-0 flex-1" />
+                  <span className="mx-0.5 h-4 w-px flex-none bg-[var(--color-edge)]" />
+                  {/* os "aA" das pontas são botões: um clique anda um ponto.
+                      O slider atravessa a faixa inteira num gesto, mas achar
+                      exatamente 15px nele é sorte — os degraus resolvem isso */}
+                  <FontStep
+                    label={t('editor.fontSmaller')}
+                    size={10}
+                    disabled={editorFontSize <= EDITOR_FONT_MIN}
+                    onClick={() => setEditorFontSize((v) => Math.max(EDITOR_FONT_MIN, v - 1))}
+                  />
                   <SliderConsole
                     value={editorFontSize}
                     min={EDITOR_FONT_MIN}
@@ -770,10 +914,15 @@ function AppConteudo({
                     cor="var(--color-warn)"
                     aria-label={t('editor.fontSize')}
                     onValue={setEditorFontSize}
-                    className="w-24"
+                    className="w-24 flex-none"
                   />
-                  <span className="text-[16px] text-[var(--color-fog-3)]">Aa</span>
-                  <span className="ml-1 font-mono text-[10px] text-[var(--color-fog-2)] tabular-nums">
+                  <FontStep
+                    label={t('editor.fontBigger')}
+                    size={16}
+                    disabled={editorFontSize >= EDITOR_FONT_MAX}
+                    onClick={() => setEditorFontSize((v) => Math.min(EDITOR_FONT_MAX, v + 1))}
+                  />
+                  <span className="ml-1 w-8 flex-none text-right font-mono text-[10px] text-[var(--color-fog-2)] tabular-nums">
                     {editorFontSize}px
                   </span>
                 </div>
@@ -817,6 +966,8 @@ function AppConteudo({
                 rows={rows}
                 dispatch={dispatch}
                 run={run}
+                onImport={importDocument}
+                onNewProject={novoProjeto}
                 position="regua"
               />
             ) : null}
@@ -847,6 +998,8 @@ function AppConteudo({
           rows={rows}
           dispatch={dispatch}
           run={run}
+          onImport={importDocument}
+          onNewProject={novoProjeto}
           position="regua"
         />
       ) : null}

@@ -37,11 +37,16 @@ export type IconName =
   | 'globe'
   | 'card'
   | 'volume'
+  | 'volumeOff'
   | 'trash'
   | 'sidebarLeft'
+  | 'uiScale'
+  | 'clearFormat'
 
 const PATHS: Record<IconName, string> = {
   volume: 'M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6',
+  // o mesmo alto-falante, com as ondas de som trocadas por um X — mudo
+  volumeOff: 'M4 9v6h4l5 4V5L8 9zM15 9l6 6M21 9l-6 6',
   trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6',
   play: 'M8 5l11 7-11 7z',
   pause: 'M9 5v14M15 5v14',
@@ -94,7 +99,13 @@ const PATHS: Record<IconName, string> = {
   card: 'M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6',
   // a moldura da janela com uma coluna estreita separada à esquerda: a
   // mesma leitura do "toggle sidebar" de qualquer editor de código
-  sidebarLeft: 'M3 5h18v14H3zM9 5v14'
+  sidebarLeft: 'M3 5h18v14H3zM9 5v14',
+  // a moldura da janela com uma seta de dois sentidos dentro: não é o zoom de
+  // uma imagem (lupa), é o tamanho da interface inteira
+  uiScale: 'M3 5h18v14H3zM9.5 10l-2 2 2 2M14.5 10l2 2-2 2M7.5 12h9',
+  // o "T" da formatação de texto riscado por um X: o mesmo desenho que
+  // qualquer editor usa para "voltar ao texto simples"
+  clearFormat: 'M4 6V4h9v2M8.5 4v13M6 17h5M15 12l6 6M21 12l-6 6'
 }
 
 interface Props {

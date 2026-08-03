@@ -10,7 +10,17 @@ export const PPM_MIN = 60
 export const PPM_MAX = 500
 export const PPM_STEP = 20
 
-export const SEGMENT_COUNT = Math.round((PPM_MAX - PPM_MIN) / PPM_STEP) + 1
+/**
+ * Quantas barrinhas o medidor desenha — e só isso.
+ *
+ * Era uma barrinha por degrau de 20 ppm (23 delas). Numa régua estreita, 23
+ * barrinhas não cabem sem se deformar: cada uma ficava com uma fração de pixel
+ * diferente da vizinha e a régua lia como um pente torto. O medidor agora tem
+ * degrau próprio, mais grosso, DESACOPLADO do `PPM_STEP` — a seta do teclado e
+ * a roda continuam andando de 20 em 20, e clicar continua valendo o ponto onde
+ * se clicou; o que mudou é só quantas barrinhas contam essa mesma história.
+ */
+export const SEGMENT_COUNT = 11
 
 export function clampPpm(value: number): number {
   return Math.min(PPM_MAX, Math.max(PPM_MIN, Math.round(value)))
@@ -28,10 +38,16 @@ export function ppmFromFraction(fraction: number): number {
   return snapPpm(PPM_MIN + dentro * (PPM_MAX - PPM_MIN))
 }
 
-/** Quantas barrinhas ficam acesas para este ritmo — pelo menos uma. */
+/**
+ * Quantas barrinhas ficam acesas para este ritmo — pelo menos uma.
+ *
+ * Pela FRAÇÃO da faixa, e não pelo degrau: com o medidor mais grosso que o
+ * passo do ritmo, contar degraus acenderia barrinha demais. `ceil` para que
+ * qualquer ritmo acima do mínimo já acenda a barrinha em que ele cai.
+ */
 export function filledSegments(ppm: number): number {
-  const acesas = Math.round((clampPpm(ppm) - PPM_MIN) / PPM_STEP) + 1
-  return Math.min(SEGMENT_COUNT, Math.max(1, acesas))
+  const fracao = (clampPpm(ppm) - PPM_MIN) / (PPM_MAX - PPM_MIN)
+  return Math.min(SEGMENT_COUNT, Math.max(1, Math.ceil(fracao * SEGMENT_COUNT)))
 }
 
 /**

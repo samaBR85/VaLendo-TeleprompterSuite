@@ -166,6 +166,15 @@ export interface ValendoApi {
   /** o projeto aberto tem mudança que não foi para o arquivo ainda? */
   projectIsDirty(): Promise<boolean>
   openExternal(url: string): void
+  /** A escala com que esta janela nasceu — o main já a aplicou no construtor. */
+  getZoom(): number
+  /**
+   * Escala a interface DESTA janela — texto, ícone, borda e respiro juntos,
+   * como o zoom de um navegador — e grava a escolha para a próxima abertura.
+   * Só a janela do operador chama: escalar a transmissão mudaria o corpo do
+   * texto que o apresentador está lendo.
+   */
+  setZoom(factor: number): void
   /** a transmissão está por cima da janela do operador? */
   coversOperator(): Promise<boolean>
   onState(callback: (snapshot: StateSnapshot) => void): () => void

@@ -16,6 +16,10 @@ export interface CommandUi {
   /** manda agora, sem esperar o debounce, o que ainda estiver pendente no editor. */
   flushEditor: () => void
   insertBlock: (kind: InsertKind) => void
+  /** tira capítulos e direções do roteiro inteiro, deixando só texto simples */
+  removerFormatacao: () => void
+  /** escala da interface: +1 e -1 andam um degrau, 0 volta a 100% */
+  escala: (delta: 1 | -1 | 0) => void
   exportDocument: (saveAs: boolean) => void
   project: (acao: 'salvar' | 'salvarComo' | 'abrir') => void
   /** confirma sozinho se não houver mudança para perder; senão, pede antes */
@@ -237,6 +241,9 @@ export function useCommands(
           ui.insertBlock('direction')
           break
 
+        case 'edit.clearFormat':
+          ui.removerFormatacao()
+          break
         case 'edit.undo':
           // sem isso, desfazer logo após digitar reverte um passo mais antigo
           // do que o esperado — a digitação mais recente ainda não tinha
@@ -275,6 +282,15 @@ export function useCommands(
             type: 'layout/transportPosition',
             position: state.transportPosition === 'topo' ? 'regua' : 'topo'
           })
+          break
+        case 'view.uiScaleUp':
+          ui.escala(1)
+          break
+        case 'view.uiScaleDown':
+          ui.escala(-1)
+          break
+        case 'view.uiScaleReset':
+          ui.escala(0)
           break
         case 'palette.open':
           ui.openPalette()

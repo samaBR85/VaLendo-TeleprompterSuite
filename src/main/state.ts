@@ -74,7 +74,7 @@ export class Store {
    * do operador desenha.
    */
   private readonly rows = new Map<string, number[]>()
-  /** o alarme do loop — quando a leitura vai alcançar o fim do roteiro */
+  /** o alarme de fim de roteiro — loop (reinicia) ou auto-pausa (pausa) */
   private loopTimer: ReturnType<typeof setTimeout> | null = null
 
   /** Com o que uma aba nova nasce. Vive fora do workspace, ver userDefaults.ts. */
@@ -152,16 +152,22 @@ export class Store {
   }
 
   /**
-   * O alarme do loop: em vez de sondar a cada quadro, calcula analiticamente
-   * quanto falta (em ms) para a leitura alcançar o fim do roteiro e agenda
-   * um `setTimeout` único que, ao disparar, reinicia — `transport/restart`
-   * já preserva `playing` e reancora cronômetro/relógio independente
-   * corretamente quando ainda está tocando, então não precisa de lógica de
-   * reinício própria, só da hora certa de chamá-la.
+   * O alarme de fim de roteiro: em vez de sondar a cada quadro, calcula
+   * analiticamente quanto falta (em ms) para a leitura alcançar o fim do
+   * roteiro e agenda um `setTimeout` único.
+   *
+   * Ao disparar, duas coisas podem acontecer, e o loop sempre vence quando
+   * ligado — é preferência explícita do operador por play contínuo:
+   * - loop ligado: `transport/restart`, que já preserva `playing` e reancora
+   *   cronômetro/relógio independente corretamente, então não precisa de
+   *   lógica de reinício própria, só da hora certa de chamá-la;
+   * - loop desligado E o relógio é Fórmula ou Cronômetro (não Livre, que é
+   *   solto e sem duração alvo): `transport/pause`, igual a apertar o botão
+   *   Pause — some com a rolagem e congela as contagens.
    *
    * Chamado a cada `setState` (todo estado que sai daqui para os ouvintes),
-   * e sempre recomeça do zero: play/pausa, mudança de ppm, um `seek`, ou
-   * texto editado — qualquer um desses muda quando o fim chega.
+   * e sempre recomeça do zero: play/pausa, mudança de ppm, um `seek`, o modo
+   * do relógio, ou texto editado — qualquer um desses muda quando o fim chega.
    */
   private scheduleLoop(): void {
     if (this.loopTimer) {
@@ -169,14 +175,27 @@ export class Store {
       this.loopTimer = null
     }
     const { transport } = this.state
-    if (!transport.playing || !transport.loop) return
+    if (!transport.playing) return
 
     const tab = this.activeTab()
     if (!tab) return
+    if (!transport.loop && tab.appearance.timers.mode === 'livre') return
+
     const lines = composeLines(tab.blocks, rule(tab), this.rows.get(tab.id))
     const restantes = Math.max(0, totalWords(lines) - this.currentWordIndex())
     const ms = secondsForWords(restantes, transport.ppm) * 1000
-    this.loopTimer = setTimeout(() => this.dispatch({ type: 'transport/restart' }), ms)
+    // o atraso só vale para o loop de verdade: o auto-pausa já é o texto
+    // parado esperando o operador, não tem "reiniciar" para atrasar
+    const atraso = transport.loop ? transport.loopDelaySeconds * 1000 : 0
+    this.loopTimer = setTimeout(
+      () =>
+        this.dispatch(
+          transport.loop
+            ? { type: 'transport/restart', peloLoop: true }
+            : { type: 'transport/pause', rebobinar: false }
+        ),
+      ms + atraso
+    )
   }
 
   private replaceTab(tab: Tab): AppState {
@@ -349,7 +368,15 @@ export class Store {
       case 'transport/pause': {
         if (!this.state.transport.playing) break
         const transport = this.state.transport
-        const stopped = Math.max(0, this.currentWordIndex() - REWIND_ON_PAUSE)
+        // rebobinar 2 palavras é uma cortesia para quem pausou de propósito,
+        // reentrar sem ter perdido o fio. O auto-pausa no fim do roteiro
+        // (`scheduleLoop`) passa `rebobinar: false`: ali não sobra texto para
+        // reentrar, e o pulo de posição só fazia a marca de leitura empurrar
+        // a última linha pra cima na hora que devia ficar parada
+        const stopped =
+          action.rebobinar === false
+            ? this.currentWordIndex()
+            : Math.max(0, this.currentWordIndex() - REWIND_ON_PAUSE)
         this.state = {
           ...this.state,
           transport: {
@@ -367,13 +394,23 @@ export class Store {
         // cronômetro e relógio independente reiniciam junto: "voltar ao
         // início" é recomeçar a leitura inteira, e o tempo que ela leva é
         // parte disso. O independente só volta a contar no próximo play,
-        // como se fosse a primeira vez
+        // como se fosse a primeira vez.
+        //
+        // Exceto quando é o LOOP se reiniciando sozinho (`peloLoop`): aí não
+        // é o operador voltando ao início — é a rolagem dando a volta com a
+        // transmissão seguindo em frente. O modo Livre existe para contar o
+        // tempo do programa por cima do texto, não o do roteiro; zerar a
+        // cada volta do loop faria o relógio pular pra trás no meio do ar.
         this.state = {
           ...this.state,
           transport: {
             ...this.state.transport,
             stopwatch: this.state.transport.playing ? { base: 0, comecouEm: Date.now() } : CRONOMETRO_PARADO,
-            independentStartedAt: this.state.transport.playing ? Date.now() : 0
+            independentStartedAt: action.peloLoop
+              ? this.state.transport.independentStartedAt
+              : this.state.transport.playing
+                ? Date.now()
+                : 0
           }
         }
         this.seekWordIndex(0)
@@ -427,6 +464,13 @@ export class Store {
         this.state = {
           ...this.state,
           transport: { ...this.state.transport, loop: !this.state.transport.loop }
+        }
+        break
+
+      case 'transport/loopDelay':
+        this.state = {
+          ...this.state,
+          transport: { ...this.state.transport, loopDelaySeconds: clamp(action.seconds, 0, 60) }
         }
         break
 

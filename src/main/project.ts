@@ -86,7 +86,11 @@ export async function openProject(filePath: string): Promise<{ state: AppState |
       sidebarWidth: state.sidebarWidth ?? SIDEBAR_WIDTH_DEFAULT,
       editionSplit: state.editionSplit ?? EDITION_SPLIT_DEFAULT,
       window: state.window ?? null,
-      transport: { ...state.transport, loop: state.transport.loop ?? false },
+      transport: {
+        ...state.transport,
+        loop: state.transport.loop ?? false,
+        loopDelaySeconds: state.transport.loopDelaySeconds ?? 0
+      },
       tabs: state.tabs.map((tab) => ({ ...tab, appearance: mergeAppearance(tab.appearance) }))
     },
     error: null

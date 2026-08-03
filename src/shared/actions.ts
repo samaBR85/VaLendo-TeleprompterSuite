@@ -13,8 +13,10 @@ export type Action =
   | { type: 'appearance/invert'; tabId: string }
   | { type: 'appearance/preset'; tabId: string; presetId: string }
   | { type: 'transport/toggle' }
-  | { type: 'transport/pause' }
-  | { type: 'transport/restart' }
+  /** `rebobinar: false` pausa exatamente onde parou, sem os 2 palavras de cortesia — usado pelo auto-pausa no fim do roteiro */
+  | { type: 'transport/pause'; rebobinar?: boolean }
+  /** `peloLoop: true` é o loop reiniciando sozinho — o relógio do modo Livre não zera, só a rolagem */
+  | { type: 'transport/restart'; peloLoop?: boolean }
   | { type: 'transport/seekWords'; delta: number }
   | { type: 'transport/seekAnchor'; anchor: Anchor }
   | { type: 'transport/ppm'; ppm: number }
@@ -23,6 +25,8 @@ export type Action =
   | { type: 'transport/freeze' }
   /** ao chegar no fim do roteiro, volta ao início e continua tocando */
   | { type: 'transport/loop' }
+  /** espera, em segundos, antes do loop reiniciar a leitura */
+  | { type: 'transport/loopDelay'; seconds: number }
   | { type: 'card/add'; card: Cartao }
   | { type: 'card/remove'; cardId: string }
   /** arrastar reordena — o cartão sai de onde está e entra em `toIndex` */
@@ -122,6 +126,9 @@ export const CHANNELS = {
   projectOpen: 'project:open',
   projectIsDirty: 'project:isDirty',
   openExternal: 'app:openExternal',
+  /** escala da interface do operador — preferência da máquina, fora do AppState */
+  uiScaleGet: 'app:uiScaleGet',
+  uiScaleSet: 'app:uiScaleSet',
   broadcastCoversOperator: 'broadcast:coversOperator',
   confirmCloseRequest: 'app:confirmCloseRequest',
   confirmCloseResponse: 'app:confirmCloseResponse',

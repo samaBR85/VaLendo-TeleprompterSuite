@@ -11,9 +11,11 @@ import {
 } from './ruler'
 
 describe('a régua de ritmo', () => {
-  it('tem uma barrinha por degrau, das pontas inclusive', () => {
-    expect(SEGMENT_COUNT).toBe(23)
-    expect(PPM_MIN + (SEGMENT_COUNT - 1) * PPM_STEP).toBe(PPM_MAX)
+  it('o medidor tem degrau próprio, mais grosso que o do ritmo', () => {
+    // desacoplados de propósito: a régua estreita não comporta uma barrinha
+    // por degrau de 20 ppm sem cada uma sair de um tamanho
+    expect(SEGMENT_COUNT).toBe(11)
+    expect(SEGMENT_COUNT).toBeLessThan(Math.round((PPM_MAX - PPM_MIN) / PPM_STEP) + 1)
   })
 
   it('o ponto onde se clica é o valor', () => {
@@ -37,7 +39,16 @@ describe('a régua de ritmo', () => {
     // uma régua toda apagada pareceria controle desligado, não ritmo lento
     expect(filledSegments(PPM_MIN)).toBe(1)
     expect(filledSegments(PPM_MAX)).toBe(SEGMENT_COUNT)
-    expect(filledSegments(280)).toBe(12)
+    // 280 é o meio exato da faixa: metade das barrinhas, arredondando para cima
+    expect(filledSegments(280)).toBe(6)
+  })
+
+  it('acende de ponta a ponta sem pular nem repetir barrinha', () => {
+    // cada barrinha precisa ser alcançável: uma que nunca acende é um degrau
+    // que o operador vê e não consegue pousar em cima
+    const alcancadas = new Set<number>()
+    for (let ppm = PPM_MIN; ppm <= PPM_MAX; ppm += 1) alcancadas.add(filledSegments(ppm))
+    expect(alcancadas.size).toBe(SEGMENT_COUNT)
   })
 
   it('aguenta ritmo fora da grade, vindo de workspace antigo', () => {

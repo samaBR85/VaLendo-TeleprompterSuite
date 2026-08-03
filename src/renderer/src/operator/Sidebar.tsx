@@ -14,6 +14,27 @@ const THUMB_MIN = 40
 const THUMB_MAX = 96
 const THUMB_DEFAULT = 40
 
+/**
+ * Quanto (em px) a linha no índice `i` desliza verticalmente para revelar o
+ * slot que vai receber o cartão arrastado — mesma conta de `CardsDrawer.tsx`,
+ * só que na vertical, e com a altura da linha MEDIDA no início do arrasto
+ * (não um número fixo: aqui a altura varia com o tamanho da miniatura, que o
+ * operador ajusta pelo slider do rodapé).
+ */
+function deslocamentoVertical(
+  cards: Cartao[],
+  arrasto: { cardId: string; sobre: number; alturaSlot: number } | null,
+  i: number
+): number {
+  if (!arrasto) return 0
+  const origem = cards.findIndex((c) => c.id === arrasto.cardId)
+  if (origem === -1 || cards[i]?.id === arrasto.cardId) return 0
+  const alvo = origem < arrasto.sobre ? arrasto.sobre - 1 : arrasto.sobre
+  if (origem < alvo && i > origem && i <= alvo) return -arrasto.alturaSlot
+  if (origem > alvo && i >= alvo && i < origem) return arrasto.alturaSlot
+  return 0
+}
+
 interface Props {
   tab: Tab
   transport: Transport
@@ -90,6 +111,7 @@ export function Sidebar({
   // não é dado do projeto, não persiste entre sessões
   const [thumbSize, setThumbSize] = useState(THUMB_DEFAULT)
   const [ajudaAberta, setAjudaAberta] = useState(true)
+  const [arrasto, setArrasto] = useState<{ cardId: string; sobre: number; alturaSlot: number } | null>(null)
 
   const lines = useMemo(
     () => composeLines(tab.blocks, tab.appearance, rows),
@@ -221,19 +243,35 @@ export function Sidebar({
                 draggable
                 data-card-drag={card.id}
                 onDragStart={(event) => {
+                  // só o campo de texto e o toggle de OVERLAY recusam o
+                  // arrasto — o botão de mostrar o cartão (`data-sidebar-card`)
+                  // cobre quase a linha inteira, e excluir "button" em bloco
+                  // deixava a linha sem nenhuma área que ainda iniciasse o
+                  // arrasto
                   if (
                     event.target instanceof HTMLElement &&
-                    event.target.closest('input, textarea, button, [data-no-card-drag]')
+                    event.target.closest('input, textarea, [data-no-card-drag]')
                   ) {
                     event.preventDefault()
                     return
                   }
                   event.dataTransfer.setData(CARD_DRAG_MIME, card.id)
                   event.dataTransfer.effectAllowed = 'move'
+                  // gap-1.5 = 6px: a altura da linha muda com o tamanho da
+                  // miniatura, então mede aqui em vez de supor um número fixo
+                  const alturaSlot = event.currentTarget.getBoundingClientRect().height + 6
+                  setArrasto({ cardId: card.id, sobre: index, alturaSlot })
                 }}
+                onDragEnd={() => setArrasto(null)}
                 onDragOver={(event) => {
                   if (!event.dataTransfer.types.includes(CARD_DRAG_MIME)) return
                   event.preventDefault()
+                  // sem isto o cursor mostra bloqueado o arrasto inteiro,
+                  // mesmo aceitando o drop de verdade
+                  event.dataTransfer.dropEffect = 'move'
+                  const rect = event.currentTarget.getBoundingClientRect()
+                  const antes = event.clientY < rect.top + rect.height / 2
+                  setArrasto((a) => (a ? { ...a, sobre: antes ? index : index + 1 } : a))
                 }}
                 onDrop={(event) => {
                   const draggedId = event.dataTransfer.getData(CARD_DRAG_MIME)
@@ -242,43 +280,61 @@ export function Sidebar({
                   const rect = event.currentTarget.getBoundingClientRect()
                   const antes = event.clientY < rect.top + rect.height / 2
                   dispatch({ type: 'card/reorder', cardId: draggedId, toIndex: antes ? index : index + 1 })
+                  setArrasto(null)
                 }}
-                className={`flex flex-none items-center gap-2 rounded-md border p-[5px] text-left text-[10px] transition-colors ${
-                  transport.card === card.id
-                    ? 'border-[var(--color-go)]/60 bg-[var(--color-go)]/10 text-[var(--color-go)]'
-                    : 'border-[var(--color-edge)] bg-[#1e1e22] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
-                }`}
+                className="flex flex-none"
               >
-                <button
-                  type="button"
-                  data-sidebar-card={card.id}
-                  onClick={() => dispatch({ type: 'card/show', cardId: card.id })}
-                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                >
-                  <MiniaturaDoCartao card={card} size={thumbSize} />
-                  <span className="min-w-0 flex-1 truncate font-medium">
-                    {card.nome || (card.kind === 'text' ? card.texto : '') || t('cards.title')}
-                  </span>
-                </button>
-                {/* toggle por cartão: independente do switch global, que
-                    quando ligado vale para todos sem precisar mexer aqui */}
-                <button
-                  type="button"
-                  data-sidebar-card-overlay={card.id}
-                  title={t('cards.overlay')}
-                  aria-pressed={card.overlay ?? false}
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    dispatch({ type: 'card/overlay', cardId: card.id, overlay: !(card.overlay ?? false) })
-                  }}
-                  className={`flex-none rounded-[4px] px-1 py-0.5 text-[8px] font-bold tracking-[0.04em] transition-colors ${
-                    card.overlay
-                      ? 'bg-[var(--color-accent-2)] text-[#1c1020]'
-                      : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+                {/* o deslize é só visual, num filho À PARTE de quem escuta o
+                    arrasto: transformar o próprio elemento draggable faz o
+                    navegador reavaliar o alvo do dragover a cada quadro
+                    contra a posição nova, e como a linha se afasta debaixo
+                    do ponteiro, o hit-test troca de alvo o tempo todo — trava
+                    o arrasto inteiro. Aqui embaixo, o slot fica parado no
+                    lugar de sempre; só o conteúdo desliza para revelar o vão */}
+                <div
+                  style={
+                    deslocamentoVertical(cards, arrasto, index)
+                      ? { transform: `translateY(${deslocamentoVertical(cards, arrasto, index)}px)` }
+                      : undefined
+                  }
+                  className={`flex w-full flex-none items-center gap-2 rounded-md border p-[5px] text-left text-[10px] transition-all duration-150 ease-out ${
+                    transport.card === card.id
+                      ? 'border-[var(--color-go)]/60 bg-[var(--color-go)]/10 text-[var(--color-go)]'
+                      : 'border-[var(--color-edge)] bg-[#1e1e22] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
                   }`}
                 >
-                  {t('cards.overlayShort')}
-                </button>
+                  <button
+                    type="button"
+                    data-sidebar-card={card.id}
+                    onClick={() => dispatch({ type: 'card/show', cardId: card.id })}
+                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                  >
+                    <MiniaturaDoCartao card={card} size={thumbSize} />
+                    <span className="min-w-0 flex-1 truncate font-medium">
+                      {card.nome || (card.kind === 'text' ? card.texto : '') || t('cards.title')}
+                    </span>
+                  </button>
+                  {/* toggle por cartão: independente do switch global, que
+                      quando ligado vale para todos sem precisar mexer aqui */}
+                  <button
+                    type="button"
+                    data-sidebar-card-overlay={card.id}
+                    data-no-card-drag
+                    title={t('cards.overlay')}
+                    aria-pressed={card.overlay ?? false}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      dispatch({ type: 'card/overlay', cardId: card.id, overlay: !(card.overlay ?? false) })
+                    }}
+                    className={`flex-none rounded-[4px] px-1 py-0.5 text-[8px] font-bold tracking-[0.04em] transition-colors ${
+                      card.overlay
+                        ? 'bg-[var(--color-accent-2)] text-[#1c1020]'
+                        : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+                    }`}
+                  >
+                    {t('cards.overlayShort')}
+                  </button>
+                </div>
               </div>
             ))}
           </div>

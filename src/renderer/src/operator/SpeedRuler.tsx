@@ -98,26 +98,30 @@ export function SpeedRuler({ ppm, onChange }: Props): React.JSX.Element {
         onChange(clampPpm(ppm + (event.deltaY < 0 ? PPM_STEP : -PPM_STEP)))
       }}
       onKeyDown={onKeyDown}
-      className="flex w-full cursor-pointer touch-none items-center rounded py-1 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-go)]"
+      className="flex w-full cursor-pointer touch-none items-center justify-between rounded py-1 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-go)]"
     >
-      {/* cada segmento pinta os próprios tracinhos de 2px: no vidro do LCD a
-          régua vira um medidor pontilhado — do vermelho (devagar) ao verde
-          (rápido) até o ritmo, cinza-esverdeado dali em diante, como um VU
-          desligado. A cor é por barrinha (`segmentColor`), não um gradiente
-          CSS único: o degrau aceso mais à direita sempre lê a cor do PRÓPRIO
-          ritmo, não uma média do trecho inteiro */}
+      {/* barrinhas de largura FIXA, espaçadas por `justify-between`: todas
+          idênticas por construção, em qualquer largura de régua. Antes cada
+          uma era `flex:1` pintada por dentro com um gradiente repetido de
+          2px — e como a fração de pixel que sobrava para cada uma era
+          diferente, cada barrinha cortava o padrão num ponto e a régua lia
+          como um pente torto. Se a coluna mudar de largura outra vez, quem
+          respira é o vão entre as barras, não a barra.
+
+          A cor é por barrinha (`segmentColor`), e não um gradiente CSS único:
+          o degrau aceso mais à direita sempre lê a cor do PRÓPRIO ritmo — do
+          verde (devagar) ao vermelho (rápido) —, e não uma média do trecho.
+          Dali em diante fica o cinza-esverdeado de VU desligado. */}
       {SEGMENTS.map((index) => (
         <div
           key={index}
           data-segment={index < acesas ? 'on' : 'off'}
           style={{
-            flex: 1,
-            minWidth: 2,
+            width: 4,
             height: 9,
-            background:
-              index < acesas
-                ? `repeating-linear-gradient(90deg, ${segmentColor(index)} 0 2px, transparent 2px 4px)`
-                : 'repeating-linear-gradient(90deg, #2c3a33 0 2px, transparent 2px 4px)'
+            flex: 'none',
+            borderRadius: 1,
+            background: index < acesas ? segmentColor(index) : '#2c3a33'
           }}
         />
       ))}

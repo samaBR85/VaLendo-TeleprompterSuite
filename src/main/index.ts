@@ -40,7 +40,8 @@ import { converterParaMp4, gerarProxy, temFfmpeg } from './ffmpeg'
 import { ehVideo, VIDEO_EXTENSIONS } from '@shared/video'
 import { perfilPorId } from '@shared/proxy'
 import { Store } from './state'
-import { flushState, onStorageHealth, storageHealth, workspaceIntegro } from './storage'
+import { flushState, log, onStorageHealth, storageHealth, userDataRoot, workspaceIntegro } from './storage'
+import { loadUiScale, saveUiScale } from './uiScale'
 import { buildBroadcastMenu } from './broadcastMenu'
 import {
   broadcastCoversOperator,
@@ -277,6 +278,28 @@ function registerIpc(): void {
   // do próprio conteúdo
   ipcMain.on(CHANNELS.openExternal, (_event, url: string) => {
     if (/^https?:\/\//i.test(url)) void shell.openExternal(url)
+  })
+
+  /*
+   * Síncrono de propósito, e uma vez só: o preload lê isto ao carregar, antes
+   * de a interface montar. Perguntar ao `webFrame.getZoomFactor()` seria mais
+   * barato, mas ele só passa a responder a escala real depois que o primeiro
+   * quadro assenta — e até lá diz 100%, o que faria o indicador e o botão de
+   * "tamanho normal" nascerem mentindo numa mesa que abriu em 125%.
+   */
+  ipcMain.on(CHANNELS.uiScaleGet, (event) => {
+    event.returnValue = loadUiScale(userDataRoot())
+  })
+
+  // a janela já aplicou a escala em si mesma (resposta instantânea); aqui só
+  // se guarda, para a próxima abertura nascer no mesmo tamanho
+  ipcMain.on(CHANNELS.uiScaleSet, (_event, scale: number) => {
+    try {
+      saveUiScale(userDataRoot(), scale)
+    } catch (erro) {
+      // preferência de conforto: não vale derrubar nada por não ter gravado
+      log(`não deu para gravar a escala da interface: ${String(erro)}`)
+    }
   })
 
   ipcMain.handle(CHANNELS.broadcastCoversOperator, () => broadcastCoversOperator())
@@ -615,7 +638,7 @@ function bootstrap(): void {
     }
   })
 
-  createOperatorWindow(store.getState().window)
+  createOperatorWindow(store.getState().window, loadUiScale(userDataRoot()))
   syncOutput(store.getState())
 }
 
@@ -639,7 +662,7 @@ if (!app.requestSingleInstanceLock()) {
   void app.whenReady().then(bootstrap)
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createOperatorWindow(store.getState().window)
+    if (BrowserWindow.getAllWindows().length === 0) createOperatorWindow(store.getState().window, loadUiScale(userDataRoot()))
   })
 
   app.on('window-all-closed', () => {

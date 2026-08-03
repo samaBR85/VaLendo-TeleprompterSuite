@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
+import { contextBridge, ipcRenderer, webFrame, webUtils, type IpcRendererEvent } from 'electron'
 import { CHANNELS, type Action } from '@shared/actions'
 import type {
   CardConvertProgress,
@@ -20,6 +20,16 @@ function subscribe<T>(channel: string, callback: (payload: T) => void): () => vo
   return () => ipcRenderer.off(channel, handler)
 }
 
+/*
+ * A escala com que esta janela nasceu, lida uma vez ao carregar o preload.
+ *
+ * Vem do main, e não de `webFrame.getZoomFactor()`: o zoom já está aplicado
+ * (o construtor da janela o recebeu), mas o `getZoomFactor` só passa a
+ * responder o valor real depois do primeiro quadro — e a interface monta antes
+ * disso. Uma chamada síncrona, uma vez, antes de qualquer pintura.
+ */
+const escalaInicial = ipcRenderer.sendSync(CHANNELS.uiScaleGet) as number
+
 const api: ValendoApi = {
   platform: process.platform,
   getState: () => ipcRenderer.invoke(CHANNELS.stateGet) as Promise<StateSnapshot>,
@@ -33,6 +43,17 @@ const api: ValendoApi = {
   openProject: () => ipcRenderer.invoke(CHANNELS.projectOpen) as Promise<ProjectResult | null>,
   projectIsDirty: () => ipcRenderer.invoke(CHANNELS.projectIsDirty) as Promise<boolean>,
   openExternal: (url: string) => ipcRenderer.send(CHANNELS.openExternal, url),
+  // `webFrame` é o desta janela, sem IPC — a resposta ao slider é imediata.
+  // A gravação vai por IPC porque o `localStorage` de uma origem `file://`
+  // (que é como a janela carrega) nunca chega ao disco: vale a sessão e some.
+  // Quem chama é só a janela do operador — a transmissão e a página da rede
+  // nunca escalam, porque o corpo do texto lá é ajuste de leitura do
+  // apresentador, não conforto de quem opera
+  getZoom: () => escalaInicial,
+  setZoom: (factor: number) => {
+    webFrame.setZoomFactor(factor)
+    ipcRenderer.send(CHANNELS.uiScaleSet, factor)
+  },
   coversOperator: () => ipcRenderer.invoke(CHANNELS.broadcastCoversOperator) as Promise<boolean>,
   onState: (callback) => subscribe<StateSnapshot>(CHANNELS.stateChanged, callback),
   onDisplays: (callback) => subscribe<DisplayInfo[]>(CHANNELS.displaysChanged, callback),

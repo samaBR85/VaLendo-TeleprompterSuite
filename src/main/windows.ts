@@ -80,7 +80,7 @@ export function sendToAll(channel: string, ...args: unknown[]): void {
   }
 }
 
-export function createOperatorWindow(bounds?: JanelaSalva | null): BrowserWindow {
+export function createOperatorWindow(bounds?: JanelaSalva | null, zoomFactor = 1): BrowserWindow {
   // sem barra de menu no Windows e no Linux: ela não serve a nada aqui e come
   // uma faixa da tela do operador (no macOS o menu é do sistema, fica)
   if (!isMac) Menu.setApplicationMenu(null)
@@ -104,7 +104,11 @@ export function createOperatorWindow(bounds?: JanelaSalva | null): BrowserWindow
     // entre a janela abrir e o React pintar. Diferente, dá um flash claro
     backgroundColor: '#0e0e10',
     title: 'Valendo',
-    webPreferences: { preload, sandbox: false }
+    // a escala vai no construtor, e não num `setZoomFactor` depois que a
+    // página carrega: aplicada depois, a interface apareceria por um quadro
+    // em 100% e saltaria. Só aqui — a janela de transmissão nunca escala,
+    // porque o corpo do texto lá é ajuste de leitura do apresentador
+    webPreferences: { preload, sandbox: false, zoomFactor }
   })
 
   operatorWindow.on('ready-to-show', () => operatorWindow?.show())

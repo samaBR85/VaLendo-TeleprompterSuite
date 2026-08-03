@@ -365,6 +365,8 @@ export interface Transport {
    * como `ppm` já sobrevive.
    */
   loop: boolean
+  /** espera, em segundos, entre chegar no fim e o loop reiniciar a leitura */
+  loopDelaySeconds: number
 }
 
 /** De onde o cronômetro partiu e quando — nunca em que segundo ele está. */

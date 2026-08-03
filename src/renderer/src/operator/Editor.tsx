@@ -1,7 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { insertBlock, type InsertKind } from '@shared/insertBlock'
-import { blocksFromText, serializeBlocks } from '@shared/text'
+import { blocksFromText, serializeBlocks, stripFormatting } from '@shared/text'
 import { useT } from '../i18n'
 import type { Tab } from '@shared/types'
 
@@ -33,6 +33,8 @@ export interface EditorHandle {
   flush: () => void
   /** insere capítulo ou direção no cursor, já com o miolo selecionado. */
   insert: (kind: InsertKind) => void
+  /** tira a marcação do roteiro inteiro: sem capítulos, sem direções. */
+  removerFormatacao: () => void
   /** o texto atual do rascunho e onde o cursor está nele — para o "Go To". */
   caret: () => { text: string; position: number }
 }
@@ -183,12 +185,41 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor({ tab, fon
     [tab.id, dispatch]
   )
 
+  /**
+   * Age sobre o RASCUNHO, não sobre os blocos do main.
+   *
+   * O que está na tela pode estar até 140ms à frente do que o main conhece —
+   * limpar a partir dos blocos jogaria fora a última frase digitada. Sai daqui
+   * pelo mesmo caminho de uma inserção, então entra no histórico como um passo
+   * só e o Mod+Z devolve o roteiro marcado inteiro.
+   */
+  const removerFormatacao = useCallback((): void => {
+    const area = areaRef.current
+    const atual = area?.value ?? draft
+    const limpo = stripFormatting(atual)
+    if (limpo === atual) return
+
+    const caret = Math.min(area?.selectionStart ?? 0, limpo.length)
+    setDraft(limpo)
+    push(limpo, 0)
+
+    requestAnimationFrame(() => {
+      if (!area) return
+      area.focus()
+      area.setSelectionRange(caret, caret)
+    })
+  }, [draft, tab.id, dispatch])
+
   const caret = useCallback(
     () => ({ text: draft, position: areaRef.current?.selectionStart ?? 0 }),
     [draft]
   )
 
-  useImperativeHandle(ref, () => ({ flush, insert, caret }), [flush, insert, caret])
+  useImperativeHandle(
+    ref,
+    () => ({ flush, insert, removerFormatacao, caret }),
+    [flush, insert, removerFormatacao, caret]
+  )
 
   const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setDraft(event.target.value)

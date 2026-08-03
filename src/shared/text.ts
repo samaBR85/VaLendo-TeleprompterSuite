@@ -132,6 +132,37 @@ export function serializeBlocks(blocks: Block[]): string {
   return blocks.map((b) => b.text).join('\n\n')
 }
 
+/**
+ * Tira a marcação e devolve o texto simples: sem `§`/`#` de capítulo e sem os
+ * colchetes de direção.
+ *
+ * As PALAVRAS ficam — é "remover formatação", como em qualquer editor, e não
+ * "apagar trecho". Uma direção vira parágrafo de fala, um título de capítulo
+ * vira parágrafo de fala, e o roteiro passa a durar mais, porque só fala conta
+ * tempo. Isso é visível de imediato (a contagem no cabeçalho da Edição muda) e
+ * desfazível pelo Mod+Z de sempre — que é o motivo de não haver pergunta antes.
+ *
+ * Trabalha por PARÁGRAFO, e não por linha, porque é assim que o modelo
+ * classifica: uma direção pode ocupar várias linhas dentro dos mesmos
+ * colchetes, e olhar linha a linha deixaria metade dela para trás.
+ */
+export function stripFormatting(text: string): string {
+  return splitParagraphs(text)
+    .map((paragrafo) => {
+      const limpo = paragrafo.trim()
+      if (/^\[[\s\S]*\]$/.test(limpo)) return limpo.slice(1, -1).trim()
+      if (/^(#{1,6}|§)\s+/.test(limpo)) return limpo.replace(/^(#{1,6}|§)\s+/, '')
+      return limpo
+    })
+    .filter((paragrafo) => paragrafo.length > 0)
+    .join('\n\n')
+}
+
+/** Há o que remover? É o que decide se o botão fica aceso ou apagado. */
+export function hasFormatting(blocks: Block[]): boolean {
+  return blocks.some((b) => b.kind !== 'speech')
+}
+
 export function blocksFromText(text: string): Block[] {
   return reconcileBlocks([], text)
 }

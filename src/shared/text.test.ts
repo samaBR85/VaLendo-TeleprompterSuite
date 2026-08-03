@@ -3,8 +3,10 @@ import {
   anchorFromCaret,
   blockWordCount,
   blocksFromText,
+  hasFormatting,
   reconcileBlocks,
   serializeBlocks,
+  stripFormatting,
   totalWordCount,
   words
 } from './text'
@@ -132,5 +134,42 @@ describe('anchorFromCaret — o "Go To" do rodapé da edição', () => {
 
   it('texto vazio não tem para onde ir', () => {
     expect(anchorFromCaret([], '', 0)).toBeNull()
+  })
+})
+
+describe('remover formatação', () => {
+  it('tira as marcas e mantém as palavras', () => {
+    // é "remover formatação", como em qualquer editor — e não "apagar trecho"
+    const texto = '§ Abertura\n\nBoa noite.\n\n[olhar câmera 2 · pausa]\n\n## Bloco 2\n\nFim.'
+    expect(stripFormatting(texto)).toBe('Abertura\n\nBoa noite.\n\nolhar câmera 2 · pausa\n\nBloco 2\n\nFim.')
+  })
+
+  it('tudo vira fala, e por isso o roteiro passa a durar mais', () => {
+    const antes = blocksFromText('§ Abertura\n\n[pausa longa]\n\nBoa noite.')
+    const depois = blocksFromText(stripFormatting('§ Abertura\n\n[pausa longa]\n\nBoa noite.'))
+
+    expect(antes.map((b) => b.kind)).toEqual(['chapter', 'direction', 'speech'])
+    expect(depois.every((b) => b.kind === 'speech')).toBe(true)
+    expect(totalWordCount(depois)).toBeGreaterThan(totalWordCount(antes))
+  })
+
+  it('a direção de várias linhas sai inteira', () => {
+    // classificar é por PARÁGRAFO: olhar linha a linha deixaria o fecho do
+    // colchete para trás e a direção viraria meia direção
+    expect(stripFormatting('[olhar câmera 2\ne esperar o VT]')).toBe('olhar câmera 2\ne esperar o VT')
+  })
+
+  it('texto já simples não muda em nada', () => {
+    // o botão só existe quando há o que tirar; sem isso ele seria um clique
+    // que suja o histórico sem mexer no roteiro
+    const simples = 'Boa noite.\n\nHoje a gente vai falar sobre uma mudança.'
+    expect(stripFormatting(simples)).toBe(simples)
+    expect(hasFormatting(blocksFromText(simples))).toBe(false)
+    expect(hasFormatting(blocksFromText('§ Abertura\n\nBoa noite.'))).toBe(true)
+  })
+
+  it('não confunde colchete no meio da frase com direção', () => {
+    const meio = 'Ele disse [textualmente] que não vem.'
+    expect(stripFormatting(meio)).toBe(meio)
   })
 })

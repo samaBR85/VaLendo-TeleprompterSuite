@@ -652,7 +652,10 @@ export function PrompterCanvas({
 
         {/* guias de margem: fora do container que rola, para ficarem paradas, e
             dentro do rotador, para acompanharem rotação e espelho junto com o
-            texto que elas delimitam. Centradas no limite, não encostadas nele */}
+            texto que elas delimitam. Centradas no limite, não encostadas nele.
+            Acompanham a posição (mesmos `paddingEsquerdo`/`paddingDireito` do
+            container que rola): a margem se desloca com o texto, e continua
+            marcando onde a largura dele é limitada naquele ponto */}
         {marginGuides
           ? ([0, 1] as const).map((side) => (
               <div
@@ -663,7 +666,7 @@ export function PrompterCanvas({
                   zIndex: 4,
                   top: 0,
                   bottom: 0,
-                  [side === 0 ? 'left' : 'right']: `${appearance.marginPct}%`,
+                  [side === 0 ? 'left' : 'right']: `${side === 0 ? paddingEsquerdo : paddingDireito}%`,
                   // espessura proporcional: a prévia é desenhada em tamanho real
                   // e depois reduzida, e 1px viraria menos de um pixel na tela
                   width: Math.max(1, stage.width * 0.0012),

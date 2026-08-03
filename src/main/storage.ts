@@ -86,7 +86,7 @@ function describe(error: unknown): string {
   return e?.code ? `${e.code}: ${e.message}` : String(e?.message ?? error)
 }
 
-function log(message: string): void {
+export function log(message: string): void {
   try {
     appendFileSync(join(userDataRoot(), 'problemas.log'), `${new Date().toISOString()} ${message}\n`, 'utf8')
   } catch {
@@ -172,8 +172,9 @@ export function loadState(defaults: UserDefaults, locale = 'pt-BR'): AppState {
       independentStartedAt: 0,
       // preferência, não estado de momento — mas `saved.transport`, se vier
       // de um workspace anterior a este recurso, substitui `fresh()` por
-      // inteiro no merge acima e apaga o padrão `false` junto
-      loop: state.transport.loop ?? false
+      // inteiro no merge acima e apaga o padrão `false`/`0` junto
+      loop: state.transport.loop ?? false,
+      loopDelaySeconds: state.transport.loopDelaySeconds ?? 0
     }
 
     // o monitor escolhido é lembrado, mas a transmissão nunca sobe sozinha:

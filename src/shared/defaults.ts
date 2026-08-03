@@ -6,15 +6,14 @@ import { VIDEO_PARADO } from './video'
 
 /**
  * Abaixo disto, o cartão de vídeo — o mais alto — não cabe no espaço que a
- * gaveta reserva para ele, e as fileiras fixas (player e "no ar") passam a
- * colidir com a arte.
- *
- * Medido no cartão da maquete: borda da gaveta (1px) + cabeçalho (28px) +
- * respiro da fileira (20px) + cartão de vídeo — arte 90 + faixa do player 26
- * + fileira do "no ar" 28 + bordas 2 = 146px — dá 195px. Com folga para
- * variação de renderização de fonte entre sistemas.
+ * gaveta reserva para ele, e a fileira de baixo ("no ar" · OVERLAY · repetir)
+ * fica escondida atrás da borda inferior da gaveta (`overflow-hidden` corta
+ * sem avisar). Medido ao vivo com o cartão de vídeo completo (arte 90 +
+ * fileira do player em duas linhas, scrub e volume/tempo separados + fileira
+ * do "no ar" 28): a 200px sobravam 13px cortados; 220px é o primeiro valor
+ * sem corte, com uma folga pequena para variação de fonte entre sistemas.
  */
-export const CARDS_HEIGHT_MIN = 200
+export const CARDS_HEIGHT_MIN = 220
 /**
  * A gaveta nasce no próprio mínimo, e não mais compacta.
  *
@@ -197,7 +196,8 @@ export function createInitialState(
       video: VIDEO_PARADO,
       stopwatch: CRONOMETRO_PARADO,
       independentStartedAt: 0,
-      loop: false
+      loop: false,
+      loopDelaySeconds: 0
     },
     output: { displayId: null, enabled: false, viewport: null },
     presets: presetsPadrao(lang),

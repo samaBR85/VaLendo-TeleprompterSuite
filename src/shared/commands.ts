@@ -83,6 +83,11 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'project.new', group: 'Documento', defaultBinding: 'Mod+N' },
   { id: 'insert.chapter', group: 'Documento', defaultBinding: 'Mod+Shift+C' },
   { id: 'insert.direction', group: 'Documento', defaultBinding: 'Mod+Shift+D' },
+  /* L de limpar. Não `Mod+Shift+K`: `Mod+K` é a paleta de comandos, e o Shift
+     aqui prometeria que isto é uma variante dela — a regra das teclas desta
+     lista, que o teste de semântica cobra. `Mod+L` não é comando de ninguém,
+     então o Shift não promete nada. */
+  { id: 'edit.clearFormat', group: 'Documento', defaultBinding: 'Mod+Shift+L' },
   { id: 'edit.undo', group: 'Documento', defaultBinding: 'Mod+Z' },
   { id: 'edit.redo', group: 'Documento', defaultBinding: 'Mod+Shift+Z' },
   { id: 'tab.new', group: 'Documento', defaultBinding: 'Mod+T' },
@@ -109,6 +114,15 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'view.cards', group: 'Visão', defaultBinding: 'F6' },
   { id: 'view.inspector', group: 'Visão', defaultBinding: 'F7' },
   { id: 'view.transportPosition', group: 'Visão', defaultBinding: 'F8' },
+  /* A escala da INTERFACE, não a do texto da saída.
+     `Mod+=`/`Mod+-` — o par que qualquer app usa para zoom — já é do corpo da
+     fonte na tela do apresentador, e essa é a de longe mais usada aqui: quem
+     opera mexe nela toda gravação, e na escala da mesa uma vez por monitor.
+     Então o zoom da interface fica no `Mod+Alt` da mesma dupla de teclas,
+     vizinho do original em vez de tomar o lugar dele. */
+  { id: 'view.uiScaleUp', group: 'Visão', defaultBinding: 'Mod+Alt+=' },
+  { id: 'view.uiScaleDown', group: 'Visão', defaultBinding: 'Mod+Alt+-' },
+  { id: 'view.uiScaleReset', group: 'Visão', defaultBinding: 'Mod+Alt+0' },
   { id: 'palette.open', group: 'Visão', defaultBinding: 'Mod+K' },
   { id: 'keymap.open', group: 'Visão', defaultBinding: 'Mod+,' }
 ]

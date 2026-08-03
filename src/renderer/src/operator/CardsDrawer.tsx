@@ -12,6 +12,31 @@ import { CabecalhoDePainel, SliderConsole } from '../ui/console'
 
 type CartaoVideo = Extract<Cartao, { kind: 'video' }>
 
+/** largura do cartão (160px) + respiro da fileira (gap-2.5 = 10px) */
+const SLOT_HORIZONTAL = 170
+
+/**
+ * Quanto (em px) o cartão no índice `i` desliza para o lado para revelar o
+ * slot que vai receber o cartão arrastado — só os que estão ENTRE a origem e
+ * o alvo se mexem, exatamente como uma lista arrastável de verdade: os outros
+ * ficam parados.
+ */
+function deslocamentoDoArrasto(
+  cards: Cartao[],
+  arrasto: { cardId: string; sobre: number } | null,
+  i: number
+): number {
+  if (!arrasto) return 0
+  const origem = cards.findIndex((c) => c.id === arrasto.cardId)
+  if (origem === -1 || cards[i]?.id === arrasto.cardId) return 0
+  // mesma conta do reducer (`card/reorder`): tirar o cartão de `origem` desloca
+  // os índices depois dele, então o pouso real é um a menos quando anda pra frente
+  const alvo = origem < arrasto.sobre ? arrasto.sobre - 1 : arrasto.sobre
+  if (origem < alvo && i > origem && i <= alvo) return -SLOT_HORIZONTAL
+  if (origem > alvo && i >= alvo && i < origem) return SLOT_HORIZONTAL
+  return 0
+}
+
 interface Props {
   cards: Cartao[]
   /** id do que está na tela do apresentador */
@@ -56,6 +81,9 @@ export function CardsDrawer({
   const [recusa, setRecusa] = useState<string | null>(null)
   /** o ponteiro está sobre a zona de soltar, com um arquivo na mão */
   const [sobreZona, setSobreZona] = useState(false)
+  /** qual cartão está sendo arrastado, e sobre qual posição — move os
+      vizinhos de lado para revelar onde ele vai pousar */
+  const [arrasto, setArrasto] = useState<{ cardId: string; sobre: number } | null>(null)
   /**
    * Um vídeo está sendo convertido.
    *
@@ -267,38 +295,15 @@ export function CardsDrawer({
 
       <div className="flex min-h-0 min-w-0 flex-1 items-stretch gap-2.5 overflow-x-auto p-2.5">
         {cards.map((card, index) => (
-          <div
+          <CartaoArrastavel
             key={card.id}
-            draggable
-            data-card-drag={card.id}
-            onDragStart={(event) => {
-              // um clique dentro de um campo de texto, botão ou barra do
-              // player não é pedido de arrastar o cartão inteiro — é a
-              // interação normal daquele controle
-              if (
-                event.target instanceof HTMLElement &&
-                event.target.closest('input, textarea, button, [data-no-card-drag]')
-              ) {
-                event.preventDefault()
-                return
-              }
-              event.dataTransfer.setData(CARD_DRAG_MIME, card.id)
-              event.dataTransfer.effectAllowed = 'move'
-            }}
-            onDragOver={(event) => {
-              if (!event.dataTransfer.types.includes(CARD_DRAG_MIME)) return
-              event.preventDefault()
-            }}
-            onDrop={(event) => {
-              const draggedId = event.dataTransfer.getData(CARD_DRAG_MIME)
-              if (!draggedId) return
-              event.preventDefault()
-              event.stopPropagation()
-              const rect = event.currentTarget.getBoundingClientRect()
-              const antes = event.clientX < rect.left + rect.width / 2
-              dispatch({ type: 'card/reorder', cardId: draggedId, toIndex: antes ? index : index + 1 })
-            }}
-            className="flex flex-none"
+            cardId={card.id}
+            index={index}
+            dispatch={dispatch}
+            deslocamentoPx={deslocamentoDoArrasto(cards, arrasto, index)}
+            onDragStartCard={() => setArrasto({ cardId: card.id, sobre: index })}
+            onHoverIndex={(sobre) => setArrasto((a) => (a ? { ...a, sobre } : a))}
+            onDragEndCard={() => setArrasto(null)}
           >
             <CartaoNaGaveta
               card={card}
@@ -309,18 +314,22 @@ export function CardsDrawer({
               dispatch={dispatch}
               onFalha={setRecusa}
             />
-          </div>
+          </CartaoArrastavel>
         ))}
 
         {/* a zona de soltar fica com a sobra da fileira — e aceita de verdade
-            o que parece aceitar. Ignora arrasto de cartão: aquele solta no
-            próprio cartão vizinho, não aqui — soltar um cartão nesta zona
-            só faz sentido como "mandar para o fim" */}
+            o que parece aceitar. Um arrasto de cartão também é bem-vindo
+            aqui: significa "mandar para o fim", e os cartões antes dele
+            deslizam para revelar esse último slot, igual aos outros */}
         <div
           data-card-drop
           onDragOver={(event) => {
-            if (event.dataTransfer.types.includes(CARD_DRAG_MIME)) return
             event.preventDefault()
+            if (event.dataTransfer.types.includes(CARD_DRAG_MIME)) {
+              event.dataTransfer.dropEffect = 'move'
+              setArrasto((a) => (a ? { ...a, sobre: cards.length } : a))
+              return
+            }
             setSobreZona(true)
           }}
           onDragLeave={() => setSobreZona(false)}
@@ -329,6 +338,7 @@ export function CardsDrawer({
             if (draggedId) {
               event.preventDefault()
               dispatch({ type: 'card/reorder', cardId: draggedId, toIndex: cards.length })
+              setArrasto(null)
               return
             }
             void soltarArquivos(event)
@@ -379,6 +389,104 @@ function BotaoAdicionar({
     >
       + {rotulo}
     </button>
+  )
+}
+
+/**
+ * O wrapper arrastável de um cartão na fileira — separado de `CartaoNaGaveta`
+ * porque precisa do próprio estado (`arrastavel`), e um hook dentro de
+ * `cards.map` quebraria a regra dos hooks.
+ *
+ * `draggable` desliga já no `mousedown`, não só no `dragstart`: recusar tarde
+ * demais não bastava — no Chromium, um ancestral `draggable` ainda disputa o
+ * mousedown com o polegar de um `<input type=range>` por dentro (a barra de
+ * vídeo), emperrando o arrasto dela mesmo quando o `dragstart` era cancelado
+ * depois. Desligando no mousedown, a disputa nunca chega a acontecer.
+ */
+function CartaoArrastavel({
+  cardId,
+  index,
+  dispatch,
+  deslocamentoPx,
+  onDragStartCard,
+  onHoverIndex,
+  onDragEndCard,
+  children
+}: {
+  cardId: string
+  index: number
+  dispatch: (action: Action) => void
+  /** quanto este cartão desliza de lado agora, para revelar o slot de pouso do que está sendo arrastado */
+  deslocamentoPx: number
+  onDragStartCard: () => void
+  onHoverIndex: (sobre: number) => void
+  onDragEndCard: () => void
+  children: React.ReactNode
+}): React.JSX.Element {
+  const [arrastavel, setArrastavel] = useState(true)
+
+  return (
+    <div
+      draggable={arrastavel}
+      data-card-drag={cardId}
+      onMouseDown={(event) => {
+        // um clique dentro de um campo de texto, botão ou barra do player não
+        // é pedido de arrastar o cartão inteiro — é a interação normal
+        // daquele controle
+        if (
+          event.target instanceof HTMLElement &&
+          event.target.closest('input, textarea, button, [data-no-card-drag]')
+        ) {
+          setArrastavel(false)
+        }
+      }}
+      onMouseUp={() => setArrastavel(true)}
+      onDragEnd={() => {
+        setArrastavel(true)
+        onDragEndCard()
+      }}
+      onDragStart={(event) => {
+        event.dataTransfer.setData(CARD_DRAG_MIME, cardId)
+        event.dataTransfer.effectAllowed = 'move'
+        onDragStartCard()
+      }}
+      onDragOver={(event) => {
+        if (!event.dataTransfer.types.includes(CARD_DRAG_MIME)) return
+        event.preventDefault()
+        // sem isto o navegador não sabe que o "move" é aceito aqui, e mostra
+        // o cursor de bloqueado durante o arrasto inteiro — mesmo com o
+        // `preventDefault` acima, que só libera o `drop` em si
+        event.dataTransfer.dropEffect = 'move'
+        const rect = event.currentTarget.getBoundingClientRect()
+        const antes = event.clientX < rect.left + rect.width / 2
+        onHoverIndex(antes ? index : index + 1)
+      }}
+      onDrop={(event) => {
+        const draggedId = event.dataTransfer.getData(CARD_DRAG_MIME)
+        if (!draggedId) return
+        event.preventDefault()
+        event.stopPropagation()
+        const rect = event.currentTarget.getBoundingClientRect()
+        const antes = event.clientX < rect.left + rect.width / 2
+        dispatch({ type: 'card/reorder', cardId: draggedId, toIndex: antes ? index : index + 1 })
+        onDragEndCard()
+      }}
+      className="flex flex-none"
+    >
+      {/* o deslize é só visual, num filho À PARTE de quem escuta o arrasto:
+          transformar o próprio elemento draggable faz o navegador reavaliar
+          o alvo do dragover a cada quadro contra a posição nova, e como o
+          cartão se afasta bem debaixo do ponteiro, o hit-test troca de alvo
+          o tempo todo — na prática, trava o arrasto inteiro. Aqui embaixo, o
+          slot (o de fora) fica parado no lugar de sempre; só o conteúdo
+          desliza para revelar o vão, sem levar a área de escuta junto */}
+      <div
+        className="flex flex-none transition-transform duration-150 ease-out"
+        style={deslocamentoPx ? { transform: `translateX(${deslocamentoPx}px)` } : undefined}
+      >
+        {children}
+      </div>
+    </div>
   )
 }
 
@@ -705,25 +813,6 @@ function CartaoNaGaveta({
           {t('cards.onAir')}
         </label>
 
-        {/* o volume só existe com o cartão no ar: fora dele não há o que ouvir */}
-        {card.kind === 'video' && noAr ? (
-          <span className="flex min-w-0 items-center gap-1">
-            <Icon name="volume" size={9} className="flex-none text-[var(--color-fog-2)]" />
-            <SliderConsole
-              mini
-              data-card-video-volume={card.id}
-              min={0}
-              max={1}
-              step={0.05}
-              value={clock.volume}
-              cor="var(--color-fog-2)"
-              aria-label={t('cards.videoVolume')}
-              onValue={(volume) => dispatch({ type: 'card/videoVolume', volume })}
-              className="w-[34px] flex-none"
-            />
-          </span>
-        ) : null}
-
         <span className="ml-auto flex flex-none items-center gap-1">
           {/* "OVERLAY" por cartão: com o switch global (na coluna de assets)
               desligado, decide sozinho se o texto sobrepõe este cartão em
@@ -741,20 +830,6 @@ function CartaoNaGaveta({
               {t('cards.overlayShort')}
             </span>
           </label>
-          {card.kind === 'video' && !desvinculado ? (
-            <label title={t('cards.videoLoop')} className="flex-none cursor-pointer">
-              <input
-                type="checkbox"
-                data-card-loop={card.id}
-                checked={card.loop ?? false}
-                onChange={(event) => dispatch({ type: 'card/videoLoop', cardId: card.id, loop: event.target.checked })}
-                className="peer sr-only"
-              />
-              <span className="grid h-[18px] w-6 place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[var(--color-ink-2)] text-[11px] text-[var(--color-fog-2)] peer-checked:border-[var(--color-accent-2)] peer-checked:bg-[var(--color-accent-2)]/18 peer-checked:text-[#d9bdf0]">
-                ↻
-              </span>
-            </label>
-          ) : null}
           <button
             type="button"
             data-card-remove={card.id}
@@ -855,6 +930,8 @@ function PlayerDoCartao({
 }): React.JSX.Element {
   const { t } = useT()
   const [agora, setAgora] = useState(() => Date.now())
+  /** o volume de antes de mutar, para o clique seguinte devolver o mesmo nível — 1 (cheio) se nunca foi ajustado */
+  const volumeAnterior = useRef(1)
 
   // a barra precisa andar sozinha enquanto toca; dez vezes por segundo é
   // suave o bastante para o olho e barato o bastante para não disputar
@@ -915,47 +992,106 @@ function PlayerDoCartao({
     onSoltarArrasto()
   }
 
+  const mudo = clock.volume === 0
+  const alternarMudo = (): void => {
+    if (mudo) {
+      dispatch({ type: 'card/videoVolume', volume: volumeAnterior.current || 1 })
+    } else {
+      volumeAnterior.current = clock.volume
+      dispatch({ type: 'card/videoVolume', volume: 0 })
+    }
+  }
+
   return (
-    <div className="flex flex-none items-center gap-[7px] border-y border-[var(--color-edge)] bg-[var(--color-ink-1)] px-[7px] py-1">
-      <button
-        type="button"
-        data-card-video-play={card.id}
-        aria-label={tocando ? t('cards.videoPause') : t('cards.videoPlay')}
-        onClick={() => {
-          // fora do ar, play quer dizer "sobe e toca" — pausar um vídeo que
-          // ninguém está vendo não significa nada
-          if (!noAr) dispatch({ type: 'card/show', cardId: card.id })
-          else dispatch({ type: 'card/videoPlay', tocando: !clock.tocando })
-        }}
-        className="grid h-[18px] w-[18px] flex-none place-items-center rounded-full border border-[var(--color-edge)] text-[var(--color-fog-0)]"
-        style={{ background: 'linear-gradient(#3a3a40, #2a2a2f)' }}
-      >
-        <Icon name={tocando ? 'pause' : 'play'} size={8} />
-      </button>
+    <div className="flex flex-none flex-col border-y border-[var(--color-edge)] bg-[var(--color-ink-1)]">
+      {/* a barra em si, com repetir ao lado: o mesmo botão que morava lá
+          embaixo, disputando espaço com "O" — junto do scrub é onde o
+          operador já está olhando para decidir o comportamento do player */}
+      <div className="flex flex-none items-center gap-[7px] px-[7px] pt-1 pb-0.5">
+        <button
+          type="button"
+          data-card-video-play={card.id}
+          aria-label={tocando ? t('cards.videoPause') : t('cards.videoPlay')}
+          onClick={() => {
+            // fora do ar, play quer dizer "sobe e toca" — pausar um vídeo que
+            // ninguém está vendo não significa nada
+            if (!noAr) dispatch({ type: 'card/show', cardId: card.id })
+            else dispatch({ type: 'card/videoPlay', tocando: !clock.tocando })
+          }}
+          className="grid h-[18px] w-[18px] flex-none place-items-center rounded-full border border-[var(--color-edge)] text-[var(--color-fog-0)]"
+          style={{ background: 'linear-gradient(#3a3a40, #2a2a2f)' }}
+        >
+          <Icon name={tocando ? 'pause' : 'play'} size={8} />
+        </button>
 
-      <SliderConsole
-        mini
-        data-card-video-seek={card.id}
-        min={0}
-        max={duracao || 1}
-        step={0.05}
-        value={Math.min(posicao, duracao || 1)}
-        disabled={!duracao}
-        cor="var(--color-accent-2)"
-        aria-label={t('cards.videoSeek')}
-        onValue={(segundo) => {
-          onArrastar(segundo)
-          dispatch({ type: 'card/videoSeek', cardId: card.id, segundo, arrastando: true })
-        }}
-        onPointerUp={soltar}
-        onKeyUp={soltar}
-        onBlur={soltar}
-        className="min-w-0 flex-1 disabled:opacity-40"
-      />
+        <SliderConsole
+          mini
+          data-card-video-seek={card.id}
+          min={0}
+          max={duracao || 1}
+          step={0.05}
+          value={Math.min(posicao, duracao || 1)}
+          disabled={!duracao}
+          cor="var(--color-accent-2)"
+          aria-label={t('cards.videoSeek')}
+          onValue={(segundo) => {
+            onArrastar(segundo)
+            dispatch({ type: 'card/videoSeek', cardId: card.id, segundo, arrastando: true })
+          }}
+          onPointerUp={soltar}
+          onKeyUp={soltar}
+          onBlur={soltar}
+          className="min-w-0 flex-1 disabled:opacity-40"
+        />
 
-      <span className="flex-none font-mono text-[9px] font-semibold text-[var(--color-fog-2)]">
-        {tempoDeVideo(posicao)}
-      </span>
+        <label title={t('cards.videoLoop')} className="flex-none cursor-pointer">
+          <input
+            type="checkbox"
+            data-card-loop={card.id}
+            checked={card.loop ?? false}
+            onChange={(event) => dispatch({ type: 'card/videoLoop', cardId: card.id, loop: event.target.checked })}
+            className="peer sr-only"
+          />
+          <span className="grid h-[18px] w-6 place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[var(--color-ink-2)] text-[11px] text-[var(--color-fog-2)] peer-checked:border-[var(--color-accent-2)] peer-checked:bg-[var(--color-accent-2)]/18 peer-checked:text-[#d9bdf0]">
+            ↻
+          </span>
+        </label>
+      </div>
+
+      {/* volume e tempo corrente, sempre visíveis — não só com o cartão no
+          ar: o operador ajusta e deixa pré-configurado antes de subir.
+          Botão de mudo do mesmo tamanho do play, mesmo alinhamento */}
+      <div className="flex flex-none items-center gap-1.5 px-[7px] pt-0.5 pb-1">
+        <span className="flex min-w-0 flex-1 items-center gap-1">
+          <button
+            type="button"
+            data-card-video-mute={card.id}
+            aria-label={mudo ? t('cards.videoUnmute') : t('cards.videoMute')}
+            title={mudo ? t('cards.videoUnmute') : t('cards.videoMute')}
+            onClick={alternarMudo}
+            className="grid h-[18px] w-[18px] flex-none place-items-center rounded-full border border-[var(--color-edge)] text-[var(--color-fog-0)]"
+            style={{ background: 'linear-gradient(#3a3a40, #2a2a2f)' }}
+          >
+            <Icon name={mudo ? 'volumeOff' : 'volume'} size={9} />
+          </button>
+          <SliderConsole
+            mini
+            data-card-video-volume={card.id}
+            min={0}
+            max={1}
+            step={0.05}
+            value={clock.volume}
+            cor="var(--color-fog-2)"
+            aria-label={t('cards.videoVolume')}
+            onValue={(volume) => dispatch({ type: 'card/videoVolume', volume })}
+            className="w-full"
+          />
+        </span>
+
+        <span className="flex-none font-mono text-[9px] font-semibold text-[var(--color-fog-2)]">
+          {tempoDeVideo(posicao)}
+        </span>
+      </div>
     </div>
   )
 }
