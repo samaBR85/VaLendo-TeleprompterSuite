@@ -74,7 +74,11 @@ export function WebviewPanel({ info, enabled, videoPerfil, dispatch, onClose }: 
               : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
           }`}
         >
-          <span>{noAr ? t('web.live') : t('web.publish')}</span>
+          {/* verde nos DOIS estados: é o rótulo do que este botão publica, e o
+              verde é a cor do "no ar" em todo o app. Quem diz se está ligado
+              continua sendo a moldura tingida e o ponto à direita — o texto
+              apagado em cinza fazia o botão parecer indisponível */}
+          <span className="text-[var(--color-go)]">{noAr ? t('web.live') : t('web.publish')}</span>
           <span
             className={`h-2.5 w-2.5 flex-none rounded-full ${
               noAr ? 'bg-[var(--color-go)]' : 'border border-[var(--color-line)]'
