@@ -2,7 +2,9 @@ export type Lang = 'pt-BR' | 'en' | 'es' | 'de' | 'fr' | 'it'
 
 /** Cada idioma no próprio idioma: quem não lê português precisa se achar na lista. */
 export const LANGS: { id: Lang; nome: string; sigla: string }[] = [
-  { id: 'pt-BR', nome: 'Português (Brasil)', sigla: 'PT' },
+  // BR e não PT: o dicionário é brasileiro, e para quem fala português a
+  // diferença entre os dois é justamente a que importa
+  { id: 'pt-BR', nome: 'Português (Brasil)', sigla: 'BR' },
   { id: 'en', nome: 'English', sigla: 'EN' },
   { id: 'es', nome: 'Español', sigla: 'ES' },
   { id: 'de', nome: 'Deutsch', sigla: 'DE' },

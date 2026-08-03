@@ -56,6 +56,8 @@ export const it: Dicionario = {
   'toolbar.group.script': 'Copione',
   'toolbar.group.air': 'Onda',
   'toolbar.openProject': 'Apri un progetto',
+  'toolbar.recentProjects': 'Progetti recenti',
+  'toolbar.noRecentProjects': 'Nessun progetto recente',
   'toolbar.saveProject': 'Salva tutto il progetto — schede, aspetto, segnalibri e ritmo',
   'toolbar.saveProjectAs': 'Salva con nome…',
   'toolbar.newProject': 'Nuovo progetto vuoto',

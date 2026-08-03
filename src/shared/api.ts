@@ -2,6 +2,14 @@ import type { Action, HistoryInfo } from './actions'
 import type { Lang } from './i18n/types'
 import type { Appearance, AppState, Block, Cartao, CardOverlayStyle, DisplayInfo, Transport } from './types'
 
+/** Um projeto que já passou por aqui — o suficiente para reconhecer e reabrir. */
+export interface ProjetoRecente {
+  /** onde o arquivo está agora; é isto que o app abre */
+  caminho: string
+  /** só o nome do arquivo, que é o que cabe num menu e o que a pessoa reconhece */
+  nome: string
+}
+
 export interface StateSnapshot {
   state: AppState
   history: HistoryInfo
@@ -186,6 +194,10 @@ export interface ValendoApi {
   saveProject(saveAs?: boolean): Promise<ProjectResult | null>
   /** abre um .valendo e substitui o que está na tela */
   openProject(): Promise<ProjectResult | null>
+  /** o mesmo, sem o diálogo: um caminho que a pessoa já escolheu na lista de recentes */
+  openProjectPath(caminho: string): Promise<ProjectResult | null>
+  /** os últimos projetos abertos ou salvos, já sem os que sumiram do disco */
+  listRecentProjects(): Promise<ProjetoRecente[]>
   /** o projeto aberto tem mudança que não foi para o arquivo ainda? */
   projectIsDirty(): Promise<boolean>
   openExternal(url: string): void

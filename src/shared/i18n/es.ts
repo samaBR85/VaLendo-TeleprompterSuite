@@ -56,6 +56,8 @@ export const es: Dicionario = {
   'toolbar.group.script': 'Guion',
   'toolbar.group.air': 'Aire',
   'toolbar.openProject': 'Abrir un proyecto',
+  'toolbar.recentProjects': 'Proyectos recientes',
+  'toolbar.noRecentProjects': 'Ningún proyecto reciente',
   'toolbar.saveProject': 'Guardar el proyecto entero — pestañas, aspecto, marcadores y ritmo',
   'toolbar.saveProjectAs': 'Guardar como…',
   'toolbar.newProject': 'Nuevo proyecto en blanco',

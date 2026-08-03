@@ -455,15 +455,24 @@ function AppConteudo({
     )
   }, [])
 
-  /** Grava ou abre o programa inteiro num .valendo. Devolve se a gravação deu certo. */
-  const project = useCallback(async (acao: 'salvar' | 'salvarComo' | 'abrir'): Promise<boolean> => {
+  /**
+   * Grava ou abre o programa inteiro num .valendo. Devolve se deu certo.
+   *
+   * Com `caminho`, abre aquele arquivo direto — é por aqui que entram os
+   * projetos recentes. Sem ele, pergunta no seletor, como sempre. Os recentes
+   * não ganharam função própria justamente por isto: quem abre pela lista
+   * merece o mesmo recado de sucesso ou de falha que quem abre pela pasta.
+   */
+  const project = useCallback(async (acao: 'salvar' | 'salvarComo' | 'abrir', caminho?: string): Promise<boolean> => {
     const salvando = acao === 'salvar' || acao === 'salvarComo'
     if (salvando) editorRef.current?.flush()
     await window.valendo.getState()
 
     const result = salvando
       ? await window.valendo.saveProject(acao === 'salvarComo')
-      : await window.valendo.openProject()
+      : caminho
+        ? await window.valendo.openProjectPath(caminho)
+        : await window.valendo.openProject()
     if (!result) return false
 
     setNotice(
@@ -910,6 +919,7 @@ function AppConteudo({
         run={run}
         onImport={importDocument}
         onNewProject={novoProjeto}
+        onOpenRecent={(caminho) => void project('abrir', caminho)}
       />
 
       {/* no topo, o transporte vem logo abaixo do arquivo e as duas barras
@@ -925,6 +935,7 @@ function AppConteudo({
           run={run}
           onImport={importDocument}
           onNewProject={novoProjeto}
+          onOpenRecent={(caminho) => void project('abrir', caminho)}
           position="topo"
         />
       ) : null}
@@ -1204,6 +1215,7 @@ function AppConteudo({
                 run={run}
                 onImport={importDocument}
                 onNewProject={novoProjeto}
+                onOpenRecent={(caminho) => void project('abrir', caminho)}
                 position="regua"
               />
             ) : null}
@@ -1237,6 +1249,7 @@ function AppConteudo({
           run={run}
           onImport={importDocument}
           onNewProject={novoProjeto}
+          onOpenRecent={(caminho) => void project('abrir', caminho)}
           position="regua"
         />
       ) : null}

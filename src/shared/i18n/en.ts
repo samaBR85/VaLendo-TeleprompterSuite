@@ -56,6 +56,8 @@ export const en: Dicionario = {
   'toolbar.group.script': 'Script',
   'toolbar.group.air': 'Air',
   'toolbar.openProject': 'Open a project',
+  'toolbar.recentProjects': 'Recent projects',
+  'toolbar.noRecentProjects': 'No recent projects',
   'toolbar.saveProject': 'Save the whole project — tabs, appearance, markers and pace',
   'toolbar.saveProjectAs': 'Save as…',
   'toolbar.newProject': 'New blank project',

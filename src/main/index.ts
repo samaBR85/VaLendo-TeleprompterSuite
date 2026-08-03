@@ -16,6 +16,7 @@ import type { AppState } from '@shared/types'
 import { IMPORT_FILTERS, importFile } from './import'
 import { EXPORT_FILTERS, defaultFileName, exportScript } from './export'
 import { PROJECT_FILTERS, markProjectClean, openProject, projectFileName, projectIsDirty, saveProject } from './project'
+import { loadRecentes, registrarRecente } from './recentes'
 import { onWebviewChange, publish, startWebview, stopWebview, webviewInfo } from './webview'
 import { identifyDisplays, closeIdentifyWindows, listDisplays, watchDisplays } from './displays'
 import { cartaoNoAr } from '@shared/cards'
@@ -219,6 +220,34 @@ function registerIpc(): void {
   })
 
   /**
+   * Abre um `.valendo` deste caminho e o põe na tela.
+   *
+   * Existe como função, e não só dentro do handler do diálogo, porque agora
+   * são DUAS portas para a mesma coisa: o seletor de arquivo e a lista de
+   * recentes. Duplicar o corpo significaria esquecer, num dos dois, de limpar
+   * as artes antigas ou de revalidar os vídeos.
+   */
+  async function abrirCaminho(caminho: string): Promise<ProjectResult> {
+    const { state, error } = await openProject(caminho)
+    if (!state) return { ok: false, path: caminho, error: error ?? idioma('project.cantOpen') }
+
+    // o caminho é DESTE momento, não o que o arquivo carregava de quando foi
+    // salvo — se o operador moveu ou copiou o .valendo, é aqui que ele está
+    // agora, e é esse nome que o cabeçalho deve mostrar
+    store.dispatch({ type: 'project/replace', state: { ...state, projectPath: caminho } })
+    // o que acabou de abrir é o novo retrato limpo — nada foi mudado ainda
+    markProjectClean(store.getState())
+    // as artes do programa anterior não servem mais a ninguém
+    pruneCardImages(store.getState().cards)
+    pruneVideoConversions(store.getState().cards)
+    // os vídeos não vêm dentro do projeto: os caminhos podem apontar para
+    // arquivos que não existem nesta máquina, e o cartão precisa dizer isso
+    revalidarVideos()
+    registrarRecente(userDataRoot(), caminho)
+    return { ok: true, path: caminho }
+  }
+
+  /**
    * `saveAs=false` (o botão "Salvar" comum) grava direto no arquivo já
    * aberto, sem perguntar onde — só cai no diálogo se ainda não há
    * `projectPath` (primeiro salvamento) ou se `saveAs=true` foi pedido de
@@ -231,6 +260,7 @@ function registerIpc(): void {
       try {
         await saveProject(state.projectPath, state)
         markProjectClean(state)
+        registrarRecente(userDataRoot(), state.projectPath)
         return { ok: true, path: state.projectPath }
       } catch (error) {
         return { ok: false, path: state.projectPath, error: (error as Error).message }
@@ -253,6 +283,7 @@ function registerIpc(): void {
       // do cabeçalho precisa acompanhar, mesmo sem recarregar nada
       store.dispatch({ type: 'project/pathSet', path: picked.filePath })
       markProjectClean(state)
+      registrarRecente(userDataRoot(), picked.filePath)
       return { ok: true, path: picked.filePath }
     } catch (error) {
       return { ok: false, path: picked.filePath, error: (error as Error).message }
@@ -269,24 +300,12 @@ function registerIpc(): void {
     const picked = owner ? await dialog.showOpenDialog(owner, options) : await dialog.showOpenDialog(options)
     if (picked.canceled || picked.filePaths.length === 0) return null
 
-    const caminho = picked.filePaths[0]
-    const { state, error } = await openProject(caminho)
-    if (!state) return { ok: false, path: caminho, error: error ?? idioma('project.cantOpen') }
-
-    // o caminho é DESTE momento, não o que o arquivo carregava de quando foi
-    // salvo — se o operador moveu ou copiou o .valendo, é aqui que ele está
-    // agora, e é esse nome que o cabeçalho deve mostrar
-    store.dispatch({ type: 'project/replace', state: { ...state, projectPath: caminho } })
-    // o que acabou de abrir é o novo retrato limpo — nada foi mudado ainda
-    markProjectClean(store.getState())
-    // as artes do programa anterior não servem mais a ninguém
-    pruneCardImages(store.getState().cards)
-    pruneVideoConversions(store.getState().cards)
-    // os vídeos não vêm dentro do projeto: os caminhos podem apontar para
-    // arquivos que não existem nesta máquina, e o cartão precisa dizer isso
-    revalidarVideos()
-    return { ok: true, path: caminho }
+    return abrirCaminho(picked.filePaths[0])
   })
+
+  // o mesmo abrir, sem o diálogo: quem escolheu já sabe qual arquivo quer
+  ipcMain.handle(CHANNELS.projectOpenPath, (_event, caminho: string) => abrirCaminho(caminho))
+  ipcMain.handle(CHANNELS.projectRecents, () => loadRecentes(userDataRoot()))
 
   // só http(s), e sempre no navegador do sistema: o app nunca navega para fora
   // do próprio conteúdo

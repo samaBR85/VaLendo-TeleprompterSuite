@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
+import type { ProjetoRecente } from '@shared/api'
 import { composeLines, totalWords } from '@shared/anchor'
 import { formatBinding, parseBinding } from '@shared/commands'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
@@ -25,6 +26,8 @@ interface Props {
   run: (commandId: string) => void
   onImport: () => void
   onNewProject: () => void
+  /** abre um dos últimos projetos, pelo caminho, sem passar pelo seletor de arquivo */
+  onOpenRecent: (caminho: string) => void
   /** a página da rede está mesmo no ar, e não só pedida */
   webviewLive: boolean
   onOpenWebview: () => void
@@ -56,6 +59,7 @@ export function PocosDeArquivo({
   run,
   onImport,
   onNewProject,
+  onOpenRecent,
   compacto
 }: {
   tab: Tab
@@ -63,6 +67,8 @@ export function PocosDeArquivo({
   run: (commandId: string) => void
   onImport: () => void
   onNewProject: () => void
+  /** abre um dos últimos projetos, pelo caminho, sem passar pelo seletor de arquivo */
+  onOpenRecent: (caminho: string) => void
   /**
    * Barra do topo apertada: os rótulos PROJETO/ROTEIRO sobem para CIMA do
    * poço em vez de ficarem ao lado. Empilhado, o rótulo não custa largura
@@ -73,6 +79,8 @@ export function PocosDeArquivo({
 }): React.JSX.Element {
   const { t } = useT()
   const [saveMenuOpen, setSaveMenuOpen] = useState(false)
+  const [recentesOpen, setRecentesOpen] = useState(false)
+  const [recentes, setRecentes] = useState<ProjetoRecente[]>([])
 
   /** ao lado (padrão) ou em cima (compacto) — o mesmo poço, só muda onde o nome mora */
   const envolto = (rotulo: string, cor: string, pill: string, teclas: React.ReactNode): React.JSX.Element =>
@@ -96,14 +104,67 @@ export function PocosDeArquivo({
         'var(--color-link)',
         'documento',
         <>
-        <Tecla
-          title={`${t('toolbar.openProject')}${hint(keymap, 'project.open')}`}
-          aria-label={t('toolbar.openProject')}
-          className="h-6 w-7"
-          onClick={() => run('project.open')}
-        >
-          <Icon name="projectOpen" size={13} />
-        </Tecla>
+        <div className="relative flex items-stretch">
+          <Tecla
+            title={`${t('toolbar.openProject')}${hint(keymap, 'project.open')}`}
+            aria-label={t('toolbar.openProject')}
+            className="h-6 w-7 rounded-r-none border-r-0"
+            onClick={() => run('project.open')}
+          >
+            <Icon name="projectOpen" size={13} />
+          </Tecla>
+          {/* mesmo desenho do "Salvar como": a tecla faz a ação óbvia, a seta
+              ao lado abre o caminho menos comum. Aqui o menos comum é reabrir
+              um dos últimos, que poupa navegar até a pasta de novo */}
+          <Tecla
+            title={t('toolbar.recentProjects')}
+            aria-label={t('toolbar.recentProjects')}
+            data-recentes-abre
+            className="h-6 w-4 rounded-l-none px-0"
+            onClick={() => {
+              // lê na hora de abrir, e não uma vez ao montar: salvar um projeto
+              // muda a lista, e um menu montado no início da sessão mostraria
+              // um retrato velho
+              void window.valendo.listRecentProjects().then(setRecentes)
+              setRecentesOpen((open) => !open)
+            }}
+          >
+            <Icon name="down" size={10} />
+          </Tecla>
+          {recentesOpen ? (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setRecentesOpen(false)} />
+              <div
+                data-recentes-menu
+                className="absolute top-full left-0 z-50 mt-1 min-w-max rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] py-1 shadow-lg"
+              >
+                {recentes.length === 0 ? (
+                  <div className="px-3 py-1.5 text-[11px] whitespace-nowrap text-[var(--color-fog-3)]">
+                    {t('toolbar.noRecentProjects')}
+                  </div>
+                ) : (
+                  recentes.map((projeto) => (
+                    <button
+                      key={projeto.caminho}
+                      type="button"
+                      data-recente
+                      // o caminho inteiro no hover: dois projetos podem ter o
+                      // mesmo nome em pastas diferentes, e o menu só mostra o nome
+                      title={projeto.caminho}
+                      className="block w-full px-3 py-1.5 text-left text-[11px] whitespace-nowrap text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+                      onClick={() => {
+                        setRecentesOpen(false)
+                        onOpenRecent(projeto.caminho)
+                      }}
+                    >
+                      {projeto.nome}
+                    </button>
+                  ))
+                )}
+              </div>
+            </>
+          ) : null}
+        </div>
         <div className="relative flex items-stretch">
           <Tecla
             title={`${t('toolbar.saveProject')}${hint(keymap, 'project.save')}`}
@@ -526,7 +587,8 @@ export function BarraDeArquivo({
   dispatch,
   run,
   onImport,
-  onNewProject
+  onNewProject,
+  onOpenRecent
 }: Omit<Props, 'rows' | 'webviewLive' | 'onOpenWebview'>): React.JSX.Element {
   return (
     <div className="flex flex-none items-center gap-2.5 border-b border-[var(--color-edge)] bg-[#17171a] px-2.5 py-[5px]">
@@ -535,7 +597,14 @@ export function BarraDeArquivo({
           rodapé e levar os arquivos junto os deixaria longe demais — então
           ficam aqui, como antes */}
       {state.transportPosition === 'regua' ? (
-        <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={onImport} onNewProject={onNewProject} />
+        <PocosDeArquivo
+          tab={tab}
+          keymap={keymap}
+          run={run}
+          onImport={onImport}
+          onNewProject={onNewProject}
+          onOpenRecent={onOpenRecent}
+        />
       ) : null}
 
       <Tabs state={state} dispatch={dispatch} />
@@ -789,10 +858,20 @@ export function BarraDeTransporte({
   run,
   position,
   onImport,
-  onNewProject
+  onNewProject,
+  onOpenRecent
 }: Pick<
   Props,
-  'state' | 'tab' | 'displays' | 'keymap' | 'rows' | 'dispatch' | 'run' | 'onImport' | 'onNewProject'
+  | 'state'
+  | 'tab'
+  | 'displays'
+  | 'keymap'
+  | 'rows'
+  | 'dispatch'
+  | 'run'
+  | 'onImport'
+  | 'onNewProject'
+  | 'onOpenRecent'
 > & {
   position: TransportPosition
 }): React.JSX.Element {
@@ -933,6 +1012,7 @@ export function BarraDeTransporte({
           run={run}
           onImport={onImport}
           onNewProject={onNewProject}
+          onOpenRecent={onOpenRecent}
           compacto={compacto}
         />
       </div>

@@ -155,6 +155,9 @@ export const CHANNELS = {
   exportDocument: 'document:export',
   projectSave: 'project:save',
   projectOpen: 'project:open',
+  /** abre um caminho já conhecido, sem passar pelo diálogo — os recentes */
+  projectOpenPath: 'project:openPath',
+  projectRecents: 'project:recents',
   projectIsDirty: 'project:isDirty',
   openExternal: 'app:openExternal',
   /** escala da interface do operador — preferência da máquina, fora do AppState */

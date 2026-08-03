@@ -10,6 +10,7 @@ import type {
   ImportResult,
   MotivosDeFechar,
   ProjectResult,
+  ProjetoRecente,
   StateSnapshot,
   ValendoApi
 } from '@shared/api'
@@ -42,6 +43,9 @@ const api: ValendoApi = {
     ipcRenderer.invoke(CHANNELS.exportDocument, saveAs) as Promise<ExportResult | null>,
   saveProject: (saveAs = false) => ipcRenderer.invoke(CHANNELS.projectSave, saveAs) as Promise<ProjectResult | null>,
   openProject: () => ipcRenderer.invoke(CHANNELS.projectOpen) as Promise<ProjectResult | null>,
+  openProjectPath: (caminho: string) =>
+    ipcRenderer.invoke(CHANNELS.projectOpenPath, caminho) as Promise<ProjectResult | null>,
+  listRecentProjects: () => ipcRenderer.invoke(CHANNELS.projectRecents) as Promise<ProjetoRecente[]>,
   projectIsDirty: () => ipcRenderer.invoke(CHANNELS.projectIsDirty) as Promise<boolean>,
   openExternal: (url: string) => ipcRenderer.send(CHANNELS.openExternal, url),
   // `webFrame` é o desta janela, sem IPC — a resposta ao slider é imediata.

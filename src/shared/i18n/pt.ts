@@ -68,6 +68,8 @@ export const pt = {
   'toolbar.group.script': 'Roteiro',
   'toolbar.group.air': 'Ar',
   'toolbar.openProject': 'Abrir um projeto',
+  'toolbar.recentProjects': 'Projetos recentes',
+  'toolbar.noRecentProjects': 'Nenhum projeto recente',
   'toolbar.saveProject': 'Salvar o projeto inteiro — abas, aparência, marcadores e ritmo',
   'toolbar.saveProjectAs': 'Salvar como…',
   'toolbar.newProject': 'Novo projeto em branco',

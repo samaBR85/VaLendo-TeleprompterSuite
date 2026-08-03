@@ -56,6 +56,8 @@ export const fr: Dicionario = {
   'toolbar.group.script': 'Texte',
   'toolbar.group.air': 'Antenne',
   'toolbar.openProject': 'Ouvrir un projet',
+  'toolbar.recentProjects': 'Projets récents',
+  'toolbar.noRecentProjects': 'Aucun projet récent',
   'toolbar.saveProject': 'Enregistrer tout le projet — onglets, apparence, repères et rythme',
   'toolbar.saveProjectAs': 'Enregistrer sous…',
   'toolbar.newProject': 'Nouveau projet vierge',
