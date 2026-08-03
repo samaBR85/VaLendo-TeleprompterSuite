@@ -36,6 +36,20 @@ export function onOperatorWindowBounds(handler: (bounds: JanelaSalva) => void): 
   boundsHandler = handler
 }
 
+/**
+ * O projeto tem mudança que não foi para o arquivo?
+ *
+ * Este arquivo não conhece o `Store` — quem sabe responder é `index.ts`, do
+ * mesmo jeito que já acontece com o menu de contexto e com os bounds. Sem esse
+ * fio, o `close` só conseguia enxergar a transmissão no ar, e fechar o app com
+ * trabalho não salvo passava batido.
+ */
+let dirtyHandler: (() => boolean) | null = null
+
+export function onOperatorCloseAsk(handler: () => boolean): void {
+  dirtyHandler = handler
+}
+
 /** A origem salva ainda cai dentro de algum monitor conectado agora? */
 function origemNaTela(x: number, y: number): boolean {
   return screen.getAllDisplays().some((d) => {
@@ -125,19 +139,27 @@ export function createOperatorWindow(bounds?: JanelaSalva | null, zoomFactor = 1
   operatorWindow.on('resize', avisarBounds)
   operatorWindow.on('move', avisarBounds)
 
-  // fechar a janela do operador derruba a transmissão: confirma primeiro, com
-  // um modal do próprio app em vez do diálogo nativo do sistema — pede para o
-  // renderer perguntar e espera a resposta chegar por IPC antes de decidir
+  // Fechar o app pode custar caro por DOIS motivos independentes: derruba a
+  // transmissão que está no ar, e/ou joga fora o que não foi salvo. Confirma
+  // antes, com um modal do próprio app em vez do diálogo nativo do sistema —
+  // pede para o renderer perguntar e espera a resposta chegar por IPC.
+  //
+  // Até a versão 174 só a transmissão era olhada aqui: sem nada no ar, a
+  // janela fechava calada mesmo com trabalho não salvo. O `workspace.json`
+  // trazia tudo de volta na abertura seguinte, o que escondia o problema —
+  // mas o `.valendo` ficava para trás, e é ele que o operador leva embora.
   operatorWindow.on('close', (event) => {
     // captura imediata, sem esperar o debounce: é o último instante confiável
     // antes da janela sumir, e `before-quit` já grava o estado logo depois
     if (debounce) clearTimeout(debounce)
     if (operatorWindow) boundsHandler?.(operatorWindow.getBounds())
 
-    if (closeConfirmed) return
-    if (!broadcastWindow || broadcastWindow.isDestroyed() || !operatorWindow) return
+    if (closeConfirmed || !operatorWindow) return
+    const noAr = Boolean(broadcastWindow && !broadcastWindow.isDestroyed())
+    const naoSalvo = dirtyHandler?.() ?? false
+    if (!noAr && !naoSalvo) return
     event.preventDefault()
-    operatorWindow.webContents.send(CHANNELS.confirmCloseRequest)
+    operatorWindow.webContents.send(CHANNELS.confirmCloseRequest, { noAr, naoSalvo })
   })
 
   operatorWindow.on('closed', () => {

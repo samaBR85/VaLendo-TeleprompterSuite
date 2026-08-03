@@ -230,6 +230,10 @@ export const en: Dicionario = {
   'close.detail': 'Closing the app now blanks the presenter’s screen.',
   'close.cancel': 'Cancel',
   'close.confirm': 'End the broadcast',
+  'close.unsavedDetail': 'Closing the app now discards what wasn’t saved to the project.',
+  'close.unsavedAndOnAir': 'The broadcast is on air and there are unsaved changes. Closing now blanks the presenter’s screen and discards what wasn’t saved.',
+  'close.unsavedDiscard': 'Close without saving',
+  'close.unsavedSave': 'Save and close',
 
   'unsaved.title': 'This project has unsaved changes.',
   'unsaved.detail': 'Creating a new blank project discards what wasn’t saved.',

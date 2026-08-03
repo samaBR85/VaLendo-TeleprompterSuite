@@ -51,6 +51,7 @@ import {
   getBroadcastWindow,
   getOperatorWindow,
   onBroadcastContextMenu,
+  onOperatorCloseAsk,
   onOperatorWindowBounds,
   openBroadcastWindow,
   respondToCloseConfirm,
@@ -609,6 +610,9 @@ function bootstrap(): void {
   void garantirProxies()
   onBroadcastContextMenu(showBroadcastMenu)
   onOperatorWindowBounds((bounds) => store.dispatch({ type: 'window/bounds', bounds }))
+  // o `close` da janela é síncrono: não dá para pedir o estado ao renderer e
+  // esperar. O main já tem o estado autoritativo, então a resposta sai daqui
+  onOperatorCloseAsk(() => projectIsDirty(store.getState()))
 
   store.subscribe(() => {
     void garantirProxies()

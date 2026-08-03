@@ -232,6 +232,10 @@ export const fr: Dicionario = {
   'close.detail': 'Fermer l’app maintenant efface le texte sur l’écran du présentateur.',
   'close.cancel': 'Annuler',
   'close.confirm': 'Terminer la diffusion',
+  'close.unsavedDetail': 'Fermer l’app maintenant abandonne ce qui n’a pas été enregistré dans le projet.',
+  'close.unsavedAndOnAir': 'La diffusion est à l’antenne et des modifications ne sont pas enregistrées. Fermer maintenant vide l’écran du présentateur et abandonne ce qui n’a pas été enregistré.',
+  'close.unsavedDiscard': 'Fermer sans enregistrer',
+  'close.unsavedSave': 'Enregistrer et fermer',
 
   'unsaved.title': 'Ce projet a des changements non enregistrés.',
   'unsaved.detail': 'Créer un nouveau projet vierge abandonne ce qui n’a pas été enregistré.',
@@ -388,7 +392,7 @@ export const fr: Dicionario = {
   'cards.videoUnmute': 'Rétablir le son',
   'cards.videoLoop': 'boucle',
   'cards.overlay': 'OVERLAY',
-  'cards.overlayStyleLabel': 'Effect :',
+  'cards.overlayStyleLabel': 'Effet :',
   'cards.overlayForced': 'Forcé par l’OVERLAY de la colonne Assets',
   'cards.overlayShort': 'O',
   'cards.overlayHint':

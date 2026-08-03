@@ -232,6 +232,10 @@ export const de: Dicionario = {
   'close.detail': 'Die App jetzt zu schließen löscht den Text auf dem Bildschirm des Sprechers.',
   'close.cancel': 'Abbrechen',
   'close.confirm': 'Sendung beenden',
+  'close.unsavedDetail': 'Die App jetzt zu schließen verwirft, was nicht im Projekt gespeichert wurde.',
+  'close.unsavedAndOnAir': 'Die Übertragung läuft und es gibt ungespeicherte Änderungen. Jetzt zu schließen leert den Bildschirm des Sprechers und verwirft Ungespeichertes.',
+  'close.unsavedDiscard': 'Ohne Speichern schließen',
+  'close.unsavedSave': 'Speichern und schließen',
 
   'unsaved.title': 'Dieses Projekt hat ungespeicherte Änderungen.',
   'unsaved.detail': 'Ein neues leeres Projekt zu erstellen verwirft, was nicht gespeichert wurde.',
@@ -388,7 +392,7 @@ export const de: Dicionario = {
   'cards.videoUnmute': 'Stummschaltung aufheben',
   'cards.videoLoop': 'wiederholen',
   'cards.overlay': 'OVERLAY',
-  'cards.overlayStyleLabel': 'Effect:',
+  'cards.overlayStyleLabel': 'Effekt:',
   'cards.overlayForced': 'Durch das OVERLAY der Assets-Spalte erzwungen',
   'cards.overlayShort': 'O',
   'cards.overlayHint':

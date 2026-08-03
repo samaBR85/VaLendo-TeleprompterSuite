@@ -8,6 +8,7 @@ import type {
   CardVideoPickResult,
   ExportResult,
   ImportResult,
+  MotivosDeFechar,
   ProjectResult,
   StateSnapshot,
   ValendoApi
@@ -57,7 +58,7 @@ const api: ValendoApi = {
   coversOperator: () => ipcRenderer.invoke(CHANNELS.broadcastCoversOperator) as Promise<boolean>,
   onState: (callback) => subscribe<StateSnapshot>(CHANNELS.stateChanged, callback),
   onDisplays: (callback) => subscribe<DisplayInfo[]>(CHANNELS.displaysChanged, callback),
-  onConfirmClose: (callback) => subscribe<void>(CHANNELS.confirmCloseRequest, callback),
+  onConfirmClose: (callback) => subscribe<MotivosDeFechar>(CHANNELS.confirmCloseRequest, callback),
   respondToClose: (confirmed: boolean) => ipcRenderer.send(CHANNELS.confirmCloseResponse, confirmed),
   pickCardImage: (cardId: string) =>
     ipcRenderer.invoke(CHANNELS.cardPick, cardId) as Promise<CardPickResult | null>,

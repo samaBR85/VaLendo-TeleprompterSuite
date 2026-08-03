@@ -59,6 +59,20 @@ export interface ProjectResult {
 }
 
 /**
+ * Por que fechar o app precisa de confirmação.
+ *
+ * Os dois motivos são independentes e podem valer ao mesmo tempo — quem
+ * desenha o modal decide o que dizer. Nenhum dos dois ligado significa que a
+ * janela fecha calada, que é o caso comum.
+ */
+export interface MotivosDeFechar {
+  /** a transmissão está no ar, e fechar apaga a tela do apresentador */
+  noAr: boolean
+  /** há mudança que não foi para o `.valendo` */
+  naoSalvo: boolean
+}
+
+/**
  * O quadro que a página da rede local recebe.
  *
  * Só o necessário para desenhar a aba que está no ar — as outras abas não
@@ -180,10 +194,11 @@ export interface ValendoApi {
   onState(callback: (snapshot: StateSnapshot) => void): () => void
   onDisplays(callback: (displays: DisplayInfo[]) => void): () => void
   /**
-   * O main pediu confirmação antes de fechar: a transmissão está no ar.
-   * Substitui o diálogo nativo do sistema por um modal do próprio app.
+   * O main pediu confirmação antes de fechar, e diz POR QUÊ — a transmissão
+   * está no ar, há mudança não salva, ou os dois. Substitui o diálogo nativo
+   * do sistema por um modal do próprio app.
    */
-  onConfirmClose(callback: () => void): () => void
+  onConfirmClose(callback: (motivos: MotivosDeFechar) => void): () => void
   /** resposta ao pedido acima — confirma que pode fechar, ou cancela. */
   respondToClose(confirmed: boolean): void
   /** abre o seletor de imagem e já copia o arquivo para dentro do app */

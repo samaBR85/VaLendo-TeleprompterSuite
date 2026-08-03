@@ -249,6 +249,10 @@ export const pt = {
   'close.detail': 'Fechar o app agora apaga o texto na tela do apresentador.',
   'close.cancel': 'Cancelar',
   'close.confirm': 'Encerrar a transmissão',
+  'close.unsavedDetail': 'Fechar o app agora descarta o que não foi salvo no projeto.',
+  'close.unsavedAndOnAir': 'A transmissão está no ar e há mudanças não salvas. Fechar agora apaga a tela do apresentador e descarta o que não foi salvo.',
+  'close.unsavedDiscard': 'Fechar sem salvar',
+  'close.unsavedSave': 'Salvar e fechar',
 
   /* ------------------------------------------------------- projeto não salvo */
   'unsaved.title': 'Este projeto tem mudanças não salvas.',
@@ -412,7 +416,7 @@ export const pt = {
   'cards.videoUnmute': 'Com áudio',
   'cards.videoLoop': 'repetir',
   'cards.overlay': 'OVERLAY',
-  'cards.overlayStyleLabel': 'Effect:',
+  'cards.overlayStyleLabel': 'Efeito:',
   'cards.overlayForced': 'Forçado pelo OVERLAY da coluna de assets',
   'cards.overlayShort': 'O',
   'cards.overlayHint':

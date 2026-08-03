@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { MotivosDeFechar } from '@shared/api'
 import type { InsertKind } from '@shared/insertBlock'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { PrompterStage } from '../prompter/PrompterStage'
@@ -366,7 +367,9 @@ function AppConteudo({
   const [metrics, setMetrics] = useState<PrompterMetrics | null>(null)
   const [credits, setCredits] = useState(false)
   const [notice, setNotice] = useState<Notice | null>(null)
-  const [closeConfirm, setCloseConfirm] = useState(false)
+  // null = ninguém pediu para fechar. Preenchido, carrega POR QUE fechar
+  // precisa de confirmação, o que decide qual modal aparece
+  const [closeConfirm, setCloseConfirm] = useState<MotivosDeFechar | null>(null)
   const [unsavedConfirm, setUnsavedConfirm] = useState(false)
   /**
    * CATCH: com ele ligado, a marca de leitura persegue o cursor do editor
@@ -386,16 +389,18 @@ function AppConteudo({
     return () => clearTimeout(timer)
   }, [notice])
 
-  // o main pede confirmação ao fechar com a transmissão no ar; a resposta
-  // sempre volta por IPC, mesmo quando o operador cancela — sem isso o main
-  // fica esperando para sempre e a janela nunca mais fecha
-  useEffect(() => window.valendo.onConfirmClose(() => setCloseConfirm(true)), [])
+  // o main pede confirmação ao fechar, e diz por quê (transmissão no ar,
+  // mudança não salva, ou os dois); a resposta sempre volta por IPC, mesmo
+  // quando o operador cancela — sem isso o main fica esperando para sempre e a
+  // janela nunca mais fecha
+  useEffect(() => window.valendo.onConfirmClose((motivos) => setCloseConfirm(motivos)), [])
 
   const respondToClose = useCallback((confirmed: boolean) => {
     if (confirmed) editorRef.current?.flush()
-    setCloseConfirm(false)
+    setCloseConfirm(null)
     window.valendo.respondToClose(confirmed)
   }, [])
+
 
   /**
    * Salva a aba ativa num arquivo.
@@ -444,6 +449,19 @@ function AppConteudo({
     )
     return result.ok
   }, [])
+
+  /**
+   * "Salvar e fechar": só deixa a janela ir embora se a gravação der certo.
+   *
+   * Se o salvar falhar (disco cheio, arquivo em uso, ou o diálogo do "Salvar
+   * como" cancelado), fechar assim mesmo perderia exatamente o trabalho que o
+   * operador acabou de pedir para guardar — então o modal fica aberto, com o
+   * aviso do erro na tela, e ele decide de novo.
+   */
+  const salvarEFechar = useCallback(async (): Promise<void> => {
+    const ok = await project('salvar')
+    if (ok) respondToClose(true)
+  }, [project, respondToClose])
 
   /**
    * Pedido de "novo projeto": se não há nada não salvo, cria direto; senão,
@@ -983,7 +1001,7 @@ function AppConteudo({
                     aria-label={t('toolbar.catch')}
                     acesa={catchAtivo}
                     cor="var(--color-go)"
-                    className="h-6 w-8 text-[9px] font-bold tracking-[0.04em]"
+                    className={`h-6 w-8 text-[9px] font-bold tracking-[0.04em] ${catchAtivo ? 'k-tecla-catch' : ''}`}
                     style={!catchAtivo ? { color: 'var(--color-go)' } : undefined}
                     onClick={() => setCatchAtivo((v) => !v)}
                   >
@@ -1232,7 +1250,21 @@ function AppConteudo({
           onClose={() => setKeymapOpen(false)}
         />
       ) : null}
-      {closeConfirm ? (
+      {/* Fechar com trabalho não salvo é o caso mais grave dos dois, e ganha o
+          modal de três saídas — dá para salvar antes de ir embora. Se a
+          transmissão também estiver no ar, o texto avisa disso na mesma tela,
+          em vez de empilhar duas perguntas seguidas. Só transmissão no ar,
+          sem nada pendente, continua com o modal de sempre. */}
+      {closeConfirm?.naoSalvo ? (
+        <UnsavedConfirm
+          detalhe={closeConfirm.noAr ? t('close.unsavedAndOnAir') : t('close.unsavedDetail')}
+          rotuloDescartar={t('close.unsavedDiscard')}
+          rotuloSalvar={t('close.unsavedSave')}
+          onCancel={() => respondToClose(false)}
+          onDiscard={() => respondToClose(true)}
+          onSave={salvarEFechar}
+        />
+      ) : closeConfirm ? (
         <CloseConfirm onCancel={() => respondToClose(false)} onConfirm={() => respondToClose(true)} />
       ) : null}
       {unsavedConfirm ? (

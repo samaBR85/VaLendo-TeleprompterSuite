@@ -232,6 +232,10 @@ export const es: Dicionario = {
   'close.detail': 'Cerrar la app ahora borra el texto en la pantalla del presentador.',
   'close.cancel': 'Cancelar',
   'close.confirm': 'Terminar la emisión',
+  'close.unsavedDetail': 'Cerrar la app ahora descarta lo que no se guardó en el proyecto.',
+  'close.unsavedAndOnAir': 'La emisión está al aire y hay cambios sin guardar. Cerrar ahora borra la pantalla del presentador y descarta lo que no se guardó.',
+  'close.unsavedDiscard': 'Cerrar sin guardar',
+  'close.unsavedSave': 'Guardar y cerrar',
 
   'unsaved.title': 'Este proyecto tiene cambios sin guardar.',
   'unsaved.detail': 'Crear un proyecto nuevo en blanco descarta lo que no se guardó.',
@@ -386,7 +390,7 @@ export const es: Dicionario = {
   'cards.videoUnmute': 'Reactivar sonido',
   'cards.videoLoop': 'repetir',
   'cards.overlay': 'OVERLAY',
-  'cards.overlayStyleLabel': 'Effect:',
+  'cards.overlayStyleLabel': 'Efecto:',
   'cards.overlayForced': 'Forzado por el OVERLAY de la columna de assets',
   'cards.overlayShort': 'O',
   'cards.overlayHint':
