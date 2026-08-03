@@ -269,20 +269,21 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
           ? 'var(--color-warn)'
           : 'var(--color-fog-0)'
       /*
-       * Direção ganha fundo e barra à esquerda — mas só pintura.
+       * Direção ganha fundo — mas só pintura.
        *
        * Nada de `padding` ou `border` aqui: este `<pre>` é uma camada
        * colorida por cima de um `textarea` transparente, e os dois precisam
        * quebrar linha exatamente no mesmo lugar. Qualquer coisa que ocupe
        * espaço empurra os glifos de um e não do outro, e o cursor passa a
-       * cair ao lado da letra que se está vendo. `background` e
-       * `box-shadow` pintam sem ocupar espaço nenhum.
+       * cair ao lado da letra que se está vendo. `background` pinta sem
+       * ocupar espaço nenhum.
+       *
+       * Havia também uma barra de 2px na borda esquerda (`inset 2px 0 0`).
+       * Saiu: colada no `[` da rubrica ela era lida como um `|` digitado, e
+       * o fundo já distingue a linha sem esse risco.
        */
       const realce = isDirection
-        ? {
-            background: 'color-mix(in srgb, var(--color-link) 9%, transparent)',
-            boxShadow: 'inset 2px 0 0 var(--color-link)'
-          }
+        ? { background: 'color-mix(in srgb, var(--color-link) 9%, transparent)' }
         : undefined
       return (
         <span key={index} style={{ color, ...realce }}>
