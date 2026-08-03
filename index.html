@@ -1,13 +1,13 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Valendo — A Teleprompter Suite</title>
-<meta name="description" content="A teleprompter where the operator rewrites the script while the show is on the air. The reading position is an anchor in the text, not a pixel on the screen." />
+<meta name="description" content="A full teleprompter suite for Windows and macOS: script, timing, cards, monitors and a local network page — and the operator can rewrite any of it while the show is on the air." />
 <link rel="icon" href="icon.png" />
 <meta property="og:title" content="Valendo — A Teleprompter Suite" />
-<meta property="og:description" content="Rewrite the script while the show is on the air. The reading position is an anchor in the text, not a pixel on the screen." />
+<meta property="og:description" content="Script, timing, cards, monitors and the local network in one app — and you can rewrite any of it while the show is on the air." />
 <meta property="og:image" content="shots/02-split.png" />
 <meta property="og:type" content="website" />
 <style>
@@ -58,6 +58,7 @@
   header nav { margin-left: auto; display: flex; gap: 20px; font-size: 14.5px; }
   header nav a { color: var(--fog-2); text-decoration: none; }
   header nav a:hover { color: var(--fog-0); }
+  @media (max-width: 720px) { header nav a.hide-small { display: none; } }
 
   /* ------------------------------------------------------------- herói */
   .hero { padding: 76px 0 48px; text-align: center; }
@@ -67,7 +68,7 @@
     letter-spacing: -.03em; color: var(--fog-0); font-weight: 650;
   }
   .hero p.lead {
-    margin: 0 auto 12px; max-width: 720px;
+    margin: 0 auto 12px; max-width: 740px;
     font-size: clamp(17px, 2.2vw, 20px); color: var(--fog-1);
   }
   .quote {
@@ -139,6 +140,51 @@
   .card p { margin: 0; font-size: 14px; color: var(--fog-2); }
   .card .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; }
 
+  /* ------------------------------------------------- recortes de detalhe
+     A tela cheia mostra o app; o recorte mostra a PEÇA. Reduzida a 900px,
+     uma tela de 1854px esconde o LCD, o QR e o tile de card — e a seção
+     inteira vira "o app de novo". Estes cartões existem para o olho ter
+     onde pousar. */
+  .details { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-top: 30px; }
+  .details.two { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .detail {
+    border: 1px solid var(--line); border-radius: 11px;
+    background: var(--ink-1); padding: 14px 14px 12px;
+    display: flex; flex-direction: column; gap: 11px;
+  }
+  .detail img {
+    width: 100%; height: auto; display: block;
+    border-radius: 7px; border: 0; background: transparent;
+    /* Teto de altura: sem ele, um recorte alto e estreito (o tile de vídeo)
+       estica o cartão e deixa o vizinho largo e baixo com meio cartão vazio.
+       Com `width:auto` a proporção fica intacta. */
+    max-height: 250px; width: auto; max-width: 100%;
+  }
+  .detail .pic {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ink-0); border-radius: 8px; padding: 10px;
+    min-height: 96px;
+  }
+  /* só o recorte alto corta — os outros cabem inteiros, e cortar um deles
+     pela metade parece defeito, não enquadramento */
+  .detail .pic.tall { max-height: 340px; align-items: flex-start; overflow: hidden; }
+  .detail .pic.tall img { object-fit: cover; object-position: top; }
+  .detail b { color: var(--fog-0); font-weight: 600; font-size: 14.5px; display: block; }
+  .detail span { font-size: 13px; color: var(--fog-2); }
+
+  /* a linha de progresso é fina demais para virar cartão — vira divisor */
+  .strip { margin: 34px 0 0; }
+  .strip img { width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid var(--line); }
+  .strip figcaption { margin-top: 8px; }
+
+  /* moldura de celular deitado para a página da rede */
+  .phone {
+    border: 9px solid #17171b; border-radius: 26px;
+    box-shadow: 0 0 0 1px var(--line), 0 12px 34px rgba(0,0,0,.5);
+    overflow: hidden; background: #000; line-height: 0;
+  }
+  .phone img { border: 0; border-radius: 0; }
+
   /* ------------------------------------------------------------ código */
   code, pre {
     font-family: "Cascadia Mono", "SF Mono", Consolas, monospace;
@@ -147,7 +193,8 @@
   pre {
     background: var(--ink-1); border: 1px solid var(--line); border-radius: 10px;
     padding: 16px 18px; overflow-x: auto; font-size: 14px; color: var(--fog-0);
-    max-width: 560px;
+    /* larga o bastante para a linha do curl caber sem barra de rolagem */
+    max-width: 880px;
   }
   pre code { background: none; padding: 0; }
 
@@ -164,8 +211,9 @@
   <div class="wrap">
     <a class="mark" href="#top">Va<span>lendo</span></a>
     <nav>
-      <a href="#what">Features</a>
-      <a href="#idea">The idea</a>
+      <a href="#suite">The suite</a>
+      <a href="#live" class="hide-small">Live editing</a>
+      <a href="#network" class="hide-small">Network</a>
       <a href="#install">Install</a>
       <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki">Docs</a>
       <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite">GitHub</a>
@@ -174,19 +222,18 @@
 </header>
 
 <div id="top" class="wrap hero">
-  <h1>Rewrite the script<br />while the show is on the air.</h1>
+  <h1>A full teleprompter suite.</h1>
   <p class="lead">
-    A teleprompter for Windows and macOS where the operator edits the text live, watching the
-    editor and an exact replica of the presenter's screen side by side.
+    Script, timing, cards, monitors and the local network in one app for Windows and macOS —
+    and you can rewrite any of it while the show is on the air.
   </p>
-  <div class="quote">The reading position is an anchor in the text, not a pixel on the screen.</div>
   <div class="buttons">
     <a class="btn primary" href="https://github.com/samaBR85/Valendo-TeleprompterSuite/releases">Download for Windows &amp; macOS</a>
     <a class="btn" href="https://github.com/samaBR85/Valendo-TeleprompterSuite">Source on GitHub</a>
     <a class="btn" href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki">Documentation</a>
   </div>
   <div class="chips">
-    <span class="chip" id="chip-version"><span class="dot"></span>Version <b>1.1.0</b></span>
+    <span class="chip" id="chip-version"><span class="dot"></span>Version <b>1.1.1</b></span>
     <span class="chip" id="chip-downloads"><span class="dot"></span><b>No release yet</b></span>
   </div>
   <figure class="shot-wide">
@@ -195,47 +242,154 @@
   </figure>
 </div>
 
-<section id="idea">
+<section id="suite">
   <div class="wrap">
-    <div class="eyebrow">Why it exists</div>
-    <h2>Other teleprompters make you stop to edit</h2>
+    <div class="eyebrow">The suite</div>
+    <h2>Six things a show needs</h2>
     <p>
-      They store the scroll position <strong>in pixels</strong>. Any change to the text, the typeface or
-      the margin reflows the layout, and pixel 4,200 is suddenly a different sentence — the text jumps
-      in the presenter's face. That is not a missing feature; it is the storage model.
-    </p>
-    <p>
-      Valendo stores the position as a <strong>semantic anchor</strong>: <code>{ blockId, wordOffset }</code>.
-      Block seven, word thirty-four. After any reflow the pixel is recomputed from it. Insert paragraphs
-      above the reading point, raise the type size, change the margin — the word being read does not move.
+      Not a scroller with extras bolted on. Every part of running a prompter lives in the same
+      window, on the same keyboard, in the same project file.
     </p>
     <div class="grid">
       <div class="card">
-        <h4><span class="dot" style="background:var(--go)"></span>A clock, not messages</h4>
-        <p>The main process keeps three numbers: pace, where the reading started, and when. Each window solves the same equation. Nothing is sent per frame, so nothing can drift.</p>
+        <h4><span class="dot" style="background:var(--go)"></span>The script</h4>
+        <p>Import txt, md, docx and pdf. Ten tabs, chapters, stage directions, markers, and undo that survives closing the app.</p>
       </div>
       <div class="card">
-        <h4><span class="dot" style="background:var(--warn)"></span>One component, two screens</h4>
-        <p>The same code draws the broadcast and the operator's preview. The preview runs at the output's real viewport and only gets a scale. The replica is exact by construction.</p>
+        <h4><span class="dot" style="background:var(--warn)"></span>Timing</h4>
+        <p>Words per minute on a ruler, elapsed and remaining, a target duration the pace bends to meet, loop with a delay.</p>
       </div>
       <div class="card">
-        <h4><span class="dot" style="background:var(--link)"></span>Lines composed by words</h4>
-        <p>A word rule decides where a line breaks, not the browser. Changing the type size changes the height of a line and nothing else.</p>
+        <h4><span class="dot" style="background:var(--live)"></span>The presenter's screen</h4>
+        <p>Any monitor, identified before you send a show to it. Mirrored, rotated, blacked out or frozen on a key.</p>
+      </div>
+      <div class="card">
+        <h4><span class="dot" style="background:var(--purple)"></span>Cards</h4>
+        <p>Images, video and messages — replacing the script, or riding over it like a lower third.</p>
+      </div>
+      <div class="card">
+        <h4><span class="dot" style="background:var(--go)"></span>The network</h4>
+        <p>One switch and every phone on the wi-fi is a second prompter screen. No app to install.</p>
+      </div>
+      <div class="card">
+        <h4><span class="dot" style="background:var(--link)"></span>The console</h4>
+        <p>Three working layouts, a command palette, remappable keys, interface zoom, six languages.</p>
+      </div>
+    </div>
+    <figure class="strip">
+      <img src="shots/d02-progress.png" alt="The progress line running the width of the console, with amber ticks at each chapter" />
+      <figcaption>The progress line, with a tick at every chapter.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="live">
+  <div class="wrap">
+    <div class="eyebrow">Live editing</div>
+    <h2>The part every operator has wanted</h2>
+    <div class="split">
+      <div>
+        <p>
+          The left panel is the script. The right panel is <strong>what the presenter is seeing right
+          now</strong>, at the output's real resolution. You type in one and the other changes — with
+          the show live.
+        </p>
+        <p>
+          Every other prompter makes you stop, because they store the reading position
+          <strong>in pixels</strong>. Change the text, the typeface or the margin and the layout
+          reflows: pixel 4,200 is suddenly a different sentence, and the text jumps in the
+          presenter's face.
+        </p>
+        <p>
+          Here nothing jumps. Fix a typo three paragraphs above the reading line, raise the type
+          size, widen the margin — the word being read stays exactly where it is.
+        </p>
+      </div>
+      <figure>
+        <img src="shots/d12-editor.png" alt="The script editor: a chapter in amber, a stage direction in blue on a tinted line" />
+        <figcaption><code>##</code> opens a chapter. <code>[square brackets]</code> make a stage direction, never counted as words to be spoken.</figcaption>
+      </figure>
+    </div>
+    <div class="details">
+      <div class="detail">
+        <div class="pic"><img src="shots/d01-transport.png" alt="The transport keypad with a large green play key" /></div>
+        <b>Space, or the big green key</b>
+        <span>Restart, nudge back, play, nudge on, drop a marker.</span>
+      </div>
+      <div class="detail">
+        <div class="pic"><img src="shots/d03-speed.png" alt="The speed ruler and a large readout of 148 words per minute" /></div>
+        <b>Pace on a ruler</b>
+        <span>The mouse wheel changes it anywhere in the app.</span>
+      </div>
+      <div class="detail">
+        <div class="pic"><img src="shots/d04-clocks.png" alt="Elapsed and remaining time on two displays" /></div>
+        <b>Elapsed and remaining</b>
+        <span>Or set a target duration and let the pace meet it.</span>
+      </div>
+      <div class="detail">
+        <div class="pic tall"><img src="shots/d08-chapters.png" alt="The chapter list, each with its own duration" /></div>
+        <b>Chapters with durations</b>
+        <span>Click one and the reading goes there.</span>
       </div>
     </div>
   </div>
 </section>
 
-<section id="what">
+<section id="network">
+  <div class="wrap">
+    <div class="eyebrow">Local network</div>
+    <h2>Any phone on the wi-fi is a prompter screen</h2>
+    <div class="split reverse">
+      <div>
+        <p>
+          Flip one switch and the reading is published to a page on your own network. Point a phone's
+          camera at the QR code and it is following the same script, at the same word, cards included.
+          Nothing to install, nothing to pair, no cable across the studio.
+        </p>
+        <p>
+          That is the director, the floor manager, the presenter rehearsing in the dressing room and
+          camera two on the far side of the room — all reading the same thing, on hardware everyone
+          already has in their pocket.
+        </p>
+        <p>
+          <strong>It is the reading that travels, not a video feed.</strong> No NDI, no SDI, no screen
+          capture: the same page redraws itself in each browser. That is why it works on ordinary
+          wi-fi — and why card video can be told to go out lighter while the presenter's screen always
+          gets the original.
+        </p>
+      </div>
+      <figure>
+        <img src="shots/d13-network-panel.png" alt="The network panel: the live switch, the five video weight profiles, a QR code and the address" />
+        <figcaption>Only the tab that is on air is published. The others never leave the machine.</figcaption>
+      </figure>
+    </div>
+    <div class="details two">
+      <div class="detail">
+        <div class="pic" style="padding:0;background:transparent">
+          <div class="phone"><img src="shots/d19-phone.png" alt="The same script being read on a phone held sideways" /></div>
+        </div>
+        <b>On the phone, seconds later</b>
+        <span>The same script, the same word, in a browser tab.</span>
+      </div>
+      <div class="detail">
+        <div class="pic"><img src="shots/d14-weights.png" alt="Five video weight profiles: Original, High, Medium, Light, Minimal" /></div>
+        <b>Five weights for video</b>
+        <span>A phone on wi-fi is not a monitor on a cable.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cards">
   <div class="wrap">
     <div class="eyebrow">Cards</div>
     <h2>Over the script, or instead of it</h2>
     <div class="split">
       <div>
         <p>
-          Images, video and messages go to the presenter's screen with one click or a number key.
-          Each card either <strong>replaces</strong> the script or <strong>rides over it</strong> — which
-          is how a lower third and a caption share one screen.
+          Images, video and messages reach the presenter's screen with one click or a number key.
+          Each card either <strong>replaces</strong> the script or <strong>rides over it</strong> —
+          which is how a lower third and a caption share one screen.
         </p>
         <p>
           Legibility over a card is a three-way choice: a dark band, a shadow behind each letter,
@@ -252,14 +406,62 @@
         <figcaption>A clip on air, with the script riding over it.</figcaption>
       </figure>
     </div>
+    <div class="details two">
+      <div class="detail">
+        <div class="pic"><img src="shots/d17-cards-row.png" alt="Three cards in the drawer: an image, a video with its player, and a message" /></div>
+        <b>Image, video, message</b>
+        <span>Numbered, draggable, one key each.</span>
+      </div>
+      <div class="detail">
+        <div class="pic"><img src="shots/d09-card-video.png" alt="A video card with scrub bar, volume, mute and loop" /></div>
+        <b>A player on every clip</b>
+        <span>Scrub, volume, mute and loop, before it goes out.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="output">
+  <div class="wrap">
+    <div class="eyebrow">Output</div>
+    <h2>The presenter's screen</h2>
+    <div class="split reverse">
+      <div>
+        <p>
+          Pick a monitor, flash a number on each screen to be sure which is which, then send the show.
+          Mirror on either axis for teleprompter glass, rotate 90° for a panel mounted sideways,
+          black out or freeze on a key.
+        </p>
+        <p>
+          If that monitor is unplugged mid-show, Valendo closes the output rather than leaving a window
+          at coordinates that no longer exist.
+        </p>
+      </div>
+      <figure>
+        <img src="shots/09-broadcast.png" alt="The presenter's screen: the reading line, the current sentence bright, what is coming dimmed" />
+        <figcaption>What the presenter reads. Mirror is off here so it is legible on this page.</figcaption>
+      </figure>
+    </div>
+    <div class="details two">
+      <div class="detail">
+        <div class="pic"><img src="shots/d05-output.png" alt="The monitor picker and the Broadcast key" /></div>
+        <b>Choose, identify, broadcast</b>
+        <span>Never guess which screen faces the presenter.</span>
+      </div>
+      <div class="detail">
+        <div class="pic"><img src="shots/d07-modes.png" alt="The layout switch: Split, Focus, Desk" /></div>
+        <b>Split, Focus, Desk</b>
+        <span>Operating, rehearsing, and planning the rundown.</span>
+      </div>
+    </div>
   </div>
 </section>
 
 <section>
   <div class="wrap">
     <div class="eyebrow">Three ways to work</div>
-    <h2>Split, Focus, Desk</h2>
-    <div class="split reverse">
+    <h2>The console follows the job</h2>
+    <div class="split">
       <div>
         <p>
           <strong>Split</strong> is the picture at the top of this page — the editor and the presenter's
@@ -273,59 +475,33 @@
           <strong>Desk</strong> turns the script into a rundown: every block with its word count,
           duration and on-air status, and a timeline across the top.
         </p>
+        <p>
+          Every appearance control is live while the show runs — family, size, weight, line height,
+          letter spacing, ALL CAPS, margin, horizontal position, words per line, alignment and
+          colour presets.
+        </p>
       </div>
       <figure>
         <img src="shots/07-desk.png" alt="Desk mode: a rundown of blocks with word counts and durations, and a timeline" />
         <figcaption>Desk mode.</figcaption>
       </figure>
     </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="eyebrow">Output</div>
-    <h2>The presenter's screen</h2>
-    <div class="split">
-      <div>
-        <p>
-          Any connected monitor, identified on screen before you send a show to it. Mirror on either
-          axis for teleprompter glass, 90° rotation for a screen mounted sideways, blackout and freeze
-          on a key.
-        </p>
-        <p>
-          If that monitor is unplugged mid-show, Valendo closes the output rather than leaving a window
-          at coordinates that no longer exist.
-        </p>
+    <div class="details">
+      <div class="detail">
+        <div class="pic tall"><img src="shots/d11-inspector.png" alt="The appearance panel with sliders and reading-contrast swatches" /></div>
+        <b>Everything live</b>
+        <span>Nothing here needs the show to stop.</span>
       </div>
-      <figure>
-        <img src="shots/09-broadcast.png" alt="The presenter's screen: the reading line, the current sentence bright, what is coming dimmed" />
-        <figcaption>What the presenter reads. Mirror is off here so it is legible on this page.</figcaption>
-      </figure>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="eyebrow">Local network</div>
-    <h2>Anyone on the wi-fi can follow along</h2>
-    <div class="split reverse">
-      <div>
-        <p>
-          One switch publishes the reading to a page on the local network. A phone points its camera at
-          the QR code and follows the same scroll, with the same cards, exactly as the presenter sees it.
-          Nothing to install.
-        </p>
-        <p>
-          Video going out can be throttled to five weight profiles, because a phone on wi-fi is not a
-          monitor on a cable. The presenter's screen always gets the original.
-        </p>
+      <div class="detail">
+        <div class="pic"><img src="shots/d06-tabs.png" alt="The settings tabs: Text, Reading, Output" /></div>
+        <b>Text, Reading, Output</b>
+        <span>Three tabs, and none of them stops the show.</span>
       </div>
-      <figure>
-        <img src="shots/08-network.png" alt="The network panel with the address, a QR code and the video weight profiles" />
-        <figcaption>Only the tab that is on air is published.</figcaption>
-      </figure>
+      <div class="detail">
+        <div class="pic"><img src="shots/d10-overlay.png" alt="The overlay style switch: band, shadow, none" /></div>
+        <b>Band, shadow, none</b>
+        <span>How the script stays legible over a card.</span>
+      </div>
     </div>
   </div>
 </section>
@@ -334,7 +510,7 @@
   <div class="wrap">
     <div class="eyebrow">Privacy</div>
     <h2>It opens without opening your work</h2>
-    <div class="split">
+    <div class="split reverse">
       <div>
         <p>
           Valendo never restores the last script by itself. Opening a teleprompter in a studio that is
@@ -351,36 +527,89 @@
         <figcaption>Every launch, not only the first one.</figcaption>
       </figure>
     </div>
+    <div class="details two">
+      <div class="detail">
+        <div class="pic"><img src="shots/d16-welcome-paths.png" alt="Four ways in: continue, blank script, demo, open a project" /></div>
+        <b>Four ways in</b>
+        <span>None of them happens without you.</span>
+      </div>
+      <div class="detail">
+        <div class="pic"><img src="shots/d15-languages.png" alt="Six language chips" /></div>
+        <b>Six languages</b>
+        <span>Picked from the system, changed in one click.</span>
+      </div>
+    </div>
   </div>
 </section>
 
-<section>
+<section id="how">
   <div class="wrap">
-    <div class="eyebrow">Everything else</div>
-    <h2>What is in the box</h2>
+    <div class="eyebrow">How it works</div>
+    <h2>Why nothing jumps</h2>
+    <p>
+      The reading position is a <strong>semantic anchor</strong>: <code>{ blockId, wordOffset }</code>.
+      Block seven, word thirty-four — a place in the text, not a pixel on the screen. After any reflow
+      the pixel is recomputed from it, which is the whole reason editing on air is a normal thing to do
+      here instead of a stunt.
+    </p>
     <div class="grid">
-      <div class="card"><h4>Reading</h4><p>Chapters, markers, reading line, go-to-cursor, up to ten tabs, infinite undo kept across sessions.</p></div>
-      <div class="card"><h4>Transport</h4><p>Play/pause on Space, a words-per-minute ruler, nudge, loop with a delay, auto-pause at the end.</p></div>
-      <div class="card"><h4>Pacing</h4><p>Formula, stopwatch or free run. Elapsed, remaining and a target duration that adjusts the pace to fit.</p></div>
-      <div class="card"><h4>Appearance</h4><p>Family, size, weight, spacing, ALL CAPS, margin, position, words per line, colour presets, invert.</p></div>
-      <div class="card"><h4>Files</h4><p>Import and export txt, md, docx and pdf. Projects in a single <code>.valendo</code> file. Autosave underneath.</p></div>
-      <div class="card"><h4>Console</h4><p>Command palette, every key remappable, interface scale, transport at the top or in the footer.</p></div>
-      <div class="card"><h4>Six languages</h4><p>English, Portuguese (Brazil), Spanish, German, French, Italian — picked from the system on first run.</p></div>
-      <div class="card"><h4>Free software</h4><p>GPL-3.0-or-later. Use it, study it, change it, sell services around it. It cannot be closed.</p></div>
+      <div class="card">
+        <h4><span class="dot" style="background:var(--go)"></span>A clock, not messages</h4>
+        <p>The main process keeps three numbers: pace, where the reading started, and when. Each window solves the same equation. Nothing is sent per frame, so nothing can drift.</p>
+      </div>
+      <div class="card">
+        <h4><span class="dot" style="background:var(--warn)"></span>One component, two screens</h4>
+        <p>The same code draws the broadcast and the operator's preview. The preview runs at the output's real viewport and only gets a scale. The replica is exact by construction.</p>
+      </div>
+      <div class="card">
+        <h4><span class="dot" style="background:var(--link)"></span>Lines composed by words</h4>
+        <p>A word rule decides where a line breaks, not the browser. Changing the type size changes the height of a line and nothing else.</p>
+      </div>
     </div>
+    <p style="margin-top:22px">
+      <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki/The-Reading-Anchor">The Reading Anchor</a>
+      goes through it properly.
+    </p>
   </div>
 </section>
 
 <section id="install">
   <div class="wrap">
     <div class="eyebrow">Install</div>
-    <h2>Two ways in</h2>
-    <h3>Windows installer</h3>
+    <h2>Three ways in</h2>
+
+    <h3>Windows 10 / 11</h3>
     <p>
-      Download the latest <code>Valendo-setup.exe</code> from
+      Run the <code>-setup.exe</code> from
       <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/releases">Releases</a>.
-      It installs per user, so it does not ask for an administrator password.
+      It installs per user, so it does not ask for an administrator password. SmartScreen warns about
+      an unrecognised publisher — <strong>More info → Run anyway</strong>.
     </p>
+
+    <h3>macOS, Apple Silicon</h3>
+    <p>
+      Open the <code>.dmg</code>, drag Valendo to Applications, then run this once in Terminal —
+      <strong>before</strong> the first launch, and again for every version you download:
+    </p>
+<pre><code>xattr -dr com.apple.quarantine /Applications/Valendo.app</code></pre>
+    <p>
+      It prints nothing and asks for nothing; silence means it worked. Without it macOS says
+      <em>"Valendo is damaged and can't be opened"</em> and offers only <strong>Move to Bin</strong>.
+      The app is not damaged — that is the message macOS gives a downloaded app it cannot verify with
+      Apple, because this one is not notarised. The flag is applied by the browser, to that particular
+      file, which is why a new download arrives flagged again.
+    </p>
+    <p>
+      Download from the command line instead and there is nothing to clean up, because the flag is
+      never applied:
+    </p>
+<pre><code>curl -L -o ~/Downloads/Valendo.dmg \
+  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.1.1-arm64.dmg</code></pre>
+    <p>
+      Intel Macs are not shipped as a download, but the app builds and runs on them —
+      see <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki/Building-from-Source">Building from Source</a>.
+    </p>
+
     <h3>From source</h3>
 <pre><code>git clone https://github.com/samaBR85/Valendo-TeleprompterSuite.git
 cd Valendo-TeleprompterSuite
@@ -398,7 +627,7 @@ npm run dev</code></pre>
     <p>
       <strong style="color:var(--fog-1)">Valendo — A Teleprompter Suite.</strong>
       GNU General Public License, version 3 or later.
-      The installer redistributes a GPL build of ffmpeg 6.1.1;
+      The installers redistribute a GPL build of ffmpeg 6.1.1;
       <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki/Building-from-Source#redistributed-ffmpeg">source and build flags here</a>.
     </p>
     <p>
@@ -413,7 +642,7 @@ npm run dev</code></pre>
 /*
  * Os dois chips do herói, preenchidos pela API pública do GitHub.
  *
- * O HTML já chega com um texto que é verdade — "Version 1.0.0" e "No release
+ * O HTML já chega com um texto que é verdade — "Version 1.1.1" e "No release
  * yet" — e o script só MELHORA o que está lá. Assim a página continua honesta
  * quando a API não responde: sem chave, ela permite 60 chamadas por hora por
  * endereço IP, e um visitante numa rede movimentada pode cair no limite.
