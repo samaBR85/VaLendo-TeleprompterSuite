@@ -67,10 +67,17 @@ nsis:
 # instruções de desbloqueio estão no README e nas notas da release.
 mac:
   target:
-    - target: dmg
-      arch:
-        - arm64
-        - x64
+    # SEM lista de `arch` aqui, e isto não é esquecimento.
+    #
+    # Com `arch: [arm64, x64]` escrito neste bloco, a lista ganha do `--arm64`
+    # da linha de comando, e CADA job passa a empacotar as duas. O resultado é
+    # pior do que parece: o job Apple Silicon monta um .dmg "x64" levando
+    # dentro o ffmpeg arm64 que ele acabou de compilar — um pacote que
+    # instala, abre, e falha no vídeo sem dizer por quê.
+    #
+    # Quem decide a arquitetura é o job: `--arm64` no macos-14, `--x64` no
+    # macos-13. Cada máquina entrega só o que ela é.
+    - dmg
   category: public.app-category.video
   # SEM `hardenedRuntime`. Ele é requisito da NOTARIZAÇÃO, que este projeto não
   # vai ter — e sozinho ele só acrescenta restrição: liga a validação de

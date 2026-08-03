@@ -110,6 +110,20 @@ jobs:
           # — a que faz o app abrir em Apple Silicon — continua sendo aplicada.
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
+      # cinto de segurança: cada job de Mac tem de entregar UM arquivo, o da
+      # arquitetura dele. Se aparecer mais de um, o config voltou a listar
+      # `arch` e o pacote de uma arquitetura está levando o ffmpeg da outra
+      - name: Conferir que saiu só a arquitetura deste job
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          set -euo pipefail
+          ls -1 dist/*.dmg
+          QUANTOS=$(ls -1 dist/*.dmg | wc -l | tr -d ' ')
+          if [ "$QUANTOS" != "1" ]; then
+            echo "ERRO: $QUANTOS .dmg neste job; esperado 1." >&2
+            exit 1
+          fi
+
       - name: Anexar na release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
