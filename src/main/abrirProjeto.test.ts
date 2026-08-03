@@ -81,4 +81,21 @@ describe('o que o projeto leva da rede', () => {
     expect(state?.webview.som).toBe(false)
     expect(state?.webview.videoPerfil).toBe('media')
   })
+
+  it('mas a publicação não volta ao ar sozinha, mesmo salva ligada', async () => {
+    // levar o .valendo para outro estúdio não pode republicar o roteiro na
+    // rede de lá. É a mesma regra do monitor, e aqui pesa mais: não há tela
+    // acendendo para denunciar que o texto ficou ao alcance de quem estiver
+    // no wi-fi
+    const base: AppState = createInitialState()
+    const caminho = join(pasta, 'no-ar.valendo')
+    writeFileSync(
+      caminho,
+      serializeProject({ ...base, webview: { enabled: true, videoPerfil: 'leve', som: true } }, 0),
+      'utf8'
+    )
+
+    const { state } = await openProject(caminho)
+    expect(state?.webview.enabled).toBe(false)
+  })
 })

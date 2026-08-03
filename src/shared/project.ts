@@ -54,7 +54,13 @@ export function semTransitorio(state: AppState): AppState {
     },
     // o monitor escolhido viaja, mas a transmissão nunca sobe sozinha ao abrir:
     // abrir um projeto não pode jogar texto na tela do apresentador
-    output: { ...state.output, enabled: false, viewport: null }
+    output: { ...state.output, enabled: false, viewport: null },
+    // e pela mesma razão a publicação na rede não volta ao ar sozinha. Sem
+    // isto, um projeto salvo com a rede ligada republicava o roteiro ao ser
+    // aberto em OUTRO estúdio, na rede de lá, sem ninguém pedir — pior que a
+    // tela do apresentador, porque não há tela acendendo para denunciar.
+    // O peso do vídeo e a rota do áudio continuam viajando: são do programa.
+    webview: { ...state.webview, enabled: false }
   }
 }
 
