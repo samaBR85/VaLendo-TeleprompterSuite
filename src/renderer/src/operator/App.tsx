@@ -1043,8 +1043,8 @@ function AppConteudo({
                     title={t('toolbar.catchHint')}
                     aria-label={t('toolbar.catch')}
                     acesa={catchAtivo}
-                    cor="var(--color-go)"
-                    className={`h-6 w-8 text-[9px] font-bold tracking-[0.04em] ${catchAtivo ? 'k-tecla-catch' : ''}`}
+                    cor="var(--color-live)"
+                    className={`h-6 w-8 text-[9px] font-bold tracking-[0.04em] ${catchAtivo ? 'k-tecla-solida' : ''}`}
                     style={!catchAtivo ? { color: 'var(--color-go)' } : undefined}
                     onClick={() => setCatchAtivo((v) => !v)}
                   >

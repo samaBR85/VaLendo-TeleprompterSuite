@@ -299,9 +299,12 @@ export function PocoDoAr({
       <Tecla
         title={`${t('toolbar.blackout')}${hint(keymap, 'output.blackout')}`}
         aria-label={t('toolbar.blackout')}
+        /* no ar, vermelho cheio com o ícone branco: apagar a tela do
+           apresentador é o estado mais grave que este poço mostra, e o
+           tingimento discreto do `acesa` padrão não dizia isso de relance */
         acesa={transport.blackout}
         cor="var(--color-live)"
-        className={lado}
+        className={`${lado} ${transport.blackout ? 'k-tecla-solida' : ''}`}
         style={!transport.blackout ? { color: 'var(--color-live)' } : undefined}
         onClick={() => run('output.blackout')}
       >
@@ -310,9 +313,12 @@ export function PocoDoAr({
       <Tecla
         title={`${t('toolbar.freeze')}${hint(keymap, 'transport.freeze')}`}
         aria-label={t('toolbar.freeze')}
+        /* azul cheio, a mesma cor que o ícone já tem apagado — ligado ele só
+           enche, em vez de trocar para o verde de antes, que não tinha
+           relação nenhuma com este botão */
         acesa={transport.frozen}
-        cor="var(--color-go)"
-        className={lado}
+        cor="var(--color-link)"
+        className={`${lado} ${transport.frozen ? 'k-tecla-solida' : ''}`}
         style={!transport.frozen ? { color: 'var(--color-link)' } : undefined}
         onClick={() => run('transport.freeze')}
       >

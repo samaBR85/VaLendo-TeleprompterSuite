@@ -238,17 +238,28 @@
     color: #0a2b18;
   }
 
-  /* o CATCH ligado: vermelho cheio com o ícone branco, e não o tingimento
-     discreto de `k-tecla-acesa`. Ele é o único botão do editor que muda o
-     comportamento da ROLAGEM enquanto se digita — precisa gritar que está
-     ligado, do mesmo jeito que o play quebra o padrão por ser a tecla viva
-     da mesa. Sem `--k-cor`: a cor aqui é fixa, não herda do chamador */
-  .k-tecla-catch {
-    background: linear-gradient(#ff5f5f, #d92c2c);
-    border-color: #5c0f0f;
+  /* Tecla ACESA CHEIA: a cor inteira com o ícone branco, em vez do tingimento
+     discreto de `k-tecla-acesa`.
+
+     É para o punhado de botões que mudam o que está ACONTECENDO — tela preta,
+     congelar, CATCH — e não apenas o que está selecionado. Eles precisam
+     gritar que estão ligados, do mesmo jeito que o play quebra o padrão por
+     ser a tecla viva da mesa.
+
+     Tudo sai de `--k-cor`, que o próprio componente já define pelo `cor`: uma
+     regra serve para vermelho, azul ou o que vier, e ninguém precisa manter
+     um gradiente à mão por botão. Vem DEPOIS de `k-tecla-acesa` no arquivo
+     de propósito — as duas têm a mesma especificidade, e é a ordem que
+     decide qual vence quando as duas valem. */
+  .k-tecla-solida {
+    background: linear-gradient(
+      color-mix(in srgb, var(--k-cor, var(--color-accent)) 85%, #fff),
+      color-mix(in srgb, var(--k-cor, var(--color-accent)) 80%, #000)
+    );
+    border-color: color-mix(in srgb, var(--k-cor, var(--color-accent)) 28%, #000);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.35),
-      0 0 16px rgba(255, 77, 77, 0.4);
+      0 0 16px color-mix(in srgb, var(--k-cor, var(--color-accent)) 40%, transparent);
     color: #fff;
   }
 
