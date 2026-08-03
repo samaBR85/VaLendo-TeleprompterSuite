@@ -5,10 +5,16 @@
 # alguém tenha as duas máquinas ligadas na hora de lançar, a tag dispara os
 # builds em runners da GitHub.
 #
-# São TRÊS jobs, e não dois, porque cada arquitetura de Mac compila o próprio
-# ffmpeg — `macos-14` é Apple Silicon e faz o arm64, `macos-13` é Intel e faz o
-# x64. Compilação cruzada seria possível e é uma fonte de erro a mais num
-# processo que já tem partes delicadas; alugar a máquina certa sai de graça.
+# O macOS sai só para Apple Silicon.
+#
+# Houve um job `macos-13` aqui, para os Macs Intel. Ele ficou na fila em três
+# execuções seguidas sem nunca começar — os runners Intel andam disputados — e
+# um alvo que não consegue ser construído não é um alvo, é uma promessa. Melhor
+# um instalador que existe do que dois que não saem.
+#
+# Quem tiver Mac Intel compila do fonte, que funciona igual e sem fila. Se um
+# dia os runners Intel voltarem a ser fáceis, basta reabrir a matriz: o script
+# do ffmpeg já é agnóstico de arquitetura, compila o que a máquina for.
 name: Release
 
 on:
@@ -37,10 +43,6 @@ jobs:
           - os: macos-14
             nome: macos-arm64
             arch: '--arm64'
-            artefatos: dist/*.dmg
-          - os: macos-13
-            nome: macos-x64
-            arch: '--x64'
             artefatos: dist/*.dmg
 
     runs-on: ${{ matrix.os }}
