@@ -55,20 +55,47 @@ export function PocosDeArquivo({
   keymap,
   run,
   onImport,
-  onNewProject
+  onNewProject,
+  compacto
 }: {
   tab: Tab
   keymap: Map<string, string>
   run: (commandId: string) => void
   onImport: () => void
   onNewProject: () => void
+  /**
+   * Barra do topo apertada: os rótulos PROJETO/ROTEIRO sobem para CIMA do
+   * poço em vez de ficarem ao lado. Empilhado, o rótulo não custa largura
+   * nenhuma — e são esses ~100px que deixam a coluna esquerda da grade caber
+   * no seu quinhão de 1080px sem cortar o relógio RESTANTE.
+   */
+  compacto?: boolean
 }): React.JSX.Element {
   const { t } = useT()
   const [saveMenuOpen, setSaveMenuOpen] = useState(false)
 
+  /** ao lado (padrão) ou em cima (compacto) — o mesmo poço, só muda onde o nome mora */
+  const envolto = (rotulo: string, cor: string, pill: string, teclas: React.ReactNode): React.JSX.Element =>
+    compacto ? (
+      <div data-pill={pill} className="flex flex-none flex-col items-center gap-[2px]">
+        <span className="k-microcaps flex-none" style={{ color: cor }}>
+          {rotulo}
+        </span>
+        <Poco>{teclas}</Poco>
+      </div>
+    ) : (
+      <Poco rotulo={rotulo} cor={cor} data-pill={pill}>
+        {teclas}
+      </Poco>
+    )
+
   return (
     <>
-      <Poco rotulo={t('toolbar.group.project')} cor="var(--color-link)" data-pill="documento">
+      {envolto(
+        t('toolbar.group.project'),
+        'var(--color-link)',
+        'documento',
+        <>
         <Tecla
           title={`${t('toolbar.openProject')}${hint(keymap, 'project.open')}`}
           aria-label={t('toolbar.openProject')}
@@ -120,31 +147,37 @@ export function PocosDeArquivo({
         >
           <Icon name="plus" size={13} />
         </Tecla>
-      </Poco>
+        </>
+      )}
 
       {/* o respiro comum da barra (gap-2.5) já separa dos dois lados — de
           PROJETO à esquerda e da primeira aba à direita — pela mesma
           distância, o que centraliza o grupo no vão entre os dois. Um
           `ml` a mais aqui empurrava só para um lado, e ROTEIRO ficava colado
           nas abas */}
-      <Poco rotulo={t('toolbar.group.script')} cor="var(--color-warn)" data-pill="roteiro">
-        {/* mesma pasta do PROJETO: abrir um roteiro também é abrir um
-            arquivo, e as duas teclas precisam ler como a mesma ação */}
-        <Tecla title={t('toolbar.import')} aria-label={t('toolbar.import')} className="h-6 w-7" onClick={onImport}>
-          <Icon name="projectOpen" size={13} />
-        </Tecla>
-        <Tecla
-          title={
-            tab.exportPath
-              ? `${t('toolbar.saveScriptTo', { file: fileName(tab.exportPath) })}${hint(keymap, 'document.save')}`
-              : `${t('toolbar.saveScript')}${hint(keymap, 'document.save')}`
-          }
-          className="h-6 px-2 text-[11px]"
-          onClick={() => run('document.save')}
-        >
-          {t('key.save')}
-        </Tecla>
-      </Poco>
+      {envolto(
+        t('toolbar.group.script'),
+        'var(--color-warn)',
+        'roteiro',
+        <>
+          {/* mesma pasta do PROJETO: abrir um roteiro também é abrir um
+              arquivo, e as duas teclas precisam ler como a mesma ação */}
+          <Tecla title={t('toolbar.import')} aria-label={t('toolbar.import')} className="h-6 w-7" onClick={onImport}>
+            <Icon name="projectOpen" size={13} />
+          </Tecla>
+          <Tecla
+            title={
+              tab.exportPath
+                ? `${t('toolbar.saveScriptTo', { file: fileName(tab.exportPath) })}${hint(keymap, 'document.save')}`
+                : `${t('toolbar.saveScript')}${hint(keymap, 'document.save')}`
+            }
+            className="h-6 px-2 text-[11px]"
+            onClick={() => run('document.save')}
+          >
+            {t('key.save')}
+          </Tecla>
+        </>
+      )}
     </>
   )
 }
@@ -325,13 +358,20 @@ export function PocoDeSaida({
   output,
   dispatch,
   run,
-  grande
+  grande,
+  compacto
 }: {
   displays: DisplayInfo[]
   output: AppState['output']
   dispatch: (action: Action) => void
   run: (commandId: string) => void
   grande?: boolean
+  /**
+   * Barra do topo apertada: o seletor encolhe para mostrar só "Monitor N ·
+   * hor…" — é a diferença que fecha a conta de 1080px em uma linha. Fora
+   * disso é idêntico ao não-grande da barra de abas.
+   */
+  compacto?: boolean
 }): React.JSX.Element {
   const { t } = useT()
   const [identificarAberto, setIdentificarAberto] = useState(false)
@@ -415,7 +455,7 @@ export function PocoDeSaida({
          * do monitor faria a mesma janela caber ou não conforme o estúdio.
          */
         className={`flex-none truncate rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] text-[var(--color-fog-2)] ${
-          grande ? 'h-8 w-[196px] px-2.5 text-[12px]' : 'h-6 w-[150px] px-2 text-[10px]'
+          grande ? 'h-8 w-[196px] px-2.5 text-[12px]' : compacto ? 'h-6 w-[116px] px-2 text-[10px]' : 'h-6 w-[150px] px-2 text-[10px]'
         }`}
       >
         <option value="">{t('toolbar.pickMonitor')}</option>
@@ -576,11 +616,14 @@ function LinhaDeProgresso({
  */
 
 /**
- * Decide se a barra cabe numa linha só — e, quando não cabe, parte em duas.
+ * Decide se a barra do topo comporta todo mundo em tamanho PLENO.
  *
- * Nada encolhe em nenhum dos dois arranjos: o operador pediu que, numa janela
- * larga, tudo fique no tamanho de sempre. Então a única saída para a janela
- * estreita é a barra ganhar uma segunda linha.
+ * Quando não comporta, a resposta não é mais uma segunda linha: é a versão
+ * compacta — os mesmos sete conjuntos, na mesma ordem, ~20% menores (o mesmo
+ * material que a régua do rodapé já usa). A barra fica SEMPRE em uma linha;
+ * o que muda com a largura é só a densidade. Na largura mínima da janela
+ * (1080px) a versão compacta cabe com folga — conferido por medição, não por
+ * fé; se um dia deixar de caber, o sintoma é corte à direita, não quebra.
  *
  * Somar a largura dos grupos não serve para decidir: a grade de três colunas
  * força as duas pontas a terem a MESMA largura (é isso que mantém o play no
@@ -589,12 +632,13 @@ function LinhaDeProgresso({
  *
  * Em vez de remontar essa regra à mão (e errar de novo quando o nome de um
  * monitor ou a tradução mudar de tamanho), quem responde é o próprio
- * navegador: montada em uma linha, se `scrollWidth` passar de `clientWidth`
- * é porque não coube — e o `scrollWidth` daquele momento É a largura mínima
- * que uma linha exige. Guardamos esse número como limiar e só voltamos a uma
- * linha quando a janela o alcança. Auto-calibra e não oscila: cada troca
- * acontece dentro do `useLayoutEffect`, antes de pintar, então o operador
- * nunca vê o estado intermediário.
+ * navegador: montada em tamanho pleno, se `scrollWidth` passar de
+ * `clientWidth` é porque não coube — e o `scrollWidth` daquele momento É a
+ * largura mínima que o tamanho pleno exige. Guardamos esse número como limiar
+ * e só voltamos ao pleno quando a janela o alcança. Auto-calibra e não
+ * oscila (a versão compacta é estritamente mais estreita que o limiar): cada
+ * troca acontece dentro do `useLayoutEffect`, antes de pintar, então o
+ * operador nunca vê o estado intermediário.
  */
 function useCabeEmUmaLinha(): [React.RefObject<HTMLDivElement | null>, boolean] {
   const barraRef = useRef<HTMLDivElement | null>(null)
@@ -768,7 +812,9 @@ export function BarraDeTransporte({
   const marcasDeCapitulo = ruler > 0 ? segments.filter((s) => s.title).map((s) => s.rulerStart / ruler) : []
   const marcasDeMarcador = ruler > 0 ? segments.flatMap((s) => s.markers).map((m) => m.rulerStart / ruler) : []
 
-  const compacto = position === 'regua'
+  // compacto: sempre na régua do rodapé; no topo, quando o tamanho pleno não
+  // couber na janela — é o que mantém a barra em UMA linha em qualquer largura
+  const compacto = position === 'regua' || !cabeEmUmaLinha
   const corpo = compacto ? 19 : 27
 
   // o que a legenda do antigo mostrador dizia, agora no hover da linha:
@@ -874,8 +920,15 @@ export function BarraDeTransporte({
     // elementos nos dois arranjos, no mesmo tamanho — o que muda é só onde
     // cada um assenta
     const grupoArquivo = (
-      <div data-grupo-barra className="flex flex-none items-center gap-2.5">
-        <PocosDeArquivo tab={tab} keymap={keymap} run={run} onImport={onImport} onNewProject={onNewProject} />
+      <div data-grupo-barra className={`flex flex-none items-center ${compacto ? 'gap-1.5' : 'gap-2.5'}`}>
+        <PocosDeArquivo
+          tab={tab}
+          keymap={keymap}
+          run={run}
+          onImport={onImport}
+          onNewProject={onNewProject}
+          compacto={compacto}
+        />
       </div>
     )
     const grupoRelogios = (
@@ -895,7 +948,17 @@ export function BarraDeTransporte({
     )
     const grupoSaida = (
       <div data-grupo-barra className="flex flex-none">
-        <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} grande />
+        {/* compacta, a saída usa a MESMA versão pequena que já mora na barra
+            de abas quando o transporte está na régua — nada de um terceiro
+            tamanho para manter */}
+        <PocoDeSaida
+          displays={displays}
+          output={state.output}
+          dispatch={dispatch}
+          run={run}
+          grande={!compacto}
+          compacto={compacto}
+        />
       </div>
     )
 
@@ -908,52 +971,32 @@ export function BarraDeTransporte({
 
     return (
       <>
-        {cabeEmUmaLinha ? (
-          // couberam todos: a barra de sempre, numa linha. O que é do MOMENTO
-          // (relógios, velocidade) encosta no teclado, no meio; o que é de
-          // PREPARAÇÃO (arquivos) ou de DESTINO (saída) vai para a borda.
-          <div
-            ref={barraRef}
-            data-transporte="topo"
-            data-linhas="1"
-            className="grid flex-none items-center gap-2.5 border-b border-[var(--color-edge)] px-3 py-2"
-            style={{ gridTemplateColumns: grade, background: fundo }}
-          >
-            <div className="flex min-w-0 items-center gap-2.5">
-              {grupoArquivo}
-              <div className="min-w-0 flex-1" />
-              {grupoRelogios}
-            </div>
-            {grupoTeclado}
-            <div className="flex min-w-0 items-center gap-2.5">
-              {grupoVelocidade}
-              <div className="min-w-0 flex-1" />
-              {grupoSaida}
-            </div>
+        {/* SEMPRE uma linha. O que é do MOMENTO (relógios, velocidade) encosta
+            no teclado, no meio; o que é de PREPARAÇÃO (arquivos) ou de DESTINO
+            (saída) vai para a borda. Quando o tamanho pleno não cabe, os sete
+            conjuntos encolhem juntos (`compacto`) em vez de dobrar de linha —
+            a ordem não muda, então o olho acha tudo onde sempre esteve. */}
+        <div
+          ref={barraRef}
+          data-transporte="topo"
+          data-densidade={compacto ? 'compacta' : 'plena'}
+          className={`grid flex-none items-center border-b border-[var(--color-edge)] py-2 ${
+            compacto ? 'gap-1.5 px-2' : 'gap-2.5 px-3'
+          }`}
+          style={{ gridTemplateColumns: grade, background: fundo }}
+        >
+          <div className={`flex min-w-0 items-center ${compacto ? 'gap-1.5' : 'gap-2.5'}`}>
+            {grupoArquivo}
+            <div className="min-w-0 flex-1" />
+            {grupoRelogios}
           </div>
-        ) : (
-          // não couberam: parte em duas, sem encolher nada. Em cima o que ARMA
-          // o programa (arquivos e para onde ele vai); embaixo o console que se
-          // toca com ele correndo, com o play de novo no centro geométrico
-          <div
-            ref={barraRef}
-            data-transporte="topo"
-            data-linhas="2"
-            className="flex flex-none flex-col border-b border-[var(--color-edge)]"
-            style={{ background: fundo }}
-          >
-            <div className="flex items-center gap-2.5 px-3 pt-2 pb-1">
-              {grupoArquivo}
-              <div className="min-w-0 flex-1" />
-              {grupoSaida}
-            </div>
-            <div className="grid items-center gap-2.5 px-3 pt-1 pb-2" style={{ gridTemplateColumns: grade }}>
-              <div className="flex min-w-0 items-center justify-end">{grupoRelogios}</div>
-              {grupoTeclado}
-              <div className="flex min-w-0 items-center">{grupoVelocidade}</div>
-            </div>
+          {grupoTeclado}
+          <div className={`flex min-w-0 items-center ${compacto ? 'gap-1.5' : 'gap-2.5'}`}>
+            {grupoVelocidade}
+            <div className="min-w-0 flex-1" />
+            {grupoSaida}
           </div>
-        )}
+        </div>
         {linha}
       </>
     )
