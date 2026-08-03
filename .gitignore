@@ -7,3 +7,6 @@ release/
 teste_projetos/
 .DS_Store
 Thumbs.db
+
+# o ffmpeg compilado na CI para o macOS; é artefato de build, não fonte
+.ffmpeg-build/

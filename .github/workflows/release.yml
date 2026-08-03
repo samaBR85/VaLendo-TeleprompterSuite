@@ -1,10 +1,14 @@
-# Constrói os instaladores dos dois sistemas e anexa na release da tag.
+# Constrói os instaladores dos três alvos e anexa na release da tag.
 #
 # Existe porque o macOS não pode ser construído a partir do Windows: as
 # ferramentas de assinatura da Apple só rodam em macOS. Em vez de exigir que
 # alguém tenha as duas máquinas ligadas na hora de lançar, a tag dispara os
-# dois builds em runners da GitHub — `macos-14` é Apple Silicon, que é onde o
-# `.dmg` arm64 tem de nascer.
+# builds em runners da GitHub.
+#
+# São TRÊS jobs, e não dois, porque cada arquitetura de Mac compila o próprio
+# ffmpeg — `macos-14` é Apple Silicon e faz o arm64, `macos-13` é Intel e faz o
+# x64. Compilação cruzada seria possível e é uma fonte de erro a mais num
+# processo que já tem partes delicadas; alugar a máquina certa sai de graça.
 name: Release
 
 on:
@@ -21,16 +25,22 @@ permissions:
 jobs:
   build:
     strategy:
-      # um sistema falhar não pode cancelar o outro: metade dos usuários ainda
-      # ganha o instalador, e o erro fica isolado onde aconteceu
+      # um alvo falhar não pode cancelar os outros: quem tiver instalador ainda
+      # ganha o dele, e o erro fica isolado onde aconteceu
       fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            script: dist:win
+            nome: windows
+            arch: ''
             artefatos: dist/*-setup.exe
           - os: macos-14
-            script: dist:mac
+            nome: macos-arm64
+            arch: '--arm64'
+            artefatos: dist/*.dmg
+          - os: macos-13
+            nome: macos-x64
+            arch: '--x64'
             artefatos: dist/*.dmg
 
     runs-on: ${{ matrix.os }}
@@ -50,19 +60,54 @@ jobs:
       - run: npm run typecheck
       - run: npm test
 
+      # ------------------------------------------------------------ ffmpeg
+      #
+      # Só no macOS, e por um motivo de licença, não de gosto: o binário de Mac
+      # que o `ffmpeg-static` baixa vem com `--enable-nonfree`, e o próprio
+      # FFmpeg diz que isso o torna não redistribuível. Compilamos o nosso,
+      # sob GPL v3, e sobrescrevemos o baixado antes de empacotar.
+      #
+      # O cache é por versão do ffmpeg E por arquitetura: sem a segunda parte,
+      # o arm64 herdaria o binário Intel e o app abriria com um ffmpeg que não
+      # roda naquela máquina.
+      - name: Cache do ffmpeg compilado
+        if: startsWith(matrix.os, 'macos')
+        id: cache-ffmpeg
+        uses: actions/cache@v4
+        with:
+          path: .ffmpeg-build/ffmpeg
+          key: ffmpeg-6.1.1-${{ matrix.nome }}-v1
+
+      - name: Compilar o ffmpeg
+        if: startsWith(matrix.os, 'macos') && steps.cache-ffmpeg.outputs.cache-hit != 'true'
+        run: bash scripts/build-ffmpeg-mac.sh
+
+      - name: Trocar o ffmpeg do pacote pelo nosso
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          set -euo pipefail
+          # a guarda roda SEMPRE, inclusive quando o binário veio do cache: um
+          # cache envenenado passaria despercebido, que é exatamente o tipo de
+          # falha silenciosa que trouxe o projeto até aqui
+          .ffmpeg-build/ffmpeg -version | head -2
+          if .ffmpeg-build/ffmpeg -version | grep -q -- "--enable-nonfree"; then
+            echo "ERRO: ffmpeg com --enable-nonfree; não pode ser distribuído." >&2
+            exit 1
+          fi
+          cp .ffmpeg-build/ffmpeg node_modules/ffmpeg-static/ffmpeg
+          chmod +x node_modules/ffmpeg-static/ffmpeg
+
       # os scripts levam `--publish never` de propósito: numa CI o
       # electron-builder decide publicar a release sozinho, e aí exige um
       # GH_TOKEN que este workflow não dá a ele. Quem anexa os arquivos é o
-      # passo abaixo, com a permissão que o próprio GitHub já concede ao job —
-      # dois publicadores para a mesma release seria pedir conflito.
+      # passo abaixo, com a permissão que o próprio GitHub já concede ao job.
       - name: Build
-        run: npm run ${{ matrix.script }}
+        run: npm run ${{ matrix.nome == 'windows' && 'dist:win' || 'dist:mac' }} -- ${{ matrix.arch }}
         env:
           # sem isto o electron-builder vasculha o chaveiro do runner atrás de
-          # um certificado da Apple, não acha, e demora ou falha por causa
-          # de algo que este projeto deliberadamente não tem. A assinatura
-          # ad-hoc — a que faz o app abrir em Apple Silicon — continua sendo
-          # aplicada; é o certificado pago que fica de fora.
+          # um certificado da Apple, não acha, e demora ou falha por causa de
+          # algo que este projeto deliberadamente não tem. A assinatura ad-hoc
+          # — a que faz o app abrir em Apple Silicon — continua sendo aplicada.
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
       - name: Anexar na release
@@ -78,5 +123,5 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
-          name: valendo-${{ matrix.os }}
+          name: valendo-${{ matrix.nome }}
           path: ${{ matrix.artefatos }}
