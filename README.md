@@ -153,7 +153,7 @@ Without it macOS says *"Valendo is damaged and can't be opened"* and offers only
 
 ```bash
 curl -L -o ~/Downloads/Valendo.dmg \
-  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.1.1-arm64.dmg
+  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.1.2-arm64.dmg
 ```
 
 The reason is that the app is **not notarised**. It is signed ad-hoc, which is what lets it run at all on Apple Silicon, but Apple's notarisation stamp requires a paid developer account this project does not have. Building from source has no such block, because nothing was downloaded.
