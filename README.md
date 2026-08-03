@@ -1,8 +1,6 @@
 # Valendo — A Teleprompter Suite
 
-A teleprompter for Windows and macOS where the operator **rewrites the script while the show is on the air**, watching the editor and an exact replica of the presenter's screen side by side.
-
-> The reading position is an anchor in the text, not a pixel on the screen.
+**Everything a teleprompter operation needs, in one app.** Script, timing, cards, monitors and the local network — and you can rewrite any of it while the show is on the air.
 
 ![The operator window: editor on the left, an exact replica of the presenter's screen on the right](docs/screenshots/02-split.png)
 
@@ -10,55 +8,102 @@ A teleprompter for Windows and macOS where the operator **rewrites the script wh
 
 ---
 
-## Why it exists
+## Six things a show needs
 
-Ordinary teleprompters store the scroll position **in pixels**. Any change to the text, the typeface or the margin reflows the layout, and pixel 4,200 is suddenly a different sentence — the text jumps in the presenter's face. That is why those apps make you leave the presentation screen to edit.
-
-Here the position is a **semantic anchor**: `{ blockId, wordOffset }`. After any reflow the pixel is recomputed from it. Inserting paragraphs above the reading point, raising the type size or changing the margin does not move the word being read.
-
-[The Reading Anchor](https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki/The-Reading-Anchor) explains what follows from that — a clock instead of messages, one component drawing both screens, and lines composed by words rather than by the browser.
+| | |
+|---|---|
+| **The script** | Import `txt` `md` `docx` `pdf`, up to ten tabs, chapters, stage directions, markers, undo that survives closing the app |
+| **Timing** | Words per minute on a ruler, elapsed and remaining, a target duration the pace bends to meet, loop with a delay |
+| **The presenter's screen** | Any connected monitor, identified before you send a show to it, mirrored or rotated to suit the glass, and it survives being unplugged |
+| **Cards** | Images, video and messages — replacing the script or riding over it |
+| **The network** | One switch and every phone on the wi-fi is a second prompter screen |
+| **The console** | Three working layouts, a command palette, remappable keys, interface zoom, six languages |
 
 ---
 
-## What it does
+## The part every operator has wanted
 
-### Live editing, on air
+The left panel is the script. The right panel is **what the presenter is seeing right now**, at the output's real resolution. You type in one and the other changes — with the show live.
 
-The left panel is the script; the right panel is what the presenter sees, at the output's real resolution. `##` opens a chapter, `[square brackets]` mark a stage direction.
+![The script editor with a chapter and a stage direction](docs/screenshots/d12-editor.png)
 
-### Cards over or under the script
+No other prompter lets you do this, and the reason is technical: they store the reading position **in pixels**. Change the text, the typeface or the margin and the layout reflows — pixel 4,200 is suddenly a different sentence, and the text jumps in the presenter's face. So those apps make you leave the presentation screen to edit.
+
+Here nothing jumps. Fix a typo three paragraphs above the reading line, raise the type size, widen the margin: the word being read stays exactly where it is. That is what makes editing on air a normal thing to do instead of a stunt.
+
+Two marks are all the markup there is — `##` opens a chapter, `[square brackets]` make a stage direction that is never counted as words to be spoken.
+
+<p align="center">
+  <img src="docs/screenshots/d08-chapters.png" width="240" alt="The chapter list with a duration for each" />
+  <img src="docs/screenshots/d01-transport.png" width="320" alt="The transport keypad" />
+  <img src="docs/screenshots/d03-speed.png" width="200" alt="The speed ruler showing words per minute" />
+</p>
+
+---
+
+## Any phone on the wi-fi is a prompter screen
+
+![The network panel with the address and a QR code](docs/screenshots/d13-network-panel.png)
+
+Flip one switch and the reading is published to a page on your own network. Point a phone's camera at the QR code and it is following the same script, at the same word, cards included. Nothing to install, nothing to pair, no cable across the studio.
+
+That is the director, the floor manager, the presenter rehearsing in the dressing room, and camera two on the far side of the room — all reading the same thing, on hardware everyone already has in their pocket.
+
+**It is the reading that travels, not a video feed.** No NDI, no SDI, no screen capture: the same page redraws itself in each browser. That is why it works on ordinary wi-fi, and why card video has five weight profiles — the network can be told to send something lighter while the presenter's screen always gets the original.
+
+![The five video weight profiles](docs/screenshots/d14-weights.png)
+
+---
+
+## Cards over the script, or instead of it
 
 ![A video card on air with the script riding over it](docs/screenshots/05-overlay-video.png)
 
-Images, video and messages go to the presenter's screen with one click or a number key. Each card either **replaces** the script or **rides over it**, which is how a lower third and a caption share the same screen. Legibility over a card is a three-way choice: dark band, per-letter shadow, or nothing.
+Images, video and messages reach the presenter's screen with one click or a number key. Each card either **replaces** the script or **rides over it**, which is how a lower third and a caption share the same screen. Legibility over a card is a three-way choice: dark band, per-letter shadow, or nothing.
 
-![An image card with the script over it, and the cards drawer below](docs/screenshots/04-overlay-image.png)
+![The cards drawer with an image, a video and a message](docs/screenshots/d17-cards-row.png)
 
 Video plays the file as it arrived whenever the browser can handle it. When it cannot, ffmpeg first tries to change only the container — seconds, no pixel touched — and re-encodes only when the content genuinely will not fit an mp4.
 
-### Three ways to work
+---
 
-**Split** is the picture at the top. **Focus** hides everything except the script and the transport. **Desk** turns the script into a rundown with a timeline.
-
-![Desk mode with the rundown and the timeline](docs/screenshots/07-desk.png)
-
-### The presenter's screen
+## The presenter's screen
 
 ![The presenter's screen](docs/screenshots/09-broadcast.png)
 
-Any connected monitor, identified on screen before you send a show to it. Mirror on either axis, 90° rotation, blackout and freeze. Survives a monitor being unplugged mid-show.
+Pick a monitor, flash a number on each screen to be sure which is which, then send the show. Mirror on either axis for a beamsplitter, rotate 90° for a portrait panel, black out or freeze at any moment. Unplug the monitor mid-show and the app keeps going.
 
-### Anyone on the wi-fi can follow along
+![Choosing the monitor and going on air](docs/screenshots/d05-output.png)
 
-![The network panel with the address and a QR code](docs/screenshots/08-network.png)
+---
 
-One switch publishes the reading to a local page. A phone points its camera at the QR code and follows the same scroll, cards included. Video to the network can be throttled; the presenter's screen always gets the original.
+## Three ways to work
 
-### It opens without opening your work
+![The layout switch: Split, Focus, Desk](docs/screenshots/d07-modes.png)
+
+**Split** is the picture at the top of this page. **Focus** hides everything except the script and the transport. **Desk** turns the script into a rundown with a timeline.
+
+![Desk mode with the rundown and the timeline](docs/screenshots/07-desk.png)
+
+Every appearance control is live while the show runs — family, size, weight, line height, letter spacing, ALL CAPS, margin, horizontal position, words per line, alignment, colour presets.
+
+<p align="center">
+  <img src="docs/screenshots/d11-inspector.png" width="200" alt="The appearance panel" />
+</p>
+
+---
+
+## It opens without opening your work
 
 ![The welcome screen](docs/screenshots/01-welcome.png)
 
 The app never restores the last script by itself. Opening Valendo in someone else's studio, or with the screen already mirrored to a wall, would otherwise reveal the previous show without anyone asking — and a script is a client's material. The screen starts blank and **Pick up where I left off** is a deliberate click.
+
+It also greets you in the language of your operating system, and lets you change it right there.
+
+<p align="center">
+  <img src="docs/screenshots/d15-languages.png" width="330" alt="Six languages" />
+</p>
 
 ---
 
@@ -77,6 +122,14 @@ The app never restores the last script by itself. Opening Valendo in someone els
 | Editing | Infinite undo, persisted across sessions; strip formatting; up to 10 tabs |
 | Console | Command palette, remappable keys, UI scale, transport at the top or in the footer bar |
 | Languages | English, Portuguese (Brazil), Spanish, German, French, Italian |
+
+---
+
+## How it can do that
+
+The reading position is a **semantic anchor**: `{ blockId, wordOffset }` — a place in the text, not a pixel on the screen. After any reflow the pixel is recomputed from it, which is why inserting paragraphs above the reading point, raising the type size or changing the margin does not move the word being read.
+
+[The Reading Anchor](https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki/The-Reading-Anchor) explains what follows from that — a clock instead of messages, one component drawing both screens, and lines composed by words rather than by the browser.
 
 ---
 
