@@ -128,6 +128,7 @@ function syncWebview(state: AppState): void {
     language: state.language,
     card: cartaoNoAr(state),
     cardOverlay: state.cardOverlay,
+    som: state.webview.som,
     blocks: tab.blocks,
     appearance: tab.appearance,
     transport: state.transport,

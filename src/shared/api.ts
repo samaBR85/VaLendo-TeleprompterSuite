@@ -104,6 +104,13 @@ export interface WebviewFrame {
   card: Cartao | null
   /** o interruptor "OVERLAY" — decide se o texto sobrepõe o cartão acima */
   cardOverlay: { enabled: boolean; style: CardOverlayStyle }
+  /**
+   * O áudio do cartão pode sair por aqui.
+   *
+   * Desligado, a página nem oferece o botão de liberar som: não haveria o que
+   * liberar, e um botão que não faz nada é pior que botão nenhum.
+   */
+  som: boolean
   blocks: Block[]
   appearance: Appearance
   transport: Transport

@@ -1011,6 +1011,10 @@ export class Store {
         this.state = { ...this.state, webview: { ...this.state.webview, videoPerfil: action.perfil } }
         break
 
+      case 'webview/som':
+        this.state = { ...this.state, webview: { ...this.state.webview, som: action.som } }
+        break
+
       case 'cardOverlay/set':
         this.state = { ...this.state, cardOverlay: { ...this.state.cardOverlay, enabled: action.enabled } }
         break

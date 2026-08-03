@@ -1304,6 +1304,7 @@ function AppConteudo({
           info={webview}
           enabled={state.webview.enabled}
           videoPerfil={state.webview.videoPerfil}
+          som={state.webview.som}
           dispatch={dispatch}
           onClose={() => setWebviewOpen(false)}
         />

@@ -547,6 +547,20 @@ export interface AppState {
      * ele é; os outros mandam uma cópia recodificada, gerada uma vez.
      */
     videoPerfil: PerfilDeRede
+    /**
+     * O áudio do cartão de vídeo SAI pela rede.
+     *
+     * É uma chave de rota, não de nível: liga ou corta o caminho, e nada mais.
+     * O quanto se ouve continua sendo decidido em cada ponta — o slider da
+     * gaveta governa o fone de quem opera, e o botão do próprio aparelho
+     * governa o celular de quem confere.
+     *
+     * Interruptor próprio de propósito. O mudo da gaveta é `cardVolume === 0`,
+     * conforto desta máquina, que nem viaja no `.valendo`; fazê-lo calar a
+     * rede junto seria um interruptor com duas alavancas — e daria o degrau
+     * absurdo de 5% de volume mandando som cheio e 0% mandando silêncio.
+     */
+    som: boolean
   }
 }
 

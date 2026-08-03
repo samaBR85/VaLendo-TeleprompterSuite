@@ -115,11 +115,14 @@ function Medidor(): React.JSX.Element {
 }
 
 /**
- * Liga o som, e desmuta dentro do próprio clique.
+ * Libera o som, e desmuta dentro do próprio clique.
  *
  * O navegador só libera som logo depois de um toque, e o iPhone é o mais
  * rigoroso: esperar o React redesenhar pode ser tarde demais, e o pedido seria
  * recusado sem dizer nada. Mexer no elemento aqui é o caminho que ele aceita.
+ *
+ * Pílula grande, no meio de baixo: é um convite, e convite precisa ser visto.
+ * Depois de aceito ele sai de cena — quem fica é o [BotaoDeMudo].
  */
 function BotaoDeSom({
   onLigar,
@@ -173,6 +176,61 @@ function BotaoDeSom({
   )
 }
 
+/**
+ * Mudo e som de volta, para quem já liberou o áudio neste aparelho.
+ *
+ * O botão de liberar era de mão única: aceito o convite, ele sumia e só
+ * recarregando a página dava para calar o telefone de novo. Num estúdio isso é
+ * ruim de verdade — o aparelho começa a soar e a única saída seria o botão
+ * físico.
+ *
+ * Discreto e no canto porque a partir daqui ele não é convite, é controle: a
+ * pílula no meio da tela cobriria o roteiro de quem está lendo.
+ */
+function BotaoDeMudo({
+  mudo,
+  onAlternar,
+  rotulo
+}: {
+  mudo: boolean
+  onAlternar: () => void
+  rotulo: string
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      data-web-mudo={mudo ? 'sim' : 'nao'}
+      aria-label={rotulo}
+      title={rotulo}
+      onClick={() => {
+        onAlternar()
+        // pelo mesmo motivo da liberação: mexer no elemento dentro do próprio
+        // gesto é o que o iPhone aceita sem discutir
+        const video = document.querySelector('video')
+        if (video) video.muted = !mudo
+      }}
+      style={{
+        position: 'absolute',
+        right: 14,
+        bottom: 14,
+        width: 40,
+        height: 40,
+        display: 'grid',
+        placeItems: 'center',
+        borderRadius: 999,
+        border: 'none',
+        background: 'rgba(0,0,0,0.45)',
+        color: '#fff',
+        fontSize: 17,
+        lineHeight: 1,
+        cursor: 'pointer'
+      }}
+    >
+      {mudo ? '🔇' : '🔊'}
+    </button>
+  )
+}
+
 function AvisoDeQueda({ texto }: { texto: string }): React.JSX.Element {
   return (
     <div
@@ -205,11 +263,24 @@ export function Webview(): React.JSX.Element {
   const [ligado, setLigado] = useState(false)
   const [tela, setTela] = useState({ width: window.innerWidth, height: window.innerHeight })
   /**
-   * O som do vídeo, nesta página.
+   * O toque que o navegador exigia já aconteceu, nesta carga da página.
+   *
+   * Separado de [som] de propósito. Se fossem um só, calar o aparelho no botão
+   * do canto traria a pílula "ativar som" de volta ao meio da tela, como se
+   * nada tivesse sido decidido — e o convite reapareceria a cada vez que
+   * alguém quisesse silêncio.
+   *
+   * Não sobrevive a recarregar, e é honesto assim: o navegador exige um gesto
+   * novo a cada carga da página. Lembrar em `localStorage` daria uma página
+   * convencida de que tem som enquanto o navegador o bloqueia.
+   */
+  const [liberado, setLiberado] = useState(false)
+  /**
+   * O som está passando, agora.
    *
    * Nasce desligado e não é escolha de gosto: navegador de celular recusa
-   * começar a tocar com som sem um toque da pessoa. Sem este botão o vídeo
-   * chega mudo e não há o que fazer na tela para mudar isso.
+   * começar a tocar com som sem um toque da pessoa. Sem o botão de liberar, o
+   * vídeo chega mudo e não há o que fazer na tela para mudar isso.
    */
   const [som, setSom] = useState(false)
   /**
@@ -355,16 +426,23 @@ export function Webview(): React.JSX.Element {
   const sobrepondoEsteCartao = Boolean(quadro.cardOverlay?.enabled) || Boolean(quadro.card?.overlay)
 
   /*
-   * Quem decide se o botão de som aparece é o CARTÃO no ar, não o caminho de
-   * desenho que coube a ele.
+   * Quem decide se os controles de som aparecem é o CARTÃO no ar, não o
+   * caminho de desenho que coube a ele.
    *
    * Isto já foi escrito dentro do atalho abaixo, e o overlay o levou junto sem
    * que ninguém decidisse: com "OVERLAY" ligado o vídeo cai no palco completo,
    * onde não havia botão nenhum — o som nascia mudo e não havia o que tocar na
    * tela para liberar. Aqui em cima, a pergunta é uma só e vale para os dois
    * caminhos (e para um terceiro, se um dia existir).
+   *
+   * `quadro.som` é a chave de rota do operador. Fechada, não há botão nenhum:
+   * nada sairia daqui, e oferecer o controle seria mentir.
    */
-  const pedindoSom = quadro.card?.kind === 'video' && !som
+  const audioNaRede = quadro.card?.kind === 'video' && quadro.som
+  const pedindoSom = audioNaRede && !liberado
+  const podeMutar = audioNaRede && liberado
+  // rota fechada cala este aparelho na hora, sem esperar novo toque de ninguém
+  const ouvindo = som && quadro.som
 
   if (quadro.card?.kind === 'video' && !sobrepondoEsteCartao) {
     const video = quadro.card
@@ -375,16 +453,27 @@ export function Webview(): React.JSX.Element {
           card={video}
           clock={transport.video}
           src={`/video/${encodeURIComponent(video.id)}?v=${encodeURIComponent(video.convertido ?? 'orig')}`}
-          comSom={som}
-          // na rede quem manda no som é o botão do próprio aparelho
+          comSom={ouvindo}
+          // na rede quem manda no NÍVEL é o botão do próprio aparelho; o que
+          // vem da mesa é só a rota, aberta ou fechada
           volume={1}
           previaDoOperador={false}
         />
         {pedindoSom ? (
           <BotaoDeSom
-            onLigar={() => setSom(true)}
+            onLigar={() => {
+              setLiberado(true)
+              setSom(true)
+            }}
             rotulo={traduzir(idioma, 'web.enableSound')}
             deveTocar={transport.video.tocando}
+          />
+        ) : null}
+        {podeMutar ? (
+          <BotaoDeMudo
+            mudo={!som}
+            onAlternar={() => setSom((antes) => !antes)}
+            rotulo={traduzir(idioma, som ? 'web.mute' : 'web.unmute')}
           />
         ) : null}
         {!ligado ? <AvisoDeQueda texto={traduzir(idioma, 'web.offline')} /> : null}
@@ -422,7 +511,7 @@ export function Webview(): React.JSX.Element {
           cardOverlay={quadro.cardOverlay}
           cardBaseUrl="/cartao/"
           videoBaseUrl="/video/"
-          cardAudio={som}
+          cardAudio={ouvindo}
           // quem assiste vê o que o apresentador vê, marca inclusive
           readingMark={quadro.appearance.readingMarkOnOutput}
         />
@@ -433,9 +522,19 @@ export function Webview(): React.JSX.Element {
           alvo de poucos milímetros. Aqui fora ele mantém o tamanho de toque. */}
       {pedindoSom ? (
         <BotaoDeSom
-          onLigar={() => setSom(true)}
+          onLigar={() => {
+            setLiberado(true)
+            setSom(true)
+          }}
           rotulo={traduzir(idioma, 'web.enableSound')}
           deveTocar={transport.video.tocando}
+        />
+      ) : null}
+      {podeMutar ? (
+        <BotaoDeMudo
+          mudo={!som}
+          onAlternar={() => setSom((antes) => !antes)}
+          rotulo={traduzir(idioma, som ? 'web.mute' : 'web.unmute')}
         />
       ) : null}
       {!ligado ? <AvisoDeQueda texto={traduzir(idioma, 'web.offline')} /> : null}

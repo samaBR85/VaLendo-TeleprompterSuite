@@ -28,6 +28,7 @@ function programa(): AppState {
     },
     sidebarWidth: 260,
     editionSplit: 0.6,
+    webview: { ...state.webview, videoPerfil: 'media', som: false },
     tabs: state.tabs.map((tab) => ({
       ...tab,
       title: 'Jornal das Dez',
@@ -73,6 +74,17 @@ describe('salvar e abrir o projeto', () => {
     expect(state?.transport.loop).toBe(true)
     expect(state?.transport.loopDelaySeconds).toBe(4)
     expect(state?.tabs[0].appearance.positionPct).toBe(30)
+  })
+
+  it('a rota do áudio da rede viaja com o programa, desligada inclusive', () => {
+    // `som: false` é a decisão de quem montou o programa — "os celulares desta
+    // gravação não recebem áudio". Se ela não viajasse, abrir o mesmo projeto
+    // em outra máquina soltaria som que ninguém pediu; e um `?? true` no
+    // caminho errado transformaria o desligado explícito em ligado
+    const { state } = readProject(serializeProject(programa(), 0))
+
+    expect(state?.webview.som).toBe(false)
+    expect(state?.webview.videoPerfil).toBe('media')
   })
 
   it('carimba quando foi salvo', () => {

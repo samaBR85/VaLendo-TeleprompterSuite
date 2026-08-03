@@ -101,6 +101,10 @@ export async function openProject(filePath: string): Promise<{ state: AppState |
         loop: state.transport.loop ?? false,
         loopDelaySeconds: state.transport.loopDelaySeconds ?? 0
       },
+      // ausente vira LIGADO, e não desligado: projeto salvo antes deste
+      // interruptor foi feito quando o áudio sempre saía pela rede, então
+      // ligado é o que preserva o que aquele programa fazia
+      webview: { ...state.webview, som: state.webview?.som ?? true },
       tabs: state.tabs.map((tab) => ({ ...tab, appearance: mergeAppearance(tab.appearance) }))
     },
     error: null

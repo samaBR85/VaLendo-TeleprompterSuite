@@ -132,6 +132,8 @@ export type Action =
   | { type: 'project/new' }
   | { type: 'webview/set'; enabled: boolean }
   | { type: 'webview/videoPerfil'; perfil: PerfilDeRede }
+  /** o áudio do cartão de vídeo sai pela rede — rota, não nível */
+  | { type: 'webview/som'; som: boolean }
   /** o interruptor "OVERLAY": ligado, força o texto por cima de qualquer cartão */
   | { type: 'cardOverlay/set'; enabled: boolean }
   | { type: 'cardOverlay/style'; style: CardOverlayStyle }

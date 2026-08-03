@@ -274,6 +274,9 @@ export function createInitialState(
     cardOverlay: DEFAULT_CARD_OVERLAY,
     keymap: {},
     customDefaults: false,
-    webview: { enabled: false, videoPerfil: 'leve' }
+    // `som` nasce ligado: é o comportamento que já existia antes de haver
+    // interruptor, e ninguém é pego de surpresa por isso — quem assiste ainda
+    // precisa tocar no botão para liberar o áudio no próprio aparelho
+    webview: { enabled: false, videoPerfil: 'leve', som: true }
   }
 }

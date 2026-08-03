@@ -12,6 +12,8 @@ interface Props {
   enabled: boolean
   /** peso do vídeo servido à rede — a tela do apresentador não é afetada */
   videoPerfil: PerfilDeRede
+  /** o áudio do cartão sai pela rede; o nível de cada ponta não vem daqui */
+  som: boolean
   dispatch: (action: Action) => void
   onClose: () => void
 }
@@ -20,7 +22,14 @@ interface Props {
  * A página da rede local: quem está na gravação acompanha a leitura pelo
  * próprio telefone, sem nenhum programa instalado.
  */
-export function WebviewPanel({ info, enabled, videoPerfil, dispatch, onClose }: Props): React.JSX.Element {
+export function WebviewPanel({
+  info,
+  enabled,
+  videoPerfil,
+  som,
+  dispatch,
+  onClose
+}: Props): React.JSX.Element {
   const { t } = useT()
   const [copiado, setCopiado] = useState<string | null>(null)
   const perfilAtual = perfilPorId(videoPerfil)
@@ -126,6 +135,37 @@ export function WebviewPanel({ info, enabled, videoPerfil, dispatch, onClose }: 
                 })
               : t('web.videoOriginalHint')}
           </p>
+        </div>
+
+        {/* Rota do áudio, e só isso.
+            Vizinho dos perfis de peso porque é da mesma família: decisões que
+            valem para a rede e não encostam na tela do apresentador nem no
+            fone de quem opera. O NÍVEL continua sendo de cada ponta — o slider
+            da gaveta é o fone da mesa, e o volume do celular é de quem assiste.
+            Por isso é interruptor, não potenciômetro. */}
+        <div className="mb-4">
+          <button
+            type="button"
+            data-web-audio
+            aria-pressed={som}
+            onClick={() => dispatch({ type: 'webview/som', som: !som })}
+            className={`flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-[12px] transition-colors ${
+              som
+                ? 'border-[var(--color-go)]/50 bg-[var(--color-go)]/12 text-[var(--color-go)]'
+                : 'border-[var(--color-line)] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)]'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Icon name={som ? 'volume' : 'volumeOff'} size={13} />
+              {t('web.audio')}
+            </span>
+            <span
+              className={`h-2.5 w-2.5 flex-none rounded-full ${
+                som ? 'bg-[var(--color-go)]' : 'border border-[var(--color-line)]'
+              }`}
+            />
+          </button>
+          <p className="mt-1.5 text-[11px] text-[var(--color-fog-2)]">{t('web.audioHint')}</p>
         </div>
 
         {info.error ? (
