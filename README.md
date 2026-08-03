@@ -90,9 +90,18 @@ The app never restores the last script by itself. Opening Valendo in someone els
 xattr -dr com.apple.quarantine /Applications/Valendo.app
 ```
 
-It prints nothing and asks for nothing. Then the app opens normally, for good.
+It prints nothing and asks for nothing. Silence means it worked, and that copy of Valendo opens normally from then on.
 
-Do this **before** the first launch. Without it macOS says *"Valendo is damaged and can't be opened"* and offers only **Move to Bin** — the app is not damaged; that is the message macOS gives a downloaded app it cannot verify with Apple. There is no **Open Anyway** button to click in this case: that one appears only when macOS warns, and here it refuses outright.
+Do this **before** the first launch, and **again for every version you download**. The quarantine flag is put there by the browser, on that particular file — a new download is a new file, so it arrives flagged again. It is not macOS forgetting your decision.
+
+Without it macOS says *"Valendo is damaged and can't be opened"* and offers only **Move to Bin** — the app is not damaged; that is the message macOS gives a downloaded app it cannot verify with Apple, and the dialog even names the browser that downloaded it. There is no **Open Anyway** button to click in this case: that one appears only when macOS warns, and here it refuses outright.
+
+**If you update often, skip the dance:** download with `curl` instead of a browser. Files fetched from the command line never get the quarantine flag, because it is the browser that applies it.
+
+```bash
+curl -L -o ~/Downloads/Valendo.dmg \
+  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.1.1-arm64.dmg
+```
 
 The reason is that the app is **not notarised**. It is signed ad-hoc, which is what lets it run at all on Apple Silicon, but Apple's notarisation stamp requires a paid developer account this project does not have. Building from source has no such block, because nothing was downloaded.
 
