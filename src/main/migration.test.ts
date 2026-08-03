@@ -11,6 +11,13 @@ describe('migração da aparência gravada', () => {
     expect(merged.uniformSpeed).toBe(true)
   })
 
+  it('projeto de antes da CAIXA ALTA abre com ela desligada', () => {
+    // ausente não pode virar `undefined` e ser lido como ligado: seria o
+    // roteiro inteiro em maiúsculas na cara do apresentador, sem ninguém pedir
+    const merged = mergeAppearance({ fontSize: 64 })
+    expect(merged.allCaps).toBe(false)
+  })
+
   it('completa dentro de timers, não só na raiz', () => {
     // mescla rasa substituiria o objeto inteiro, e os campos novos ficariam
     // sem valor no workspace de quem já usava o app

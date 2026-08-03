@@ -84,7 +84,6 @@ export const MAQUINA_PADRAO: PreferenciasDaMaquina = {
   window: null,
   thumbSize: THUMB_DEFAULT,
   editorFontSize: EDITOR_FONT_DEFAULT,
-  editorAllCaps: false,
   cardVolume: 1,
   ajudaAberta: true,
   abaDosAjustes: 'texto'
@@ -124,6 +123,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   fontWeight: 500,
   lineHeight: 1.35,
   letterSpacing: 0,
+  allCaps: false,
   marginPct: 8,
   positionPct: 50,
   minWords: 4,

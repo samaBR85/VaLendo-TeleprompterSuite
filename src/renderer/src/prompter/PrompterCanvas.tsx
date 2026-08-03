@@ -558,6 +558,11 @@ export function PrompterCanvas({
               fontWeight: appearance.fontWeight,
               lineHeight: appearance.lineHeight,
               letterSpacing: `${appearance.letterSpacing}em`,
+              // CAIXA ALTA é só pintura: o texto guardado não muda, e desligar
+              // devolve as maiúsculas originais. Aqui vale para as três
+              // superfícies que este componente desenha — a tela do
+              // apresentador, a prévia do operador e a página da rede
+              textTransform: appearance.allCaps ? 'uppercase' : undefined,
               color: appearance.textColor,
               textAlign: appearance.align,
               // estilo "sombra": sem faixa atrás, o contraste vem de cada

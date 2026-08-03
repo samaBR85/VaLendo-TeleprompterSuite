@@ -674,14 +674,21 @@ function AppConteudo({
         disabled={!hasFormatting(tab.blocks)}
         onClick={() => run('edit.clearFormat')}
       />
-      {/* CAIXA ALTA: só a pintura do editor. O texto guardado não muda, então
-          desligar devolve as maiúsculas originais — nada a desfazer */}
+      {/* CAIXA ALTA: pintura, não conteúdo — o texto guardado não muda, então
+          desligar devolve as maiúsculas originais. Vale para o editor E para a
+          saída, que é onde o apresentador lê; por isso vive na aparência da
+          aba, junto do alinhamento e do corpo, e não nas preferências desta
+          máquina */}
       <EditorTool
         texto="AA"
         label={t('editor.allCaps')}
-        acesa={state.maquina.editorAllCaps}
+        acesa={tab.appearance.allCaps}
         onClick={() =>
-          dispatch({ type: 'maquina/patch', patch: { editorAllCaps: !state.maquina.editorAllCaps } })
+          dispatch({
+            type: 'appearance/patch',
+            tabId: tab.id,
+            patch: { allCaps: !tab.appearance.allCaps }
+          })
         }
       />
       <span className="mx-0.5 h-3.5 w-px bg-[var(--color-line)]" />
@@ -1024,7 +1031,7 @@ function AppConteudo({
                   ref={editorRef}
                   tab={tab}
                   fontSize={editorFontSize}
-                  allCaps={state.maquina.editorAllCaps}
+                  allCaps={tab.appearance.allCaps}
                   dispatch={dispatch}
                   onCaretMove={onCaretMove}
                   onPendenteChange={setTextoPendente}

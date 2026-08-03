@@ -21,7 +21,6 @@ function programa(): AppState {
       window: { width: 1_800, height: 1_000, x: 40, y: 20 },
       thumbSize: 72,
       editorFontSize: 20,
-      editorAllCaps: false,
       cardVolume: 0.4,
       ajudaAberta: false,
       abaDosAjustes: 'saida'
@@ -128,7 +127,6 @@ describe('o que é da máquina não entra no projeto', () => {
       window: { width: 900, height: 700, x: -1_400, y: 300 },
       thumbSize: 96,
       editorFontSize: 28,
-      editorAllCaps: false,
       cardVolume: 0,
       ajudaAberta: false,
       abaDosAjustes: 'leitura'

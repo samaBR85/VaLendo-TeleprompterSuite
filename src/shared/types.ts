@@ -45,6 +45,19 @@ export interface Appearance extends PacingRule {
   fontWeight: number
   lineHeight: number
   letterSpacing: number
+  /**
+   * Mostrar o roteiro todo em CAIXA ALTA.
+   *
+   * É `text-transform`, ou seja PINTURA: o texto guardado não muda uma letra,
+   * e desligar devolve as maiúsculas que já existiam. Por isso mora aqui,
+   * junto de `align` e `letterSpacing` — é uma propriedade tipográfica da
+   * aparência, não uma edição do roteiro.
+   *
+   * Vale para a tela do apresentador, a prévia e a página da rede, além do
+   * editor: quem lê no vidro é quem decide se prefere maiúsculas, e a prévia
+   * do operador tem que mostrar a mesma coisa que está indo ao ar.
+   */
+  allCaps: boolean
   /** margem lateral em % da largura do viewport */
   marginPct: number
   /**
@@ -437,15 +450,6 @@ export interface PreferenciasDaMaquina {
   thumbSize: number
   /** corpo da fonte de DIGITAR, no editor — nunca a da saída */
   editorFontSize: number
-  /**
-   * Mostrar o roteiro em CAIXA ALTA no editor.
-   *
-   * É pintura, não conteúdo: o texto guardado nunca muda, e desligar devolve
-   * as maiúsculas originais intactas. Por isso mora aqui, no conforto desta
-   * máquina, e não na aparência da aba — não é do programa, é de quem lê a
-   * tela enquanto digita.
-   */
-  editorAllCaps: boolean
   /** volume da prévia dos cartões de vídeo, 0 a 1; a transmissão é sempre muda */
   cardVolume: number
   /** a caixa "Ajuda rápida", no rodapé da coluna, está aberta */
