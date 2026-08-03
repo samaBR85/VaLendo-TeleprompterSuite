@@ -49,6 +49,12 @@ nsis:
 # carrega as DUAS cópias do Electron — 250 MB para entregar 130 a cada
 # usuário, e ninguém baixa a arquitetura que não vai usar.
 #
+# Este bloco só é obedecido se a linha de comando NÃO nomear o alvo. Os
+# scripts do package.json chamam `electron-builder --mac`, sem `dmg`: com o
+# alvo escrito lá, o CLI substitui este `target` inteiro, a lista de `arch`
+# vai junto, e sobra só a arquitetura da máquina que está construindo. A
+# v1.1.0 saiu sem o x64 exatamente assim.
+#
 # NÃO há `identity: null` aqui de propósito. Sem certificado da Apple, o
 # electron-builder assina em modo ad-hoc sozinho, e isso é obrigatório: um
 # binário sem assinatura NENHUMA nem inicia em Apple Silicon. `identity: null`

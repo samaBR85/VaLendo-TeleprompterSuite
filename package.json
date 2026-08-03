@@ -22,8 +22,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "verify": "node scripts/verify.mjs",
-    "dist:win": "electron-vite build && electron-builder --win nsis --publish never",
-    "dist:mac": "electron-vite build && electron-builder --mac dmg --publish never"
+    "dist:win": "electron-vite build && electron-builder --win --publish never",
+    "dist:mac": "electron-vite build && electron-builder --mac --publish never"
   },
   "dependencies": {
     "docx": "^9.7.1",
