@@ -2,7 +2,7 @@ import { useT } from '../i18n'
 import { Modal } from '../ui/Modal'
 import { Wordmark, versionLabel } from '../ui/Wordmark'
 
-const REPOSITORY = 'https://github.com/samaBR85/VaLendo-TeleprompterSuite'
+const REPOSITORY = 'https://github.com/samaBR85/Valendo-TeleprompterSuite'
 const LICENCA = 'https://www.gnu.org/licenses/gpl-3.0.html'
 
 const STACK = [
@@ -52,7 +52,9 @@ export function Credits({ onClose }: Props): React.JSX.Element {
                 window.valendo.openExternal(REPOSITORY)
               }}
             >
-              samaBR85/VaLendo-TeleprompterSuite
+              {/* o dono continua `samaBR85` aqui: é o usuário do GitHub, e o
+                  texto do link tem que bater com o endereço que ele abre */}
+              samaBR85/Valendo-TeleprompterSuite
             </a>
           </div>
           <div className="flex gap-2 py-0.5">
@@ -61,7 +63,7 @@ export function Credits({ onClose }: Props): React.JSX.Element {
           </div>
           <div className="flex gap-2 py-0.5">
             <span className="w-[128px] flex-none text-[var(--color-fog-2)]">{t('credits.dev')}</span>
-            <span className="text-[var(--color-fog-1)]">samaBR85, com Claude Code</span>
+            <span className="text-[var(--color-fog-1)]">samaBR, com Claude Code</span>
           </div>
           {/* a GPL pede que um programa interativo mostre a licença a quem
               usa; aqui, com o link para o texto que vale */}
