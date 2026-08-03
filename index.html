@@ -50,6 +50,9 @@
     display: flex; align-items: center; gap: 20px;
     height: 60px;
   }
+  /* "Va" em verde, como o ícone do app: a sílaba destacada é a mesma de
+     sempre, e o instrumento passou a ser cor porque tom não sobrevive a 16px
+     entre vinte ícones na bandeja. */
   .mark {
     font-size: 24px; font-weight: 600; letter-spacing: -.02em;
     color: var(--fog-0); text-decoration: none;
@@ -62,14 +65,14 @@
 
   /* ------------------------------------------------------------- herói */
   .hero { padding: 76px 0 48px; text-align: center; }
-  /* A logomarca, escrita como o app escreve: "Va" no cinza claro e "lendo" no
-     quase-branco. As duas sílabas do nome continuam marcadas pelo tom, que é
-     o que sobrou depois que o L maiúsculo do meio saiu. */
+  /* A logomarca, escrita como o app escreve: "Va" em verde e "lendo" no
+     quase-branco. As duas sílabas do nome seguem marcadas — o que mudou foi o
+     instrumento, de tom para cor, junto com o ícone. */
   .hero .wordmark {
     display: block; margin: 0 0 6px;
     font-size: clamp(52px, 9vw, 92px); line-height: 1;
     letter-spacing: -.035em; font-weight: 500;
-    color: var(--fog-1);
+    color: var(--go);
   }
   .hero .wordmark b { color: var(--fog-0); font-weight: 500; }
   .hero h1 {
@@ -219,7 +222,7 @@
 
 <header>
   <div class="wrap">
-    <a class="mark" href="#top">Va<span>lendo</span></a>
+    <a class="mark" href="#top"><span>Va</span>lendo</a>
     <nav>
       <a href="#suite">The suite</a>
       <a href="#live" class="hide-small">Live editing</a>
