@@ -6,7 +6,7 @@ A teleprompter for Windows and macOS where the operator **rewrites the script wh
 
 ![The operator window: editor on the left, an exact replica of the presenter's screen on the right](docs/screenshots/02-split.png)
 
-**[Documentation is in the wiki →](https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki)**
+**[valendo site →](https://samabr85.github.io/Valendo-TeleprompterSuite/)** · **[Documentation is in the wiki →](https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki)**
 
 ---
 
