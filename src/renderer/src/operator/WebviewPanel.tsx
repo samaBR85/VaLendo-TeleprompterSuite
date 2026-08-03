@@ -48,7 +48,9 @@ export function WebviewPanel({ info, enabled, videoPerfil, dispatch, onClose }: 
         className="w-[440px] rounded-xl border border-[var(--color-line)] bg-[var(--color-ink-1)] p-5"
       >
         <div className="mb-4 flex items-center gap-2">
-          <Icon name="webview" size={18} />
+          {/* verde, a mesma cor da tecla da rede no poço AR e do rótulo de
+              publicar aqui embaixo — o painel inteiro fala de uma coisa só */}
+          <Icon name="webview" size={18} className="text-[var(--color-go)]" />
           <h2 className="text-[15px] text-[var(--color-fog-0)]">{t('web.title')}</h2>
           <button
             type="button"
