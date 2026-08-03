@@ -54,7 +54,10 @@ export function Timeline({ segments, totalRuler, currentRuler, currentIndex, ppm
           {t('deck.timeline')}
         </span>
         <span className="font-mono text-[11px] text-[var(--color-fog-2)]">
-          <span className="text-[var(--color-fog-0)]">{formatClock(secondsForWords(currentRuler, ppm))}</span> de{' '}
+          {/* o "de" de "3:20 de 12:00" era literal em português e aparecia
+              assim nos seis idiomas; a chave `deck.of` já existia para isto */}
+          <span className="text-[var(--color-fog-0)]">{formatClock(secondsForWords(currentRuler, ppm))}</span>{' '}
+          {t('deck.of')}{' '}
           <span className="text-[var(--color-fog-0)]">{formatClock(totalSeconds)}</span>
         </span>
       </div>

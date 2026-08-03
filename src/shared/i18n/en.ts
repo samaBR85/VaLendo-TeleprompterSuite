@@ -101,6 +101,12 @@ export const en: Dicionario = {
   'insp.wrapping.fix': 'Set size to {size}px',
 
   'insp.body': 'Size',
+  'font.system': 'System',
+  'font.sans': 'Sans-serif',
+  'font.serif': 'Serif',
+  'font.mono': 'Monospaced',
+  'font.condensed': 'Condensed',
+  'font.legible': 'High legibility',
   'insp.weight': 'Weight',
   'insp.lineHeight': 'Line height',
   'insp.letterSpacing': 'Letter spacing',

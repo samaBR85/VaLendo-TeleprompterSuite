@@ -306,7 +306,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
         >
           {FONT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {t(option.chave)}
             </option>
           ))}
         </select>

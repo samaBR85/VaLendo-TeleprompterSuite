@@ -1,4 +1,4 @@
-import { traduzir, type Lang } from './i18n'
+import { traduzir, type Chave, type Lang } from './i18n'
 import type {
   Appearance,
   AppState,
@@ -100,13 +100,22 @@ export const DEFAULT_CARD_OVERLAY: { enabled: boolean; style: CardOverlayStyle }
   style: 'faixa'
 }
 
-export const FONT_OPTIONS: { label: string; value: string }[] = [
-  { label: 'Sistema', value: 'system-ui, sans-serif' },
-  { label: 'Sem serifa larga', value: '"Segoe UI", "Helvetica Neue", Arial, sans-serif' },
-  { label: 'Serifa', value: 'Georgia, "Times New Roman", serif' },
-  { label: 'Monoespaçada', value: '"Cascadia Mono", "SF Mono", Consolas, monospace' },
-  { label: 'Condensada', value: '"Arial Narrow", "Helvetica Neue Condensed", sans-serif' },
-  { label: 'Legibilidade alta', value: '"Atkinson Hyperlegible", "Verdana", sans-serif' }
+/**
+ * As famílias de fonte da saída, pela CHAVE do dicionário.
+ *
+ * Os nomes eram texto fixo em português, e apareciam em português mesmo com o
+ * app em inglês — é a única lista da interface que tinha ficado de fora do
+ * i18n. O `value` (a pilha de fontes do CSS) é o que vai para o arquivo do
+ * projeto e não muda com o idioma; traduzir o nome não mexe em roteiro
+ * nenhum.
+ */
+export const FONT_OPTIONS: { chave: Chave; value: string }[] = [
+  { chave: 'font.system', value: 'system-ui, sans-serif' },
+  { chave: 'font.sans', value: '"Segoe UI", "Helvetica Neue", Arial, sans-serif' },
+  { chave: 'font.serif', value: 'Georgia, "Times New Roman", serif' },
+  { chave: 'font.mono', value: '"Cascadia Mono", "SF Mono", Consolas, monospace' },
+  { chave: 'font.condensed', value: '"Arial Narrow", "Helvetica Neue Condensed", sans-serif' },
+  { chave: 'font.legible', value: '"Atkinson Hyperlegible", "Verdana", sans-serif' }
 ]
 
 export const DEFAULT_APPEARANCE: Appearance = {

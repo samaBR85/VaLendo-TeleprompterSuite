@@ -7,7 +7,7 @@ export const fr: Dicionario = {
   'app.panels': 'Panneaux',
   'app.assets': 'Assets',
   'panel.edit.meta': '{words} mots · {time}',
-  'key.save': 'sauver',
+  'key.save': 'enreg.',
   'app.shortcuts': 'Modifier les raccourcis',
   'app.palette': 'Palette de commandes',
   'app.credits': 'Crédits',
@@ -17,7 +17,7 @@ export const fr: Dicionario = {
   'app.splitReset': 'Double-clic : centrer le séparateur',
   'app.onAir': 'À l’antenne',
   'app.offAir': 'hors antenne',
-  'app.dismiss': 'Fermer',
+  'app.dismiss': 'Masquer',
   'app.close': 'Fermer',
   'app.loading': 'Chargement…',
 
@@ -101,6 +101,12 @@ export const fr: Dicionario = {
   'insp.wrapping.fix': 'Régler le corps à {size}px',
 
   'insp.body': 'Corps',
+  'font.system': 'Système',
+  'font.sans': 'Sans serif',
+  'font.serif': 'Avec serif',
+  'font.mono': 'Chasse fixe',
+  'font.condensed': 'Condensée',
+  'font.legible': 'Haute lisibilité',
   'insp.weight': 'Graisse',
   'insp.lineHeight': 'Interligne',
   'insp.letterSpacing': 'Interlettrage',
@@ -200,7 +206,7 @@ export const fr: Dicionario = {
   'keymap.title': 'Raccourcis',
   'keymap.subtitle': 'Cliquez sur la touche pour la réattribuer. Échap annule la capture.',
   'keymap.conflict': 'en conflit',
-  'keymap.default': 'défaut',
+  'keymap.default': 'par défaut',
   'keymap.press': 'tapez maintenant…',
 
   'web.title': 'Voir sur le réseau',
@@ -397,7 +403,7 @@ export const fr: Dicionario = {
   'cards.overlayForced': 'Forcé par l’OVERLAY de la colonne Assets',
   'cards.overlayShort': 'O',
   'cards.overlayHint':
-    'Le texte de la Diffusion se superpose à ce carton au lieu de le remplacer. L\'interrupteur global de la colonne des ressources, une fois activé, force ceci pour tous les cartons.',
+    'Le texte de la Diffusion se superpose à ce carton au lieu de le remplacer. L’interrupteur global de la colonne Assets, une fois activé, force ceci pour tous les cartons.',
   'cards.overlayStyle.faixa': 'Bande sombre derrière le texte',
   'cards.overlayStyle.sombra': 'Ombre derrière chaque lettre',
   'cards.overlayStyle.nenhum': 'Aucun traitement',
