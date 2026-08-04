@@ -226,6 +226,7 @@
     <nav>
       <a href="#suite">The suite</a>
       <a href="#live" class="hide-small">Live editing</a>
+      <a href="#presenters" class="hide-small">Presenters</a>
       <a href="#network" class="hide-small">Network</a>
       <a href="#install">Install</a>
       <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki">Docs</a>
@@ -247,7 +248,7 @@
     <a class="btn" href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki">Documentation</a>
   </div>
   <div class="chips">
-    <span class="chip" id="chip-version"><span class="dot"></span>Version <b>1.1.2</b></span>
+    <span class="chip" id="chip-version"><span class="dot"></span>Version <b>1.2.0</b></span>
     <span class="chip" id="chip-downloads"><span class="dot"></span><b>No release yet</b></span>
   </div>
   <figure class="shot-wide">
@@ -267,7 +268,7 @@
     <div class="grid">
       <div class="card">
         <h4><span class="dot" style="background:var(--go)"></span>The script</h4>
-        <p>Import txt, md, docx and pdf. Ten tabs, chapters, stage directions, markers, and undo that survives closing the app.</p>
+        <p>Import txt, md, docx and pdf. Ten tabs, chapters, stage directions, markers, presenters in their own colours, and undo that survives closing the app.</p>
       </div>
       <div class="card">
         <h4><span class="dot" style="background:var(--warn)"></span>Timing</h4>
@@ -283,11 +284,11 @@
       </div>
       <div class="card">
         <h4><span class="dot" style="background:var(--go)"></span>The network</h4>
-        <p>One switch and every phone on the wi-fi is a second prompter screen. No app to install.</p>
+        <p>One switch and any device on the wi-fi is a second prompter screen. Nothing to install.</p>
       </div>
       <div class="card">
         <h4><span class="dot" style="background:var(--link)"></span>The console</h4>
-        <p>Three working layouts, a command palette, remappable keys, interface zoom, six languages.</p>
+        <p>Three working layouts, a command palette, remappable keys, interface zoom, quick help on every key, six languages.</p>
       </div>
     </div>
     <figure class="strip">
@@ -349,10 +350,61 @@
   </div>
 </section>
 
+<section id="presenters">
+  <div class="wrap">
+    <div class="eyebrow">Two people on camera</div>
+    <h2>Everyone reads in their own colour</h2>
+    <div class="split">
+      <div>
+        <p>
+          Select a name in the script, press the person key, and everything below that name reads in
+          a colour of its own — in the editor, on the presenter's screen and on the network page.
+          The next name picks up where the last one left off.
+        </p>
+        <p>
+          Chapters and stage directions keep their own colours and <strong>do not break the run</strong>:
+          a direction in the middle of a speech does not hand the words to somebody else.
+        </p>
+        <p>
+          And the names can leave the output entirely. They leave the <strong>ruler</strong> with them,
+          so the reading does not crawl through the gap where a name used to be — what stays is the
+          colour, which is all the presenter needed the name for.
+        </p>
+      </div>
+      <figure>
+        <img src="shots/d23-presenters-hidden.png" alt="The presenter's screen with the names hidden: each speaker's lines in their own colour" />
+        <figcaption>The same script with the names suppressed. Nobody reads a name out loud by accident.</figcaption>
+      </figure>
+    </div>
+    <div class="details">
+      <div class="detail">
+        <div class="pic"><img src="shots/d20-presenters.png" alt="Presenter chips with a colour each, a hide key and a remove key" /></div>
+        <b>A chip each</b>
+        <span>Pick the colour, rename by double-click, and the script is rewritten with it.</span>
+      </div>
+      <div class="detail">
+        <div class="pic"><img src="shots/d26-presenters-global.png" alt="The global hide switch beside the Presenters title" /></div>
+        <b>Hide one, or all</b>
+        <span>A switch per presenter, and a global one beside the title.</span>
+      </div>
+      <div class="detail">
+        <div class="pic"><img src="shots/d21-follow.png" alt="The FOLLOW and Go To keys in the Broadcast header" /></div>
+        <b>FOLLOW, and Go&nbsp;To</b>
+        <span>The editor's caret trails the reading; Go To sends the reading to the caret.</span>
+      </div>
+      <div class="detail">
+        <div class="pic"><img src="shots/d22-quick-help.png" alt="The quick help box explaining whatever the mouse is pointing at" /></div>
+        <b>Quick help</b>
+        <span>Point at any key or slider and the box says what it does, and its shortcut.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="network">
   <div class="wrap">
     <div class="eyebrow">Local network</div>
-    <h2>Any phone on the wi-fi is a prompter screen</h2>
+    <h2>Any device on the wi-fi is a prompter screen</h2>
     <div class="split reverse">
       <div>
         <p>
@@ -618,7 +670,7 @@
       never applied:
     </p>
 <pre><code>curl -L -o ~/Downloads/Valendo.dmg \
-  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.1.2-arm64.dmg</code></pre>
+  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.2.0-arm64.dmg</code></pre>
     <p>
       Intel Macs are not shipped as a download, but the app builds and runs on them —
       see <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki/Building-from-Source">Building from Source</a>.
@@ -656,7 +708,7 @@ npm run dev</code></pre>
 /*
  * Os dois chips do herói, preenchidos pela API pública do GitHub.
  *
- * O HTML já chega com um texto que é verdade — "Version 1.1.2" e "No release
+ * O HTML já chega com um texto que é verdade — "Version 1.2.0" e "No release
  * yet" — e o script só MELHORA o que está lá. Assim a página continua honesta
  * quando a API não responde: sem chave, ela permite 60 chamadas por hora por
  * endereço IP, e um visitante numa rede movimentada pode cair no limite.
