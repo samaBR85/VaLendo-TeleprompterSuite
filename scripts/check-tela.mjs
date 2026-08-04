@@ -308,6 +308,29 @@ check(
 )
 await acao({ type: 'card/tela', cardId: tela.id, fundo: { intensidade: 100 } })
 
+/*
+ * A janela tem de caber SEM ROLAGEM, e o estado mais alto é este: efeito
+ * ligado, que acrescenta a grade de seis, a Frequência e a Intensidade.
+ *
+ * Rolar aqui não é só incômodo. Os controles de baixo saem da tela junto com
+ * a prévia, e aí se ajusta o texto sem ver o que ele está fazendo — que é o
+ * que este editor existe para evitar.
+ */
+const rolagem = await ev(`(() => {
+  const corpo = document.querySelector('[data-tela-corpo]')
+  const janela = corpo.closest('div[class*="rounded-xl"]')
+  return {
+    precisa: corpo.scrollHeight - corpo.clientHeight,
+    altura: Math.round(janela.getBoundingClientRect().height),
+    tela: window.innerHeight
+  }
+})()`)
+check(
+  'a janela cabe sem rolagem no estado mais alto',
+  rolagem.precisa <= 1,
+  `sobram ${rolagem.precisa}px por rolar — janela ${rolagem.altura} numa tela de ${rolagem.tela}`
+)
+
 /* Voltar para parado tem de LIMPAR o efeito, senão a ficha "Chapado" acende
    com a tela continuando a se mexer. */
 await clicar('[data-tela-fundo="chapado"]')

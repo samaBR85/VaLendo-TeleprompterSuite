@@ -5,11 +5,28 @@ interface Props {
   title: string
   subtitle?: string
   width?: number
+  /**
+   * Quanto da altura da janela esta modal pode ocupar, em vh.
+   *
+   * 70 serve para as modais que são listas — rolar uma lista é o esperado.
+   * Uma modal de CONTROLES é outra coisa: rolando, metade dos ajustes sai da
+   * tela junto com a prévia, e aí se mexe no que não se está vendo. Essas
+   * pedem mais teto. O topo fica em 12vh, então 84 é o limite antes de a
+   * modal encostar no pé da janela.
+   */
+  maxVh?: number
   onClose: () => void
   children: React.ReactNode
 }
 
-export function Modal({ title, subtitle, width = 560, onClose, children }: Props): React.JSX.Element {
+export function Modal({
+  title,
+  subtitle,
+  width = 560,
+  maxVh = 70,
+  onClose,
+  children
+}: Props): React.JSX.Element {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
@@ -32,8 +49,8 @@ export function Modal({ title, subtitle, width = 560, onClose, children }: Props
     >
       <div
         onMouseDown={(event) => event.stopPropagation()}
-        style={{ width }}
-        className="flex max-h-[70vh] flex-col overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-ink-1)]"
+        style={{ width, maxHeight: `${maxVh}vh` }}
+        className="flex flex-col overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-ink-1)]"
       >
         <header className="flex items-center gap-2 border-b border-[var(--color-line)] px-3.5 py-2.5">
           <div>
