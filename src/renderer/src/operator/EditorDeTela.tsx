@@ -7,6 +7,12 @@ import {
   ANIMACOES,
   CORPO_MAX,
   CORPO_MIN,
+  FADE_MAX,
+  FADE_MIN,
+  FORCA_MAX,
+  FORCA_MIN,
+  FREQ_MAX,
+  FREQ_MIN,
   type AlinhamentoDoRecado,
   type AnimacaoDeFundo,
   type PosicaoDoRecado
@@ -171,13 +177,18 @@ export function EditorDeTela({
 
         {efeito ? (
           <Linha rotulo={t('cards.effect')}>
-            <div className="flex flex-wrap gap-[3px]">
+            {/* Grade de três, e não uma fileira que quebra: os seis nomes têm
+                comprimentos diferentes em cada idioma, e deixados soltos eles
+                quebram num lugar diferente por idioma — em português sobrava
+                "Poeira" órfã numa segunda linha. Três por três é igual nos
+                seis, e parece decisão em vez de sobra. */}
+            <div className="grid min-w-0 flex-1 grid-cols-3 gap-[3px]">
               {ANIMACOES.map((nome) => (
                 <Ficha
                   key={nome}
                   data-tela-efeito={nome}
                   {...ajuda('cards.screenEffect')}
-                  className={FICHA}
+                  className="px-1 py-[5px] text-[11px]"
                   ativa={efeito === nome}
                   onClick={() => mexerNoFundo({ animacao: nome })}
                 >
@@ -186,6 +197,41 @@ export function EditorDeTela({
               ))}
             </div>
           </Linha>
+        ) : null}
+
+        {/* Os dois valem para os SEIS: a frequência divide a duração de cada
+            um e a intensidade multiplica a opacidade do que se mexe. Por isso
+            são um controle só cada, e não seis. */}
+        {efeito ? (
+          <>
+            <Linha rotulo={t('cards.frequency')}>
+              <SliderConsole
+                data-tela-frequencia
+                {...ajuda('cards.frequency')}
+                aria-label={t('cards.frequency')}
+                value={card.fundo.frequencia ?? 100}
+                min={FREQ_MIN}
+                max={FREQ_MAX}
+                step={5}
+                onValue={(v) => mexerNoFundo({ frequencia: v })}
+                className="min-w-0 flex-1"
+              />
+              <Valor>{`${card.fundo.frequencia ?? 100}%`}</Valor>
+            </Linha>
+            <Linha rotulo={t('cards.intensity')}>
+              <SliderConsole
+                data-tela-intensidade
+                {...ajuda('cards.intensity')}
+                aria-label={t('cards.intensity')}
+                value={card.fundo.intensidade ?? 100}
+                min={FORCA_MIN}
+                max={FORCA_MAX}
+                onValue={(v) => mexerNoFundo({ intensidade: v })}
+                className="min-w-0 flex-1"
+              />
+              <Valor>{`${card.fundo.intensidade ?? 100}%`}</Valor>
+            </Linha>
+          </>
         ) : null}
 
         <Linha rotulo={t('cards.colours')}>
@@ -224,6 +270,22 @@ export function EditorDeTela({
             </>
           ) : null}
         </Linha>
+
+        {gradiente && !efeito ? (
+          <Linha rotulo={t('cards.fade')}>
+            <SliderConsole
+              data-tela-fade
+              {...ajuda('cards.fade')}
+              aria-label={t('cards.fade')}
+              value={card.fundo.fade ?? 100}
+              min={FADE_MIN}
+              max={FADE_MAX}
+              onValue={(v) => mexerNoFundo({ fade: v })}
+              className="min-w-0 flex-1"
+            />
+            <Valor>{`${card.fundo.fade ?? 100}%`}</Valor>
+          </Linha>
+        ) : null}
 
         <div className="border-t border-[var(--color-line)]/60" />
 

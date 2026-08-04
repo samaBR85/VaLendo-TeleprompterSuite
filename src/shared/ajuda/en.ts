@@ -424,6 +424,18 @@ export const ajudaEn = {
     nome: 'Animated background',
     texto: 'Six ways for the two colours to move. All of them are slow on purpose — a restless background argues with whoever is reading. Each screen runs its own copy, so they are not frame-locked to each other.'
   },
+  'cards.frequency': {
+    nome: 'Effect frequency',
+    texto: 'Speeds all six effects up or down together. It multiplies each one’s own pace rather than forcing a single duration — they were not tuned to the same number.'
+  },
+  'cards.intensity': {
+    nome: 'Effect intensity',
+    texto: 'How much the movement shows over the base colour. Low is barely there, which is what a background that stays on air for half an hour usually wants.'
+  },
+  'cards.fade': {
+    nome: 'Where the colours meet',
+    texto: 'How much of the frame the transition takes. Full is a fade from edge to edge; zero is a clean line between two solid halves.'
+  },
   'cards.screenAlign': {
     nome: 'Paragraph alignment',
     texto: 'How the lines sit against each other. Independent of where the block sits on the screen — that is Place.'

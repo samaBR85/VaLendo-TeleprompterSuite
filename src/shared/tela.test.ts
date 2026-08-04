@@ -6,10 +6,12 @@ import {
   ANIMACOES,
   apoioDoRecado,
   classeDoFundo,
-  coresDoFundo,
+  variaveisDoFundo,
   corpoDoRecado,
   CORPO_MAX,
   CORPO_MIN,
+  FORCA_MIN,
+  FREQ_MAX,
   fundoDaTela,
   telaNova
 } from './tela'
@@ -102,24 +104,77 @@ describe('os fundos animados', () => {
   })
 
   it('as duas cores viram variáveis para o CSS', () => {
-    expect(coresDoFundo({ de: '#123456', ate: '#abcdef' })).toEqual({
-      '--tela-de': '#123456',
-      '--tela-ate': '#abcdef'
-    })
+    const v = variaveisDoFundo({ de: '#123456', ate: '#abcdef' })
+    expect(v['--tela-de']).toBe('#123456')
+    expect(v['--tela-ate']).toBe('#abcdef')
   })
 
   it('sem segunda cor, ela repete a primeira em vez de sumir', () => {
     // um efeito que precisa de duas cores e recebe uma só desaparece da tela;
     // monocromático é feio, invisível é defeito
-    expect(coresDoFundo({ de: '#123456' })).toEqual({
-      '--tela-de': '#123456',
-      '--tela-ate': '#123456'
-    })
+    expect(variaveisDoFundo({ de: '#123456' })['--tela-ate']).toBe('#123456')
+  })
+
+  it('frequência e intensidade saem como números puros, para caber em calc()', () => {
+    /*
+     * Com unidade, `calc(22s / var(--tela-freq))` não computa e a animação
+     * inteira some — sem erro no console, porque uma propriedade inválida é
+     * simplesmente descartada. Daí a divisão por 100 acontecer aqui.
+     */
+    const v = variaveisDoFundo({ de: '#000', frequencia: 200, intensidade: 50 })
+    expect(v['--tela-freq']).toBe('2')
+    expect(v['--tela-forca']).toBe('0.5')
+    expect(v['--tela-freq']).not.toMatch(/[a-z%]/)
+  })
+
+  it('sem os campos, os dois valem 1 — que é o de sempre', () => {
+    const v = variaveisDoFundo({ de: '#000' })
+    expect(v['--tela-freq']).toBe('1')
+    expect(v['--tela-forca']).toBe('1')
+  })
+
+  it('valores fora da escala são presos, não passam adiante', () => {
+    const doido = variaveisDoFundo({ de: '#000', frequencia: 9999, intensidade: -50 })
+    expect(Number(doido['--tela-freq'])).toBeLessThanOrEqual(FREQ_MAX / 100)
+    expect(Number(doido['--tela-forca'])).toBeGreaterThanOrEqual(FORCA_MIN / 100)
+    // frequência ZERO dividiria a duração por zero: a animação viraria infinita
+    expect(Number(variaveisDoFundo({ de: '#000', frequencia: 0 })['--tela-freq'])).toBeGreaterThan(0)
   })
 
   it('são seis, e sem nome repetido', () => {
     expect(ANIMACOES).toHaveLength(6)
     expect(new Set(ANIMACOES).size).toBe(6)
+  })
+})
+
+describe('a distância da transição no gradiente', () => {
+  it('sem o campo, reproduz o gradiente de borda a borda', () => {
+    const css = fundoDaTela({ de: '#000', ate: '#fff' })
+    expect(css).toContain('#000 0%')
+    expect(css).toContain('#fff 100%')
+  })
+
+  it('as duas paradas andam do centro para fora, simetricamente', () => {
+    const css = fundoDaTela({ de: '#000', ate: '#fff', fade: 50 })
+    expect(css).toContain('25%')
+    expect(css).toContain('75%')
+  })
+
+  it('em zero as paradas se encontram: duas metades chapadas', () => {
+    const css = fundoDaTela({ de: '#000', ate: '#fff', fade: 0 })
+    expect(css).toContain('#000 50%')
+    expect(css).toContain('#fff 50%')
+  })
+
+  it('as paradas nunca saem de ordem', () => {
+    for (const fade of [-30, 0, 37, 100, 480]) {
+      const paradas = [...fundoDaTela({ de: '#000', ate: '#fff', fade }).matchAll(/([\d.]+)%/g)].map((m) =>
+        Number(m[1])
+      )
+      expect(paradas[0], `fade ${fade}`).toBeLessThanOrEqual(paradas[1])
+      expect(paradas[0]).toBeGreaterThanOrEqual(0)
+      expect(paradas[1]).toBeLessThanOrEqual(100)
+    }
   })
 })
 

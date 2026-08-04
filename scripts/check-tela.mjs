@@ -116,6 +116,24 @@ const fundoCss = await ev(
 )
 check('a prévia desenha o gradiente', fundoCss.includes('gradient'), fundoCss.slice(0, 60))
 
+/* A transição: as duas paradas andam do centro para fora. Em 0 elas se
+   encontram, e o que sai é uma linha nítida entre duas metades chapadas. */
+const paradasCom = async (fade) => {
+  await acao({ type: 'card/tela', cardId: tela.id, fundo: { fade } })
+  await wait(300)
+  const css = await ev(
+    `getComputedStyle(document.querySelector('[data-tela-previa] [data-card-tela]')).backgroundImage`
+  )
+  return [...css.matchAll(/([\d.]+)%/g)].map((m) => Number(m[1]))
+}
+const largo = await paradasCom(100)
+const meio = await paradasCom(50)
+const nenhum = await paradasCom(0)
+check('em 100% a transição vai de borda a borda', largo[0] === 0 && largo[1] === 100, largo.join(' → '))
+check('em 50% ela ocupa a metade do meio', meio[0] === 25 && meio[1] === 75, meio.join(' → '))
+check('em 0% vira uma linha nítida', nenhum[0] === 50 && nenhum[1] === 50, nenhum.join(' → '))
+await acao({ type: 'card/tela', cardId: tela.id, fundo: { fade: 100 } })
+
 await acao({ type: 'card/tela', cardId: tela.id, recado: { texto: 'VOLTAMOS\nEM 2 MIN' } })
 await wait(400)
 const recadoNaPrevia = await ev(
@@ -251,6 +269,44 @@ for (const nome of ['deriva', 'respiro', 'varredura', 'ondas', 'barras', 'poeira
   if (nome === 'barras') check('as barras são 18', medida.pecas === 18, String(medida.pecas))
   if (nome === 'poeira') check('a poeira são 12 pontos', medida.pecas === 12, String(medida.pecas))
 }
+
+/* ------------------------------- frequência, intensidade e a transição ---- */
+
+await clicar('[data-tela-efeito="respiro"]')
+const duracaoCom = async (freq) => {
+  await acao({ type: 'card/tela', cardId: tela.id, fundo: { frequencia: freq } })
+  await wait(350)
+  return ev(`(() => {
+    const el = document.querySelector('[data-tela-previa] [data-card-tela]')
+    const a = el.getAnimations({ subtree: true })[0]
+    return a ? a.effect.getComputedTiming().duration : null
+  })()`)
+}
+const lenta = await duracaoCom(50)
+const rapida = await duracaoCom(200)
+check(
+  'a frequência DIVIDE a duração do efeito',
+  lenta && rapida && Math.abs(lenta / rapida - 4) < 0.2,
+  `${lenta}ms a 50% contra ${rapida}ms a 200%`
+)
+await acao({ type: 'card/tela', cardId: tela.id, fundo: { frequencia: 100 } })
+
+const opacidadeCom = async (forca) => {
+  await acao({ type: 'card/tela', cardId: tela.id, fundo: { intensidade: forca } })
+  await wait(350)
+  return ev(`(() => {
+    const el = document.querySelector('[data-tela-previa] [data-card-tela]')
+    return parseFloat(getComputedStyle(el, '::before').opacity)
+  })()`)
+}
+const fraco = await opacidadeCom(20)
+const forte = await opacidadeCom(100)
+check(
+  'a intensidade MULTIPLICA a opacidade do que se mexe',
+  fraco < forte,
+  `${fraco} a 20% contra ${forte} a 100%`
+)
+await acao({ type: 'card/tela', cardId: tela.id, fundo: { intensidade: 100 } })
 
 /* Voltar para parado tem de LIMPAR o efeito, senão a ficha "Chapado" acende
    com a tela continuando a se mexer. */

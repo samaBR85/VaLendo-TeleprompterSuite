@@ -23,7 +23,7 @@ import {
   ATRASOS_DA_POEIRA,
   BARRAS,
   classeDoFundo,
-  coresDoFundo,
+  variaveisDoFundo,
   corpoDoRecado,
   fundoDaTela,
   POEIRA
@@ -213,7 +213,7 @@ export function TelaDoCartao({
         inset: 0,
         /* com efeito, quem pinta é a classe: um `background` inline aqui
            ganharia dela e a animação sumiria sem erro nenhum */
-        ...(efeito ? coresDoFundo(card.fundo) : { background: fundoDaTela(card.fundo) }),
+        ...(efeito ? variaveisDoFundo(card.fundo) : { background: fundoDaTela(card.fundo) }),
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

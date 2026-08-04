@@ -74,6 +74,14 @@ export interface FundoDeTela {
   /** graus, no sentido do CSS: 0 sobe, 90 vai para a direita */
   angulo?: number
   /**
+   * Onde a transição entre as duas cores acontece, em % da caixa.
+   *
+   * 100 é o gradiente de borda a borda; 50 deixa um quarto de cor sólida em
+   * cada ponta; 0 são duas metades chapadas com uma linha nítida entre elas —
+   * uma divisão limpa de tela, que é escolha de projeto legítima.
+   */
+  fade?: number
+  /**
    * Qual efeito anima o fundo. Ausente é o normal: uma tela parada.
    *
    * As duas cores continuam valendo — o efeito é COMO elas se mexem, não uma
@@ -81,6 +89,18 @@ export interface FundoDeTela {
    * sem apagar e refazer o cartão.
    */
   animacao?: AnimacaoDeFundo
+  /**
+   * Multiplicador de velocidade dos efeitos, em %.
+   *
+   * MULTIPLICADOR, e não uma duração: as seis durações escritas no CSS não
+   * são arbitrárias, cada uma foi achada para o seu efeito. Um controle que
+   * impusesse o mesmo número a todos deixaria a Deriva frenética e as Barras
+   * arrastadas. Dividindo, o operador mexe no conjunto sem desmanchar a
+   * proporção entre eles.
+   */
+  frequencia?: number
+  /** Quanto o efeito aparece sobre a cor de base, em %. */
+  intensidade?: number
 }
 
 /** O recado desenhado sobre o fundo. Sem texto, a tela é só o fundo. */
@@ -99,6 +119,24 @@ export const CORPO_MIN = 4
 export const CORPO_MAX = 24
 export const ANGULO_PADRAO = 135
 
+export const FADE_MIN = 0
+export const FADE_MAX = 100
+export const FREQ_MIN = 25
+export const FREQ_MAX = 200
+export const FORCA_MIN = 10
+export const FORCA_MAX = 100
+
+/*
+ * Os três padrões são o que o cartão fazia ANTES destes controles existirem.
+ *
+ * Não é gentileza com quem já criou telas: é a condição para os controles
+ * entrarem sem mexer no que está no ar. Um padrão diferente aqui mudaria, na
+ * primeira abertura, todas as telas já salvas — sem ninguém ter tocado nelas.
+ */
+const FADE_PADRAO = 100
+const FREQ_PADRAO = 100
+const FORCA_PADRAO = 100
+
 /** A tela que nasce ao apertar "+ Tela": um azul de estúdio, sem recado. */
 export function telaNova(): { fundo: FundoDeTela; recado: RecadoDeTela } {
   return {
@@ -108,6 +146,10 @@ export function telaNova(): { fundo: FundoDeTela; recado: RecadoDeTela } {
 }
 
 const clamp = (valor: number, min: number, max: number): number => Math.min(max, Math.max(min, valor))
+
+/** O número, ou o padrão quando o campo não existe (ou veio estragado). */
+const numeroOu = (valor: unknown, padrao: number): number =>
+  typeof valor === 'number' && Number.isFinite(valor) ? valor : padrao
 
 /** Uma cor que o CSS entende, ou o preto — nunca `undefined` na tela. */
 function corSegura(valor: unknown): string {
@@ -126,7 +168,16 @@ export function fundoDaTela(fundo: FundoDeTela | undefined): string {
   if (!ate) return de
   // sem `?? ANGULO_PADRAO` um ângulo 0 viraria 135: zero é um ângulo legítimo
   const angulo = Number.isFinite(fundo?.angulo) ? (fundo?.angulo as number) : ANGULO_PADRAO
-  return `linear-gradient(${angulo}deg, ${de}, ${corSegura(ate)})`
+  /*
+   * As duas paradas saem do CENTRO para as bordas, simetricamente: em 100 a
+   * transição ocupa a caixa inteira (o gradiente de sempre), em 0 as duas
+   * paradas se encontram no meio e o que sai é uma linha nítida entre duas
+   * metades chapadas.
+   */
+  const fade = clamp(numeroOu(fundo?.fade, FADE_PADRAO), FADE_MIN, FADE_MAX)
+  const inicio = 50 - fade / 2
+  const fim = 50 + fade / 2
+  return `linear-gradient(${angulo}deg, ${de} ${inicio}%, ${corSegura(ate)} ${fim}%)`
 }
 
 /**
@@ -162,16 +213,28 @@ export function classeDoFundo(fundo: FundoDeTela | undefined): string | undefine
 }
 
 /**
- * As duas cores como variáveis CSS.
+ * O que o CSS precisa saber sobre este fundo, em variáveis.
  *
- * O efeito é escrito em `styles.css` e as cores vêm daqui — é o que permite
- * seis efeitos com a paleta de cada cartão, sem seis folhas de estilo. Sem a
- * segunda cor escolhida, ela repete a primeira: um efeito que precisa de duas
- * e recebe uma some, e sumir sem avisar é pior que ficar monocromático.
+ * Os efeitos são escritos em `styles.css` e os números vêm daqui — é o que
+ * permite seis efeitos servindo a paleta e o ritmo de cada cartão, sem seis
+ * folhas de estilo.
+ *
+ * `--tela-freq` DIVIDE a duração de cada efeito, e `--tela-forca` MULTIPLICA
+ * a opacidade da camada que se mexe. Os dois são números puros, sem unidade,
+ * justamente para caberem dentro de um `calc()`.
  */
-export function coresDoFundo(fundo: FundoDeTela | undefined): Record<string, string> {
+export function variaveisDoFundo(fundo: FundoDeTela | undefined): Record<string, string> {
   const de = corSegura(fundo?.de)
-  return { '--tela-de': de, '--tela-ate': fundo?.ate ? corSegura(fundo.ate) : de }
+  const freq = clamp(numeroOu(fundo?.frequencia, FREQ_PADRAO), FREQ_MIN, FREQ_MAX)
+  const forca = clamp(numeroOu(fundo?.intensidade, FORCA_PADRAO), FORCA_MIN, FORCA_MAX)
+  return {
+    '--tela-de': de,
+    // sem a segunda cor escolhida ela repete a primeira: um efeito que precisa
+    // de duas e recebe uma some, e sumir sem avisar é pior que monocromático
+    '--tela-ate': fundo?.ate ? corSegura(fundo.ate) : de,
+    '--tela-freq': String(freq / 100),
+    '--tela-forca': String(forca / 100)
+  }
 }
 
 /**
