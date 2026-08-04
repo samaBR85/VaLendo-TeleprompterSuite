@@ -124,6 +124,7 @@ export const de: Dicionario = {
   'insp.presenterHide': 'Diesen Namen in der Ausgabe verbergen',
   'insp.presenterHideAll': 'Alle Namen in der Ausgabe verbergen',
   'insp.presenterHideAll.key': 'HIDE',
+  'insp.presenterRename': 'Doppelklick zum Umbenennen — ändert auch das Skript',
   'insp.presenters': 'Sprecher',
   'insp.presenterColor': 'Farbe von {nome}',
   'insp.presenterOrphan': 'Dieser Name steht nicht mehr im Skript. Neuen Namen im Editor markieren und RELINK benutzen.',

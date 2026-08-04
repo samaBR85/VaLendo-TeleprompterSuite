@@ -5,6 +5,7 @@ import {
   ehDeixa,
   linhasCandidatas,
   proximaCor,
+  renomearNasDeixas,
   temParNoRoteiro,
   CORES_DE_APRESENTADOR,
   type LinhaPintavel
@@ -170,5 +171,40 @@ describe('a cor sobrevive ao nome escondido', () => {
   it('carimbo de apresentador que já foi removido não pinta nada', () => {
     const cores = coresDasLinhas([{ kind: 'speech', text: 'fala órfã', dono: 'QUEM' }], DOIS)
     expect(cores).toEqual([null])
+  })
+})
+
+describe('renomear troca o nome NO ROTEIRO, e só nas deixas', () => {
+  it('troca a linha que é deixa', () => {
+    const blocos = blocksFromText('HARI\nboa noite\n\nHARI\noutra fala')
+    expect(renomearNasDeixas(blocos, 'HARI', 'HARI OLIVEIRA')).toEqual([
+      'HARI OLIVEIRA\nboa noite',
+      'HARI OLIVEIRA\noutra fala'
+    ])
+  })
+
+  it('NÃO troca o nome citado no meio de uma fala', () => {
+    /*
+     * "o Robson falou disso" é texto para ser lido em voz alta, não uma marca
+     * do app. Trocar ali seria editar o roteiro sem ninguém ter pedido — e o
+     * apresentador leria uma frase que ele não escreveu.
+     */
+    const blocos = blocksFromText('HARI\nmas vem cá ROBSON, o que você acha?')
+    expect(renomearNasDeixas(blocos, 'ROBSON', 'ROBSON SILVA')).toEqual([null])
+  })
+
+  it('devolve null onde nada mudou, para não tocar em bloco à toa', () => {
+    const blocos = blocksFromText('HARI\nfala\n\n## Um capítulo\n\n[uma direção]')
+    expect(renomearNasDeixas(blocos, 'ROBSON', 'OUTRO')).toEqual([null, null, null])
+  })
+
+  it('capítulo com o nome do apresentador continua capítulo', () => {
+    const blocos = blocksFromText('## HARI\n\nHARI\nfala')
+    expect(renomearNasDeixas(blocos, 'HARI', 'NOVO')).toEqual([null, 'NOVO\nfala'])
+  })
+
+  it('acha a deixa sem olhar a caixa, e escreve o nome como foi digitado', () => {
+    const blocos = blocksFromText('hari\nfala')
+    expect(renomearNasDeixas(blocos, 'HARI', 'Hariane')).toEqual(['Hariane\nfala'])
   })
 })

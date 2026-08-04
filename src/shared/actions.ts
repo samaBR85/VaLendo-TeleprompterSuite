@@ -102,6 +102,9 @@ export type Action =
   | { type: 'presenter/add'; tabId: string; nome: string }
   | { type: 'presenter/rename'; tabId: string; presenterId: string; nome: string }
   | { type: 'presenter/color'; tabId: string; presenterId: string; cor: string }
+  /* renomear de verdade: troca o nome do apresentador E as deixas no roteiro.
+     Diferente do RELINK, que reaponta para um nome que já está escrito. */
+  | { type: 'presenter/rewrite'; tabId: string; presenterId: string; nome: string }
   | { type: 'presenter/hidden'; tabId: string; presenterId: string; oculto: boolean }
   | { type: 'presenter/remove'; tabId: string; presenterId: string }
   | { type: 'tab/add' }

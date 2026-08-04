@@ -124,6 +124,7 @@ export const it: Dicionario = {
   'insp.presenterHide': 'Nascondi questo nome in uscita',
   'insp.presenterHideAll': 'Nascondi tutti i nomi in uscita',
   'insp.presenterHideAll.key': 'HIDE',
+  'insp.presenterRename': 'Doppio clic per rinominare — cambia anche il copione',
   'insp.presenters': 'Presentatori',
   'insp.presenterColor': 'Colore di {nome}',
   'insp.presenterOrphan': 'Questo nome non è più nel copione. Seleziona il nome nuovo nell’editor e usa RELINK.',

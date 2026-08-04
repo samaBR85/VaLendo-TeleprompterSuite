@@ -40,6 +40,7 @@ function ChipDeApresentador({
   global,
   onCor,
   onOcultar,
+  onRenomear,
   onRelink,
   onRemover
 }: {
@@ -49,10 +50,15 @@ function ChipDeApresentador({
   global: boolean
   onCor: (cor: string) => void
   onOcultar: () => void
+  onRenomear: (nome: string) => void
   onRelink?: () => void
   onRemover: () => void
 }): React.JSX.Element {
   const { t } = useT()
+  /* renomear no lugar, sem modal: o campo nasce com o nome atual selecionado,
+     Enter confirma e Esc desiste. Perder o foco também confirma — desistir por
+     descuido é mais raro que confirmar por descuido, e o Ctrl+Z devolve */
+  const [editando, setEditando] = useState<string | null>(null)
   return (
     <div
       data-apresentador-chip={quem.id}
@@ -69,9 +75,40 @@ function ChipDeApresentador({
         onChange={(event) => onCor(event.target.value)}
         className="h-5 w-5 flex-none"
       />
-      <span className="min-w-0 flex-1 truncate text-[11px]" style={{ color: orfao ? 'var(--color-warn)' : quem.cor }}>
-        {quem.nome}
-      </span>
+      {editando === null ? (
+        <span
+          {...ajuda('insp.presenterRename')}
+          title={t('insp.presenterRename')}
+          onDoubleClick={() => setEditando(quem.nome)}
+          className="min-w-0 flex-1 cursor-text truncate text-[11px]"
+          style={{ color: orfao ? 'var(--color-warn)' : quem.cor }}
+        >
+          {quem.nome}
+        </span>
+      ) : (
+        <input
+          autoFocus
+          data-apresentador-nome={quem.id}
+          value={editando}
+          onChange={(event) => setEditando(event.target.value)}
+          onFocus={(event) => event.target.select()}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') event.currentTarget.blur()
+            /* Esc desiste ANTES de perder o foco, senão o `onBlur` confirmaria
+               justamente o que a pessoa acabou de recusar */
+            if (event.key === 'Escape') {
+              setEditando(null)
+              event.currentTarget.blur()
+            }
+          }}
+          onBlur={() => {
+            if (editando !== null) onRenomear(editando)
+            setEditando(null)
+          }}
+          className="min-w-0 flex-1 rounded border border-[var(--color-accent)] bg-[var(--color-ink-2)] px-1 text-[11px] outline-none"
+          style={{ color: quem.cor }}
+        />
+      )}
       {/* esconder SÓ este nome na saída. Travado enquanto o GLOBAL manda:
           editá-lo não mudaria nada, e deixá-lo clicável sugeriria o contrário */}
       <button
@@ -643,6 +680,9 @@ export function Inspector({
               orfao={!temParNoRoteiro(candidatas, quem)}
               onCor={(cor) => dispatch({ type: 'presenter/color', tabId: tab.id, presenterId: quem.id, cor })}
               global={a.ocultarApresentadores}
+              onRenomear={(nome) =>
+                dispatch({ type: 'presenter/rewrite', tabId: tab.id, presenterId: quem.id, nome })
+              }
               onOcultar={() =>
                 dispatch({
                   type: 'presenter/hidden',

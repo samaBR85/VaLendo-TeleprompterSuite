@@ -143,6 +143,35 @@ export function temParNoRoteiro(textos: string[], apresentador: Apresentador): b
 }
 
 /**
+ * Troca o nome de um apresentador NO TEXTO do roteiro.
+ *
+ * Só nas linhas que são DEIXA — uma linha inteira igual ao nome antigo. Se
+ * "ROBSON" aparecer no meio de uma fala ("o Robson falou disso"), fica como
+ * está: aquilo é o texto que alguém escreveu para ser lido, não uma marca do
+ * app. Trocar ali seria editar o roteiro sem ninguém ter pedido.
+ *
+ * Devolve o texto novo de cada bloco, na ordem — `null` onde nada mudou, para
+ * quem chama não tocar em bloco que não precisa.
+ */
+export function renomearNasDeixas(
+  blocos: { kind: BlockKind; text: string }[],
+  de: string,
+  para: string
+): (string | null)[] {
+  const alvo = chaveDoNome(de)
+  return blocos.map((b) => {
+    if (b.kind !== 'speech') return null
+    let mudou = false
+    const linhas = b.text.split('\n').map((linha) => {
+      if (chaveDoNome(linha) !== alvo) return linha
+      mudou = true
+      return para
+    })
+    return mudou ? linhas.join('\n') : null
+  })
+}
+
+/**
  * Todas as linhas que podem ser deixa, para conferir os pares.
  *
  * QUALQUER linha de um parágrafo de fala, não só a primeira: quem escreve

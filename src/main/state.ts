@@ -6,7 +6,7 @@ import {
   totalWords,
   wordIndexFromAnchor
 } from '@shared/anchor'
-import { chaveDoNome, deixasDaSaida, proximaCor } from '@shared/apresentadores'
+import { chaveDoNome, deixasDaSaida, proximaCor, renomearNasDeixas } from '@shared/apresentadores'
 import { cartaoNoAr } from '@shared/cards'
 import { COMMANDS_BY_ID } from '@shared/commands'
 import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
@@ -799,6 +799,31 @@ export class Store {
         this.mutateTab(action.tabId, `apresentador:cor:${action.presenterId}`, (draft) => {
           const alvo = draft.apresentadores.find((a) => a.id === action.presenterId)
           if (alvo) alvo.cor = action.cor
+        })
+        break
+
+      /*
+       * Renomear: o chip E o roteiro, num passo só de histórico.
+       *
+       * Num passo só porque separá-los deixaria um Ctrl+Z desfazer metade — o
+       * texto voltaria a dizer "HARI" com o chip já dizendo "HARI OLIVEIRA", e
+       * a cor sumiria sem ninguém entender por quê.
+       *
+       * Mexe no texto dos blocos EXISTENTES em vez de recompor a partir de uma
+       * string nova: assim os ids sobrevivem, e com eles os marcadores e a
+       * âncora de leitura.
+       */
+      case 'presenter/rewrite':
+        this.mutateTab(action.tabId, `apresentador:renomear:${action.presenterId}`, (draft) => {
+          const alvo = draft.apresentadores.find((a) => a.id === action.presenterId)
+          const nome = action.nome.trim()
+          if (!alvo || nome === '' || nome === alvo.nome) return
+
+          const novos = renomearNasDeixas(draft.blocks, alvo.nome, nome)
+          novos.forEach((texto, i) => {
+            if (texto !== null) draft.blocks[i].text = texto
+          })
+          alvo.nome = nome
         })
         break
 

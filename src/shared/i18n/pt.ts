@@ -137,6 +137,7 @@ export const pt = {
   'insp.presenterHide': 'Esconder este nome na saída',
   'insp.presenterHideAll': 'Esconder o nome de todos na saída',
   'insp.presenterHideAll.key': 'HIDE',
+  'insp.presenterRename': 'Duplo clique renomeia — troca também no roteiro',
   'insp.presenters': 'Apresentadores',
   'insp.presenterColor': 'Cor de {nome}',
   'insp.presenterOrphan': 'Este nome não está mais no roteiro. Selecione o nome novo no editor e use RELINK.',

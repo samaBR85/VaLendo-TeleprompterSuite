@@ -518,6 +518,10 @@ export const ajudaEn = {
     nome: 'Hide every name',
     texto: 'Takes every presenter name off the output at once, and locks the individual switches while it rules. The editor always keeps them.'
   },
+  'insp.presenterRename': {
+    nome: 'Rename presenter',
+    texto: 'Double-click to rename. It rewrites the name in the script too — only the cue lines, never a mention inside a speech. One undo puts both back.'
+  },
   'insp.presenterRelink': {
     nome: 'Relink presenter',
     texto: 'The name changed in the script. Select the new one in the editor and click: same presenter, same colour, new name — nothing already painted is lost.'

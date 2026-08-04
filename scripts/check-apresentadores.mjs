@@ -230,6 +230,78 @@ ok(
   (await ev(`document.querySelector('[data-sem-roda] textarea').value.includes(${JSON.stringify(NOME_A)})`)) === true
 )
 
+/* ------------------------------------------------------------- renomear */
+
+/*
+ * O duplo clique no chip renomeia o apresentador E as deixas no roteiro.
+ *
+ * O que se cobra aqui é o que separa isso de um "substituir tudo" ingênuo: o
+ * nome citado NO MEIO de uma fala não pode ser tocado, e um Ctrl+Z tem de
+ * desfazer as duas metades juntas — senão o texto voltaria a dizer um nome com
+ * o chip já dizendo outro, e a cor sumiria sem explicação.
+ */
+const NOVO = NOME_A + ' OLIVEIRA'
+const TEXTO = "document.querySelector('[data-sem-roda] textarea').value"
+const contaDeixas = (n) =>
+  TEXTO + ".split('\\n').filter((l) => l.trim() === " + JSON.stringify(n) + ').length'
+
+const deixasAntes = await ev(contaDeixas(NOME_A))
+ok('o roteiro tem várias deixas do mesmo apresentador', deixasAntes > 1, String(deixasAntes))
+
+await ev(`
+  (() => {
+    const chip = document.querySelector('[data-apresentador-chip]')
+    chip.querySelector('span[data-ajuda]').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
+  })()
+`)
+await espera(300)
+ok('o duplo clique abre o campo de renomear', (await ev("Boolean(document.querySelector('[data-apresentador-nome]'))")) === true)
+
+await ev(`
+  (() => {
+    const campo = document.querySelector('[data-apresentador-nome]')
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
+    setter.call(campo, ${JSON.stringify(NOVO)})
+    campo.dispatchEvent(new Event('input', { bubbles: true }))
+    campo.blur()
+  })()
+`)
+await espera(700)
+
+ok(
+  'as deixas do roteiro trocaram de nome',
+  (await ev(contaDeixas(NOVO))) === deixasAntes,
+  `${await ev(contaDeixas(NOVO))} de ${deixasAntes}`
+)
+ok(
+  'e o chip mostra o nome novo',
+  (await ev(`document.querySelector('[data-apresentador-chip]').innerText.includes(${JSON.stringify(NOVO)})`)) === true
+)
+ok(
+  'a fala continua colorida depois do renome',
+  (await ev(`
+    (() => {
+      const l = [...document.querySelectorAll('[data-line]')].find((x) => x.textContent.trim().startsWith('E agora The Bear'))
+      return l ? getComputedStyle(l).color : null
+    })()
+  `)) === palco.falaHari?.c
+)
+
+await ev(`
+  window.valendo.getState().then((s) =>
+    window.valendo.dispatch({ type: 'history/undo', tabId: s.state.activeTabId })
+  )
+`)
+await espera(700)
+const voltou = await ev(
+  `({ deixas: ${contaDeixas(NOME_A)}, chip: document.querySelector('[data-apresentador-chip]').innerText.trim() })`
+)
+ok(
+  'um desfazer devolve o roteiro E o chip juntos',
+  voltou.deixas === deixasAntes && voltou.chip.includes(NOME_A) && !voltou.chip.includes('OLIVEIRA'),
+  JSON.stringify(voltou)
+)
+
 socket.close()
 console.log(falhas ? `\n${falhas} falha(s)` : '\ntudo certo')
 process.exit(falhas ? 1 : 0)
