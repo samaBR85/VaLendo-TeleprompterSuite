@@ -6,7 +6,9 @@ import type { CardConvertProgress } from '@shared/api'
 import { perfilPorId, type PerfilDeRede } from '@shared/proxy'
 import type { CardOverlayStyle, Cartao, VideoClock } from '@shared/types'
 import { posicaoDoVideo, tempoDeVideo } from '@shared/video'
+import type { AjudaId } from '@shared/ajuda'
 import { useT } from '../i18n'
+import { ajuda } from '../ui/ajuda'
 import { Icon } from '../ui/Icon'
 import { CabecalhoDePainel, Ficha, SliderConsole } from '../ui/console'
 
@@ -252,6 +254,7 @@ export function CardsDrawer({
             <span className="text-[10px] text-[var(--color-fog-3)]">{tp('cards.count', cards.length)}</span>
             <button
               type="button"
+              {...ajuda('cards.close')}
               aria-label={t('app.close')}
               onClick={onClose}
               className="rounded p-1 text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
@@ -263,18 +266,25 @@ export function CardsDrawer({
       >
         <div className="ml-1 flex flex-none items-center gap-[5px]">
           <BotaoAdicionar
+            ajudaId="cards.addImage"
             atributo="image"
             rotulo={t('cards.addImage')}
             desligado={ocupado}
             onClick={() => void adicionarImagem()}
           />
           <BotaoAdicionar
+            ajudaId="cards.addVideo"
             atributo="video"
             rotulo={t('cards.addVideo')}
             desligado={ocupado}
             onClick={() => void adicionarVideo()}
           />
-          <BotaoAdicionar atributo="text" rotulo={t('cards.addText')} onClick={adicionarRecado} />
+          <BotaoAdicionar
+            ajudaId="cards.addText"
+            atributo="text"
+            rotulo={t('cards.addText')}
+            onClick={adicionarRecado}
+          />
         </div>
 
         {/* o estilo de legibilidade do overlay, aqui também.
@@ -291,6 +301,7 @@ export function CardsDrawer({
             <Ficha
               key={opcao.style}
               data-drawer-overlay-style={opcao.style}
+              {...ajuda(opcao.ajudaId)}
               ativa={cardOverlay.style === opcao.style}
               title={t(opcao.rotulo)}
               onClick={() => dispatch({ type: 'cardOverlay/style', style: opcao.style })}
@@ -400,17 +411,20 @@ function BotaoAdicionar({
   atributo,
   rotulo,
   desligado = false,
+  ajudaId,
   onClick
 }: {
   atributo: string
   rotulo: string
   desligado?: boolean
+  ajudaId: AjudaId
   onClick: () => void
 }): React.JSX.Element {
   return (
     <button
       type="button"
       {...{ [`data-card-add-${atributo}`]: true }}
+      {...ajuda(ajudaId)}
       disabled={desligado}
       onClick={onClick}
       className="flex-none rounded-[5px] border border-[var(--color-edge)] px-2 py-[2px] text-[10px] font-medium transition-[filter] hover:brightness-115 disabled:opacity-30"
@@ -722,6 +736,7 @@ function CartaoNaGaveta({
             <button
               type="button"
               data-card-relink={card.id}
+              {...ajuda('cards.relink')}
               onClick={() => void reimportarImagem()}
               className="flex items-center justify-center gap-1 px-2 text-center text-[10px] text-[var(--color-warn)] hover:underline"
             >
@@ -755,6 +770,7 @@ function CartaoNaGaveta({
         {atalho ? (
           <kbd
             data-card-atalho={card.id}
+            {...ajuda('cards.shortcut')}
             title={`Ctrl+Shift+${atalho}`}
             className="absolute top-[5px] left-[5px] grid h-4 w-4 place-items-center rounded-[4px] bg-[var(--color-accent-2)] font-mono text-[9px] font-bold text-[#1c1020]"
           >
@@ -771,6 +787,7 @@ function CartaoNaGaveta({
         {card.kind === 'video' && !desvinculado ? (
           <span
             data-card-rede={card.id}
+            {...ajuda('cards.videoNetwork')}
             title={naRede.titulo}
             className={`absolute top-[24px] right-[5px] max-w-[70%] truncate rounded-[4px] px-1 text-[8px] ${
               naRede.leve ? 'bg-black/60 text-[var(--color-fog-2)]' : 'bg-[var(--color-warn)]/85 text-black'
@@ -789,6 +806,7 @@ function CartaoNaGaveta({
         {/* a faixa de nome da maquete, editável no lugar */}
         <input
           value={card.nome}
+          {...ajuda('cards.name')}
           aria-label={t('cards.name')}
           placeholder={
             card.kind === 'image'
@@ -821,6 +839,7 @@ function CartaoNaGaveta({
         <div className="flex min-h-0 flex-1 flex-col p-[7px] pb-0">
           <textarea
             value={card.texto}
+            {...ajuda('cards.message')}
             aria-label={t('cards.message')}
             placeholder={t('cards.messagePlaceholder')}
             autoFocus={card.texto === ''}
@@ -835,7 +854,7 @@ function CartaoNaGaveta({
             nada. Serve para ligar e para tirar da tela, e o player do vídeo
             faz a mesma coisa pelo play: as duas são as únicas portas. */}
         <label
-          title={noAr ? t('cards.hide') : t('cards.show')}
+          {...ajuda('cards.onAir')}
           className={`flex flex-none items-center gap-1 text-[10px] ${
             desvinculado ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
           } ${noAr ? 'text-[var(--color-go)]' : 'text-[var(--color-fog-2)]'}`}
@@ -858,6 +877,7 @@ function CartaoNaGaveta({
               não mudaria nada enquanto o global mandar, e deixá-lo clicável
               sugeriria o contrário */}
           <label
+            {...ajuda('cards.overlay')}
             title={cardOverlay.enabled ? t('cards.overlayForced') : t('cards.overlay')}
             className={`flex-none ${cardOverlay.enabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
           >
@@ -885,6 +905,7 @@ function CartaoNaGaveta({
           <button
             type="button"
             data-card-remove={card.id}
+            {...ajuda('cards.remove')}
             aria-label={t('cards.remove')}
             title={t('cards.remove')}
             onClick={() => dispatch({ type: 'card/remove', cardId: card.id })}
@@ -1025,6 +1046,7 @@ function PlayerDoCartao({
         <button
           type="button"
           data-card-relink={card.id}
+          {...ajuda('cards.relink')}
           onClick={() => void relinkar()}
           title={card.caminho}
           className="flex w-full items-center justify-center gap-1 rounded border border-[var(--color-warn)]/50 px-2 py-0.5 text-[10px] text-[var(--color-warn)] hover:bg-[var(--color-warn)]/15"
@@ -1066,6 +1088,7 @@ function PlayerDoCartao({
         <button
           type="button"
           data-card-video-play={card.id}
+          {...ajuda('cards.videoPlay')}
           aria-label={tocando ? t('cards.videoPause') : t('cards.videoPlay')}
           onClick={() => {
             // fora do ar, play quer dizer "sobe e toca" — pausar um vídeo que
@@ -1086,6 +1109,7 @@ function PlayerDoCartao({
         <button
           type="button"
           data-card-video-pause={card.id}
+          {...ajuda('cards.videoStartPaused')}
           aria-label={t('cards.videoStartPaused')}
           title={t('cards.videoStartPaused')}
           onClick={() => {
@@ -1101,6 +1125,7 @@ function PlayerDoCartao({
         <SliderConsole
           mini
           data-card-video-seek={card.id}
+          {...ajuda('cards.videoSeek')}
           min={0}
           max={duracao || 1}
           step={0.05}
@@ -1127,6 +1152,7 @@ function PlayerDoCartao({
           <button
             type="button"
             data-card-video-mute={card.id}
+            {...ajuda('cards.videoMute')}
             aria-label={mudo ? t('cards.videoUnmute') : t('cards.videoMute')}
             title={mudo ? t('cards.videoUnmute') : t('cards.videoMute')}
             onClick={alternarMudo}
@@ -1138,6 +1164,7 @@ function PlayerDoCartao({
           <SliderConsole
             mini
             data-card-video-volume={card.id}
+            {...ajuda('cards.videoVolume')}
             min={0}
             max={1}
             step={0.05}
@@ -1156,7 +1183,7 @@ function PlayerDoCartao({
         {/* repetir: saiu da linha do scrub — ali brigava por espaço com o
             PAUSE novo — e mora aqui, à direita do tempo, junto do resto do
             que se pré-configura antes de subir o vídeo */}
-        <label title={t('cards.videoLoop')} className="flex-none cursor-pointer">
+        <label {...ajuda('cards.videoLoop')} title={t('cards.videoLoop')} className="flex-none cursor-pointer">
           <input
             type="checkbox"
             data-card-loop={card.id}

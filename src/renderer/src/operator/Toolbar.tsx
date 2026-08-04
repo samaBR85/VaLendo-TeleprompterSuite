@@ -13,6 +13,7 @@ import { Digito, Lcd, Poco, Tecla } from '../ui/console'
 import { useT } from '../i18n'
 import { useNow } from '../ui/useNow'
 import { SpeedRuler } from './SpeedRuler'
+import { ajuda } from '../ui/ajuda'
 import { Tabs } from './Tabs'
 
 interface Props {
@@ -106,6 +107,7 @@ export function PocosDeArquivo({
         <>
         <div className="relative flex items-stretch">
           <Tecla
+            {...ajuda('project.open')}
             title={`${t('toolbar.openProject')}${hint(keymap, 'project.open')}`}
             aria-label={t('toolbar.openProject')}
             className="h-6 w-7 rounded-r-none border-r-0"
@@ -117,6 +119,7 @@ export function PocosDeArquivo({
               ao lado abre o caminho menos comum. Aqui o menos comum é reabrir
               um dos últimos, que poupa navegar até a pasta de novo */}
           <Tecla
+            {...ajuda('project.recent')}
             title={t('toolbar.recentProjects')}
             aria-label={t('toolbar.recentProjects')}
             data-recentes-abre
@@ -148,6 +151,7 @@ export function PocosDeArquivo({
                       key={projeto.caminho}
                       type="button"
                       data-recente
+                      {...ajuda('project.recentItem')}
                       // o caminho inteiro no hover: dois projetos podem ter o
                       // mesmo nome em pastas diferentes, e o menu só mostra o nome
                       title={projeto.caminho}
@@ -167,13 +171,14 @@ export function PocosDeArquivo({
         </div>
         <div className="relative flex items-stretch">
           <Tecla
-            title={`${t('toolbar.saveProject')}${hint(keymap, 'project.save')}`}
+            {...ajuda('project.save')}
             className="h-6 rounded-r-none border-r-0 px-2 text-[11px]"
             onClick={() => run('project.save')}
           >
             {t('key.save')}
           </Tecla>
           <Tecla
+            {...ajuda('project.saveAs')}
             title={`${t('toolbar.saveProjectAs')}${hint(keymap, 'project.saveAs')}`}
             aria-label={t('toolbar.saveProjectAs')}
             className="h-6 w-4 rounded-l-none px-0"
@@ -187,6 +192,7 @@ export function PocosDeArquivo({
               <div className="absolute top-full left-0 z-50 mt-1 min-w-max rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] py-1 shadow-lg">
                 <button
                   type="button"
+                  {...ajuda('project.saveAsItem')}
                   className="block w-full px-3 py-1.5 text-left text-[11px] whitespace-nowrap text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
                   onClick={() => {
                     setSaveMenuOpen(false)
@@ -201,6 +207,7 @@ export function PocosDeArquivo({
           ) : null}
         </div>
         <Tecla
+          {...ajuda('project.new')}
           title={`${t('toolbar.newProject')}${hint(keymap, 'project.new')}`}
           aria-label={t('toolbar.newProject')}
           className="h-6 w-7"
@@ -223,10 +230,17 @@ export function PocosDeArquivo({
         <>
           {/* mesma pasta do PROJETO: abrir um roteiro também é abrir um
               arquivo, e as duas teclas precisam ler como a mesma ação */}
-          <Tecla title={t('toolbar.import')} aria-label={t('toolbar.import')} className="h-6 w-7" onClick={onImport}>
+          <Tecla
+            {...ajuda('script.import')}
+            title={t('toolbar.import')}
+            aria-label={t('toolbar.import')}
+            className="h-6 w-7"
+            onClick={onImport}
+          >
             <Icon name="projectOpen" size={13} />
           </Tecla>
           <Tecla
+            {...ajuda('script.save')}
             title={
               tab.exportPath
                 ? `${t('toolbar.saveScriptTo', { file: fileName(tab.exportPath) })}${hint(keymap, 'document.save')}`
@@ -269,6 +283,7 @@ export function GruposDeVisao({
           <Tecla
             key={posicao}
             data-transport-position={posicao}
+            {...ajuda(posicao === 'topo' ? 'view.transportTop' : 'view.transportStrip')}
             title={`${t(posicao === 'topo' ? 'app.transportTop' : 'app.transportStrip')}${hint(keymap, 'view.transportPosition')}`}
             aria-pressed={state.transportPosition === posicao}
             acesa={state.transportPosition === posicao}
@@ -285,6 +300,7 @@ export function GruposDeVisao({
       <Poco>
         <Tecla
           data-toggle-sidebar
+          {...ajuda('view.sidebar')}
           title={`${t('app.assets')}${hint(keymap, 'view.sidebar')}`}
           aria-pressed={state.sidebarVisible}
           acesa={state.sidebarVisible}
@@ -297,6 +313,7 @@ export function GruposDeVisao({
         </Tecla>
         <Tecla
           data-toggle-cards
+          {...ajuda('view.cards')}
           title={`${t('cards.toolbar')}${hint(keymap, 'view.cards')}`}
           aria-pressed={state.cardsVisible}
           acesa={state.cardsVisible}
@@ -309,6 +326,7 @@ export function GruposDeVisao({
         </Tecla>
         <Tecla
           data-toggle-settings
+          {...ajuda('view.inspector')}
           title={`${t('app.settings')}${hint(keymap, 'view.inspector')}`}
           aria-pressed={state.inspectorVisible}
           acesa={state.inspectorVisible}
@@ -360,6 +378,7 @@ export function PocoDoAr({
   return (
     <Poco data-pill="ar" className="flex-none">
       <Tecla
+        {...ajuda('ar.blackout')}
         title={`${t('toolbar.blackout')}${hint(keymap, 'output.blackout')}`}
         aria-label={t('toolbar.blackout')}
         /* no ar, vermelho cheio com o ícone branco: apagar a tela do
@@ -374,6 +393,7 @@ export function PocoDoAr({
         <Icon name="blackout" size={13} />
       </Tecla>
       <Tecla
+        {...ajuda('ar.freeze')}
         title={`${t('toolbar.freeze')}${hint(keymap, 'transport.freeze')}`}
         aria-label={t('toolbar.freeze')}
         /* azul cheio, a mesma cor que o ícone já tem apagado — ligado ele só
@@ -397,6 +417,7 @@ export function PocoDoAr({
       {/* aceso pelo que está acontecendo, não pelo que foi pedido: com a porta
           ocupada, o verde diria que há uma página no ar quando não há */}
       <Tecla
+        {...ajuda('ar.webview')}
         title={webviewLive ? t('toolbar.webviewOn') : t('toolbar.webviewOff')}
         aria-label={t('toolbar.webviewOff')}
         acesa={webviewLive}
@@ -447,6 +468,7 @@ export function TeclaDeSomDaRede({
   return (
     <Tecla
       data-web-audio={!noAr ? 'apagado' : som ? 'passando' : 'cortado'}
+      {...ajuda('ar.webviewSound')}
       title={rotulo}
       aria-label={rotulo}
       aria-pressed={noAr ? som : undefined}
@@ -528,6 +550,7 @@ export function PocoDeSaida({
         <button
           type="button"
           data-identify-monitor
+          {...ajuda('output.identify')}
           disabled={output.enabled}
           aria-expanded={identificarAberto}
           aria-label={t('toolbar.identify')}
@@ -544,6 +567,7 @@ export function PocoDeSaida({
             <button
               type="button"
               data-identify-monitor-run
+              {...ajuda('output.identifyRun')}
               className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] whitespace-nowrap text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
               onClick={() => {
                 setIdentificarAberto(false)
@@ -559,6 +583,7 @@ export function PocoDeSaida({
 
       <select
         value={output.displayId ?? ''}
+        {...ajuda('output.monitor')}
         title={t('toolbar.pickMonitor')}
         onChange={(event) => {
           const value = event.target.value
@@ -597,6 +622,7 @@ export function PocoDeSaida({
       <button
         type="button"
         data-broadcast-toggle
+        {...ajuda('output.broadcast')}
         disabled={output.displayId === null}
         onClick={() => run('output.toggle')}
         className={`flex flex-none items-center gap-1.5 rounded-[5px] border border-[var(--color-edge)] font-semibold whitespace-nowrap transition-[filter] hover:brightness-115 disabled:opacity-30 ${
@@ -704,6 +730,7 @@ function LinhaDeProgresso({
   return (
     <div
       data-progresso
+      {...ajuda('transport.progress')}
       title={titulo}
       className="relative h-[5px] flex-none overflow-hidden bg-[var(--color-lcd-track)]"
     >
@@ -839,6 +866,7 @@ function TecladoDeTransporte({
       data-grupo="transporte"
     >
       <Tecla
+        {...ajuda('transport.restart')}
         title={`${t('toolbar.restart')}${hint(keymap, 'transport.restart')}`}
         aria-label={t('toolbar.restart')}
         acesa={loop}
@@ -850,6 +878,7 @@ function TecladoDeTransporte({
         <Icon name="restart" size={glifo} />
       </Tecla>
       <Tecla
+        {...ajuda('transport.back')}
         title={`${t('toolbar.back')}${hint(keymap, 'transport.jumpBack')}`}
         aria-label={t('toolbar.back')}
         className={lado}
@@ -859,6 +888,7 @@ function TecladoDeTransporte({
       </Tecla>
       <Tecla
         play
+        {...ajuda('transport.playPause')}
         title={`${playing ? t('toolbar.pause') : t('toolbar.play')}${hint(keymap, 'transport.playPause')}`}
         aria-label={playing ? t('toolbar.pause') : t('toolbar.play')}
         // 60px, contra os 44 das vizinhas: é a tecla que decide se o programa
@@ -878,6 +908,7 @@ function TecladoDeTransporte({
         )}
       </Tecla>
       <Tecla
+        {...ajuda('transport.forward')}
         title={`${t('toolbar.forward')}${hint(keymap, 'transport.jumpForward')}`}
         aria-label={t('toolbar.forward')}
         className={lado}
@@ -886,6 +917,7 @@ function TecladoDeTransporte({
         <Icon name="down" size={glifo} />
       </Tecla>
       <Tecla
+        {...ajuda('transport.marker')}
         title={`${t('toolbar.marker')}${hint(keymap, 'marker.create')}`}
         aria-label={t('toolbar.marker')}
         cor="var(--color-live)"
@@ -969,15 +1001,19 @@ export function BarraDeTransporte({
     .join(' · ')
 
   const decorrido = (
-    <Digito valor={formatClock(elapsed)} rotulo={t('toolbar.elapsed')} cor="var(--color-go)" tamanho={corpo} />
+    <span {...ajuda('transport.elapsed')}>
+      <Digito valor={formatClock(elapsed)} rotulo={t('toolbar.elapsed')} cor="var(--color-go)" tamanho={corpo} />
+    </span>
   )
   const restante = (
+    <span {...ajuda('transport.remaining')}>
     <Digito
       valor={`−${formatClock(Math.max(0, total - elapsed))}`}
       rotulo={t('toolbar.remaining')}
       cor="var(--color-live-soft)"
       tamanho={corpo}
     />
+    </span>
   )
 
   // soltos no fundo da barra, sem o vidro do LCD em volta: com o mostrador de
@@ -1022,6 +1058,7 @@ export function BarraDeTransporte({
           por extenso. As pontas da faixa ficam, que são o que dá escala ao
           que a régua mostra; o nome inteiro continua no hover */}
       <div
+        {...ajuda('transport.speed')}
         title={t('lcd.speed')}
         className={`flex flex-col justify-center border-r border-[var(--color-lcd-line)] ${
           compacto ? 'w-[74px] gap-1 px-2' : 'w-[93px] gap-1.5 px-2.5'

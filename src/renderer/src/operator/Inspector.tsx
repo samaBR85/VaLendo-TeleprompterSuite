@@ -17,8 +17,10 @@ import {
   type Tab
 } from '@shared/types'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
-import { larguraDoPainel, type Chave } from '@shared/i18n'
+import type { AjudaId } from '@shared/ajuda'
+import { larguraDoPainel } from '@shared/i18n'
 import { useT } from '../i18n'
+import { ajuda } from '../ui/ajuda'
 import { Icon } from '../ui/Icon'
 import { Ficha, SliderConsole, Tecla } from '../ui/console'
 
@@ -76,6 +78,15 @@ const ABAS: { id: AbaId; rotulo: 'insp.tab.text' | 'insp.tab.reading' | 'insp.ta
   { id: 'saida', rotulo: 'insp.tab.output' }
 ]
 
+/* As abas têm o nome escrito na cara, então perderam a tooltip: o que elas
+   ganharam no lugar é o quadro da coluna, onde a frase inteira cabe sem
+   esperar um segundo parado em cima. */
+const AJUDA_DA_ABA: Record<AbaId, AjudaId> = {
+  texto: 'insp.tabText',
+  leitura: 'insp.tabReading',
+  saida: 'insp.tabOutput'
+}
+
 /** Slider do console: rótulo à esquerda, valor em rosa mono à direita. */
 function Slider({
   label,
@@ -84,6 +95,7 @@ function Slider({
   max,
   step = 1,
   suffix = '',
+  ajudaId,
   onChange
 }: {
   label: string
@@ -92,10 +104,12 @@ function Slider({
   max: number
   step?: number
   suffix?: string
+  /** o controle que este slider é, para a Ajuda rápida e a tooltip */
+  ajudaId: AjudaId
   onChange: (value: number) => void
 }): React.JSX.Element {
   return (
-    <label className="block">
+    <label className="block" {...ajuda(ajudaId)}>
       <div className="mb-1 flex items-baseline justify-between text-[11px]">
         <span className="text-[var(--color-fog-2)]">{label}</span>
         <span className="font-mono text-[11px] font-semibold text-[var(--color-accent)]">
@@ -148,6 +162,7 @@ function AlvoField({ value, onChange }: { value: number; onChange: (seconds: num
       type="text"
       inputMode="numeric"
       data-clock-target
+      {...ajuda('insp.clockTarget')}
       value={formatAlvo(bufferDoAlvoParaSegundos(digitos))}
       onChange={() => {}}
       onKeyDown={onKeyDown}
@@ -188,17 +203,19 @@ function ToggleRow({
   label,
   active,
   onClick,
+  ajudaId,
   hint
 }: {
   label: string
   active: boolean
   onClick: () => void
+  ajudaId: AjudaId
   hint?: string
 }): React.JSX.Element {
   return (
     <div className="flex items-center gap-1.5">
       <div className="min-w-0 flex-1">
-        <Toggle label={label} active={active} onClick={onClick} />
+        <Toggle label={label} active={active} ajudaId={ajudaId} onClick={onClick} />
       </div>
       {hint ? <Hint text={hint} /> : <span className="w-3 flex-none" />}
     </div>
@@ -208,10 +225,12 @@ function ToggleRow({
 function Toggle({
   label,
   active,
+  ajudaId,
   onClick
 }: {
   label: string
   active: boolean
+  ajudaId: AjudaId
   onClick: () => void
 }): React.JSX.Element {
   return (
@@ -223,6 +242,7 @@ function Toggle({
     // de tamanhos diferentes, com as bolinhas em colunas diferentes
     <button
       type="button"
+      {...ajuda(ajudaId)}
       onClick={onClick}
       className={`flex w-full items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-[11px] transition-colors ${
         active
@@ -281,8 +301,8 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
             key={item.id}
             type="button"
             data-aba={item.id}
+            {...ajuda(AJUDA_DA_ABA[item.id])}
             aria-pressed={aba === item.id}
-            title={`${t(item.rotulo)} — ${t(`${item.rotulo}.hint` as Chave)}`}
             onClick={() => setAba(item.id)}
             className={`flex-1 py-[7px] text-center text-[11px] transition-colors ${
               aba === item.id
@@ -304,6 +324,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
             gastar uma linha do painel */}
         <div className="flex items-stretch gap-1.5">
           <select
+            {...ajuda('insp.font')}
             value={a.fontFamily}
             onChange={(event) => patch({ fontFamily: event.target.value })}
             className="min-w-0 flex-1 rounded-md border border-[var(--color-edge)] bg-[#212126] px-2 py-1.5 text-[11px] text-[var(--color-fog-05)]"
@@ -319,6 +340,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
               mexer num nunca move o outro */}
           <Ficha
             ativa={a.allCaps}
+            {...ajuda('insp.allCaps')}
             title={t('insp.allCaps')}
             aria-label={t('insp.allCaps')}
             aria-pressed={a.allCaps}
@@ -328,10 +350,35 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
             AA
           </Ficha>
         </div>
-        <Slider label={t('insp.body')} value={a.fontSize} min={16} max={260} suffix="px" onChange={(fontSize) => patch({ fontSize })} />
-        <Slider label={t('insp.weight')} value={a.fontWeight} min={300} max={800} step={100} onChange={(fontWeight) => patch({ fontWeight })} />
-        <Slider label={t('insp.lineHeight')} value={a.lineHeight} min={1} max={2.4} step={0.05} onChange={(lineHeight) => patch({ lineHeight })} />
         <Slider
+          ajudaId="insp.body"
+          label={t('insp.body')}
+          value={a.fontSize}
+          min={16}
+          max={260}
+          suffix="px"
+          onChange={(fontSize) => patch({ fontSize })}
+        />
+        <Slider
+          ajudaId="insp.weight"
+          label={t('insp.weight')}
+          value={a.fontWeight}
+          min={300}
+          max={800}
+          step={100}
+          onChange={(fontWeight) => patch({ fontWeight })}
+        />
+        <Slider
+          ajudaId="insp.lineHeight"
+          label={t('insp.lineHeight')}
+          value={a.lineHeight}
+          min={1}
+          max={2.4}
+          step={0.05}
+          onChange={(lineHeight) => patch({ lineHeight })}
+        />
+        <Slider
+          ajudaId="insp.letterSpacing"
           label={t('insp.letterSpacing')}
           value={a.letterSpacing}
           min={-0.04}
@@ -357,6 +404,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
               <Ficha
                 key={align}
                 ativa={a.align === align}
+                {...ajuda('insp.align')}
                 title={rotulo}
                 onClick={() => patch({ align })}
                 className="min-w-0 flex-1 truncate px-1.5 py-1.5 text-[11px]"
@@ -372,7 +420,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
           decisão de legibilidade, e separá-las obrigava a ir e voltar */}
       <Group label={t('insp.colors')}>
         <div className="flex items-center gap-2 text-[11px]">
-          <label className="flex flex-1 items-center gap-1.5">
+          <label className="flex flex-1 items-center gap-1.5" {...ajuda('insp.textColor')}>
             <input
               type="color"
               value={a.textColor}
@@ -381,7 +429,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
             />
             <span className="text-[var(--color-fog-1)]">{t('insp.textColor')}</span>
           </label>
-          <label className="flex flex-1 items-center gap-1.5">
+          <label className="flex flex-1 items-center gap-1.5" {...ajuda('insp.bgColor')}>
             <input
               type="color"
               value={a.bgColor}
@@ -410,6 +458,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
                   key={preset.id}
                   type="button"
                   data-preset={preset.id}
+                  {...ajuda('insp.preset')}
                   aria-pressed={valendo}
                   title={preset.name}
                   onClick={() => dispatch({ type: 'appearance/preset', tabId: tab.id, presetId: preset.id })}
@@ -426,6 +475,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
         </div>
 
         <Ficha
+          {...ajuda('insp.invert')}
           onClick={() => dispatch({ type: 'appearance/invert', tabId: tab.id })}
           className="flex w-full items-center justify-center gap-1.5 py-1.5 text-[11px]"
         >
@@ -443,6 +493,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
             já era o comportamento de sempre, antes deste slider existir, e
             errar por 1-2% dele não abre diferença visível nenhuma */}
         <Slider
+          ajudaId="insp.position"
           label={t('insp.position')}
           value={a.positionPct}
           min={0}
@@ -450,7 +501,15 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
           suffix="%"
           onChange={(value) => patch({ positionPct: Math.abs(value - 50) <= 4 ? 50 : value })}
         />
-        <Slider label={t('insp.margin')} value={a.marginPct} min={0} max={35} suffix="%" onChange={(marginPct) => patch({ marginPct })} />
+        <Slider
+          ajudaId="insp.margin"
+          label={t('insp.margin')}
+          value={a.marginPct}
+          min={0}
+          max={35}
+          suffix="%"
+          onChange={(marginPct) => patch({ marginPct })}
+        />
         {/*
           As duas faixas vão de 1 a 16 inteiras, sem uma restringir a outra —
           amarrar o piso do "máximo" ao valor do "mínimo" (como era antes)
@@ -463,6 +522,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
           impedir o gesto.
         */}
         <Slider
+          ajudaId="insp.minWords"
           label={t('insp.minWords')}
           value={a.minWords}
           min={1}
@@ -470,6 +530,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
           onChange={(minWords) => patch(minWords > a.maxWords ? { minWords, maxWords: minWords } : { minWords })}
         />
         <Slider
+          ajudaId="insp.maxWords"
           label={t('insp.maxWords')}
           value={a.maxWords}
           min={1}
@@ -477,6 +538,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
           onChange={(maxWords) => patch(maxWords < a.minWords ? { maxWords, minWords: maxWords } : { maxWords })}
         />
         <Slider
+          ajudaId="insp.readingMark"
           label={t('insp.readingMark')}
           value={a.readingLinePct * 100}
           min={10}
@@ -489,16 +551,23 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
             transmissão" ficava cortado no meio, e rótulo cortado é rótulo que
             não informa */}
         <ToggleRow
+          ajudaId="insp.markOnOutput"
           label={t('insp.markOnOutput')}
           active={a.readingMarkOnOutput}
           onClick={() => patch({ readingMarkOnOutput: !a.readingMarkOnOutput })}
           hint={a.readingMarkOnOutput ? t('insp.markOn.yes') : t('insp.markOn.no')}
         />
-        <ToggleRow label={t('insp.focusDim')} active={a.focusDim} onClick={() => patch({ focusDim: !a.focusDim })} />
+        <ToggleRow
+          ajudaId="insp.focusDim"
+          label={t('insp.focusDim')}
+          active={a.focusDim}
+          onClick={() => patch({ focusDim: !a.focusDim })}
+        />
       </Group>
 
       <Group label={t('insp.rhythm')}>
         <ToggleRow
+          ajudaId="insp.uniform"
           label={t('insp.uniform')}
           active={a.uniformSpeed}
           onClick={() => patch({ uniformSpeed: !a.uniformSpeed })}
@@ -517,6 +586,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
           </div>
           <button
             type="button"
+            {...ajuda('insp.wrappingFix')}
             onClick={() => patch({ fontSize: metrics.fitFontSize })}
             className="mt-1.5 w-full rounded-md border border-[var(--color-warn)]/50 py-1 text-[11px] text-[var(--color-warn)] hover:bg-[var(--color-warn)]/12"
           >
@@ -537,6 +607,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
         <div className="flex items-center gap-1.5">
           <div className="min-w-0 flex-1">
             <Toggle
+              ajudaId="insp.clockElapsed"
               label={t('insp.clock.elapsed')}
               active={a.timers.elapsed}
               onClick={() => patch({ timers: { ...a.timers, elapsed: !a.timers.elapsed } })}
@@ -544,6 +615,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
           </div>
           <input
             type="color"
+            {...ajuda('insp.clockElapsedColor')}
             aria-label={t('insp.clock.elapsedColor')}
             value={a.timers.elapsedColor}
             onChange={(event) => patch({ timers: { ...a.timers, elapsedColor: event.target.value } })}
@@ -554,6 +626,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
         <div className="flex items-center gap-1.5">
           <div className="min-w-0 flex-1">
             <Toggle
+              ajudaId="insp.clockRemaining"
               label={t('insp.clock.remaining')}
               active={a.timers.remaining}
               onClick={() => patch({ timers: { ...a.timers, remaining: !a.timers.remaining } })}
@@ -561,6 +634,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
           </div>
           <input
             type="color"
+            {...ajuda('insp.clockRemainingColor')}
             aria-label={t('insp.clock.remainingColor')}
             value={a.timers.remainingColor}
             onChange={(event) => patch({ timers: { ...a.timers, remainingColor: event.target.value } })}
@@ -576,15 +650,15 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
             <div className="flex gap-1.5">
               {(
                 [
-                  ['palavras', t('insp.clock.modeWords'), t('insp.clock.modeWords.hint')],
-                  ['cronometro', t('insp.clock.modeStopwatch'), t('insp.clock.modeStopwatch.hint')],
-                  ['livre', t('insp.clock.modeFree'), t('insp.clock.modeFree.hint')]
+                  ['palavras', t('insp.clock.modeWords'), 'insp.clockModeWords'],
+                  ['cronometro', t('insp.clock.modeStopwatch'), 'insp.clockModeStopwatch'],
+                  ['livre', t('insp.clock.modeFree'), 'insp.clockModeFree']
                 ] as const
-              ).map(([mode, rotulo, dica]) => (
+              ).map(([mode, rotulo, ajudaId]) => (
                 <Ficha
                   key={mode}
                   data-clock-mode={mode}
-                  title={dica}
+                  {...ajuda(ajudaId)}
                   ativa={a.timers.mode === mode}
                   onClick={() => patch({ timers: { ...a.timers, mode } })}
                   className="flex-1 px-1 py-1.5 text-[11px]"
@@ -595,7 +669,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
             </div>
 
             {a.timers.mode === 'cronometro' || a.timers.mode === 'livre' ? (
-              <label className="block">
+              <label className="block" {...ajuda('insp.clockTarget')}>
                 <div className="mb-1 text-[11px] text-[var(--color-fog-1)]">{t('insp.clock.target')}</div>
                 <AlvoField
                   value={a.timers.targetSeconds}
@@ -616,6 +690,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
                   <button
                     key={position}
                     type="button"
+                    {...ajuda('insp.clockPosition')}
                     aria-label={t('insp.clock.positionOf', { pos: position })}
                     aria-pressed={a.timers.position === position}
                     data-position={position}
@@ -631,6 +706,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
             </div>
 
             <Slider
+              ajudaId="insp.clockSize"
               label={t('insp.clock.size')}
               value={a.timers.sizePct}
               min={1.5}
@@ -644,13 +720,24 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
       </Group>
 
       <Group label={t('insp.glass')} hint={t('insp.glass.hint')}>
-        <Toggle label={t('insp.mirrorH')} active={a.mirrorX} onClick={() => patch({ mirrorX: !a.mirrorX })} />
-        <Toggle label={t('insp.mirrorV')} active={a.mirrorY} onClick={() => patch({ mirrorY: !a.mirrorY })} />
+        <Toggle
+          ajudaId="insp.mirrorH"
+          label={t('insp.mirrorH')}
+          active={a.mirrorX}
+          onClick={() => patch({ mirrorX: !a.mirrorX })}
+        />
+        <Toggle
+          ajudaId="insp.mirrorV"
+          label={t('insp.mirrorV')}
+          active={a.mirrorY}
+          onClick={() => patch({ mirrorY: !a.mirrorY })}
+        />
         <div className="flex gap-1.5">
           {([0, 90, 180, 270] as const).map((rotation) => (
             <Ficha
               key={rotation}
               ativa={a.rotation === rotation}
+              {...ajuda('insp.rotation')}
               onClick={() => patch({ rotation })}
               className="flex-1 py-1.5 text-[11px]"
             >
@@ -669,6 +756,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
       <div className="flex flex-none items-center gap-2 border-t border-[var(--color-edge)] p-2.5">
         <Tecla
           data-save-defaults
+          {...ajuda('insp.saveDefaults')}
           title={customDefaults ? t('insp.defaults.custom') : t('insp.defaults.factory')}
           acesa={salvou}
           cor="var(--color-go)"
@@ -683,6 +771,7 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
         {customDefaults ? (
           <Tecla
             data-reset-defaults
+            {...ajuda('insp.resetDefaults')}
             title={t('insp.defaults.reset')}
             aria-label={t('insp.defaults.reset')}
             onClick={() => dispatch({ type: 'defaults/reset' })}

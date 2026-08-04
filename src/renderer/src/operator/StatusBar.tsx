@@ -5,9 +5,10 @@ import { composeLines, totalWords } from '@shared/anchor'
 import { formatClock, ppmForTarget, secondsForWords } from '@shared/pacing'
 import { totalWordCount } from '@shared/text'
 import type { AppState, LayoutMode, Tab } from '@shared/types'
+import type { AjudaId } from '@shared/ajuda'
 import { Icon, type IconName } from '../ui/Icon'
-import type { Chave } from '@shared/i18n'
 import { useT } from '../i18n'
+import { ajuda } from '../ui/ajuda'
 
 interface Props {
   state: AppState
@@ -19,10 +20,15 @@ interface Props {
   onModeChange: (mode: LayoutMode) => void
 }
 
-const MODOS: { mode: LayoutMode; icon: IconName; rotulo: 'mode.split' | 'mode.focus' | 'mode.deck' }[] = [
-  { mode: 'split', icon: 'layoutSplit', rotulo: 'mode.split' },
-  { mode: 'focus', icon: 'layoutFocus', rotulo: 'mode.focus' },
-  { mode: 'deck', icon: 'layoutDeck', rotulo: 'mode.deck' }
+const MODOS: {
+  mode: LayoutMode
+  icon: IconName
+  rotulo: 'mode.split' | 'mode.focus' | 'mode.deck'
+  ajudaId: AjudaId
+}[] = [
+  { mode: 'split', icon: 'layoutSplit', rotulo: 'mode.split', ajudaId: 'status.modeSplit' },
+  { mode: 'focus', icon: 'layoutFocus', rotulo: 'mode.focus', ajudaId: 'status.modeFocus' },
+  { mode: 'deck', icon: 'layoutDeck', rotulo: 'mode.deck', ajudaId: 'status.modeDeck' }
 ]
 
 /** Split, Foco e Mesa são jeitos de olhar para o mesmo roteiro, não documentos diferentes. */
@@ -38,7 +44,7 @@ function ModeSwitch({ mode, onChange }: { mode: LayoutMode; onChange: (mode: Lay
           key={item.mode}
           type="button"
           data-mode={item.mode}
-          title={`${t(item.rotulo)} — ${t(`${item.rotulo}.hint` as Chave)}`}
+          {...ajuda(item.ajudaId)}
           onClick={() => onChange(item.mode)}
           className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-[11px] transition-colors ${
             mode === item.mode
@@ -110,7 +116,7 @@ export function StatusBar({
         <Cell label={t('status.words')} value={spoken.toLocaleString(lang)} />
         <Cell label={t('status.duration')} value={formatClock(total)} />
 
-        <label className="flex items-center gap-1.5">
+        <label className="flex items-center gap-1.5" {...ajuda('status.target')}>
           <span className="text-[var(--color-fog-2)]">{t('status.target')}</span>
           <input
             value={target}
@@ -138,6 +144,7 @@ export function StatusBar({
             sem o sinal positivo, silêncio e defeito têm a mesma cara */}
         <span
           data-storage
+          {...ajuda('status.storage')}
           style={storage.problem ? { color: 'var(--color-warn)' } : undefined}
           title={storage.problem ?? t('status.savedHint')}
         >

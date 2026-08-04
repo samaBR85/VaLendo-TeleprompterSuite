@@ -174,8 +174,8 @@ export const en: Dicionario = {
   'sidebar.thumbSize': 'Card thumbnail size',
   'sidebar.thumbSmaller': 'Smaller thumbnails (10%)',
   'sidebar.thumbBigger': 'Bigger thumbnails (10%)',
-  'sidebar.help.scrollTitle': 'Scroll button',
-  'sidebar.help.scroll': 'The biggest target on screen: pace to its left, time to its right. Space plays and pauses.',
+  'sidebar.help.idleTitle': 'Point at a control',
+  'sidebar.help.idle': 'Hover any button or slider on the console and what it does shows up here.',
 
   'status.words': 'Words',
   'status.duration': 'Duration',

@@ -175,8 +175,8 @@ export const de: Dicionario = {
   'sidebar.thumbSize': 'Größe der Kartenvorschaubilder',
   'sidebar.thumbSmaller': 'Kleinere Vorschaubilder (10%)',
   'sidebar.thumbBigger': 'Größere Vorschaubilder (10%)',
-  'sidebar.help.scrollTitle': 'Lauftaste',
-  'sidebar.help.scroll': 'Das größte Ziel auf dem Schirm: links davon das Tempo, rechts die Zeit. Leertaste startet und pausiert.',
+  'sidebar.help.idleTitle': 'Auf ein Bedienelement zeigen',
+  'sidebar.help.idle': 'Mit der Maus über eine Taste oder einen Regler fahren — hier steht dann, was sie tut.',
 
   'status.words': 'Wörter',
   'status.duration': 'Dauer',

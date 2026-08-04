@@ -175,8 +175,8 @@ export const fr: Dicionario = {
   'sidebar.thumbSize': 'Taille des miniatures des cartons',
   'sidebar.thumbSmaller': 'Miniatures plus petites (10%)',
   'sidebar.thumbBigger': 'Miniatures plus grandes (10%)',
-  'sidebar.help.scrollTitle': 'Bouton de défilement',
-  'sidebar.help.scroll': 'La plus grande cible de l’écran : à sa gauche le rythme, à sa droite le temps. Espace démarre et met en pause.',
+  'sidebar.help.idleTitle': 'Pointez une commande',
+  'sidebar.help.idle': 'Survolez n’importe quel bouton ou curseur de la console : son rôle s’affiche ici.',
 
   'status.words': 'Mots',
   'status.duration': 'Durée',

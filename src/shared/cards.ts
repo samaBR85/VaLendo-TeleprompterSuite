@@ -1,3 +1,4 @@
+import type { AjudaId } from './ajuda'
 import type { AppState, CardOverlayStyle, Cartao } from './types'
 
 /**
@@ -52,8 +53,10 @@ export const ESTILOS_DE_OVERLAY: {
   style: CardOverlayStyle
   letra: string
   rotulo: 'cards.overlayStyle.faixa' | 'cards.overlayStyle.sombra' | 'cards.overlayStyle.nenhum'
+  /** o id da Ajuda rápida — a lista mora aqui, então o par também */
+  ajudaId: AjudaId
 }[] = [
-  { style: 'faixa', letra: 'F', rotulo: 'cards.overlayStyle.faixa' },
-  { style: 'sombra', letra: 'S', rotulo: 'cards.overlayStyle.sombra' },
-  { style: 'nenhum', letra: 'N', rotulo: 'cards.overlayStyle.nenhum' }
+  { style: 'faixa', letra: 'F', rotulo: 'cards.overlayStyle.faixa', ajudaId: 'overlay.styleBand' },
+  { style: 'sombra', letra: 'S', rotulo: 'cards.overlayStyle.sombra', ajudaId: 'overlay.styleShadow' },
+  { style: 'nenhum', letra: 'N', rotulo: 'cards.overlayStyle.nenhum', ajudaId: 'overlay.styleNone' }
 ]

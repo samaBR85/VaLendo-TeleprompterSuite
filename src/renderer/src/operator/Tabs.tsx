@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Action } from '@shared/actions'
 import type { AppState } from '@shared/types'
 import { useT } from '../i18n'
+import { ajuda } from '../ui/ajuda'
 import { Icon } from '../ui/Icon'
 import { Tecla } from '../ui/console'
 
@@ -35,6 +36,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
             key={tab.id}
             onClick={() => dispatch({ type: 'tab/activate', tabId: tab.id })}
             onDoubleClick={() => setEditing(tab.id)}
+            {...ajuda('tabs.tab')}
             title={`${tab.title} · Ctrl+${index === 9 ? 0 : index + 1}`}
             className={`flex min-w-0 flex-1 cursor-pointer items-center gap-[7px] rounded-md px-2.5 py-[6px] text-[11px] ${
               active
@@ -63,6 +65,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
             {state.tabs.length > 1 ? (
               <button
                 type="button"
+                {...ajuda('tabs.close')}
                 aria-label={t('tabs.close', { title: tab.title })}
                 onClick={(event) => {
                   event.stopPropagation()
@@ -79,6 +82,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
 
       {state.tabs.length < 10 ? (
         <Tecla
+          {...ajuda('tabs.new')}
           aria-label={t('tabs.new')}
           title={t('tabs.new.hint')}
           className="h-[26px] w-7 flex-none"

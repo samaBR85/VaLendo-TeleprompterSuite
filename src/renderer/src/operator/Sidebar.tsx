@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { composeLines } from '@shared/anchor'
 import { CARD_DRAG_MIME, ESTILOS_DE_OVERLAY } from '@shared/cards'
+import { formatBinding, parseBinding } from '@shared/commands'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
 import { CHAPTER_MARK } from '@shared/text'
@@ -12,8 +13,10 @@ import type {
   Tab,
   Transport
 } from '@shared/types'
+import { ajudaDe, type AjudaId } from '@shared/ajuda'
 import { useT } from '../i18n'
 import { Icon } from '../ui/Icon'
+import { ajuda, useAjudaApontada } from '../ui/ajuda'
 import { CabecalhoDePainel, Ficha, SliderConsole } from '../ui/console'
 import { passoDaMiniatura, THUMB_MAX, THUMB_MIN } from '@shared/defaults'
 import { useNow } from '../ui/useNow'
@@ -51,7 +54,79 @@ interface Props {
   sidebarWidth: number
   /** conforto desta máquina: miniaturas e a caixa de ajuda */
   maquina: PreferenciasDaMaquina
+  /** teclas de agora — a ajuda mostra o atalho REAL, não um decorado no texto */
+  keymap: Map<string, string>
   dispatch: (action: Action) => void
+}
+
+/**
+ * A tecla de um comando, do jeito que ela está AGORA — "" quando não tem.
+ *
+ * Mesma conta do `hint` da barra, mas sem o " · " de colar em rótulo: aqui a
+ * tecla aparece sozinha, dentro de um `<kbd>`. Lê de `@shared/commands`
+ * direto, e não do Toolbar, para a coluna não passar a depender da barra.
+ */
+/** A caixa da ajuda — a mesma medida com texto e sem, para nada saltar ao apontar. */
+const CAIXA_DA_AJUDA = 'h-[124px] px-3 py-2.5'
+
+function teclaDoComando(keymap: Map<string, string>, commandId: string): string {
+  const binding = parseBinding(keymap.get(commandId) ?? '')
+  if (!binding) return ''
+  return formatBinding(binding, window.valendo.platform === 'darwin')
+}
+
+/**
+ * O corpo da Ajuda rápida: o nome e a descrição do controle apontado.
+ *
+ * Altura FIXA, e MEDIDA. Fixa porque a caixa é vizinha do slider de miniatura
+ * e do próprio botão de recolher: crescendo, ela empurraria para cima o
+ * controle que o ponteiro está usando naquele instante.
+ *
+ * O número não é chute — saiu de medir os 134 textos com a fonte e o leading
+ * reais, na coluna mais ESTREITA que ela pode ficar (180px, o
+ * `SIDEBAR_WIDTH_MIN`): o mais longo ocupa 85px, cinco linhas. Com o título,
+ * o respiro e a folga, dá os 124 daqui. Na largura padrão sobra espaço — sobra
+ * é calma; falta era meia frase cortada.
+ *
+ * E o parágrafo rola em vez de recortar: a tradução alemã cresce ~35% sobre o
+ * inglês, e um texto cortado no meio é pior que um que pede um gesto a mais.
+ *
+ * O atalho sai do keymap, nunca do texto: o dicionário guarda o id do comando,
+ * e quem remapeou lê a própria tecla em vez da que estava escrita no dia em
+ * que a frase foi redigida.
+ */
+function CorpoDaAjuda({ keymap }: { keymap: Map<string, string> }): React.JSX.Element {
+  const { t, lang } = useT()
+  const apontado = useAjudaApontada()
+
+  if (!apontado) {
+    return (
+      <div className={CAIXA_DA_AJUDA}>
+        <div className="mb-1 text-[11px] font-semibold text-[var(--color-go)]">{t('sidebar.help.idleTitle')}</div>
+        <p className="text-[10.5px] leading-relaxed text-[var(--color-fog-2)]">{t('sidebar.help.idle')}</p>
+      </div>
+    )
+  }
+
+  const texto = ajudaDe(lang, apontado)
+  const tecla = texto.comando ? teclaDoComando(keymap, texto.comando) : ''
+  return (
+    <div data-ajuda-corpo={apontado} className={CAIXA_DA_AJUDA}>
+      <div className="mb-1 flex items-baseline gap-1.5">
+        <span className="min-w-0 flex-1 truncate text-[11px] font-semibold text-[var(--color-go)]">
+          {texto.nome}
+        </span>
+        {tecla ? (
+          <kbd className="flex-none rounded border border-[var(--color-edge)] bg-[var(--color-ink-2)] px-1 font-mono text-[9px] text-[var(--color-fog-2)]">
+            {tecla}
+          </kbd>
+        ) : null}
+      </div>
+      <p className="h-[85px] overflow-y-auto text-[10.5px] leading-relaxed text-[var(--color-fog-2)]">
+        {texto.texto}
+      </p>
+    </div>
+  )
 }
 
 
@@ -95,11 +170,13 @@ function DegrauDaMiniatura({
   label,
   size,
   disabled,
+  ajudaId,
   onClick
 }: {
   label: string
   size: number
   disabled?: boolean
+  ajudaId: AjudaId
   onClick: () => void
 }): React.JSX.Element {
   return (
@@ -108,6 +185,7 @@ function DegrauDaMiniatura({
       title={label}
       aria-label={label}
       disabled={disabled}
+      {...ajuda(ajudaId)}
       onClick={onClick}
       className="flex-none rounded px-0.5 leading-none text-[var(--color-fog-3)] hover:text-[var(--color-fog-0)] disabled:opacity-30 disabled:hover:text-[var(--color-fog-3)]"
     >
@@ -135,6 +213,7 @@ export function Sidebar({
   rows,
   sidebarWidth,
   maquina,
+  keymap,
   dispatch
 }: Props): React.JSX.Element {
   const { t } = useT()
@@ -190,6 +269,7 @@ export function Sidebar({
                 key={segment.blockId}
                 type="button"
                 data-chapter={segment.blockId}
+                {...ajuda('sidebar.chapter')}
                 aria-current={index === atual}
                 onClick={() =>
                   dispatch({ type: 'transport/seekAnchor', anchor: { blockId: segment.blockId, wordOffset: 0 } })
@@ -241,6 +321,7 @@ export function Sidebar({
                     <Ficha
                       key={opcao.style}
                       ativa={cardOverlay.style === opcao.style}
+                      {...ajuda(opcao.ajudaId)}
                       title={t(opcao.rotulo)}
                       onClick={() => dispatch({ type: 'cardOverlay/style', style: opcao.style })}
                       className="h-4 w-4 rounded-[3px] p-0 text-[8px] leading-none"
@@ -256,6 +337,7 @@ export function Sidebar({
               <button
                 type="button"
                 data-overlay-global
+                {...ajuda('sidebar.overlayGlobal')}
                 title={t('cards.overlayHint')}
                 aria-pressed={cardOverlay.enabled}
                 onClick={() => dispatch({ type: 'cardOverlay/set', enabled: !cardOverlay.enabled })}
@@ -344,6 +426,7 @@ export function Sidebar({
                   <button
                     type="button"
                     data-sidebar-card={card.id}
+                    {...ajuda('sidebar.card')}
                     onClick={() => dispatch({ type: 'card/show', cardId: card.id })}
                     className="flex min-w-0 flex-1 items-center gap-2 text-left"
                   >
@@ -360,6 +443,7 @@ export function Sidebar({
                     type="button"
                     data-sidebar-card-overlay={card.id}
                     data-no-card-drag
+                    {...ajuda('sidebar.cardOverlay')}
                     title={cardOverlay.enabled ? t('cards.overlayForced') : t('cards.overlay')}
                     aria-pressed={cardOverlay.enabled || (card.overlay ?? false)}
                     disabled={cardOverlay.enabled}
@@ -392,6 +476,7 @@ export function Sidebar({
             Mesmo raciocínio dos "aA" do slider de fonte — arrastar atravessa a
             faixa num gesto, mas parar num tamanho redondo é sorte */}
         <DegrauDaMiniatura
+          ajudaId="sidebar.thumbSmaller"
           label={t('sidebar.thumbSmaller')}
           size={10}
           disabled={thumbSize <= THUMB_MIN}
@@ -403,10 +488,12 @@ export function Sidebar({
           max={THUMB_MAX}
           cor="var(--color-accent-2)"
           aria-label={t('sidebar.thumbSize')}
+          {...ajuda('sidebar.thumbSize')}
           onValue={mudarMiniatura}
           className="w-full"
         />
         <DegrauDaMiniatura
+          ajudaId="sidebar.thumbBigger"
           label={t('sidebar.thumbBigger')}
           size={16}
           disabled={thumbSize >= THUMB_MAX}
@@ -423,6 +510,7 @@ export function Sidebar({
         <button
           type="button"
           data-sidebar-help-toggle
+          {...ajuda('sidebar.helpToggle')}
           aria-expanded={ajudaAberta}
           onClick={() => dispatch({ type: 'maquina/patch', patch: { ajudaAberta: !ajudaAberta } })}
           className="flex h-[26px] w-full items-center gap-1.5 border-b border-[var(--color-edge)] px-2.5 text-left"
@@ -437,14 +525,7 @@ export function Sidebar({
             className={`ml-auto flex-none text-[#8b95a3] transition-transform ${ajudaAberta ? '' : '-rotate-90'}`}
           />
         </button>
-        {ajudaAberta ? (
-          <div className="px-3 py-2.5">
-            <div className="mb-1 text-[11px] font-semibold text-[var(--color-go)]">
-              {t('sidebar.help.scrollTitle')}
-            </div>
-            <p className="text-[10.5px] leading-relaxed text-[var(--color-fog-2)]">{t('sidebar.help.scroll')}</p>
-          </div>
-        ) : null}
+        {ajudaAberta ? <CorpoDaAjuda keymap={keymap} /> : null}
       </div>
     </aside>
   )

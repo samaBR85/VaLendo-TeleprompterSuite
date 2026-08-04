@@ -175,8 +175,8 @@ export const it: Dicionario = {
   'sidebar.thumbSize': 'Dimensione delle miniature dei cartelli',
   'sidebar.thumbSmaller': 'Miniature più piccole (10%)',
   'sidebar.thumbBigger': 'Miniature più grandi (10%)',
-  'sidebar.help.scrollTitle': 'Pulsante di scorrimento',
-  'sidebar.help.scroll': 'Il bersaglio più grande dello schermo: a sinistra il ritmo, a destra il tempo. Spazio avvia e mette in pausa.',
+  'sidebar.help.idleTitle': 'Punta un comando',
+  'sidebar.help.idle': 'Passa il mouse su un pulsante o su un cursore della consolle e qui compare che cosa fa.',
 
   'status.words': 'Parole',
   'status.duration': 'Durata',

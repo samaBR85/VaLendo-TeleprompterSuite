@@ -9,6 +9,7 @@ import {
   ppmFromFraction,
   segmentColor
 } from '@shared/ruler'
+import { ajuda } from '../ui/ajuda'
 
 interface Props {
   ppm: number
@@ -62,6 +63,7 @@ export function SpeedRuler({ ppm, onChange }: Props): React.JSX.Element {
       data-speed-ruler
       role="slider"
       tabIndex={0}
+      {...ajuda('transport.speed')}
       aria-label="Ritmo em palavras por minuto"
       aria-valuemin={PPM_MIN}
       aria-valuemax={PPM_MAX}

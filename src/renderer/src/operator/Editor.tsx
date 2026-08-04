@@ -3,6 +3,7 @@ import type { Action } from '@shared/actions'
 import { insertBlock, type InsertKind } from '@shared/insertBlock'
 import { blocksFromText, serializeBlocks, stripFormatting } from '@shared/text'
 import { useT } from '../i18n'
+import { ajuda } from '../ui/ajuda'
 import type { Tab } from '@shared/types'
 
 const TYPE_SETTINGS: React.CSSProperties = {
@@ -332,6 +333,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       </pre>
       <textarea
         ref={areaRef}
+        {...ajuda('editor.script')}
         value={draft}
         onChange={onChange}
         onBlur={() => push(draft, 0)}

@@ -175,8 +175,8 @@ export const es: Dicionario = {
   'sidebar.thumbSize': 'Tamaño de las miniaturas de las tarjetas',
   'sidebar.thumbSmaller': 'Miniaturas más pequeñas (10%)',
   'sidebar.thumbBigger': 'Miniaturas más grandes (10%)',
-  'sidebar.help.scrollTitle': 'Botón de desplazamiento',
-  'sidebar.help.scroll': 'El mayor objetivo de la pantalla: a su izquierda el ritmo, a su derecha el tiempo. Espacio inicia y pausa.',
+  'sidebar.help.idleTitle': 'Apunta a un control',
+  'sidebar.help.idle': 'Pasa el ratón por cualquier botón o control de la mesa y aquí aparece lo que hace.',
 
   'status.words': 'Palabras',
   'status.duration': 'Duración',

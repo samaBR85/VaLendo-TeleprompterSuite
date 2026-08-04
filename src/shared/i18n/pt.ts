@@ -188,8 +188,12 @@ export const pt = {
   'sidebar.thumbSize': 'Tamanho das miniaturas dos cartões',
   'sidebar.thumbSmaller': 'Miniaturas menores (10%)',
   'sidebar.thumbBigger': 'Miniaturas maiores (10%)',
-  'sidebar.help.scrollTitle': 'Botão de rolagem',
-  'sidebar.help.scroll': 'É o maior alvo da tela: à esquerda dele o ritmo, à direita o tempo. Espaço toca e pausa.',
+  /* A dica que morava aqui ("à esquerda o ritmo, à direita o tempo") saiu, e
+     não foi só por estar invertida desde que a barra foi reorganizada: uma
+     frase fixa não tem como acompanhar a mesa. O que a caixa mostra agora vem
+     do controle que o mouse está apontando — ver `shared/ajuda`. */
+  'sidebar.help.idleTitle': 'Aponte um controle',
+  'sidebar.help.idle': 'Passe o mouse por qualquer botão ou slider da mesa e a explicação dele aparece aqui.',
 
   'status.words': 'Palavras',
   'status.duration': 'Duração',

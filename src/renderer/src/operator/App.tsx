@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { AjudaId } from '@shared/ajuda'
 import type { MotivosDeFechar } from '@shared/api'
 import type { InsertKind } from '@shared/insertBlock'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
@@ -12,6 +13,7 @@ import { LANGS, type Lang } from '@shared/i18n'
 import { ProvedorDeIdioma, useT } from '../i18n'
 import { activeTabOf, useAppState } from '../state/useAppState'
 import { Icon, type IconName } from '../ui/Icon'
+import { ajuda, useEscutarAjuda } from '../ui/ajuda'
 import { CabecalhoDePainel, SliderConsole, Tecla } from '../ui/console'
 import { Wordmark, versionLabel } from '../ui/Wordmark'
 import { UI_SCALE_MAX, UI_SCALE_MIN, UI_SCALE_STEP, applyUiScale, clampUiScale, loadUiScale } from '../ui/uiScale'
@@ -88,6 +90,7 @@ function EditorTool({
   label,
   disabled,
   acesa,
+  ajudaId,
   onClick
 }: {
   icon?: IconName
@@ -97,11 +100,13 @@ function EditorTool({
   disabled?: boolean
   /** ligado: fica âmbar, a cor da Edição, para se ler como estado e não como botão */
   acesa?: boolean
+  ajudaId: AjudaId
   onClick: () => void
 }): React.JSX.Element {
   return (
     <button
       type="button"
+      {...ajuda(ajudaId)}
       title={label}
       aria-label={label}
       aria-pressed={acesa === undefined ? undefined : acesa}
@@ -128,16 +133,19 @@ function FontStep({
   label,
   size,
   disabled,
+  ajudaId,
   onClick
 }: {
   label: string
   size: number
   disabled?: boolean
+  ajudaId: AjudaId
   onClick: () => void
 }): React.JSX.Element {
   return (
     <button
       type="button"
+      {...ajuda(ajudaId)}
       title={label}
       aria-label={label}
       disabled={disabled}
@@ -180,6 +188,7 @@ function LanguagePicker({
       <button
         type="button"
         data-language-picker
+        {...ajuda('header.language')}
         title={`${t('app.language')} — ${atual.nome}`}
         aria-label={t('app.language')}
         onClick={() => setAberto((v) => !v)}
@@ -200,6 +209,7 @@ function LanguagePicker({
               key={item.id}
               type="button"
               data-language={item.id}
+              {...ajuda('header.languageOption')}
               onClick={() => {
                 onChange(item.id)
                 setAberto(false)
@@ -255,6 +265,7 @@ function ScalePicker({
       <button
         type="button"
         data-ui-scale-picker
+        {...ajuda('header.uiScale')}
         title={`${t('app.uiScale')} — ${porcento}%`}
         aria-label={t('app.uiScale')}
         onClick={() => setAberto((v) => !v)}
@@ -283,6 +294,7 @@ function ScalePicker({
             max={UI_SCALE_MAX}
             step={UI_SCALE_STEP}
             cor="var(--color-accent)"
+            {...ajuda('header.uiScaleSlider')}
             aria-label={t('app.uiScale')}
             onValue={onChange}
             className="w-full"
@@ -294,6 +306,7 @@ function ScalePicker({
             <button
               type="button"
               data-ui-scale-reset
+              {...ajuda('header.uiScaleReset')}
               disabled={porcento === 100}
               onClick={() => onChange(1)}
               className="rounded border border-[var(--color-line)] px-2 py-0.5 text-[11px] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] disabled:opacity-30 disabled:hover:bg-transparent"
@@ -329,6 +342,7 @@ function StorageStrip({
       {onDismiss ? (
         <button
           type="button"
+          {...ajuda('header.dismissNotice')}
           aria-label={t('app.dismiss')}
           onClick={onDismiss}
           className="mt-0.5 flex-none opacity-70 hover:opacity-100"
@@ -369,6 +383,10 @@ function AppConteudo({
   dispatch
 }: ReturnType<typeof useAppState>): React.JSX.Element {
   const { t } = useT()
+  /* o ouvinte único que alimenta a Ajuda rápida — um `mouseover` no documento
+     enxerga todo controle marcado com `data-ajuda`, sem que nenhum deles
+     precise avisar ninguém. Ver `ui/ajuda.ts` */
+  useEscutarAjuda()
   /*
    * As boas-vindas só na primeira abertura, e só até a pessoa decidir.
    *
@@ -684,12 +702,23 @@ function AppConteudo({
 
   const editorTools = (
     <>
-      <EditorTool icon="chapter" label={t('editor.chapter')} onClick={() => run('insert.chapter')} />
-      <EditorTool icon="direction" label={t('editor.direction')} onClick={() => run('insert.direction')} />
+      <EditorTool
+        ajudaId="editor.chapter"
+        icon="chapter"
+        label={t('editor.chapter')}
+        onClick={() => run('insert.chapter')}
+      />
+      <EditorTool
+        ajudaId="editor.direction"
+        icon="direction"
+        label={t('editor.direction')}
+        onClick={() => run('insert.direction')}
+      />
       {/* volta tudo a texto simples: sem capítulo, sem direção. Apagado
           quando não há marcação nenhuma para tirar — assim o botão nunca é
           um clique que não faz nada. As palavras ficam; o Mod+Z devolve */}
       <EditorTool
+        ajudaId="editor.clearFormat"
         icon="clearFormat"
         label={t('editor.clearFormat')}
         disabled={!hasFormatting(tab.blocks)}
@@ -701,6 +730,7 @@ function AppConteudo({
           mesmo booleano seria um interruptor com duas alavancas.
           Pintura nos dois casos — o texto guardado não muda uma letra */}
       <EditorTool
+        ajudaId="editor.allCaps"
         texto="AA"
         label={t('editor.allCaps')}
         acesa={state.maquina.editorAllCaps}
@@ -715,12 +745,19 @@ function AppConteudo({
           desfazer. Sem isto o botão ficava apagado justamente depois de
           digitar, o clique não fazia nada, e parecia precisar de dois */}
       <EditorTool
+        ajudaId="editor.undo"
         icon="undo"
         label={t('editor.undo')}
         disabled={!history.canUndo && !textoPendente}
         onClick={() => run('edit.undo')}
       />
-      <EditorTool icon="redo" label={t('editor.redo')} disabled={!history.canRedo} onClick={() => run('edit.redo')} />
+      <EditorTool
+        ajudaId="editor.redo"
+        icon="redo"
+        label={t('editor.redo')}
+        disabled={!history.canRedo}
+        onClick={() => run('edit.redo')}
+      />
     </>
   )
 
@@ -767,6 +804,7 @@ function AppConteudo({
           <button
             key={marker.id}
             type="button"
+            {...ajuda('markers.chip')}
             title={`Alt+${index + 1}`}
             onClick={() => dispatch({ type: 'transport/seekAnchor', anchor: { blockId: marker.blockId, wordOffset: 0 } })}
             onContextMenu={(event) => {
@@ -853,6 +891,7 @@ function AppConteudo({
         <button
           type="button"
           data-atualizacao={atualizacao ?? undefined}
+          {...ajuda('header.version')}
           onClick={() => setCredits(true)}
           title={atualizacao ? t('app.updateAvailable', { versao: atualizacao }) : t('app.credits')}
           className={`flex flex-none items-center gap-1.5 text-[12px] whitespace-nowrap ${
@@ -887,6 +926,7 @@ function AppConteudo({
         <div className="ml-auto flex flex-none items-center gap-2">
           <button
             type="button"
+            {...ajuda('header.shortcuts')}
             onClick={() => setKeymapOpen(true)}
             title={t('app.shortcuts')}
             className="flex h-8 w-9 items-center justify-center rounded-md text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
@@ -895,6 +935,7 @@ function AppConteudo({
           </button>
           <button
             type="button"
+            {...ajuda('header.palette')}
             onClick={() => setPalette(true)}
             title={t('app.palette')}
             className="flex h-8 w-9 items-center justify-center rounded-md text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
@@ -982,6 +1023,7 @@ function AppConteudo({
         <main className="flex min-h-0 flex-1">
           {state.sidebarVisible ? (
             <Sidebar
+              keymap={keymap}
               tab={tab}
               transport={state.transport}
               cards={state.cards}
@@ -1002,6 +1044,7 @@ function AppConteudo({
                   <span className="font-mono text-[10px] text-[var(--color-fog-3)]">{`${viewport.width} × ${viewport.height}`}</span>
                   <button
                     type="button"
+                    {...ajuda('panel.focusToggle')}
                     onClick={toggleFocusMode}
                     title={t('panel.collapse')}
                     className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
@@ -1025,6 +1068,7 @@ function AppConteudo({
               operador pode querer a tela inteira para o roteiro e a saída. */}
           {state.sidebarVisible ? (
             <Sidebar
+              keymap={keymap}
               tab={tab}
               transport={state.transport}
               cards={state.cards}
@@ -1079,6 +1123,7 @@ function AppConteudo({
                       pausa na digitação. Antes do Go To, não depois: é o que
                       decide SE o salto acontece, o Go To é o salto único */}
                   <Tecla
+                    {...ajuda('editor.catch')}
                     title={t('toolbar.catchHint')}
                     aria-label={t('toolbar.catch')}
                     acesa={catchAtivo}
@@ -1090,6 +1135,7 @@ function AppConteudo({
                     <Icon name="catch" size={13} />
                   </Tecla>
                   <Tecla
+                    {...ajuda('editor.goTo')}
                     title="Go To"
                     aria-label="Go To"
                     cor="var(--color-go)"
@@ -1104,6 +1150,7 @@ function AppConteudo({
                       transporte — útil aqui, perto de onde o operador já
                       está olhando o roteiro, sem precisar alcançar o console */}
                   <Tecla
+                    {...ajuda('editor.marker')}
                     title={`${t('toolbar.marker')}${hint(keymap, 'marker.create')}`}
                     aria-label={t('toolbar.marker')}
                     cor="var(--color-live)"
@@ -1118,6 +1165,7 @@ function AppConteudo({
                       tocando — o Reiniciar do transporte acende junto,
                       mesmo aceso que este botão usa */}
                   <Tecla
+                    {...ajuda('editor.loop')}
                     title={t('toolbar.loop')}
                     aria-label={t('toolbar.loop')}
                     acesa={state.transport.loop}
@@ -1132,6 +1180,7 @@ function AppConteudo({
                       reiniciar — só importa com o loop ligado, mas fica
                       sempre visível para o operador pré-configurar */}
                   <label
+                    {...ajuda('editor.loopDelay')}
                     title={t('toolbar.loopDelay')}
                     className="flex flex-none items-center gap-1 text-[10px] text-[var(--color-fog-3)]"
                   >
@@ -1161,6 +1210,7 @@ function AppConteudo({
                       O slider atravessa a faixa inteira num gesto, mas achar
                       exatamente 15px nele é sorte — os degraus resolvem isso */}
                   <FontStep
+                    ajudaId="editor.fontSmaller"
                     label={t('editor.fontSmaller')}
                     size={10}
                     disabled={editorFontSize <= EDITOR_FONT_MIN}
@@ -1171,11 +1221,13 @@ function AppConteudo({
                     min={EDITOR_FONT_MIN}
                     max={EDITOR_FONT_MAX}
                     cor="var(--color-warn)"
+                    {...ajuda('editor.fontSize')}
                     aria-label={t('editor.fontSize')}
                     onValue={mudarFonteDoEditor}
                     className="w-24 flex-none"
                   />
                   <FontStep
+                    ajudaId="editor.fontBigger"
                     label={t('editor.fontBigger')}
                     size={16}
                     disabled={editorFontSize >= EDITOR_FONT_MAX}
@@ -1190,6 +1242,7 @@ function AppConteudo({
               <div
                 onMouseDown={startDrag}
                 onDoubleClick={resetSplit}
+                {...ajuda('editor.split')}
                 title={t('app.splitReset')}
                 className="w-1 flex-none cursor-col-resize bg-[var(--color-line)] hover:bg-[var(--color-fog-2)]"
               />
@@ -1204,6 +1257,7 @@ function AppConteudo({
                       <span className="font-mono text-[10px] text-[var(--color-fog-3)]">{`${viewport.width} × ${viewport.height}`}</span>
                       <button
                         type="button"
+                        {...ajuda('panel.focusToggle')}
                         onClick={toggleFocusMode}
                         title={t('panel.expand')}
                         className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
