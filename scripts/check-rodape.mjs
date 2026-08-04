@@ -115,7 +115,15 @@ const rodape = await app.evaluate(`(() => {
     luzEmPoco: Boolean(f.querySelector('[data-storage] .k-poco')),
     paleta: Boolean(f.querySelector('[data-palette]')),
     paletaTecla: f.querySelector('[data-palette]')?.className.includes('k-tecla') ?? false,
-    modoEmPoco: Boolean(f.querySelector('[data-mode-switch] .k-poco-fundo')),
+    modoSemPoco: f.querySelector('[data-mode-switch]')?.querySelector('.k-poco, .k-poco-fundo') === null,
+    // o grupo tem de estar no meio da JANELA, não no meio do que sobrou entre
+    // os dois lados: é a única peça do rodapé que se procura pela posição
+    centro: (() => {
+      const g = f.querySelector('[data-mode-switch]')
+      if (!g) return null
+      const b = g.getBoundingClientRect()
+      return Math.round(b.left + b.width / 2 - document.documentElement.clientWidth / 2)
+    })(),
     modosEmRelevo: [...f.querySelectorAll('[data-mode]')].map((b) => b.className.includes('k-tecla')),
     ajudas: [...f.querySelectorAll('[data-ajuda]')].map((e) => e.getAttribute('data-ajuda'))
   }
@@ -127,7 +135,10 @@ check('nenhum controle de texto', rodape.campos === 0, `${rodape.campos} campos`
 check('sem Words/Duration/Target', !/Words|Duration|Target/i.test(rodape.texto), rodape.texto)
 check('luz de gravação em poço', rodape.luz && rodape.luzEmPoco)
 check('Ctrl+K é tecla de verdade', rodape.paleta && rodape.paletaTecla)
-check('seletor de modo em poço fundo', rodape.modoEmPoco)
+check('seletor de modo sem poço', rodape.modoSemPoco)
+/* 1px de folga para o arredondamento de uma largura ímpar; qualquer coisa
+   além disso é desalinhamento de verdade, e o olho pega */
+check('modo centrado na janela', Math.abs(rodape.centro) <= 1, `${rodape.centro > 0 ? '+' : ''}${rodape.centro}px do centro`)
 check('três modos presentes', rodape.modosEmRelevo.length === 3, `${rodape.modosEmRelevo.length}`)
 check(
   'ajuda em tudo que se aponta',

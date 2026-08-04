@@ -29,14 +29,21 @@ const MODOS: {
 
 /**
  * Split, Foco e Mesa são jeitos de olhar para o mesmo roteiro, não documentos
- * diferentes — e é por isso que os três moram numa cama só, com apenas o
- * escolhido em relevo. Trocar de modo é escolher um ponto de vista; ver os
- * três lado a lado, com um levantado, diz isso sem precisar de rótulo.
+ * diferentes — e é por isso que só o escolhido fica em relevo. Trocar de modo
+ * é escolher um ponto de vista; ver os três lado a lado, com um levantado,
+ * diz isso sem precisar de rótulo.
+ *
+ * SEM poço em volta. A maquete desenha um, e ele funciona lá porque ali o
+ * rodapé é a única peça daquela altura da janela. No app o transporte pode
+ * morar na régua logo acima, e aí duas camas afundadas ficam empilhadas a
+ * poucos pixels uma da outra: a de baixo lê como sobra da de cima em vez de
+ * como um grupo próprio. As teclas soltas resolvem — quem agrupa os três é a
+ * proximidade entre eles, que já basta.
  */
 function ModeSwitch({ mode, onChange }: { mode: LayoutMode; onChange: (mode: LayoutMode) => void }): React.JSX.Element {
   const { t } = useT()
   return (
-    <Poco fundo data-mode-switch className="flex-none">
+    <div data-mode-switch className="flex flex-none items-center gap-[2px]">
       {MODOS.map((item) => {
         const ativo = mode === item.mode
         return (
@@ -45,9 +52,9 @@ function ModeSwitch({ mode, onChange }: { mode: LayoutMode; onChange: (mode: Lay
             data-mode={item.mode}
             {...ajuda(item.ajudaId)}
             onClick={() => onChange(item.mode)}
-            /* só o escolhido é tecla: os outros ficam rentes ao fundo do poço,
-               sem gradiente nem aresta. Três teclas em relevo com uma "acesa"
-               diria a mesma coisa com muito mais tinta */
+            /* só o escolhido é tecla: os outros ficam rentes ao fundo da
+               barra, sem gradiente nem aresta. Três teclas em relevo com uma
+               "acesa" diria a mesma coisa com muito mais tinta */
             className={`gap-[7px] rounded-md px-3 py-[5px] text-[11px] ${
               ativo
                 ? 'font-semibold text-[var(--color-fog-0)]'
@@ -62,7 +69,7 @@ function ModeSwitch({ mode, onChange }: { mode: LayoutMode; onChange: (mode: Lay
           </Tecla>
         )
       })}
-    </Poco>
+    </div>
   )
 }
 
