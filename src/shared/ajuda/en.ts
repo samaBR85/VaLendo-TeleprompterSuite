@@ -420,6 +420,10 @@ export const ajudaEn = {
     nome: 'Screen message',
     texto: 'What is written over the background. Where you press Enter is where it breaks on air. Leave it empty for a plain backdrop.'
   },
+  'cards.screenAlign': {
+    nome: 'Paragraph alignment',
+    texto: 'How the lines sit against each other. Independent of where the block sits on the screen — that is Place.'
+  },
   'cards.size': {
     nome: 'Message size',
     texto: 'A share of the screen height, not a pixel size — so the card looks the same on the drawer tile and on a 55-inch monitor.'

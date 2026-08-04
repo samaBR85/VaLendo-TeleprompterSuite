@@ -1,9 +1,18 @@
 import type { Action } from '@shared/actions'
-import { ANGULO_PADRAO, CORPO_MAX, CORPO_MIN, type PosicaoDoRecado } from '@shared/tela'
+import type { Chave } from '@shared/i18n'
+import {
+  alinhamentoDoRecado,
+  ANGULO_PADRAO,
+  CORPO_MAX,
+  CORPO_MIN,
+  type AlinhamentoDoRecado,
+  type PosicaoDoRecado
+} from '@shared/tela'
 import type { Cartao } from '@shared/types'
 import { useT } from '../i18n'
 import { TelaDoCartao } from '../prompter/PrompterCanvas'
 import { Ficha, SliderConsole } from '../ui/console'
+import { Icon, type IconName } from '../ui/Icon'
 import { Modal } from '../ui/Modal'
 import { ajuda } from '../ui/ajuda'
 
@@ -25,6 +34,15 @@ const LARGURA = 450
 const ALTURA_DA_PREVIA = Math.round(((LARGURA - 24) * 9) / 16)
 
 const POSICOES: PosicaoDoRecado[] = ['topo', 'meio', 'pe']
+
+/* Os rótulos de alinhamento já existem nos 6 idiomas, do painel de Ajustes —
+   é o mesmo conceito, e traduzir duas vezes a mesma palavra é como as duas
+   acabam divergindo. */
+const ALINHAMENTOS: { id: AlinhamentoDoRecado; icone: IconName; rotulo: Chave }[] = [
+  { id: 'left', icone: 'alinharEsquerda', rotulo: 'insp.alignLeft' },
+  { id: 'center', icone: 'alinharCentro', rotulo: 'insp.alignCenter' },
+  { id: 'right', icone: 'alinharDireita', rotulo: 'insp.alignRight' }
+]
 
 /* `.k-ficha` não traz respiro nenhum — quem usa é que diz quanto. Aqui a
    janela tem espaço, então o texto ganha uma folga maior que a dos painéis
@@ -151,6 +169,25 @@ export function EditorDeTela({
             onChange={(event) => mexerNoRecado({ texto: event.target.value })}
             className="min-w-0 flex-1 resize-none rounded border border-[var(--color-edge)] bg-[var(--color-ink-0)] px-2 py-1.5 text-[12px] leading-snug outline-none placeholder:text-[var(--color-fog-3)]"
           />
+          {/* Encostado no campo, e em coluna: assim o alinhamento fica onde
+              se escreve o texto, e a janela não ganha uma fileira só para
+              três botões que cabem na altura que já existe. */}
+          <div className="flex flex-none flex-col gap-[2px]">
+            {ALINHAMENTOS.map(({ id, icone, rotulo }) => (
+              <Ficha
+                key={id}
+                data-tela-alinhamento={id}
+                {...ajuda('cards.screenAlign')}
+                title={t(rotulo)}
+                aria-label={t(rotulo)}
+                ativa={alinhamentoDoRecado(card.recado.alinhamento) === id}
+                onClick={() => mexerNoRecado({ alinhamento: id })}
+                className="grid h-[19px] w-[26px] place-items-center"
+              >
+                <Icon name={icone} size={11} />
+              </Ficha>
+            ))}
+          </div>
         </Linha>
 
         <Linha rotulo={t('cards.size')}>

@@ -16,7 +16,7 @@ import {
   type Transport,
   type VideoClock
 } from '@shared/types'
-import { apoioDoRecado, corpoDoRecado, fundoDaTela } from '@shared/tela'
+import { alinhamentoDoRecado, apoioDoRecado, corpoDoRecado, fundoDaTela } from '@shared/tela'
 import { posicaoDoVideo } from '@shared/video'
 
 export interface Viewport {
@@ -216,7 +216,10 @@ export function TelaDoCartao({
             fontWeight: 700,
             letterSpacing: '0.05em',
             lineHeight: 1.15,
-            textAlign: 'center',
+            // sem a largura toda, o bloco encolhe até o texto e alinhar
+            // à esquerda ou à direita não move nada
+            width: '100%',
+            textAlign: alinhamentoDoRecado(card.recado.alinhamento),
             color: card.recado.cor,
             overflowWrap: 'break-word',
             // onde o operador apertou Enter é onde quebra aqui também

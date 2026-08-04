@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  alinhamentoDoRecado,
   ANGULO_PADRAO,
   apoioDoRecado,
   corpoDoRecado,
@@ -71,6 +72,29 @@ describe('o recado', () => {
     expect(corpoDoRecado(-40, 1000)).toBeCloseTo((1000 * CORPO_MIN) / 100, 6)
     expect(corpoDoRecado(9999, 1000)).toBeCloseTo((1000 * CORPO_MAX) / 100, 6)
     expect(corpoDoRecado(undefined, 1000)).toBeGreaterThan(0)
+  })
+})
+
+describe('o alinhamento do parágrafo', () => {
+  it('passa os três valores adiante', () => {
+    expect(alinhamentoDoRecado('left')).toBe('left')
+    expect(alinhamentoDoRecado('center')).toBe('center')
+    expect(alinhamentoDoRecado('right')).toBe('right')
+  })
+
+  it('sem campo nenhum cai no centro, e não no que o CSS herdar', () => {
+    /*
+     * As telas feitas ANTES deste controle existir não têm o campo, e foram
+     * escritas centralizadas. Deixar o `text-align` sem valor faria o CSS
+     * herdar o início da linha — e o recado que o operador deixou no meio
+     * amanheceria encostado na esquerda, na tela do apresentador, sem que
+     * ninguém tivesse mexido em nada.
+     */
+    expect(alinhamentoDoRecado(undefined)).toBe('center')
+  })
+
+  it('valor estranho também cai no centro', () => {
+    expect(alinhamentoDoRecado('meio' as never)).toBe('center')
   })
 })
 

@@ -141,6 +141,48 @@ const zero = await ev(
 check('ângulo 0 não vira o padrão', !zero.includes('135deg'), zero.slice(0, 50))
 await acao({ type: 'card/tela', cardId: tela.id, fundo: { angulo: 135 } })
 
+/* ------------------------------------------------- alinhamento do parágrafo */
+
+for (const lado of ['left', 'right', 'center']) {
+  await clicar(`[data-tela-alinhamento="${lado}"]`)
+  const como = await ev(
+    `getComputedStyle(document.querySelector('[data-tela-previa] [data-card-tela-recado]')).textAlign`
+  )
+  check(`alinhar ${lado} chega na prévia`, como === lado, como)
+}
+
+/* O bloco tem de ocupar a LARGURA toda: encolhido até o texto, alinhar à
+   esquerda ou à direita não move nada, e o controle pareceria quebrado. */
+const larguras = await ev(`(() => {
+  const el = document.querySelector('[data-tela-previa] [data-card-tela-recado]')
+  const pai = el.parentElement
+  return { bloco: el.getBoundingClientRect().width, dentro: pai.clientWidth - parseFloat(getComputedStyle(pai).paddingLeft) * 2 }
+})()`)
+check(
+  'o bloco do recado ocupa a largura toda',
+  Math.abs(larguras.bloco - larguras.dentro) < 2,
+  `${Math.round(larguras.bloco)} contra ${Math.round(larguras.dentro)}`
+)
+
+/* Uma tela feita ANTES deste controle existir não tem o campo. Ela foi escrita
+   centralizada, e não pode amanhecer encostada na esquerda. */
+await acao({
+  type: 'card/add',
+  card: {
+    id: 'tela-sem-campo',
+    kind: 'tela',
+    nome: 'Antiga',
+    fundo: { de: '#16253f' },
+    recado: { texto: 'ANTIGA', corpoPct: 11, cor: '#ffffff', posicao: 'meio' }
+  }
+})
+await wait(600)
+const antiga = await ev(
+  `getComputedStyle(document.querySelector('[data-card-tile="tela-sem-campo"] [data-card-tela-recado]')).textAlign`
+)
+check('tela sem o campo continua centralizada', antiga === 'center', antiga)
+await acao({ type: 'card/remove', cardId: 'tela-sem-campo' })
+
 // fecha o editor
 await ev(`document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`)
 await ev(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))`)

@@ -48,6 +48,9 @@ export type IconName =
   | 'clearFormat'
   | 'catch'
   | 'loop'
+  | 'alinharEsquerda'
+  | 'alinharCentro'
+  | 'alinharDireita'
 
 const PATHS: Record<IconName, string> = {
   volume: 'M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6',
@@ -161,6 +164,12 @@ const PATHS: Record<IconName, string> = {
    * torno de 12, e centra sozinho em qualquer escala da interface.
    */
   loop: 'M17 2l4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3',
+  /* Alinhamento de parágrafo: quatro linhas onde as curtas denunciam o lado
+     que está solto. A primeira e a terceira são cheias nos três, para o
+     desenho ser o MESMO menos a diferença que importa. */
+  alinharEsquerda: 'M4 6h16M4 11h9M4 16h16M4 21h9',
+  alinharCentro: 'M4 6h16M8 11h8M4 16h16M8 21h8',
+  alinharDireita: 'M4 6h16M11 11h9M4 16h16M11 21h9',
   /* Quem fala: cabeça e ombros, o desenho universal de "pessoa". Os ombros
      abertos, e não um círculo com um corpo colado, para o glifo continuar
      legível a 13px na barra da Edição. */

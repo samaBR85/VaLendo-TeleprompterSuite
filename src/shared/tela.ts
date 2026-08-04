@@ -18,6 +18,15 @@
 /** Onde o recado se apoia no quadro. */
 export type PosicaoDoRecado = 'topo' | 'meio' | 'pe'
 
+/**
+ * Alinhamento do parágrafo dentro do recado.
+ *
+ * Os mesmos três valores de `Appearance.align`, e de propósito: são os
+ * valores que o CSS entende em `text-align`, então não há tradução no meio
+ * do caminho onde errar, e os rótulos dos 6 idiomas já existem.
+ */
+export type AlinhamentoDoRecado = 'left' | 'center' | 'right'
+
 /** O que define o fundo de uma tela. */
 export interface FundoDeTela {
   /** cor de partida — sozinha, quando `ate` não existe */
@@ -37,6 +46,7 @@ export interface RecadoDeTela {
   corpoPct: number
   cor: string
   posicao: PosicaoDoRecado
+  alinhamento: AlinhamentoDoRecado
 }
 
 export const CORPO_MIN = 4
@@ -47,7 +57,7 @@ export const ANGULO_PADRAO = 135
 export function telaNova(): { fundo: FundoDeTela; recado: RecadoDeTela } {
   return {
     fundo: { de: '#16253f' },
-    recado: { texto: '', corpoPct: 11, cor: '#ffffff', posicao: 'meio' }
+    recado: { texto: '', corpoPct: 11, cor: '#ffffff', posicao: 'meio', alinhamento: 'center' }
   }
 }
 
@@ -84,6 +94,19 @@ export function apoioDoRecado(posicao: PosicaoDoRecado | undefined): 'flex-start
   if (posicao === 'topo') return 'flex-start'
   if (posicao === 'pe') return 'flex-end'
   return 'center'
+}
+
+/**
+ * O alinhamento do parágrafo, com o centro como padrão.
+ *
+ * O padrão não é enfeite: as telas criadas ANTES deste controle existir não
+ * têm o campo, e elas foram escritas centralizadas. Sem este `??` o CSS
+ * herdaria o alinhamento do início — e o recado que o operador deixou no
+ * meio amanheceria encostado na esquerda, na tela do apresentador, sem que
+ * ninguém tivesse mexido em nada.
+ */
+export function alinhamentoDoRecado(alinhamento: AlinhamentoDoRecado | undefined): AlinhamentoDoRecado {
+  return alinhamento === 'left' || alinhamento === 'right' ? alinhamento : 'center'
 }
 
 /**
