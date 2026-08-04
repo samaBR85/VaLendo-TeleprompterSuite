@@ -255,8 +255,6 @@ export const de: Dicionario = {
   'unsaved.discard': 'Neu erstellen ohne zu speichern',
   'unsaved.save': 'Speichern und neu erstellen',
 
-  'credits.about':
-    'Ein Teleprompter, bei dem das Skript bearbeitet wird, während die Sendung läuft. Die Leseposition ist ein Anker im Text, kein Pixel auf dem Bildschirm — deshalb bewegt Tippen, ein Schriftwechsel oder ein anderer Rand nie das Wort, das der Sprecher gerade liest.',
   'credits.builtWith': 'Gebaut mit',
   'credits.repo': 'Repository',
   'credits.idea': 'Idee',

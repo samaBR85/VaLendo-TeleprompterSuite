@@ -274,8 +274,6 @@ export const pt = {
   'unsaved.save': 'Salvar e criar novo',
 
   /* --------------------------------------------------------------- créditos */
-  'credits.about':
-    'Teleprompter em que o roteiro é editado com a transmissão no ar. A posição de leitura é uma âncora no texto, não um pixel na tela — por isso digitar, trocar a fonte ou mudar a margem não move a palavra que o apresentador está lendo.',
   'credits.builtWith': 'Construído com',
   'credits.repo': 'Repositório',
   'credits.idea': 'Idealização',

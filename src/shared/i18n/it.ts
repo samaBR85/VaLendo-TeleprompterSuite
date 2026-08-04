@@ -255,8 +255,6 @@ export const it: Dicionario = {
   'unsaved.discard': 'Crea nuovo senza salvare',
   'unsaved.save': 'Salva e crea nuovo',
 
-  'credits.about':
-    'Un teleprompter in cui il copione si modifica mentre la trasmissione è in onda. La posizione di lettura è un’ancora nel testo, non un pixel sullo schermo — per questo scrivere, cambiare carattere o margine non sposta mai la parola che il presentatore sta leggendo.',
   'credits.builtWith': 'Costruito con',
   'credits.repo': 'Repository',
   'credits.idea': 'Ideazione',

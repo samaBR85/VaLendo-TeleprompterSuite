@@ -255,8 +255,6 @@ export const es: Dicionario = {
   'unsaved.discard': 'Crear nuevo sin guardar',
   'unsaved.save': 'Guardar y crear nuevo',
 
-  'credits.about':
-    'Teleprompter en el que el guion se edita con la emisión al aire. La posición de lectura es un ancla en el texto, no un píxel en la pantalla — por eso escribir, cambiar la fuente o el margen no mueve la palabra que el presentador está leyendo.',
   'credits.builtWith': 'Construido con',
   'credits.repo': 'Repositorio',
   'credits.idea': 'Idea',

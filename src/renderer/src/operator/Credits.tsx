@@ -27,9 +27,12 @@ export function Credits({ onClose }: Props): React.JSX.Element {
           <span className="text-[11px] text-[var(--color-fog-2)]">{versionLabel()}</span>
         </div>
 
-        <p className="mt-4 text-[12px] leading-relaxed text-[var(--color-fog-1)]">
-          {t('credits.about')}
-        </p>
+        {/* Aqui morava um parágrafo explicando o que o app faz.
+            Saiu: quem abre o About já está DENTRO do app, e o subtítulo
+            "A Teleprompter Suite" logo acima do nome já responde a pergunta.
+            Texto de apresentação tem lugar — o site, o README —, e este não é
+            um deles. O que esta caixa responde é outra coisa: qual versão, do
+            que é feita, de quem é, e sob qual licença. */}
 
         <div className="mt-4 border-t border-[var(--color-line)]/60 pt-3">
           <div className="mb-2 text-[11px] font-medium text-[var(--color-fog-2)]">{t('credits.builtWith')}</div>

@@ -255,8 +255,6 @@ export const fr: Dicionario = {
   'unsaved.discard': 'Créer nouveau sans enregistrer',
   'unsaved.save': 'Enregistrer et créer nouveau',
 
-  'credits.about':
-    'Un téléprompteur où le texte s’édite pendant la diffusion. La position de lecture est une ancre dans le texte, pas un pixel à l’écran — c’est pourquoi taper, changer de police ou de marge ne déplace jamais le mot que le présentateur est en train de lire.',
   'credits.builtWith': 'Construit avec',
   'credits.repo': 'Dépôt',
   'credits.idea': 'Conception',

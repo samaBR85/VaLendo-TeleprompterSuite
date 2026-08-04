@@ -253,8 +253,6 @@ export const en: Dicionario = {
   'unsaved.discard': 'Create new without saving',
   'unsaved.save': 'Save and create new',
 
-  'credits.about':
-    'A teleprompter where the script is edited with the broadcast on air. The reading position is an anchor in the text, not a pixel on the screen — which is why typing, changing the font or the margin never moves the word the presenter is reading.',
   'credits.builtWith': 'Built with',
   'credits.repo': 'Repository',
   'credits.idea': 'Concept',
