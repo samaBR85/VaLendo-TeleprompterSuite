@@ -169,6 +169,22 @@ export interface Marker {
   label: string
 }
 
+/**
+ * Quem fala no roteiro desta aba, e de que cor.
+ *
+ * Mora na ABA, e não na aparência: aparência é como o texto se parece e viaja
+ * no "salvar como padrão" — apresentador é conteúdo, e HARI não pode nascer
+ * numa aba nova de outro programa. Viaja no `.valendo` junto com o roteiro,
+ * que é onde o nome dele está escrito.
+ */
+export interface Apresentador {
+  /** identidade própria: é ela que sobrevive ao RELINK quando o nome muda */
+  id: string
+  /** o texto que aparece sozinho numa linha do roteiro, como o operador escreveu */
+  nome: string
+  cor: string
+}
+
 export interface Tab {
   id: string
   title: string
@@ -176,6 +192,8 @@ export interface Tab {
   blocks: Block[]
   appearance: Appearance
   markers: Marker[]
+  /** quem fala este roteiro — vazio no caso comum, de uma pessoa só */
+  apresentadores: Apresentador[]
   anchor: Anchor | null
   /**
    * Último arquivo em que esta aba foi salva.

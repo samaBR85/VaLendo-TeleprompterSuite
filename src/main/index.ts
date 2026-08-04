@@ -142,6 +142,7 @@ function syncWebview(state: AppState): void {
     cardOverlay: state.cardOverlay,
     som: state.webview.som,
     blocks: tab.blocks,
+    apresentadores: tab.apresentadores,
     appearance: tab.appearance,
     transport: state.transport,
     rows: store.activeRows(),

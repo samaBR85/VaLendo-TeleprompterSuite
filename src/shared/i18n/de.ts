@@ -120,6 +120,13 @@ export const de: Dicionario = {
   'insp.alignCenter': 'Zentriert',
   'insp.alignRight': 'Rechts',
 
+  'editor.presenter': 'Auswahl zum Sprecher machen',
+  'insp.presenters': 'Sprecher',
+  'insp.presenterColor': 'Farbe von {nome}',
+  'insp.presenterOrphan': 'Dieser Name steht nicht mehr im Skript. Neuen Namen im Editor markieren und RELINK benutzen.',
+  'insp.presenterRelink': 'Auf die Auswahl im Editor neu setzen',
+  'insp.presenterRelink.key': 'RELINK',
+  'insp.presenterRemove': 'Sprecher entfernen',
   'insp.colors': 'Farben',
   'insp.textColor': 'Text',
   'insp.bgColor': 'Hintergrund',

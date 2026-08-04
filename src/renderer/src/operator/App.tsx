@@ -430,6 +430,10 @@ function AppConteudo({
    * ficariam se perseguindo. Ligar um desliga o outro, na função abaixo.
    */
   const [seguirLeitura, setSeguirLeitura] = useState(false)
+  /* há nome selecionado no editor? é só o que decide se o botão de
+     apresentador está clicável — um botão que não pode fazer nada é pior que
+     um apagado, porque ensina que o recurso não funciona */
+  const [textoSelecionado, setTextoSelecionado] = useState(false)
   /**
    * Há digitação ainda dentro do respiro de 140ms do editor.
    *
@@ -583,6 +587,7 @@ function AppConteudo({
    * o mesmo respiro que o próprio texto já usa antes de mandar para o main.
    */
   const onCaretMove = useCallback(() => {
+    setTextoSelecionado((editorRef.current?.selecao() ?? '') !== '')
     if (!catchAtivo) return
     if (catchTimer.current) clearTimeout(catchTimer.current)
     catchTimer.current = setTimeout(goToCaret, 220)
@@ -613,6 +618,36 @@ function AppConteudo({
       return !ligado
     })
   }, [])
+
+  /**
+   * Registra como apresentador o nome que está selecionado no editor.
+   *
+   * Não escreve nada no roteiro: o nome já está lá, digitado por quem escreveu
+   * o texto. O que nasce aqui é só o casamento entre aquele texto e uma cor —
+   * por isso um `.txt` da redação vira roteiro de dois apresentadores sem uma
+   * edição sequer.
+   */
+  /**
+   * RELINK: reaponta um apresentador para o nome agora selecionado no editor.
+   *
+   * Mesmo id, mesma cor — só o nome muda. Corrigir "HARI" para "HARI OLIVEIRA"
+   * no roteiro deixa de custar remover o chip e criar outro, o que perderia a
+   * cor que já estava escolhida.
+   */
+  const reapontarApresentador = useCallback(
+    (presenterId: string) => {
+      const nome = editorRef.current?.selecao() ?? ''
+      if (!nome || !state) return
+      dispatch({ type: 'presenter/rename', tabId: activeTabOf(state).id, presenterId, nome })
+    },
+    [state, dispatch]
+  )
+
+  const criarApresentador = useCallback(() => {
+    const nome = editorRef.current?.selecao() ?? ''
+    if (!nome || !state) return
+    dispatch({ type: 'presenter/add', tabId: activeTabOf(state).id, nome })
+  }, [state, dispatch])
 
   /**
    * O "Go To" da Transmissão: traz o editor até onde a leitura está, uma vez.
@@ -821,6 +856,17 @@ function AppConteudo({
           digita e quem lê no vidro não precisam da mesma caixa. Ligá-los ao
           mesmo booleano seria um interruptor com duas alavancas.
           Pintura nos dois casos — o texto guardado não muda uma letra */}
+      {/* Quem fala: transforma o nome SELECIONADO no roteiro em apresentador.
+          Fica com as ferramentas que marcam o texto (capítulo, direção), e
+          não com as de aparência — registrar quem fala é estrutura do
+          roteiro, mesmo que o efeito visível seja uma cor. */}
+      <EditorTool
+        ajudaId="editor.presenter"
+        icon="presenter"
+        label={t('editor.presenter')}
+        disabled={!textoSelecionado}
+        onClick={criarApresentador}
+      />
       <EditorTool
         ajudaId="editor.allCaps"
         texto="AA"
@@ -857,6 +903,7 @@ function AppConteudo({
     <PrompterStage
       cardVolume={state.maquina.cardVolume}
       blocks={tab.blocks}
+      apresentadores={tab.apresentadores}
       appearance={tab.appearance}
       transport={state.transport}
       viewport={viewport}
@@ -1198,6 +1245,7 @@ function AppConteudo({
                 <Editor
                   ref={editorRef}
                   tab={tab}
+                  apresentadores={tab.apresentadores}
                   fontSize={editorFontSize}
                   allCaps={state.maquina.editorAllCaps}
                   dispatch={dispatch}
@@ -1431,6 +1479,7 @@ function AppConteudo({
               metrics={metrics}
               customDefaults={state.customDefaults}
               maquina={state.maquina}
+              onRelink={reapontarApresentador}
               dispatch={dispatch}
             />
           ) : null}

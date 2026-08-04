@@ -44,6 +44,7 @@ export function Broadcast(): React.JSX.Element {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <PrompterCanvas
+        apresentadores={tab.apresentadores}
         blocks={tab.blocks}
         appearance={tab.appearance}
         transport={state.transport}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { FONT_OPTIONS } from '@shared/defaults'
 import {
@@ -10,6 +10,7 @@ import {
 } from '@shared/pacing'
 import {
   TIMER_POSITIONS,
+  type Apresentador,
   type AbaDosAjustes,
   type Appearance,
   type ColorPreset,
@@ -18,11 +19,85 @@ import {
 } from '@shared/types'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import type { AjudaId } from '@shared/ajuda'
+import { linhasCandidatas, temParNoRoteiro } from '@shared/apresentadores'
 import { larguraDoPainel } from '@shared/i18n'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
 import { Icon } from '../ui/Icon'
 import { Ficha, SliderConsole, Tecla } from '../ui/console'
+
+/**
+ * O chip de um apresentador: a cor que ele pinta, o nome como está no roteiro,
+ * e o que fazer quando o par se perde.
+ *
+ * O seletor de cor é o próprio `input[type=color]` do sistema — o mesmo que já
+ * escolhe texto e fundo logo acima. Inventar uma paleta própria aqui daria
+ * duas gramáticas de cor no mesmo painel.
+ */
+function ChipDeApresentador({
+  quem,
+  orfao,
+  onCor,
+  onRelink,
+  onRemover
+}: {
+  quem: Apresentador
+  orfao: boolean
+  onCor: (cor: string) => void
+  onRelink?: () => void
+  onRemover: () => void
+}): React.JSX.Element {
+  const { t } = useT()
+  return (
+    <div
+      data-apresentador-chip={quem.id}
+      className="flex items-center gap-1.5 rounded-md border px-1.5 py-1"
+      style={{
+        borderColor: orfao ? 'var(--color-warn)' : 'var(--color-edge)',
+        background: orfao ? 'color-mix(in srgb, var(--color-warn) 10%, transparent)' : '#212126'
+      }}
+    >
+      <input
+        type="color"
+        value={quem.cor}
+        aria-label={t('insp.presenterColor', { nome: quem.nome })}
+        onChange={(event) => onCor(event.target.value)}
+        className="h-5 w-5 flex-none"
+      />
+      <span className="min-w-0 flex-1 truncate text-[11px]" style={{ color: orfao ? 'var(--color-warn)' : quem.cor }}>
+        {quem.nome}
+      </span>
+      {orfao ? (
+        <>
+          <span className="flex-none text-[9px] text-[var(--color-warn)]" title={t('insp.presenterOrphan')}>
+            <Icon name="alert" size={11} />
+          </span>
+          {/* RELINK: aponta o MESMO apresentador para o nome agora selecionado
+              no editor. Mantém id e cor, então tudo que já estava pintado
+              continua pintado — corrigir "HARI" para "HARI OLIVEIRA" no
+              roteiro deixa de custar remover e criar de novo. */}
+          <Ficha
+            {...ajuda('insp.presenterRelink')}
+            disabled={!onRelink}
+            onClick={onRelink}
+            className="flex-none px-1.5 py-0.5 text-[9px] font-bold tracking-[0.04em] disabled:opacity-30"
+          >
+            {t('insp.presenterRelink.key')}
+          </Ficha>
+        </>
+      ) : null}
+      <button
+        type="button"
+        {...ajuda('insp.presenterRemove')}
+        aria-label={t('insp.presenterRemove')}
+        onClick={onRemover}
+        className="flex-none rounded p-0.5 text-[var(--color-fog-3)] hover:bg-[var(--color-live)]/12 hover:text-[var(--color-live)]"
+      >
+        <Icon name="close" size={10} />
+      </button>
+    </div>
+  )
+}
 
 interface Props {
   tab: Tab
@@ -32,6 +107,13 @@ interface Props {
   customDefaults: boolean
   /** conforto desta máquina: em qual aba o painel reabre */
   maquina: PreferenciasDaMaquina
+  /**
+   * Reaponta um apresentador para o nome selecionado no editor.
+   *
+   * Vem de fora porque quem sabe o que está selecionado é o editor, e ele mora
+   * do outro lado da janela — o painel só sabe qual chip foi clicado.
+   */
+  onRelink?: (presenterId: string) => void
   dispatch: (action: Action) => void
 }
 
@@ -260,9 +342,20 @@ function Toggle({
   )
 }
 
-export function Inspector({ tab, presets, metrics, customDefaults, maquina, dispatch }: Props): React.JSX.Element {
+export function Inspector({
+  tab,
+  presets,
+  metrics,
+  customDefaults,
+  maquina,
+  onRelink,
+  dispatch
+}: Props): React.JSX.Element {
   const { t, lang } = useT()
   const a = tab.appearance
+  /* as linhas que PODEM ser deixa, para saber se cada chip ainda tem par no
+     roteiro. Recalcula com o texto, que é o que muda o par */
+  const candidatas = useMemo(() => linhasCandidatas(tab.blocks), [tab.blocks])
   const patch = (value: Partial<Appearance>): void =>
     dispatch({ type: 'appearance/patch', tabId: tab.id, patch: value })
 
@@ -483,6 +576,26 @@ export function Inspector({ tab, presets, metrics, customDefaults, maquina, disp
           {t('insp.invert')}
         </Ficha>
       </Group>
+
+      {/* Quem fala, abaixo das cores — é a mesma decisão: de que cor o texto
+          sai na tela. Só aparece depois que existe alguém: um grupo vazio
+          seria uma seção pedindo para ser preenchida sem dizer como. */}
+      {tab.apresentadores.length > 0 ? (
+        <Group label={t('insp.presenters')}>
+          {tab.apresentadores.map((quem) => (
+            <ChipDeApresentador
+              key={quem.id}
+              quem={quem}
+              /* o par se perde quando o nome muda no roteiro — é o chip que
+                 acusa, senão a cor sumiria sem explicação */
+              orfao={!temParNoRoteiro(candidatas, quem)}
+              onCor={(cor) => dispatch({ type: 'presenter/color', tabId: tab.id, presenterId: quem.id, cor })}
+              onRelink={onRelink ? () => onRelink(quem.id) : undefined}
+              onRemover={() => dispatch({ type: 'presenter/remove', tabId: tab.id, presenterId: quem.id })}
+            />
+          ))}
+        </Group>
+      ) : null}
         </>
       ) : null}
 

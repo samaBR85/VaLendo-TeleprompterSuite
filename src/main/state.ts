@@ -6,6 +6,7 @@ import {
   totalWords,
   wordIndexFromAnchor
 } from '@shared/anchor'
+import { chaveDoNome, proximaCor } from '@shared/apresentadores'
 import { cartaoNoAr } from '@shared/cards'
 import { COMMANDS_BY_ID } from '@shared/commands'
 import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
@@ -759,6 +760,51 @@ export class Store {
       case 'marker/remove':
         this.mutateTab(action.tabId, `marcador:remover:${action.markerId}`, (draft) => {
           draft.markers = draft.markers.filter((m) => m.id !== action.markerId)
+        })
+        break
+
+      /*
+       * Os quatro casos de apresentador.
+       *
+       * Nenhum deles toca no TEXTO do roteiro — só na lista de quem fala. É o
+       * que permite registrar um apresentador num .txt vindo da redação sem
+       * alterar uma letra do que veio, e desfazer sem deixar rastro.
+       */
+      case 'presenter/add':
+        this.mutateTab(action.tabId, `apresentador:criar:${action.nome}`, (draft) => {
+          const nome = action.nome.trim()
+          if (nome === '') return
+          // já registrado (ignorando a caixa) não vira um segundo chip: seriam
+          // dois donos para a mesma deixa, e o primeiro da lista venceria sem
+          // que o operador entendesse por quê
+          if (draft.apresentadores.some((a) => chaveDoNome(a.nome) === chaveDoNome(nome))) return
+          draft.apresentadores.push({
+            id: `p${Date.now().toString(36)}${draft.apresentadores.length.toString(36)}`,
+            nome,
+            cor: proximaCor(draft.apresentadores.map((a) => a.cor))
+          })
+        })
+        break
+
+      case 'presenter/rename':
+        this.mutateTab(action.tabId, `apresentador:renomear:${action.presenterId}`, (draft) => {
+          const alvo = draft.apresentadores.find((a) => a.id === action.presenterId)
+          const nome = action.nome.trim()
+          if (!alvo || nome === '') return
+          alvo.nome = nome
+        })
+        break
+
+      case 'presenter/color':
+        this.mutateTab(action.tabId, `apresentador:cor:${action.presenterId}`, (draft) => {
+          const alvo = draft.apresentadores.find((a) => a.id === action.presenterId)
+          if (alvo) alvo.cor = action.cor
+        })
+        break
+
+      case 'presenter/remove':
+        this.mutateTab(action.tabId, `apresentador:remover:${action.presenterId}`, (draft) => {
+          draft.apresentadores = draft.apresentadores.filter((a) => a.id !== action.presenterId)
         })
         break
 

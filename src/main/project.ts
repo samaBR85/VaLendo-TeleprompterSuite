@@ -105,7 +105,14 @@ export async function openProject(filePath: string): Promise<{ state: AppState |
       // interruptor foi feito quando o áudio sempre saía pela rede, então
       // ligado é o que preserva o que aquele programa fazia
       webview: { ...state.webview, som: state.webview?.som ?? true },
-      tabs: state.tabs.map((tab) => ({ ...tab, appearance: mergeAppearance(tab.appearance) }))
+      // aba salva antes desta ferramenta não tem quem fala — e a lista ausente
+      // não pode chegar como `undefined`, ou toda leitura de `apresentadores`
+      // teria de se defender sozinha
+      tabs: state.tabs.map((tab) => ({
+        ...tab,
+        appearance: mergeAppearance(tab.appearance),
+        apresentadores: tab.apresentadores ?? []
+      }))
     },
     error: null
   }

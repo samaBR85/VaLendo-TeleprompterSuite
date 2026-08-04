@@ -502,6 +502,7 @@ export function Webview(): React.JSX.Element {
         }}
       >
         <PrompterCanvas
+          apresentadores={quadro.apresentadores}
           blocks={quadro.blocks}
           appearance={quadro.appearance}
           transport={transport}

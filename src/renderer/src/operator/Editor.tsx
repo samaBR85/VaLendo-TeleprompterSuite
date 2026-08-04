@@ -1,10 +1,11 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { insertBlock, type InsertKind } from '@shared/insertBlock'
+import { coresDasLinhas, ehDeixa, type LinhaPintavel } from '@shared/apresentadores'
 import { blocksFromText, caretFromAnchor, serializeBlocks, stripFormatting } from '@shared/text'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
-import type { Anchor, Tab } from '@shared/types'
+import type { Anchor, Apresentador, BlockKind, Tab } from '@shared/types'
 
 const TYPE_SETTINGS: React.CSSProperties = {
   margin: 0,
@@ -80,6 +81,8 @@ interface Props {
    * "Go To" automático. Sem ouvinte, não custa nada além do evento em si.
    */
   onCaretMove?: () => void
+  /** quem fala este roteiro — pinta o editor com a mesma regra da transmissão */
+  apresentadores: Apresentador[]
   /**
    * Há texto digitado que ainda não chegou ao main (o respiro de 140ms).
    *
@@ -112,6 +115,14 @@ export interface EditorHandle {
   removerFormatacao: () => void
   /** o texto atual do rascunho e onde o cursor está nele — para o "Go To". */
   caret: () => { text: string; position: number }
+  /**
+   * O que está selecionado agora, sem espaço nas pontas — vazio se nada.
+   *
+   * É por aqui que nasce um apresentador: o operador seleciona o nome que já
+   * está escrito no roteiro e clica no botão. Nada é digitado duas vezes, e o
+   * texto do roteiro não muda uma letra.
+   */
+  selecao: () => string
 }
 
 /**
@@ -123,7 +134,7 @@ export interface EditorHandle {
  * `pre` colorido dá as duas coisas.
  */
 export const Editor = forwardRef<EditorHandle, Props>(function Editor(
-  { tab, fontSize, dispatch, onCaretMove, onPendenteChange, allCaps },
+  { tab, fontSize, apresentadores, dispatch, onCaretMove, onPendenteChange, allCaps },
   ref
 ) {
   const { t } = useT()
@@ -312,6 +323,12 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     [draft]
   )
 
+  const selecao = useCallback((): string => {
+    const area = areaRef.current
+    if (!area) return ''
+    return draft.slice(area.selectionStart, area.selectionEnd).trim()
+  }, [draft])
+
   /**
    * Mostra no editor a palavra que a transmissão está lendo — o caminho de
    * volta do "Go To".
@@ -382,8 +399,8 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
 
   useImperativeHandle(
     ref,
-    () => ({ flush, insert, removerFormatacao, caret, mostrarAncora, limparMarca: () => setMarca(null) }),
-    [flush, insert, removerFormatacao, caret, mostrarAncora]
+    () => ({ flush, insert, removerFormatacao, caret, selecao, mostrarAncora, limparMarca: () => setMarca(null) }),
+    [flush, insert, removerFormatacao, caret, selecao, mostrarAncora]
   )
 
   const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
@@ -394,15 +411,39 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
 
   const highlighted = useMemo(() => {
     const lines = draft.split('\n')
+
+    /*
+     * Quem fala, também no editor.
+     *
+     * A MESMA função da transmissão (`coresDasLinhas`), alimentada com as
+     * linhas do editor em vez das compostas — é o que garante que a cor vista
+     * digitando é a cor que o apresentador vai ler. Duas implementações
+     * divergiriam no primeiro ajuste, e o editor viraria prévia mentirosa.
+     *
+     * A classificação repete as regexes daqui de baixo porque aqui ainda não
+     * há blocos: o rascunho pode estar 140ms à frente do que o main conhece.
+     */
+    const pintaveis: LinhaPintavel[] = lines.map((line) => {
+      const t = line.trim()
+      const kind: BlockKind = /^\[[\s\S]*\]$/.test(t)
+        ? 'direction'
+        : /^#{1,6}\s+/.test(t)
+          ? 'chapter'
+          : 'speech'
+      return { kind, text: line }
+    })
+    const deQuemFala = coresDasLinhas(pintaveis, apresentadores)
+
     return lines.map((line, index) => {
       const trimmed = line.trim()
       const isDirection = /^\[[\s\S]*\]$/.test(trimmed)
       const isChapter = /^#{1,6}\s+/.test(trimmed)
+      const deixa = ehDeixa(pintaveis[index], apresentadores)
       const color = isDirection
         ? 'var(--color-link)'
         : isChapter
           ? 'var(--color-warn)'
-          : 'var(--color-fog-0)'
+          : (deixa?.cor ?? deQuemFala[index] ?? 'var(--color-fog-0)')
       /*
        * Direção ganha fundo — mas só pintura.
        *
@@ -419,7 +460,11 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
        */
       const realce = isDirection
         ? { background: 'color-mix(in srgb, var(--color-link) 9%, transparent)' }
-        : undefined
+        : /* o nome de quem fala vem em negrito: é a deixa, e precisa se
+             distinguir da fala que ela abre — as duas estão na mesma cor */
+          deixa
+          ? { fontWeight: 700 }
+          : undefined
       return (
         <span key={index} style={{ color, ...realce }}>
           {line}
@@ -427,7 +472,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
         </span>
       )
     })
-  }, [draft])
+  }, [draft, apresentadores])
 
   // `scrollbar-gutter: stable` nos dois: sem isso, um roteiro comprido o
   // bastante para precisar de rolagem reserva os 13px da barra só no textarea
@@ -489,7 +534,15 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
         value={draft}
         onChange={onChange}
         onBlur={() => push(draft, 0)}
+        /* Três portas para o mesmo aviso, e não é excesso.
+           `onSelect` do React é sintetizado, não é o evento nativo: ele não
+           dispara em toda forma de mexer na seleção. Quem depende dele para
+           saber se há texto selecionado — o botão de apresentador — ficava
+           apagado com o nome selecionado na frente do operador. Mouse e
+           teclado soltos cobrem o resto. */
         onSelect={onCaretMove}
+        onMouseUp={onCaretMove}
+        onKeyUp={onCaretMove}
         onScroll={() => {
           if (preRef.current && areaRef.current) preRef.current.scrollTop = areaRef.current.scrollTop
           // só custa um render quando há marca para reposicionar; desligado, a

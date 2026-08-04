@@ -140,6 +140,7 @@ export function Deck({
           />
           <PrompterStage
             blocks={tab.blocks}
+            apresentadores={tab.apresentadores}
             appearance={tab.appearance}
             transport={transport}
             viewport={viewport}

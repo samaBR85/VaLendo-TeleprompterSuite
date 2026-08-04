@@ -120,6 +120,13 @@ export const fr: Dicionario = {
   'insp.alignCenter': 'Centré',
   'insp.alignRight': 'Droite',
 
+  'editor.presenter': 'Faire de la sélection un présentateur',
+  'insp.presenters': 'Présentateurs',
+  'insp.presenterColor': 'Couleur de {nome}',
+  'insp.presenterOrphan': 'Ce nom n’est plus dans le texte. Sélectionnez le nouveau nom dans l’éditeur et utilisez RELINK.',
+  'insp.presenterRelink': 'Repointer vers la sélection de l’éditeur',
+  'insp.presenterRelink.key': 'RELINK',
+  'insp.presenterRemove': 'Retirer le présentateur',
   'insp.colors': 'Couleurs',
   'insp.textColor': 'Texte',
   'insp.bgColor': 'Fond',

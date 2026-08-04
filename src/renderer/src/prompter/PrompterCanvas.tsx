@@ -1,10 +1,12 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { anchorFromWordIndex, composeLines, pixelFromAnchor, totalWords, type Layout } from '@shared/anchor'
+import { coresDasLinhas, ehDeixa } from '@shared/apresentadores'
 import { canvasBox, stageSize } from '@shared/output'
 import { relogioIndependenteReading, stopwatchReading, timerReading, wordIndexAt } from '@shared/pacing'
 import { chapterTitle } from '@shared/text'
 import {
   timerCell,
+  type Apresentador,
   type Appearance,
   type Block,
   type Cartao,
@@ -53,6 +55,14 @@ export interface PrompterMetrics {
 
 interface Props {
   blocks: Block[]
+  /**
+   * Quem fala este roteiro, e de que cor.
+   *
+   * Opcional porque as três superfícies que este componente desenha recebem o
+   * mesmo desenho de props, e um roteiro de uma pessoa só — o caso comum —
+   * simplesmente não tem lista. Ausente, nada muda de cor.
+   */
+  apresentadores?: Apresentador[]
   appearance: Appearance
   transport: Transport
   /** tamanho lógico da saída, em pixels reais do monitor de destino */
@@ -283,6 +293,7 @@ export function VideoCartao({
  */
 export function PrompterCanvas({
   blocks,
+  apresentadores,
   appearance,
   transport,
   viewport,
@@ -317,6 +328,19 @@ export function PrompterCanvas({
     () => composeLines(blocks, appearance, rows),
     [blocks, appearance.minWords, appearance.maxWords, appearance.uniformSpeed, rows]
   )
+
+  /* a cor de cada linha e quais delas são deixa: um passo puro sobre as
+     mesmas linhas compostas, então prévia, transmissão e página da rede
+     recebem exatamente a mesma pintura sem nenhuma delas repetir a regra */
+  const coresDeQuemFala = useMemo(
+    () => coresDasLinhas(lines, apresentadores ?? []),
+    [lines, apresentadores]
+  )
+  const deixas = useMemo(
+    () => lines.map((l) => ehDeixa(l, apresentadores ?? [])),
+    [lines, apresentadores]
+  )
+
 
   /** Mede o DOM depois do layout. A composição das linhas não muda aqui — só a geometria. */
   useLayoutEffect(() => {
@@ -578,6 +602,7 @@ export function PrompterCanvas({
               <div
                 key={`${line.blockId}-${index}`}
                 data-line
+                data-apresentador={coresDeQuemFala[index] ?? undefined}
                 style={
                   line.kind === 'direction'
                     ? { color: appearance.directionColor, fontStyle: 'italic', opacity: 0.9 }
@@ -587,7 +612,14 @@ export function PrompterCanvas({
                         // comum, senão o peso em palavras atribuído a ela (em
                         // anchor.ts) some de proporção e a rolagem trava aqui
                         { letterSpacing: '0.2em', opacity: 0.6, textTransform: 'uppercase' }
-                      : undefined
+                      : /* a cor de quem fala, quando há alguém: só a FALA muda
+                           de cor — a linha do nome é tratada logo abaixo, e
+                           capítulo e direção mantêm as suas, que são do sistema */
+                        deixas[index]
+                        ? { color: deixas[index]?.cor, opacity: 0.75, letterSpacing: '0.08em' }
+                        : coresDeQuemFala[index]
+                          ? { color: coresDeQuemFala[index] ?? undefined }
+                          : undefined
                 }
               >
                 {line.spacer

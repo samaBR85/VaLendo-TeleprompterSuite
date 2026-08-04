@@ -1,6 +1,15 @@
 import type { Action, HistoryInfo } from './actions'
 import type { Lang } from './i18n/types'
-import type { Appearance, AppState, Block, Cartao, CardOverlayStyle, DisplayInfo, Transport } from './types'
+import type {
+  Apresentador,
+  Appearance,
+  AppState,
+  Block,
+  Cartao,
+  CardOverlayStyle,
+  DisplayInfo,
+  Transport
+} from './types'
 
 /** Um projeto que já passou por aqui — o suficiente para reconhecer e reabrir. */
 export interface ProjetoRecente {
@@ -122,6 +131,8 @@ export interface WebviewFrame {
    */
   som: boolean
   blocks: Block[]
+  /** quem fala — para o celular pintar as falas com a mesma cor da mesa */
+  apresentadores: Apresentador[]
   appearance: Appearance
   transport: Transport
   rows: number[]

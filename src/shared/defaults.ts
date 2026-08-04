@@ -211,6 +211,8 @@ export function createTab(
     // com o padrão, ou mexer numa mexeria na outra
     appearance: { ...appearance, timers: { ...appearance.timers } },
     markers: [],
+    // vazio é o caso comum: um apresentador só, sem nome escrito no roteiro
+    apresentadores: [],
     anchor: blocks.length > 0 ? { blockId: blocks[0].id, wordOffset: 0 } : null,
     rev: 1
   }

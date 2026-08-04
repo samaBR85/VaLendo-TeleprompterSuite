@@ -133,6 +133,13 @@ export const pt = {
   'insp.alignCenter': 'Centro',
   'insp.alignRight': 'Direita',
 
+  'editor.presenter': 'Tornar a seleção um apresentador',
+  'insp.presenters': 'Apresentadores',
+  'insp.presenterColor': 'Cor de {nome}',
+  'insp.presenterOrphan': 'Este nome não está mais no roteiro. Selecione o nome novo no editor e use RELINK.',
+  'insp.presenterRelink': 'Reapontar para a seleção do editor',
+  'insp.presenterRelink.key': 'RELINK',
+  'insp.presenterRemove': 'Remover apresentador',
   'insp.colors': 'Cores',
   'insp.textColor': 'Texto',
   'insp.bgColor': 'Fundo',

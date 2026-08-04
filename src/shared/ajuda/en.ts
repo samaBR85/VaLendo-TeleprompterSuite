@@ -257,6 +257,10 @@ export const ajudaEn = {
     texto: 'Turns chapters and directions back into plain text. The words stay; undo brings the marks back.',
     comando: 'edit.clearFormat'
   },
+  'editor.presenter': {
+    nome: 'Make a presenter',
+    texto: 'Select a name already written in the script and click: from there down, that person speaks — until the next name. Nothing is written into your text.'
+  },
   'editor.allCaps': {
     nome: 'Caps in the editor',
     texto: 'Draws the editor in capitals without changing a single stored letter. Independent from the same switch in Settings › Text.'
@@ -505,6 +509,14 @@ export const ajudaEn = {
   'insp.invert': {
     nome: 'Invert',
     texto: 'Swaps text and background colours — light on dark becomes dark on light, in one click.'
+  },
+  'insp.presenterRelink': {
+    nome: 'Relink presenter',
+    texto: 'The name changed in the script. Select the new one in the editor and click: same presenter, same colour, new name — nothing already painted is lost.'
+  },
+  'insp.presenterRemove': {
+    nome: 'Remove presenter',
+    texto: 'Drops this presenter. The words stay exactly as they are — only the colour goes.'
   },
   'insp.position': {
     nome: 'Horizontal position',

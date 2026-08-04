@@ -95,6 +95,14 @@ export type Action =
   | { type: 'maquina/patch'; patch: Partial<PreferenciasDaMaquina> }
   | { type: 'marker/add'; tabId: string; blockId: string; label: string }
   | { type: 'marker/remove'; tabId: string; markerId: string }
+  /* Apresentadores: quem fala o roteiro desta aba, e de que cor.
+     `nome` é o texto como está escrito no roteiro — é o casamento com ele que
+     decide onde a cor começa. O RELINK é `presenter/rename`: mesmo id, mesma
+     cor, nome novo, para o operador não perder a cor ao corrigir o roteiro. */
+  | { type: 'presenter/add'; tabId: string; nome: string }
+  | { type: 'presenter/rename'; tabId: string; presenterId: string; nome: string }
+  | { type: 'presenter/color'; tabId: string; presenterId: string; cor: string }
+  | { type: 'presenter/remove'; tabId: string; presenterId: string }
   | { type: 'tab/add' }
   | { type: 'tab/close'; tabId: string }
   | { type: 'tab/activate'; tabId: string }

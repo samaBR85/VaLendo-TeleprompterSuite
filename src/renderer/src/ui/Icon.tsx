@@ -1,6 +1,7 @@
 export type IconName =
   | 'play'
   | 'goTo'
+  | 'presenter'
   | 'pause'
   | 'restart'
   | 'up'
@@ -159,7 +160,11 @@ const PATHS: Record<IconName, string> = {
    * SVG. Como ícone, o desenho ocupa o `viewBox` de 2 a 22, simétrico em
    * torno de 12, e centra sozinho em qualquer escala da interface.
    */
-  loop: 'M17 2l4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3'
+  loop: 'M17 2l4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3',
+  /* Quem fala: cabeça e ombros, o desenho universal de "pessoa". Os ombros
+     abertos, e não um círculo com um corpo colado, para o glifo continuar
+     legível a 13px na barra da Edição. */
+  presenter: 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M4 21a8 8 0 0 1 16 0'
 }
 
 interface Props {

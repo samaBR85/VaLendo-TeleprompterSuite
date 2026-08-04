@@ -120,6 +120,13 @@ export const it: Dicionario = {
   'insp.alignCenter': 'Centrato',
   'insp.alignRight': 'Destra',
 
+  'editor.presenter': 'Rendi la selezione un presentatore',
+  'insp.presenters': 'Presentatori',
+  'insp.presenterColor': 'Colore di {nome}',
+  'insp.presenterOrphan': 'Questo nome non è più nel copione. Seleziona il nome nuovo nell’editor e usa RELINK.',
+  'insp.presenterRelink': 'Ripunta alla selezione dell’editor',
+  'insp.presenterRelink.key': 'RELINK',
+  'insp.presenterRemove': 'Rimuovi presentatore',
   'insp.colors': 'Colori',
   'insp.textColor': 'Testo',
   'insp.bgColor': 'Sfondo',
