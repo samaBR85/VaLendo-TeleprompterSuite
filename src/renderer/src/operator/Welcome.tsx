@@ -29,6 +29,31 @@ interface Props {
 }
 
 /**
+ * "Bem-vindo ao Valendo" com o nome vestido de marca: `Va` verde, `lendo`
+ * branco — o mesmo desenho do cabeçalho e do ícone.
+ *
+ * O nome viaja como `{marca}` DENTRO da frase traduzida, e não colado no fim
+ * dela, porque a posição muda por idioma: "Willkommen bei Valendo",
+ * "Bienvenue dans Valendo", "Benvenuto in Valendo". Quebrar a frase em duas
+ * chaves obrigaria cada tradutor a acertar a costura; um marcador no meio
+ * deixa a frase inteira, e quem traduz só o move.
+ *
+ * `t()` sem valores devolve o `{marca}` intacto — é isso que permite partir a
+ * frase aqui em vez de substituir por texto.
+ */
+function tituloComMarca(frase: string): React.JSX.Element {
+  const [antes, depois = ''] = frase.split('{marca}')
+  return (
+    <>
+      {antes}
+      <span style={{ color: 'var(--color-go)' }}>Va</span>
+      <span>lendo</span>
+      {depois}
+    </>
+  )
+}
+
+/**
  * As boas-vindas de toda abertura.
  *
  * Aparecem SEMPRE, e não só na estreia, porque o app deixou de restaurar o
@@ -84,38 +109,19 @@ export function Welcome({
       >
         <div className="px-[26px] pt-[24px] pb-[20px]">
           <div className="text-[30px] leading-none font-semibold tracking-[-0.02em] text-[var(--color-fog-0)]">
-            {t('welcome.title')}
+            {tituloComMarca(t('welcome.title'))}
           </div>
-          <div className="mt-[9px] text-[14.5px] leading-relaxed text-[var(--color-fog-1)]">
+          {/* Uma pergunta, e não mais a explicação do que o app é.
+              Quem chegou até esta tela já abriu o Valendo — o que ele ainda não
+              decidiu é por onde começar HOJE, e é isso que a lista logo abaixo
+              responde. */}
+          <div className="mt-[11px] text-[16px] leading-snug text-[var(--color-fog-1)]">
             {t('welcome.subtitle')}
-          </div>
-
-          <div className="mt-[22px] text-[10.5px] font-semibold tracking-[0.14em] text-[var(--color-fog-2)] uppercase">
-            {t('welcome.language')}
-          </div>
-          {/* cada idioma escrito no próprio idioma: quem não lê o daqui precisa se achar */}
-          <div className="mt-[9px] flex flex-wrap gap-[7px]">
-            {LANGS.map((idioma) => (
-              <button
-                key={idioma.id}
-                type="button"
-                data-welcome-lang={idioma.id}
-                aria-pressed={idioma.id === lang}
-                onClick={() => onLang(idioma.id)}
-                className={
-                  idioma.id === lang
-                    ? 'rounded-md border border-[var(--color-accent)] bg-[var(--color-accent)]/16 px-[12px] py-[7px] text-[13.5px] font-medium text-[var(--color-fog-0)]'
-                    : 'rounded-md border border-[var(--color-line)] px-[12px] py-[7px] text-[13.5px] text-[var(--color-fog-1)] hover:border-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]'
-                }
-              >
-                {idioma.nome}
-              </button>
-            ))}
           </div>
 
           {recentes.length > 0 ? (
             <>
-              <div className="mt-[20px] flex items-baseline justify-between">
+              <div className="mt-[24px] flex items-baseline justify-between">
                 <span className="text-[10.5px] font-semibold tracking-[0.14em] text-[var(--color-fog-2)] uppercase">
                   {t('welcome.recent')}
                 </span>
@@ -165,6 +171,40 @@ export function Welcome({
             <Caminho icone="project" data="novo" titulo={t('welcome.new')} onClick={onNovo} />
             <Caminho icone="play" data="demo" titulo={t('welcome.demo')} destaque={!temSalvo} onClick={onDemo} />
             <Caminho icone="projectOpen" data="abrir" titulo={t('welcome.open')} onClick={onAbrir} />
+          </div>
+
+          {/*
+            O idioma por ÚLTIMO, e menor.
+
+            Ele abria a tela, acima até do que a pessoa veio fazer — e é a
+            escolha menos frequente das quatro coisas aqui: acerta-se uma vez
+            por instalação, porque o app já chega no idioma do sistema. Atrás
+            do filete e em corpo menor ele continua achável e para de disputar
+            atenção com o trabalho.
+          */}
+          <div className="mt-[18px] border-t border-[var(--color-line)] pt-[14px]">
+            <div className="text-[7.5px] font-semibold tracking-[0.14em] text-[var(--color-fog-2)] uppercase">
+              {t('welcome.language')}
+            </div>
+            {/* cada idioma escrito no próprio idioma: quem não lê o daqui precisa se achar */}
+            <div className="mt-[7px] flex flex-wrap gap-[5px]">
+              {LANGS.map((idioma) => (
+                <button
+                  key={idioma.id}
+                  type="button"
+                  data-welcome-lang={idioma.id}
+                  aria-pressed={idioma.id === lang}
+                  onClick={() => onLang(idioma.id)}
+                  className={
+                    idioma.id === lang
+                      ? 'rounded-[5px] border border-[var(--color-accent)] bg-[var(--color-accent)]/16 px-[8px] py-[5px] text-[9.5px] font-medium text-[var(--color-fog-0)]'
+                      : 'rounded-[5px] border border-[var(--color-line)] px-[8px] py-[5px] text-[9.5px] text-[var(--color-fog-1)] hover:border-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]'
+                  }
+                >
+                  {idioma.nome}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
