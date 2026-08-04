@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Action } from '@shared/actions'
+import { deslocamentoDoArrasto, RESPIRO, type Arrasto } from '@shared/arrastoDeAba'
 import { TAB_DRAG_MIME } from '@shared/cards'
 import type { AppState } from '@shared/types'
 import { useT } from '../i18n'
@@ -31,6 +32,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
      ficha, para o menu nascer onde a mão já está */
   const [menu, setMenu] = useState<{ tabId: string; x: number; y: number } | null>(null)
   const [esperandoCopia, setEsperandoCopia] = useState<string | null>(null)
+  const [arrasto, setArrasto] = useState<Arrasto | null>(null)
 
   useEffect(() => {
     if (esperandoCopia === null || state.activeTabId === esperandoCopia) return
@@ -44,6 +46,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
     <div className="flex min-w-0 flex-1 items-center gap-[3px] overflow-x-auto">
       {state.tabs.map((tab, index) => {
         const active = tab.id === state.activeTabId
+        const deslocamento = deslocamentoDoArrasto(state.tabs, arrasto, index)
         return (
           <div
             key={tab.id}
@@ -57,13 +60,22 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
             onDragStart={(event) => {
               event.dataTransfer.setData(TAB_DRAG_MIME, tab.id)
               event.dataTransfer.effectAllowed = 'move'
+              /* a largura é MEDIDA, não uma constante como na gaveta: lá os
+                 ladrilhos têm todos 160px, aqui as fichas dividem a linha e
+                 a ativa ainda é mais larga que as outras. O vão que abre é
+                 exatamente o tamanho da ficha que saiu, mais o respiro. */
+              setArrasto({ tabId: tab.id, sobre: index, larguraPx: event.currentTarget.offsetWidth + RESPIRO })
             }}
+            onDragEnd={() => setArrasto(null)}
             onDragOver={(event) => {
               if (!event.dataTransfer.types.includes(TAB_DRAG_MIME)) return
               event.preventDefault()
               // sem isto o navegador não sabe que o "move" é aceito aqui e
               // mostra o cursor de bloqueado o arrasto inteiro
               event.dataTransfer.dropEffect = 'move'
+              const rect = event.currentTarget.getBoundingClientRect()
+              const antes = event.clientX < rect.left + rect.width / 2
+              setArrasto((a) => (a ? { ...a, sobre: antes ? index : index + 1 } : a))
             }}
             onDrop={(event) => {
               const arrastada = event.dataTransfer.getData(TAB_DRAG_MIME)
@@ -74,6 +86,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
               // mesmo critério da gaveta, trocando Y por X
               const antes = event.clientX < rect.left + rect.width / 2
               dispatch({ type: 'tab/reorder', tabId: arrastada, toIndex: antes ? index : index + 1 })
+              setArrasto(null)
             }}
             onClick={() => dispatch({ type: 'tab/activate', tabId: tab.id })}
             onDoubleClick={() => setEditing(tab.id)}
@@ -85,44 +98,58 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
             }}
             {...ajuda('tabs.tab')}
             title={`${tab.title} · Ctrl+${index === 9 ? 0 : index + 1}`}
-            className={`flex min-w-0 flex-1 cursor-pointer items-center gap-[7px] rounded-md px-2.5 py-[6px] text-[11px] ${
-              active
-                ? 'max-w-[210px] border border-[var(--color-edge)] bg-[#2e2e33] font-semibold text-[var(--color-fog-0)] shadow-[inset_0_1px_0_rgba(255,255,255,.07)]'
-                : 'max-w-[190px] bg-[#212124] font-medium text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]'
-            }`}
+            className={`flex min-w-0 flex-1 ${active ? 'max-w-[210px]' : 'max-w-[190px]'}`}
           >
-            <span className="h-[7px] w-[7px] flex-none rounded-full" style={{ background: tab.color }} />
-            {editing === tab.id ? (
-              <input
-                autoFocus
-                defaultValue={tab.title}
-                onBlur={(event) => {
-                  dispatch({ type: 'tab/rename', tabId: tab.id, title: event.target.value })
-                  setEditing(null)
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') event.currentTarget.blur()
-                  if (event.key === 'Escape') setEditing(null)
-                }}
-                className="w-full min-w-0 bg-transparent outline-none"
-              />
-            ) : (
-              <span className="min-w-0 flex-1 truncate">{tab.title}</span>
-            )}
-            {state.tabs.length > 1 ? (
-              <button
-                type="button"
-                {...ajuda('tabs.close')}
-                aria-label={t('tabs.close', { title: tab.title })}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  dispatch({ type: 'tab/close', tabId: tab.id })
-                }}
-                className="flex-none text-[var(--color-fog-3)] hover:text-[var(--color-fog-0)]"
-              >
-                <Icon name="close" size={12} />
-              </button>
-            ) : null}
+            {/* O deslize mora AQUI DENTRO, num filho de quem escuta o arrasto.
+                Transformar o próprio elemento arrastável faz o navegador
+                reavaliar o alvo do `dragover` contra a posição nova a cada
+                quadro — e como a ficha foge debaixo do ponteiro, o hit-test
+                troca de alvo sem parar e o arrasto trava. O slot de fora fica
+                onde sempre esteve; só a ficha desliza. */}
+            <div
+              data-tab-ficha={tab.id}
+              style={deslocamento ? { transform: `translateX(${deslocamento}px)` } : undefined}
+              className={`flex w-full min-w-0 cursor-pointer items-center gap-[7px] rounded-md px-2.5 py-[6px] text-[11px] transition-transform duration-150 ease-out ${
+                arrasto?.tabId === tab.id ? 'opacity-40' : ''
+              } ${
+                active
+                  ? 'border border-[var(--color-edge)] bg-[#2e2e33] font-semibold text-[var(--color-fog-0)] shadow-[inset_0_1px_0_rgba(255,255,255,.07)]'
+                  : 'bg-[#212124] font-medium text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)]'
+              }`}
+            >
+              <span className="h-[7px] w-[7px] flex-none rounded-full" style={{ background: tab.color }} />
+              {editing === tab.id ? (
+                <input
+                  autoFocus
+                  defaultValue={tab.title}
+                  onBlur={(event) => {
+                    dispatch({ type: 'tab/rename', tabId: tab.id, title: event.target.value })
+                    setEditing(null)
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') event.currentTarget.blur()
+                    if (event.key === 'Escape') setEditing(null)
+                  }}
+                  className="w-full min-w-0 bg-transparent outline-none"
+                />
+              ) : (
+                <span className="min-w-0 flex-1 truncate">{tab.title}</span>
+              )}
+              {state.tabs.length > 1 ? (
+                <button
+                  type="button"
+                  {...ajuda('tabs.close')}
+                  aria-label={t('tabs.close', { title: tab.title })}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    dispatch({ type: 'tab/close', tabId: tab.id })
+                  }}
+                  className="flex-none text-[var(--color-fog-3)] hover:text-[var(--color-fog-0)]"
+                >
+                  <Icon name="close" size={12} />
+                </button>
+              ) : null}
+            </div>
           </div>
         )
       })}
