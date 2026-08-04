@@ -400,7 +400,7 @@ export const it: Dicionario = {
   'cards.colourFrom': 'Colore iniziale',
   'cards.colourTo': 'Colore finale',
   'cards.angle': 'Angolo',
-  'cards.frequency': 'Frequenza',
+  'cards.speed': 'Velocità',
   'cards.intensity': 'Intensità',
   'cards.fade': 'Transizione',
   'cards.size': 'Corpo',

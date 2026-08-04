@@ -397,7 +397,7 @@ export const en: Dicionario = {
   'cards.colourFrom': 'Colour from',
   'cards.colourTo': 'Colour to',
   'cards.angle': 'Angle',
-  'cards.frequency': 'Frequency',
+  'cards.speed': 'Speed',
   'cards.intensity': 'Intensity',
   'cards.fade': 'Fade',
   'cards.size': 'Size',

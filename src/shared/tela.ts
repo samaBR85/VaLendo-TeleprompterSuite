@@ -92,6 +92,11 @@ export interface FundoDeTela {
   /**
    * Multiplicador de velocidade dos efeitos, em %.
    *
+   * O campo se chama `frequencia` e o controle na tela se chama "Velocidade":
+   * o nome do campo é o de quando ele nasceu, e renomeá-lo quebraria as telas
+   * já salvas por quem testou. É a mesma coisa, com dois nomes — e este
+   * comentário existe para ninguém procurar um `velocidade` que não há.
+   *
    * MULTIPLICADOR, e não uma duração: as seis durações escritas no CSS não
    * são arbitrárias, cada uma foi achada para o seu efeito. Um controle que
    * impusesse o mesmo número a todos deixaria a Deriva frenética e as Barras

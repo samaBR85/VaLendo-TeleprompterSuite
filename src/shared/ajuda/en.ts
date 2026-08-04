@@ -424,9 +424,9 @@ export const ajudaEn = {
     nome: 'Animated background',
     texto: 'Six ways for the two colours to move. All of them are slow on purpose — a restless background argues with whoever is reading. Each screen runs its own copy, so they are not frame-locked to each other.'
   },
-  'cards.frequency': {
-    nome: 'Effect frequency',
-    texto: 'Speeds all six effects up or down together. It multiplies each one’s own pace rather than forcing a single duration — they were not tuned to the same number.'
+  'cards.speed': {
+    nome: 'Effect speed',
+    texto: 'Speeds all six effects up or down together. It scales each one’s own pace rather than forcing a single duration — they were not tuned to the same number.'
   },
   'cards.intensity': {
     nome: 'Effect intensity',

@@ -429,7 +429,7 @@ export const pt = {
   'cards.colourFrom': 'Cor de partida',
   'cards.colourTo': 'Cor de chegada',
   'cards.angle': 'Ângulo',
-  'cards.frequency': 'Frequência',
+  'cards.speed': 'Velocidade',
   'cards.intensity': 'Intensidade',
   'cards.fade': 'Transição',
   'cards.size': 'Corpo',

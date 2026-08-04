@@ -303,11 +303,11 @@ export function EditorDeTela({
             são um controle só cada, e não seis. */}
           {efeito ? (
             <>
-              <Linha rotulo={t('cards.frequency')}>
+              <Linha rotulo={t('cards.speed')}>
                 <SliderConsole
                   data-tela-frequencia
-                  {...ajuda('cards.frequency')}
-                  aria-label={t('cards.frequency')}
+                  {...ajuda('cards.speed')}
+                  aria-label={t('cards.speed')}
                   value={card.fundo.frequencia ?? 100}
                   min={FREQ_MIN}
                   max={FREQ_MAX}

@@ -218,6 +218,12 @@ export function PocosDeArquivo({
         </>
       )}
 
+      {/* PROJETO e ROTEIRO são a mesma família de gesto — abrir e salvar
+          arquivo — e ficavam encostados um no outro sem nada dizendo onde um
+          acaba. O filete separa sem afastar: ele custa 3px, contra os 10 de
+          um respiro a mais, e mantém os dois no mesmo bloco de arquivo. */}
+      <span className="mx-0.5 h-5 w-px flex-none self-center bg-[var(--color-line)]" />
+
       {/* o respiro comum da barra (gap-2.5) já separa dos dois lados — de
           PROJETO à esquerda e da primeira aba à direita — pela mesma
           distância, o que centraliza o grupo no vão entre os dois. Um
