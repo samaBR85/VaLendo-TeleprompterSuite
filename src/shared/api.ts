@@ -15,7 +15,13 @@ import type {
 export interface ProjetoRecente {
   /** onde o arquivo está agora; é isto que o app abre */
   caminho: string
-  /** só o nome do arquivo, que é o que cabe num menu e o que a pessoa reconhece */
+  /**
+   * O nome como a pessoa chama o projeto: sem a pasta e sem a extensão.
+   *
+   * A lista só tem `.valendo`, então a extensão não separa um item do outro —
+   * é ruído em cima do nome, no lugar onde se reconhece de relance. O caminho
+   * inteiro continua aqui ao lado, para o hover e para abrir.
+   */
   nome: string
 }
 

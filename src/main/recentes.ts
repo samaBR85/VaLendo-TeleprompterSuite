@@ -16,6 +16,22 @@ import type { ProjetoRecente } from '@shared/api'
  */
 export const RECENTES_MAX = 5
 
+/**
+ * O nome como a pessoa chama o projeto: sem a pasta e SEM a extensão.
+ *
+ * A lista só tem `.valendo` — a extensão não distingue um item do outro, e o
+ * chip existe para ser reconhecido de relance. "PROGRAMETES - 2608" é o que o
+ * operador diria em voz alta; ".valendo" é ruído em cima disso, e é também o
+ * nome que o cabeçalho do app já mostra, sem extensão.
+ *
+ * A remoção ignora maiúsculas porque no Windows o arquivo pode estar gravado
+ * como `X.VALENDO` — a mesma razão pela qual a lista compara caminhos sem
+ * diferenciar caixa.
+ */
+function nomeDoProjeto(caminho: string): string {
+  return basename(caminho).replace(/\.valendo$/i, '')
+}
+
 function recentesPath(dir: string): string {
   return join(dir, 'recentes.json')
 }
@@ -37,7 +53,7 @@ export function loadRecentes(dir: string): ProjetoRecente[] {
       .filter((item): item is ProjetoRecente => typeof (item as ProjetoRecente)?.caminho === 'string')
       .filter((item) => existsSync(item.caminho))
       .slice(0, RECENTES_MAX)
-      .map((item) => ({ caminho: item.caminho, nome: basename(item.caminho) }))
+      .map((item) => ({ caminho: item.caminho, nome: nomeDoProjeto(item.caminho) }))
   } catch {
     return []
   }
@@ -61,7 +77,7 @@ function save(dir: string, lista: ProjetoRecente[]): void {
 export function registrarRecente(dir: string, caminho: string): ProjetoRecente[] {
   const chave = caminho.toLowerCase()
   const anterior = loadRecentes(dir).filter((item) => item.caminho.toLowerCase() !== chave)
-  const lista = [{ caminho, nome: basename(caminho) }, ...anterior].slice(0, RECENTES_MAX)
+  const lista = [{ caminho, nome: nomeDoProjeto(caminho) }, ...anterior].slice(0, RECENTES_MAX)
   try {
     save(dir, lista)
   } catch {
