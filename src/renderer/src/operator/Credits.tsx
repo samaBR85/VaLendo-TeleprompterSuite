@@ -62,14 +62,18 @@ export function Credits({ onClose }: Props): React.JSX.Element {
           </div>
           <div className="flex gap-2 py-0.5">
             <span className="w-[128px] flex-none text-[var(--color-fog-2)]">{t('credits.dev')}</span>
-            <span className="text-[var(--color-fog-1)]">samaBR, com Claude Code</span>
+            {/* O VALOR também vem do dicionário, e não só o rótulo: ele tem uma
+                palavra de ligação dentro — "com", "with", "mit" —, e escrita
+                aqui ela vazava em português para os seis idiomas. Nome próprio
+                não se traduz; conjunção sim. */}
+            <span className="text-[var(--color-fog-1)]">{t('credits.devValue')}</span>
           </div>
           <div className="flex gap-2 py-0.5">
             {/* "QA" fica em QA nos seis idiomas, como `app.assets` e o rótulo
                 OVERLAY: é o nome do ofício, e traduzir viraria uma sigla que
-                ninguém do meio usa */}
+                ninguém do meio usa. O "e" entre os dois nomes, esse muda. */}
             <span className="w-[128px] flex-none text-[var(--color-fog-2)]">{t('credits.qa')}</span>
-            <span className="text-[var(--color-fog-1)]">Aline Costa e Vitória Nascimento</span>
+            <span className="text-[var(--color-fog-1)]">{t('credits.qaValue')}</span>
           </div>
           {/* a GPL pede que um programa interativo mostre a licença a quem
               usa; aqui, com o link para o texto que vale */}
