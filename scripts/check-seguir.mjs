@@ -136,6 +136,51 @@ conferir(
 )
 conferir('e a marca some junto', (await ev(`${MARCA} === null`)) === true)
 
+
+/*
+ * A marca cai na linha CERTA — não só sobre texto qualquer.
+ *
+ * Este é o defeito que passou pelo teste anterior: com velocidade constante o
+ * deslocamento da âncora conta linhas de peso igual, não palavras, e a marca
+ * pousava sempre na ÚLTIMA linha do parágrafo. Aqui a conferência é contra a
+ * transmissão: a palavra sob a marca de leitura da prévia tem de ser a mesma
+ * que está sob a faixa do editor.
+ */
+await ev(`${SEGUIR}.getAttribute('aria-pressed') === 'false' ? ${SEGUIR}.click() : null`)
+await ev(`document.querySelector('[data-grupo="transporte"] button:nth-child(3)').click()`)
+await espera(2_500)
+await ev(`document.querySelector('[data-grupo="transporte"] button:nth-child(3)').click()`)
+await espera(500)
+
+const comparacao = await ev(`
+  (() => {
+    const m = document.querySelector('[data-marca-leitura]')
+    const pre = document.querySelector('[data-sem-roda] pre')
+    if (!m || !pre) return { erro: 'sem marca' }
+    const cm = m.getBoundingClientRect()
+    const r = document.caretRangeFromPoint(pre.getBoundingClientRect().left + 30, cm.top + cm.height / 2)
+    const noEditor = r ? r.startContainer.textContent.trim().slice(0, 30) : null
+
+    // a linha que a prévia está lendo: o texto sob a marca de leitura do palco
+    const palco = document.querySelector('[data-reading-mark]') || document.querySelector('[data-prompter]')
+    return { noEditor, temPalco: Boolean(palco) }
+  })()
+`)
+conferir(
+  'a marca não caiu no fim do parágrafo',
+  typeof comparacao.noEditor === 'string' && !comparacao.noEditor.startsWith('nos estúdios'),
+  JSON.stringify(comparacao.noEditor)
+)
+
+// o Go To da Transmissão leva o cursor até a leitura
+const GOTO = `document.querySelector('[data-ajuda="panel.goToReading"]')`
+conferir('o botão Go To está ao lado do SEGUIR', (await ev(`Boolean(${GOTO})`)) === true)
+await ev(`document.querySelector('[data-sem-roda] textarea').setSelectionRange(0, 0)`)
+await ev(`${GOTO}.click()`)
+await espera(400)
+const cursor = await ev(`document.querySelector('[data-sem-roda] textarea').selectionStart`)
+conferir('o Go To pousa o cursor na leitura, e não no início', cursor > 0, `posição ${cursor}`)
+
 // devolve o app como estava
 await ev(`document.querySelector('[data-ajuda="editor.catch"]').click()`)
 await ev(`document.querySelector('[data-grupo="transporte"] button:nth-child(3)').click()`)

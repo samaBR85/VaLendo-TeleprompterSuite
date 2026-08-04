@@ -312,6 +312,10 @@ export const ajudaEn = {
     nome: 'Editing / Broadcast divider',
     texto: 'Drag to give more room to the script or to the preview. Double-click puts it back where it started.'
   },
+  'panel.goToReading': {
+    nome: 'Go to the reading',
+    texto: 'Brings the editor to the word being read right now, once, and puts the cursor there. The mirror image of the Go To under the script.'
+  },
   'panel.follow': {
     nome: 'Follow the reading',
     texto: 'The editor scrolls along with the broadcast and marks the line being read. It never moves your cursor, and it steps aside for 4s whenever you type or scroll.'

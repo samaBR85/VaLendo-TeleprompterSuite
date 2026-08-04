@@ -4,7 +4,7 @@ import type { MotivosDeFechar } from '@shared/api'
 import type { InsertKind } from '@shared/insertBlock'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { PrompterStage } from '../prompter/PrompterStage'
-import { anchorFromWordIndex, composeLines, totalWords } from '@shared/anchor'
+import { ancoraEmPalavrasReais, anchorFromWordIndex, composeLines, totalWords } from '@shared/anchor'
 import { cartaoNoAr } from '@shared/cards'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { anchorFromCaret, hasFormatting, totalWordCount } from '@shared/text'
@@ -615,6 +615,23 @@ function AppConteudo({
   }, [])
 
   /**
+   * O "Go To" da Transmissão: traz o editor até onde a leitura está, uma vez.
+   *
+   * Aqui o cursor VAI junto, ao contrário do SEGUIR — foi um clique explícito
+   * pedindo para ir até lá, então pousar o cursor é o que se espera, e não um
+   * roubo no meio da digitação. Serve também de "voltar para a leitura" quando
+   * o SEGUIR está ligado e você se afastou para consultar outro trecho.
+   */
+  const irParaLeitura = useCallback(() => {
+    if (!state) return
+    const aba = activeTabOf(state)
+    const linhas = composeLines(aba.blocks, aba.appearance, rows)
+    const anchor = anchorFromWordIndex(linhas, wordIndexAt(state.transport, Date.now()))
+    if (!anchor) return
+    editorRef.current?.mostrarAncora(ancoraEmPalavrasReais(linhas, anchor), { comCursor: true })
+  }, [state, rows])
+
+  /**
    * SEGUIR: o caminho de volta do Go To — o editor acompanha a leitura.
    *
    * Roda por relógio próprio, e não por `useNow()` no corpo do App: a leitura
@@ -637,11 +654,16 @@ function AppConteudo({
       const linhas = composeLines(aba.blocks, aba.appearance, rows)
       const anchor = anchorFromWordIndex(linhas, wordIndexAt(state.transport, Date.now()))
       if (!anchor) return
+      /* traduz da régua para palavras de verdade ANTES de entregar ao editor.
+         Sem isto a marca caía sempre na última linha do parágrafo: com
+         velocidade constante o `wordOffset` conta linhas de peso igual, não
+         palavras, e o editor estourava o parágrafo procurando a enésima */
+      const real = ancoraEmPalavrasReais(linhas, anchor)
       // só incomoda o editor quando a palavra muda de verdade
-      const chave = `${anchor.blockId}:${anchor.wordOffset}`
+      const chave = `${real.blockId}:${real.wordOffset}`
       if (chave === ultima) return
       ultima = chave
-      editorRef.current?.mostrarAncora(anchor)
+      editorRef.current?.mostrarAncora(real)
     }
 
     acompanhar()
@@ -1339,6 +1361,17 @@ function AppConteudo({
                           acompanhar. Do outro lado, no rodapé da Edição, está
                           o par inverso (CATCH e Go To) — cada sentido no
                           painel de onde ele parte. */}
+                      <Tecla
+                        {...ajuda('panel.goToReading')}
+                        title={t('panel.goToReading')}
+                        aria-label={t('panel.goToReading')}
+                        cor="var(--color-go)"
+                        className="h-[18px] w-[22px]"
+                        style={{ color: 'var(--color-go)' }}
+                        onClick={irParaLeitura}
+                      >
+                        <Icon name="goTo" size={11} filled />
+                      </Tecla>
                       <Tecla
                         {...ajuda('panel.follow')}
                         title={t('panel.follow')}

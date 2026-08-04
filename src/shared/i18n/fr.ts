@@ -34,6 +34,7 @@ export const fr: Dicionario = {
   'panel.broadcasting': 'Diffusion',
   'panel.expand': 'Agrandir la diffusion · F11',
   'panel.collapse': 'Revenir au split · F11',
+  'panel.goToReading': 'Aller à la lecture',
   'panel.follow': 'Suivre la lecture dans l’éditeur',
   'panel.follow.key': 'SUIVRE',
   'panel.livePreview': 'Aperçu en direct',

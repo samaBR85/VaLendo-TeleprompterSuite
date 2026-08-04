@@ -43,6 +43,7 @@ export const pt = {
   'panel.broadcasting': 'Transmissão',
   'panel.expand': 'Expandir a transmissão · F11',
   'panel.collapse': 'Voltar ao split · F11',
+  'panel.goToReading': 'Ir para a leitura',
   'panel.follow': 'Seguir a leitura no editor',
   'panel.follow.key': 'SEGUIR',
   'panel.livePreview': 'Prévia ao vivo',

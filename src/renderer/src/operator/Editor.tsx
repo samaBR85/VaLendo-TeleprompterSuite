@@ -101,7 +101,7 @@ export interface EditorHandle {
    * a marca. Nunca mexe no cursor: ver onde a leitura está não pode custar o
    * ponto onde a mão estava.
    */
-  mostrarAncora: (anchor: Anchor) => void
+  mostrarAncora: (anchor: Anchor, opcoes?: { comCursor?: boolean }) => void
   /** apaga a marca — ao desligar o acompanhamento */
   limparMarca: () => void
   /** manda agora, sem esperar o debounce, o que ainda estiver pendente. */
@@ -328,14 +328,21 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
    * linha daria.
    */
   const mostrarAncora = useCallback(
-    (anchor: Anchor): void => {
+    (anchor: Anchor, opcoes?: { comCursor?: boolean }): void => {
       const area = areaRef.current
       const pre = preRef.current
       if (!area || !pre) return
 
-      // cede a vez a quem está usando o editor: enquanto a mão está lá, seguir
-      // a leitura vira briga — a rolagem puxaria de volta a cada segundo
-      if (Date.now() - ultimoToque.current < RESPEITO_MS) return
+      /*
+       * Cede a vez a quem está usando o editor — mas só o acompanhamento
+       * automático.
+       *
+       * `comCursor` é o clique no "Go To" da Transmissão: alguém PEDIU para ir
+       * até a leitura, então respeitar o respiro seria recusar o que foi
+       * mandado. É também o jeito de voltar para a leitura sem esperar os
+       * quatro segundos.
+       */
+      if (!opcoes?.comCursor && Date.now() - ultimoToque.current < RESPEITO_MS) return
 
       const posicao = caretFromAnchor(tab.blocks, draft, anchor)
       if (posicao === null) return setMarca(null)
@@ -355,9 +362,20 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
        */
       const altura = area.clientHeight
       const relativo = alvo.top - area.scrollTop
-      if (relativo >= altura * 0.15 && relativo <= altura * 0.75) return
-      area.scrollTop = Math.max(0, alvo.top - altura * 0.35)
-      pre.scrollTop = area.scrollTop
+      const jaVisivel = relativo >= altura * 0.15 && relativo <= altura * 0.75
+      if (!jaVisivel) {
+        area.scrollTop = Math.max(0, alvo.top - altura * 0.35)
+        pre.scrollTop = area.scrollTop
+        setRolagem(area.scrollTop)
+      }
+
+      // o cursor só se move a pedido — e aí o foco vai junto, senão a próxima
+      // tecla digitada não cairia no lugar para onde a pessoa acabou de olhar
+      if (opcoes?.comCursor) {
+        area.focus()
+        area.setSelectionRange(posicao, posicao)
+        ultimoToque.current = 0
+      }
     },
     [draft, tab.blocks]
   )

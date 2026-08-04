@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  ancoraEmPalavrasReais,
   anchorFromPixel,
   anchorFromWordIndex,
   composeLines,
@@ -10,7 +11,7 @@ import {
   type Layout,
   type LineSpec
 } from './anchor'
-import { reconcileBlocks } from './text'
+import { reconcileBlocks, words } from './text'
 import type { Anchor, Block, PacingRule } from './types'
 
 /** Velocidade constante é o padrão do app; o modo por palavras é a exceção. */
@@ -360,5 +361,55 @@ describe('remapAnchor — o teste que define o produto', () => {
     expect(remapped.wordOffset).toBe(anchor.wordOffset)
     expect(wordIndexFromAnchor(layoutAfter, remapped)).toBeGreaterThan(wordBefore)
     expect(pixelFromAnchor(layoutAfter, remapped)).not.toBeNull()
+  })
+})
+
+describe('ancoraEmPalavrasReais — a régua traduzida para o texto', () => {
+  /*
+   * O defeito que este teste tranca: com velocidade constante (o padrão), a
+   * âncora vem em unidades da RÉGUA — todas as linhas pesam igual, mesmo tendo
+   * seis palavras ou duas. Quem apontou a palavra no editor contando palavras
+   * de verdade estourava o parágrafo, e a marca caía sempre na última linha.
+   *
+   * O parágrafo abaixo compõe quatro linhas de tamanhos diferentes (6, 6, 5 e
+   * 2 palavras), que é o que faz as duas unidades divergirem de verdade.
+   */
+  const bloco = doc(
+    'Boa noite. Hoje a gente vai falar sobre uma mudanca que ja esta acontecendo nos estudios do pais inteiro.'
+  )
+  const real = (lines: LineSpec[], wordOffset: number): number =>
+    ancoraEmPalavrasReais(lines, { blockId: bloco[0].id, wordOffset }).wordOffset
+
+  it('o começo de cada linha vira a palavra em que ela começa', () => {
+    const lines = composeLines(bloco, RULE)
+    const porLinha = lines.map((l) => words(l.text).length)
+    expect(porLinha).toEqual([6, 6, 5, 2])
+
+    // as unidades DIVERGEM: a régua reparte o bloco em pesos iguais
+    expect(lines.map((l) => l.blockWordStart)).not.toEqual([0, 6, 12, 17])
+
+    let acumulado = 0
+    lines.forEach((line, i) => {
+      expect(real(lines, line.blockWordStart), `linha ${i}`).toBe(acumulado)
+      acumulado += porLinha[i]
+    })
+  })
+
+  it('sem velocidade constante a conta é 1:1 — o número não muda', () => {
+    const lines = composeLines(bloco, BY_WORDS)
+    for (const offset of [0, 3, 7, 15]) expect(real(lines, offset)).toBe(offset)
+  })
+
+  it('nunca passa do total de palavras do bloco', () => {
+    const lines = composeLines(bloco, RULE)
+    expect(real(lines, 999)).toBe(words(bloco[0].text).length)
+  })
+
+  it('bloco desconhecido volta como veio, sem inventar posição', () => {
+    const lines = composeLines(bloco, RULE)
+    expect(ancoraEmPalavrasReais(lines, { blockId: 'sumiu', wordOffset: 4 })).toEqual({
+      blockId: 'sumiu',
+      wordOffset: 4
+    })
   })
 })

@@ -239,6 +239,37 @@ export function anchorFromWordIndex(lines: LineSpec[], wordIndex: number): Ancho
   return { blockId: last.blockId, wordOffset: last.blockWordStart + last.wordCount }
 }
 
+/**
+ * Traduz uma âncora da régua de rolagem para PALAVRAS DE VERDADE dentro do
+ * bloco.
+ *
+ * As duas coisas se parecem e não são a mesma: `wordOffset` vem em unidades da
+ * régua, e com `uniformSpeed` (o padrão) cada linha pesa o mesmo,
+ * independentemente de ter duas palavras ou dez. Quem precisa apontar a
+ * palavra no TEXTO — o editor seguindo a leitura — não pode usar esse número
+ * cru: ele estoura o parágrafo e a marca cai sempre na última linha.
+ *
+ * A conversão é por linha, que é a unidade que os dois lados entendem: acha em
+ * qual linha do bloco a âncora caiu, soma as palavras reais das linhas
+ * anteriores e avança dentro dela na mesma proporção. Com `uniformSpeed`
+ * desligado a proporção é 1:1 e a conta devolve a palavra exata.
+ */
+export function ancoraEmPalavrasReais(lines: LineSpec[], anchor: Anchor): Anchor {
+  const owned = linesOfBlock(lines, anchor.blockId)
+  if (owned.length === 0) return anchor
+
+  let reais = 0
+  for (const line of owned) {
+    if (line.wordCount === 0) continue
+    if (anchor.wordOffset < line.blockWordStart + line.wordCount) {
+      const fracao = (anchor.wordOffset - line.blockWordStart) / line.wordCount
+      return { blockId: anchor.blockId, wordOffset: reais + Math.floor(fracao * words(line.text).length) }
+    }
+    reais += words(line.text).length
+  }
+  return { blockId: anchor.blockId, wordOffset: reais }
+}
+
 export function wordIndexFromAnchor(lines: LineSpec[], anchor: Anchor): number {
   const owned = linesOfBlock(lines, anchor.blockId)
   if (owned.length === 0) return 0
