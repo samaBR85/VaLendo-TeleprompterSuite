@@ -84,3 +84,52 @@ describe('a partida não mostra o que estava gravado', () => {
     expect(JSON.stringify(store.getState())).toContain('Eröffnung')
   })
 })
+
+/**
+ * Workspace gravado por uma versão anterior à ferramenta em questão.
+ *
+ * Este arquivo NÃO se conserta sozinho com o tempo: o autosave fica travado
+ * até as boas-vindas, então o arquivo antigo espera no disco com os campos
+ * faltando até alguém clicar em "Continuar de onde parei" — e é exatamente aí,
+ * com o trabalho do operador na mão, que a falta cobra o preço.
+ */
+describe('workspace de versão anterior abre inteiro', () => {
+  /** Um workspace como era antes dos apresentadores: abas sem o campo. */
+  const antigo = (() => {
+    const base = createInitialState(undefined, 'pt-BR')
+    return {
+      ...base,
+      tabs: base.tabs.map((tab) => {
+        const { apresentadores: _fora, ...semApresentadores } = tab
+        return semApresentadores
+      })
+    }
+  })()
+
+  beforeEach(() => {
+    writeFileSync(join(pasta, 'workspace.json'), JSON.stringify(antigo), 'utf8')
+    vi.resetModules()
+  })
+
+  it('aba sem apresentadores vira lista vazia, nunca indefinida', async () => {
+    // indefinido chegava ao renderer e a primeira leitura da lista derrubava a
+    // árvore inteira: janela BRANCA, sem mensagem, com o roteiro intacto no
+    // disco e nenhuma pista disso na tela
+    const { Store } = await import('./state')
+    const store = new Store()
+    store.dispatch({ type: 'estreia/continuar' })
+
+    for (const tab of store.getState().tabs) {
+      expect(tab.apresentadores).toEqual([])
+    }
+  })
+
+  it('e o texto gravado volta junto', async () => {
+    // a garantia acima não pode ter sido comprada jogando as abas fora
+    const { Store } = await import('./state')
+    const store = new Store()
+    store.dispatch({ type: 'estreia/continuar' })
+
+    expect(JSON.stringify(store.getState())).toContain('Boa noite')
+  })
+})

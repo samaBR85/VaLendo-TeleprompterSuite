@@ -231,9 +231,24 @@ export function loadState(defaults: UserDefaults, locale = 'en'): AppState {
     }
     if (!state.tabs.some((t) => t.id === state.activeTabId)) state.activeTabId = state.tabs[0].id
 
+    /*
+     * `apresentadores` ausente vira lista vazia — nunca `undefined`.
+     *
+     * O `.valendo` já fazia isto (`openProject`), o autosave não fazia: quem
+     * tivesse o app aberto antes desta ferramenta guardava abas sem o campo, e
+     * "Continuar de onde parei" montava a tela com `tab.apresentadores`
+     * indefinido. A primeira leitura da lista quebrava o renderer inteiro, e o
+     * que o operador via era uma janela BRANCA — sem mensagem, sem pista de
+     * que o trabalho continuava intacto no disco.
+     *
+     * O arquivo antigo sobrevive justamente porque o autosave fica travado até
+     * as boas-vindas, então ele não se conserta sozinho com o tempo: enquanto
+     * ninguém clicar em "continuar", ele espera lá com o campo faltando.
+     */
     state.tabs = state.tabs.map((tab) => ({
       ...tab,
-      appearance: mergeAppearance(tab.appearance)
+      appearance: mergeAppearance(tab.appearance),
+      apresentadores: tab.apresentadores ?? []
     }))
 
     return state
