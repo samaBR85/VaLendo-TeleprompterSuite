@@ -61,12 +61,15 @@ export function Credits({ onClose }: Props): React.JSX.Element {
             </a>
           </div>
           <div className="flex gap-2 py-0.5">
-            <span className="w-[128px] flex-none text-[var(--color-fog-2)]">{t('credits.idea')}</span>
-            <span className="text-[var(--color-fog-1)]">Aline</span>
-          </div>
-          <div className="flex gap-2 py-0.5">
             <span className="w-[128px] flex-none text-[var(--color-fog-2)]">{t('credits.dev')}</span>
             <span className="text-[var(--color-fog-1)]">samaBR, com Claude Code</span>
+          </div>
+          <div className="flex gap-2 py-0.5">
+            {/* "QA" fica em QA nos seis idiomas, como `app.assets` e o rótulo
+                OVERLAY: é o nome do ofício, e traduzir viraria uma sigla que
+                ninguém do meio usa */}
+            <span className="w-[128px] flex-none text-[var(--color-fog-2)]">{t('credits.qa')}</span>
+            <span className="text-[var(--color-fog-1)]">Aline Costa e Vitória Nascimento</span>
           </div>
           {/* a GPL pede que um programa interativo mostre a licença a quem
               usa; aqui, com o link para o texto que vale */}

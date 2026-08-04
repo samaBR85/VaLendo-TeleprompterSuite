@@ -255,7 +255,7 @@ export const en: Dicionario = {
 
   'credits.builtWith': 'Built with',
   'credits.repo': 'Repository',
-  'credits.idea': 'Concept',
+  'credits.qa': 'QA',
   'credits.dev': 'Development',
   'credits.license': 'Licence',
   'credits.freedom': 'Free to use, study, modify and redistribute. Anyone distributing a modified version ships its source too, under the same licence.',

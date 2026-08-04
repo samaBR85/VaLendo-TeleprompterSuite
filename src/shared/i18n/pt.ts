@@ -276,7 +276,7 @@ export const pt = {
   /* --------------------------------------------------------------- créditos */
   'credits.builtWith': 'Construído com',
   'credits.repo': 'Repositório',
-  'credits.idea': 'Idealização',
+  'credits.qa': 'QA',
   'credits.dev': 'Desenvolvimento',
   'credits.license': 'Licença',
   'credits.freedom': 'Livre para usar, estudar, modificar e redistribuir. Quem distribuir uma versão modificada entrega o código dela junto, sob a mesma licença.',
