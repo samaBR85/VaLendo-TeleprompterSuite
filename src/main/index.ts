@@ -128,6 +128,21 @@ function snapshot(): StateSnapshot {
  * O quadro leva só a aba que está no ar: as outras não viajam, e o que não sai
  * da máquina não vaza.
  */
+/**
+ * Abre a janela do operador com a escala gravada.
+ *
+ * A escala vai por DOIS caminhos, e de propósito: como número, para o
+ * construtor aplicar antes do primeiro quadro (sem salto); e como função,
+ * para a janela poder se conferir depois da carga e sempre que os monitores
+ * mudarem. Um só caminho era o defeito — a janela abria num tamanho e o
+ * controle afirmava outro, sem nada avisar.
+ */
+function abrirOperador(): void {
+  createOperatorWindow(store.getState().maquina.window, loadUiScale(userDataRoot()), () =>
+    loadUiScale(userDataRoot())
+  )
+}
+
 function syncWebview(state: AppState): void {
   const ligado = webviewInfo().running
   if (state.webview.enabled && !ligado) startWebview()
@@ -732,7 +747,7 @@ function bootstrap(): void {
     store.dispatch({ type: 'estreia/language', language: idiomaDoSistema(app.getLocale()) })
   }
 
-  createOperatorWindow(store.getState().maquina.window, loadUiScale(userDataRoot()))
+  abrirOperador()
   syncOutput(store.getState())
 
   /*
@@ -774,7 +789,7 @@ if (!app.requestSingleInstanceLock()) {
   void app.whenReady().then(bootstrap)
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createOperatorWindow(store.getState().maquina.window, loadUiScale(userDataRoot()))
+    if (BrowserWindow.getAllWindows().length === 0) abrirOperador()
   })
 
   app.on('window-all-closed', () => {

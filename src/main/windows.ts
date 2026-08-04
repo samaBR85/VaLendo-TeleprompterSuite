@@ -94,7 +94,12 @@ export function sendToAll(channel: string, ...args: unknown[]): void {
   }
 }
 
-export function createOperatorWindow(bounds?: JanelaSalva | null, zoomFactor = 1): BrowserWindow {
+export function createOperatorWindow(
+  bounds?: JanelaSalva | null,
+  zoomFactor = 1,
+  /** o que está gravado AGORA — a fonte contra a qual a janela é conferida */
+  escalaGravada?: () => number
+): BrowserWindow {
   // sem barra de menu no Windows e no Linux: ela não serve a nada aqui e come
   // uma faixa da tela do operador (no macOS o menu é do sistema, fica)
   if (!isMac) Menu.setApplicationMenu(null)
@@ -166,6 +171,43 @@ export function createOperatorWindow(bounds?: JanelaSalva | null, zoomFactor = 1
     operatorWindow = null
     closeConfirmed = false
   })
+
+  /*
+   * A escala é REAFIRMADA depois da carga, além de ir no construtor.
+   *
+   * O construtor continua sendo quem aplica primeiro — é o que evita a
+   * interface aparecer um quadro em 100% e saltar. Mas ele era a única fonte,
+   * e uma fonte só é uma fonte que ninguém confere: quando o que a janela
+   * aplicou discorda do que está gravado, a interface abre num tamanho e o
+   * controle mostra outro, sem nada avisar. O operador vê dois "100%"
+   * diferentes e não tem como saber qual vale.
+   *
+   * Reafirmar não pisca. Quando os dois concordam — o caso normal — a
+   * comparação falha e nada é escrito. Ele só age exatamente na situação em
+   * que havia divergência, que é o defeito.
+   *
+   * O valor vem de `escalaGravada()` e não da variável do construtor: entre
+   * uma carga e outra o operador pode ter mexido no controle, e nesse caso o
+   * certo é o que está no disco, não o que a janela nasceu com.
+   */
+  const reafirmarEscala = (): void => {
+    if (!operatorWindow || operatorWindow.isDestroyed()) return
+    const querida = escalaGravada?.() ?? zoomFactor
+    if (operatorWindow.webContents.getZoomFactor() !== querida) {
+      operatorWindow.webContents.setZoomFactor(querida)
+    }
+  }
+  operatorWindow.webContents.on('did-finish-load', reafirmarEscala)
+  /*
+   * E de novo quando a configuração dos monitores muda.
+   *
+   * Numa mesa com mais de um monitor eles raramente têm a mesma escala do
+   * Windows, e mudar de tela (ou o Windows reavaliar a DPI) refaz a conta por
+   * baixo do app. Sem isto, a interface muda de tamanho sozinha e o controle
+   * segue afirmando o número antigo.
+   */
+  screen.on('display-metrics-changed', reafirmarEscala)
+  operatorWindow.on('closed', () => screen.off('display-metrics-changed', reafirmarEscala))
 
   loadPage(operatorWindow, 'operator')
   return operatorWindow
