@@ -11,6 +11,7 @@ import type { AjudaId } from '@shared/ajuda'
 import { useT } from '../i18n'
 import { TelaDoCartao } from '../prompter/PrompterCanvas'
 import { ajuda } from '../ui/ajuda'
+import { hint } from '../ui/atalho'
 import { Icon } from '../ui/Icon'
 import { CabecalhoDePainel, Ficha, SliderConsole } from '../ui/console'
 import { EditorDeTela } from './EditorDeTela'
@@ -57,6 +58,8 @@ interface Props {
   /** o interruptor "OVERLAY" global — força o texto por cima de qualquer cartão */
   cardOverlay: { enabled: boolean; style: CardOverlayStyle }
   altura: number
+  /** as teclas em vigor — a etiqueta de cada cartão tira daqui o atalho do balão */
+  keymap: Map<string, string>
   dispatch: (action: Action) => void
   onClose: () => void
 }
@@ -83,6 +86,7 @@ export function CardsDrawer({
   videoPerfil,
   cardOverlay,
   altura,
+  keymap,
   dispatch,
   onClose
 }: Props): React.JSX.Element {
@@ -384,6 +388,7 @@ export function CardsDrawer({
             <CartaoNaGaveta
               card={card}
               atalho={index < CARTOES_COM_ATALHO ? index + 1 : null}
+              atalhoTecla={hint(keymap, `card.show.${index + 1}`)}
               noAr={noAr === card.id}
               clock={clock}
               volume={volume}
@@ -590,6 +595,7 @@ function CartaoArrastavel({
 function CartaoNaGaveta({
   card,
   atalho,
+  atalhoTecla,
   noAr,
   clock,
   volume,
@@ -601,6 +607,8 @@ function CartaoNaGaveta({
 }: {
   card: Cartao
   atalho: number | null
+  /** a tecla já formatada, do keymap em vigor — vazia quando este cartão não tem */
+  atalhoTecla: string
   noAr: boolean
   clock: VideoClock
   volume: number
@@ -826,7 +834,7 @@ function CartaoNaGaveta({
           <kbd
             data-card-atalho={card.id}
             {...ajuda('cards.shortcut')}
-            title={`Ctrl+Shift+${atalho}`}
+            title={`${t('cmd.card.show', { n: atalho })}${atalhoTecla}`}
             className="absolute top-[5px] left-[5px] grid h-4 w-4 place-items-center rounded-[4px] bg-[var(--color-accent-2)] font-mono text-[9px] font-bold text-[#1c1020]"
           >
             {atalho}

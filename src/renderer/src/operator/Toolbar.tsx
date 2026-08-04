@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import type { ProjetoRecente } from '@shared/api'
 import { composeLines, totalWords } from '@shared/anchor'
-import { formatBinding, parseBinding } from '@shared/commands'
 import { formatClock, parseDuration, ppmForTarget, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
 import { PPM_MAX, PPM_MIN } from '@shared/ruler'
@@ -15,6 +14,7 @@ import { useNow } from '../ui/useNow'
 import { SpeedRuler } from './SpeedRuler'
 import { ajuda } from '../ui/ajuda'
 import { Tabs } from './Tabs'
+import { hint } from '../ui/atalho'
 
 interface Props {
   state: AppState
@@ -32,13 +32,6 @@ interface Props {
   /** a página da rede está mesmo no ar, e não só pedida */
   webviewLive: boolean
   onOpenWebview: () => void
-}
-
-/** " · Ctrl+K" para colar no fim de um rótulo, ou nada se o comando não tem tecla. */
-export function hint(keymap: Map<string, string>, commandId: string): string {
-  const binding = parseBinding(keymap.get(commandId) ?? '')
-  if (!binding) return ''
-  return ` · ${formatBinding(binding, window.valendo.platform === 'darwin')}`
 }
 
 /** Nome do arquivo, sem o caminho todo, para caber no rótulo do botão. */
@@ -172,6 +165,11 @@ export function PocosDeArquivo({
         <div className="relative flex items-stretch">
           <Tecla
             {...ajuda('project.save')}
+            /* a tecla diz só "save": o poço em volta é que diz PROJETO. Sem
+               o `title` ninguém que passasse o mouse descobriria a diferença
+               para o "save" do poço ROTEIRO, nem que Ctrl+S é este */
+            title={`${t('toolbar.saveProject')}${hint(keymap, 'project.save')}`}
+            aria-label={t('toolbar.saveProject')}
             className="h-6 rounded-r-none border-r-0 px-2 text-[11px]"
             onClick={() => run('project.save')}
           >
@@ -511,6 +509,7 @@ export function TeclaDeSomDaRede({
 export function PocoDeSaida({
   displays,
   output,
+  keymap,
   dispatch,
   run,
   grande,
@@ -518,6 +517,7 @@ export function PocoDeSaida({
 }: {
   displays: DisplayInfo[]
   output: AppState['output']
+  keymap: Map<string, string>
   dispatch: (action: Action) => void
   run: (commandId: string) => void
   grande?: boolean
@@ -559,6 +559,7 @@ export function PocoDeSaida({
           {...ajuda('output.identify')}
           disabled={output.enabled}
           aria-expanded={identificarAberto}
+          title={t('toolbar.identify')}
           aria-label={t('toolbar.identify')}
           onClick={() => setIdentificarAberto((aberto) => !aberto)}
           className={`grid flex-none place-items-center rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] transition-[filter] hover:brightness-115 disabled:opacity-30 disabled:hover:brightness-100 ${
@@ -629,6 +630,7 @@ export function PocoDeSaida({
         type="button"
         data-broadcast-toggle
         {...ajuda('output.broadcast')}
+        title={`${output.enabled ? t('toolbar.broadcasting') : t('toolbar.broadcast')}${hint(keymap, 'output.toggle')}`}
         disabled={output.displayId === null}
         onClick={() => run('output.toggle')}
         className={`flex flex-none items-center gap-1.5 rounded-[5px] border border-[var(--color-edge)] font-semibold whitespace-nowrap transition-[filter] hover:brightness-115 disabled:opacity-30 ${
@@ -699,14 +701,14 @@ export function BarraDeArquivo({
         />
       ) : null}
 
-      <Tabs state={state} dispatch={dispatch} />
+      <Tabs state={state} keymap={keymap} dispatch={dispatch} />
 
       <GruposDeVisao state={state} keymap={keymap} dispatch={dispatch} run={run} />
 
       {/* na régua, a SAÍDA sobe para cá — lá embaixo ela ficaria descolada do
           resto do que prepara o programa */}
       {state.transportPosition === 'regua' ? (
-        <PocoDeSaida displays={displays} output={state.output} dispatch={dispatch} run={run} />
+        <PocoDeSaida displays={displays} output={state.output} keymap={keymap} dispatch={dispatch} run={run} />
       ) : null}
     </div>
   )
@@ -1228,6 +1230,7 @@ export function BarraDeTransporte({
         <PocoDeSaida
           displays={displays}
           output={state.output}
+          keymap={keymap}
           dispatch={dispatch}
           run={run}
           grande={!compacto}

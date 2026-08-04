@@ -30,7 +30,8 @@ import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
 import { Sidebar } from './Sidebar'
 import { StatusBar } from './StatusBar'
-import { BarraDeArquivo, BarraDeTransporte, PocoDoAr, hint } from './Toolbar'
+import { BarraDeArquivo, BarraDeTransporte, PocoDoAr } from './Toolbar'
+import { hint } from '../ui/atalho'
 import { WebviewPanel } from './WebviewPanel'
 import { useCommands } from './useCommands'
 
@@ -93,6 +94,7 @@ function EditorTool({
   icon,
   texto,
   label,
+  atalho,
   disabled,
   acesa,
   ajudaId,
@@ -102,6 +104,14 @@ function EditorTool({
   /** rótulo curto no lugar do ícone — para "AA", que nenhum glifo diz melhor */
   texto?: string
   label: string
+  /**
+   * O atalho já formatado, como `hint()` devolve — vai só no `title`.
+   *
+   * Fora do `aria-label` de propósito: o leitor de tela anuncia o nome do
+   * botão, e a tecla no meio dele viraria ruído lido em voz alta a cada
+   * passagem. Quem usa teclado tem a lista inteira no Ctrl+, e na paleta.
+   */
+  atalho?: string
   disabled?: boolean
   /** ligado: fica âmbar, a cor da Edição, para se ler como estado e não como botão */
   acesa?: boolean
@@ -112,7 +122,7 @@ function EditorTool({
     <button
       type="button"
       {...ajuda(ajudaId)}
-      title={label}
+      title={`${label}${atalho ?? ''}`}
       aria-label={label}
       aria-pressed={acesa === undefined ? undefined : acesa}
       disabled={disabled}
@@ -849,12 +859,14 @@ function AppConteudo({
         ajudaId="editor.chapter"
         icon="chapter"
         label={t('editor.chapter')}
+        atalho={hint(keymap, 'insert.chapter')}
         onClick={() => run('insert.chapter')}
       />
       <EditorTool
         ajudaId="editor.direction"
         icon="direction"
         label={t('editor.direction')}
+        atalho={hint(keymap, 'insert.direction')}
         onClick={() => run('insert.direction')}
       />
       {/* volta tudo a texto simples: sem capítulo, sem direção. Apagado
@@ -864,6 +876,7 @@ function AppConteudo({
         ajudaId="editor.clearFormat"
         icon="clearFormat"
         label={t('editor.clearFormat')}
+        atalho={hint(keymap, 'edit.clearFormat')}
         disabled={!hasFormatting(tab.blocks)}
         onClick={() => run('edit.clearFormat')}
       />
@@ -906,6 +919,7 @@ function AppConteudo({
         ajudaId="editor.undo"
         icon="undo"
         label={t('editor.undo')}
+        atalho={hint(keymap, 'edit.undo')}
         disabled={!history.canUndo && !textoPendente}
         onClick={() => run('edit.undo')}
       />
@@ -913,6 +927,7 @@ function AppConteudo({
         ajudaId="editor.redo"
         icon="redo"
         label={t('editor.redo')}
+        atalho={hint(keymap, 'edit.redo')}
         disabled={!history.canRedo}
         onClick={() => run('edit.redo')}
       />
@@ -945,6 +960,7 @@ function AppConteudo({
       videoPerfil={state.webview.videoPerfil}
       cardOverlay={state.cardOverlay}
       altura={state.cardsHeight}
+      keymap={keymap}
       dispatch={dispatch}
       onClose={() => dispatch({ type: 'layout/cards', visible: false })}
     />
@@ -964,7 +980,10 @@ function AppConteudo({
             key={marker.id}
             type="button"
             {...ajuda('markers.chip')}
-            title={`Alt+${index + 1}`}
+            /* o atalho vem do keymap, e não escrito à mão: só os nove
+               primeiros marcadores têm tecla, e `hint` devolve vazio para o
+               décimo em diante sem precisar contar aqui */
+            title={`${t('cmd.marker.goto', { n: index + 1 })}${hint(keymap, `marker.goto.${index + 1}`)}`}
             onClick={() => dispatch({ type: 'transport/seekAnchor', anchor: { blockId: marker.blockId, wordOffset: 0 } })}
             onContextMenu={(event) => {
               event.preventDefault()
@@ -1087,7 +1106,8 @@ function AppConteudo({
             type="button"
             {...ajuda('header.shortcuts')}
             onClick={() => setKeymapOpen(true)}
-            title={t('app.shortcuts')}
+            title={`${t('app.shortcuts')}${hint(keymap, 'keymap.open')}`}
+            aria-label={t('app.shortcuts')}
             className="flex h-8 w-9 items-center justify-center rounded-md text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
             <Icon name="keyboard" size={20} />
@@ -1096,7 +1116,8 @@ function AppConteudo({
             type="button"
             {...ajuda('header.palette')}
             onClick={() => setPalette(true)}
-            title={t('app.palette')}
+            title={`${t('app.palette')}${hint(keymap, 'palette.open')}`}
+            aria-label={t('app.palette')}
             className="flex h-8 w-9 items-center justify-center rounded-md text-[var(--color-fog-2)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
             <Icon name="search" size={20} />
@@ -1205,7 +1226,8 @@ function AppConteudo({
                     type="button"
                     {...ajuda('panel.focusToggle')}
                     onClick={toggleFocusMode}
-                    title={t('panel.collapse')}
+                    title={`${t('panel.collapse')}${hint(keymap, 'view.focusMode')}`}
+                    aria-label={t('panel.collapse')}
                     className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
                   >
                     <Icon name="collapse" size={14} />
@@ -1460,7 +1482,8 @@ function AppConteudo({
                         type="button"
                         {...ajuda('panel.focusToggle')}
                         onClick={toggleFocusMode}
-                        title={t('panel.expand')}
+                        title={`${t('panel.expand')}${hint(keymap, 'view.focusMode')}`}
+                        aria-label={t('panel.expand')}
                         className="rounded p-0.5 text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
                       >
                         <Icon name="expand" size={14} />

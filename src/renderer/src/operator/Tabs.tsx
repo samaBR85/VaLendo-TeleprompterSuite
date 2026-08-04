@@ -7,9 +7,12 @@ import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
 import { Icon } from '../ui/Icon'
 import { Tecla } from '../ui/console'
+import { hint } from '../ui/atalho'
 
 interface Props {
   state: AppState
+  /** as teclas em vigor — os `title` daqui saem dela, e não escritos à mão */
+  keymap: Map<string, string>
   dispatch: (action: Action) => void
 }
 
@@ -25,7 +28,7 @@ interface Props {
  * clique a mais (ativar, depois fechar) por nenhum motivo — a única regra é
  * nunca fechar a última, para o programa não ficar sem roteiro nenhum.
  */
-export function Tabs({ state, dispatch }: Props): React.JSX.Element {
+export function Tabs({ state, keymap, dispatch }: Props): React.JSX.Element {
   const { t } = useT()
   const [editing, setEditing] = useState<string | null>(null)
   /* qual aba abriu o menu, e onde na tela — a posição é do PONTEIRO e não da
@@ -41,6 +44,17 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
   }, [esperandoCopia, state.activeTabId])
 
   const noMenu = menu ? state.tabs.find((tab) => tab.id === menu.tabId) : undefined
+
+  /*
+   * O atalho no menu só aparece quando o menu abriu sobre a aba ATIVA.
+   *
+   * Ctrl+D e Ctrl+W valem sempre para a aba que está na frente — pelo teclado
+   * não há onde apontar. O menu, esse aponta: abriu com o direito numa ficha
+   * de fundo, o item age NELA. Escrever a tecla ali prometeria que a tecla faz
+   * o mesmo, e ela faria noutra aba.
+   */
+  const atalhoDoMenu = (commandId: string): string =>
+    menu?.tabId === state.activeTabId ? hint(keymap, commandId) : ''
 
   return (
     <div className="flex min-w-0 flex-1 items-center gap-[3px] overflow-x-auto">
@@ -97,7 +111,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
               setMenu({ tabId: tab.id, x: event.clientX, y: event.clientY })
             }}
             {...ajuda('tabs.tab')}
-            title={`${tab.title} · Ctrl+${index === 9 ? 0 : index + 1}`}
+            title={`${tab.title}${hint(keymap, `tab.switch.${index + 1}`)}`}
             className={`flex min-w-0 flex-1 ${active ? 'max-w-[210px]' : 'max-w-[190px]'}`}
           >
             {/* O deslize mora AQUI DENTRO, num filho de quem escuta o arrasto.
@@ -158,7 +172,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
         <Tecla
           {...ajuda('tabs.new')}
           aria-label={t('tabs.new')}
-          title={t('tabs.new.hint')}
+          title={`${t('tabs.new')}${hint(keymap, 'tab.new')}`}
           className="h-[26px] w-7 flex-none"
           onClick={() => dispatch({ type: 'tab/add' })}
         >
@@ -183,6 +197,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
             <ItemDoMenu
               marca="duplicar"
               rotulo={t('tabs.duplicate')}
+              atalho={atalhoDoMenu('tab.duplicate')}
               /* no teto de 10 o item some em vez de ficar clicável e não
                  fazer nada — a fileira já diz que chegou ao limite */
               some={state.tabs.length >= 10}
@@ -211,6 +226,7 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
             <ItemDoMenu
               marca="fechar"
               rotulo={t('tabs.closeItem')}
+              atalho={atalhoDoMenu('tab.close')}
               some={state.tabs.length <= 1}
               onClick={() => {
                 setMenu(null)
@@ -227,11 +243,14 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
 function ItemDoMenu({
   marca,
   rotulo,
+  atalho,
   some = false,
   onClick
 }: {
   marca: string
   rotulo: string
+  /** como `hint()` devolve, com o ` · ` na frente — daqui ele sai e vira coluna */
+  atalho?: string
   /** o item nem aparece — não há o que fazer com ele neste estado */
   some?: boolean
   onClick: () => void
@@ -242,9 +261,14 @@ function ItemDoMenu({
       type="button"
       data-tab-menu-item={marca}
       onClick={onClick}
-      className="block w-full px-3 py-1.5 text-left text-[11px] whitespace-nowrap text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+      className="flex w-full items-center gap-6 px-3 py-1.5 text-left text-[11px] whitespace-nowrap text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
     >
-      {rotulo}
+      <span className="flex-1">{rotulo}</span>
+      {atalho ? (
+        <span className="flex-none font-mono text-[10px] text-[var(--color-fog-3)]">
+          {atalho.replace(' · ', '')}
+        </span>
+      ) : null}
     </button>
   )
 }

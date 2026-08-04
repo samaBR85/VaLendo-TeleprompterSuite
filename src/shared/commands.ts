@@ -189,12 +189,27 @@ export function parseBinding(text: string): Binding | null {
   return binding.key ? binding : null
 }
 
+/**
+ * As setas viram seta.
+ *
+ * `ArrowUp` é o nome que o navegador dá à tecla, não o que está escrito nela.
+ * Num balão de botão — "Recuar · ArrowUp" — o operador lê uma palavra em
+ * inglês onde devia reconhecer um desenho. Só a exibição muda: quem GRAVA a
+ * tecla é `serializeBinding`, que continua devolvendo a forma neutra.
+ */
+const GLIFOS: Record<string, string> = {
+  ArrowUp: '↑',
+  ArrowDown: '↓',
+  ArrowLeft: '←',
+  ArrowRight: '→'
+}
+
 export function formatBinding(binding: Binding, isMac: boolean): string {
   const parts: string[] = []
   if (binding.mod) parts.push(isMac ? 'Cmd' : 'Ctrl')
   if (binding.alt) parts.push(isMac ? 'Option' : 'Alt')
   if (binding.shift) parts.push('Shift')
-  parts.push(binding.key)
+  parts.push(GLIFOS[binding.key] ?? binding.key)
   return parts.join('+')
 }
 
