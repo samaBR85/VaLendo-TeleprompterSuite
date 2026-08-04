@@ -16,7 +16,7 @@
 | **Timing** | Words per minute on a ruler, elapsed and remaining, a target duration the pace bends to meet, loop with a delay |
 | **The presenter's screen** | Any connected monitor, identified before you send a show to it, mirrored or rotated to suit the glass, and it survives being unplugged |
 | **Cards** | Images, video and messages — replacing the script or riding over it |
-| **The network** | One switch and every phone on the wi-fi is a second prompter screen |
+| **The network** | One switch and any device on the wi-fi is a second prompter screen |
 | **The console** | Three working layouts, a command palette, remappable keys, interface zoom, six languages |
 
 ---
@@ -41,13 +41,13 @@ Two marks are all the markup there is — `##` opens a chapter, `[square bracket
 
 ---
 
-## Any phone on the wi-fi is a prompter screen
+## Any device on the wi-fi is a prompter screen
 
 ![The network panel with the address and a QR code](docs/screenshots/d13-network-panel.png)
 
-Flip one switch and the reading is published to a page on your own network. Point a phone's camera at the QR code and it is following the same script, at the same word, cards included. Nothing to install, nothing to pair, no cable across the studio.
+Flip one switch and the reading is published to a page on your own network. Scan the QR code, or type the address into any browser, and that screen is following the same script, at the same word, cards included. Nothing to install, nothing to pair, no cable across the studio.
 
-That is the director, the floor manager, the presenter rehearsing in the dressing room, and camera two on the far side of the room — all reading the same thing, on hardware everyone already has in their pocket.
+That is the director, the floor manager, the presenter rehearsing in the dressing room, and camera two on the far side of the room — all reading the same thing, on hardware they already have: a phone, a tablet, a spare laptop.
 
 **It is the reading that travels, not a video feed.** No NDI, no SDI, no screen capture: the same page redraws itself in each browser. That is why it works on ordinary wi-fi, and why card video has five weight profiles — the network can be told to send something lighter while the presenter's screen always gets the original.
 
