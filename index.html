@@ -248,7 +248,7 @@
     <a class="btn" href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki">Documentation</a>
   </div>
   <div class="chips">
-    <span class="chip" id="chip-version"><span class="dot"></span>Version <b>1.2.0</b></span>
+    <span class="chip" id="chip-version"><span class="dot"></span>Version <b>1.3.0</b></span>
     <span class="chip" id="chip-downloads"><span class="dot"></span><b>No release yet</b></span>
   </div>
   <figure class="shot-wide">
@@ -502,17 +502,27 @@
           If that monitor is unplugged mid-show, Valendo closes the output rather than leaving a window
           at coordinates that no longer exist.
         </p>
+        <p>
+          <strong>Dim the edges</strong> fades the script away from the line being read, so the eye has
+          one place to land. The clear window follows the reading mark wherever you put it, and a slider
+          decides how wide it stays — from most of the screen down to a band about one line tall.
+        </p>
       </div>
       <figure>
         <img src="shots/09-broadcast.png" alt="The presenter's screen: the reading line, the current sentence bright, what is coming dimmed" />
         <figcaption>What the presenter reads. Mirror is off here so it is legible on this page.</figcaption>
       </figure>
     </div>
-    <div class="details two">
+    <div class="details">
       <div class="detail">
         <div class="pic"><img src="shots/d05-output.png" alt="The monitor picker and the Broadcast key" /></div>
         <b>Choose, identify, broadcast</b>
         <span>Never guess which screen faces the presenter.</span>
+      </div>
+      <div class="detail">
+        <div class="pic"><img src="shots/d27-focus-dim.png" alt="The reading controls: the mark, dim the edges, and how much" /></div>
+        <b>As tight as the room needs</b>
+        <span>How much of the screen stays legible is yours to set.</span>
       </div>
       <div class="detail">
         <div class="pic"><img src="shots/d07-modes.png" alt="The layout switch: Split, Focus, Desk" /></div>
@@ -670,7 +680,7 @@
       never applied:
     </p>
 <pre><code>curl -L -o ~/Downloads/Valendo.dmg \
-  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.2.0-arm64.dmg</code></pre>
+  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.3.0-arm64.dmg</code></pre>
     <p>
       Intel Macs are not shipped as a download, but the app builds and runs on them —
       see <a href="https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki/Building-from-Source">Building from Source</a>.
@@ -708,7 +718,7 @@ npm run dev</code></pre>
 /*
  * Os dois chips do herói, preenchidos pela API pública do GitHub.
  *
- * O HTML já chega com um texto que é verdade — "Version 1.2.0" e "No release
+ * O HTML já chega com um texto que é verdade — "Version 1.3.0" e "No release
  * yet" — e o script só MELHORA o que está lá. Assim a página continua honesta
  * quando a API não responde: sem chave, ela permite 60 chamadas por hora por
  * endereço IP, e um visitante numa rede movimentada pode cair no limite.
