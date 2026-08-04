@@ -10,6 +10,7 @@ import type {
   TransportPosition
 } from './types'
 import type { PerfilDeRede } from './proxy'
+import type { FundoDeTela, RecadoDeTela } from './tela'
 
 /**
  * Tudo que muda estado passa por aqui. O renderer nunca escreve direto: manda
@@ -42,6 +43,18 @@ export type Action =
   | { type: 'card/reorder'; cardId: string; toIndex: number }
   | { type: 'card/rename'; cardId: string; nome: string }
   | { type: 'card/text'; cardId: string; texto: string }
+  /**
+   * Mexe num cartão de tela. Vai como REMENDO parcial e não como o cartão
+   * inteiro porque o editor mexe num controle de cada vez — mandar o objeto
+   * completo a cada arrasto de slider faria dois controles concorrentes
+   * sobrescreverem um ao outro com a versão que cada um tinha ao abrir.
+   */
+  | {
+      type: 'card/tela'
+      cardId: string
+      fundo?: Partial<FundoDeTela>
+      recado?: Partial<RecadoDeTela>
+    }
   /** o operador reimportou a arte de um cartão de imagem cujo arquivo sumiu */
   | { type: 'card/imageFile'; cardId: string; arquivo: string }
   /**

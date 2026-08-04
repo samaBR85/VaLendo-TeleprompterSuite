@@ -16,6 +16,7 @@ import {
   type Transport,
   type VideoClock
 } from '@shared/types'
+import { apoioDoRecado, corpoDoRecado, fundoDaTela } from '@shared/tela'
 import { posicaoDoVideo } from '@shared/video'
 
 export interface Viewport {
@@ -163,6 +164,72 @@ interface Props {
  * que chega aqui é sempre estado — nunca um player que o vidro do teleprompter
  * pudesse acabar mostrando.
  */
+/**
+ * O cartão de TELA: fundo desenhado mais recado.
+ *
+ * Exportado porque a gaveta e a coluna de assets desenham o MESMO componente
+ * na miniatura. Não é economia de digitação: um fundo que se desenha diferente
+ * no ladrilho e no ar é uma armadilha que só aparece com a câmera ligada, e a
+ * única defesa barata contra isso é não haver dois desenhos.
+ *
+ * A `altura` é a do quadro em que ele está, e é o que faz o corpo do recado
+ * ser proporcional — o mesmo cartão numa miniatura de 99px e numa saída de
+ * 1080 tem de parecer o mesmo cartão.
+ */
+export function TelaDoCartao({
+  card,
+  altura,
+  folgaInferior = 0
+}: {
+  card: Extract<Cartao, { kind: 'tela' }>
+  altura: number
+  /**
+   * Pixels a mais de respiro embaixo, para quem desenha ALGO por cima do
+   * quadro. É o caso do ladrilho da gaveta, que tem a faixa do nome colada na
+   * base: sem isto um recado posicionado no pé some atrás do nome, e a
+   * miniatura passa a mentir justamente sobre o que vai ao ar.
+   */
+  folgaInferior?: number
+}): React.JSX.Element {
+  return (
+    <div
+      data-card-tela={card.id}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        background: fundoDaTela(card.fundo),
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: apoioDoRecado(card.recado?.posicao),
+        // o recado não encosta na borda: atrás de um vidro de teleprompter é o
+        // último centímetro da tela que se perde primeiro
+        padding: `7% 8% calc(7% + ${folgaInferior}px)`,
+        overflow: 'hidden'
+      }}
+    >
+      {card.recado?.texto ? (
+        <div
+          data-card-tela-recado
+          style={{
+            fontSize: corpoDoRecado(card.recado.corpoPct, altura),
+            fontWeight: 700,
+            letterSpacing: '0.05em',
+            lineHeight: 1.15,
+            textAlign: 'center',
+            color: card.recado.cor,
+            overflowWrap: 'break-word',
+            // onde o operador apertou Enter é onde quebra aqui também
+            whiteSpace: 'pre-wrap'
+          }}
+        >
+          {card.recado.texto}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 export function VideoCartao({
   card,
   clock,
@@ -816,6 +883,8 @@ export function PrompterCanvas({
                 volume={cardVolume}
                 previaDoOperador={previaDoOperador}
               />
+            ) : card.kind === 'tela' ? (
+              <TelaDoCartao card={card} altura={box.height} />
             ) : (
               <div
                 data-card-text

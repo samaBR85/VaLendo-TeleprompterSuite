@@ -4,13 +4,16 @@ import { CARD_DRAG_MIME, CARTOES_COM_ATALHO, ESTILOS_DE_OVERLAY, novoCartaoId } 
 import { CARDS_HEIGHT_MAX, CARDS_HEIGHT_MIN } from '@shared/defaults'
 import type { CardConvertProgress } from '@shared/api'
 import { perfilPorId, type PerfilDeRede } from '@shared/proxy'
+import { telaNova } from '@shared/tela'
 import type { CardOverlayStyle, Cartao, VideoClock } from '@shared/types'
 import { posicaoDoVideo, tempoDeVideo } from '@shared/video'
 import type { AjudaId } from '@shared/ajuda'
 import { useT } from '../i18n'
+import { TelaDoCartao } from '../prompter/PrompterCanvas'
 import { ajuda } from '../ui/ajuda'
 import { Icon } from '../ui/Icon'
 import { CabecalhoDePainel, Ficha, SliderConsole } from '../ui/console'
+import { EditorDeTela } from './EditorDeTela'
 
 type CartaoVideo = Extract<Cartao, { kind: 'video' }>
 
@@ -100,6 +103,13 @@ export function CardsDrawer({
    * acontecendo, a segunda parece o app travado.
    */
   const [convertendo, setConvertendo] = useState<CardConvertProgress | null>(null)
+  /* qual tela está aberta no editor — guardo o ID e não o cartão, para o
+     editor sempre ler a versão de agora do estado em vez de uma cópia que
+     envelhece a cada remendo */
+  const [editandoTela, setEditandoTela] = useState<string | null>(null)
+  const telaEmEdicao = cards.find(
+    (c): c is Extract<Cartao, { kind: 'tela' }> => c.id === editandoTela && c.kind === 'tela'
+  )
   useEffect(() => window.valendo.onCardConvert(setConvertendo), [])
 
   /**
@@ -181,6 +191,21 @@ export function CardsDrawer({
       type: 'card/add',
       card: { id: novoCartaoId(Date.now(), cards.length), kind: 'text', nome: '', texto: '' }
     })
+  }
+
+  /*
+   * Uma tela nasce chapada e sem recado, e o editor abre em seguida.
+   *
+   * Abrir o editor faz parte do gesto: um cartão chapado azul-escuro sem
+   * nada escrito é indistinguível de um cartão vazio na fileira, e quem
+   * apertou "+ Tela" apertou para escolher a cor, não para ganhar um
+   * retângulo.
+   */
+  const adicionarTela = (): void => {
+    const id = novoCartaoId(Date.now(), cards.length)
+    const { fundo, recado } = telaNova()
+    dispatch({ type: 'card/add', card: { id, kind: 'tela', nome: '', fundo, recado } })
+    setEditandoTela(id)
   }
 
   /**
@@ -285,6 +310,12 @@ export function CardsDrawer({
             rotulo={t('cards.addText')}
             onClick={adicionarRecado}
           />
+          <BotaoAdicionar
+            ajudaId="cards.addScreen"
+            atributo="tela"
+            rotulo={t('cards.addScreen')}
+            onClick={adicionarTela}
+          />
         </div>
 
         {/* o estilo de legibilidade do overlay, aqui também.
@@ -356,6 +387,7 @@ export function CardsDrawer({
               cardOverlay={cardOverlay}
               dispatch={dispatch}
               onFalha={setRecusa}
+              onEditarTela={setEditandoTela}
             />
           </CartaoArrastavel>
         ))}
@@ -403,6 +435,17 @@ export function CardsDrawer({
           </span>
         </div>
       </div>
+
+      {/* O cartão vem do estado a cada desenho, e não de uma cópia guardada:
+          o editor mexe por remendos, e ler uma cópia deixaria a prévia
+          mostrando o cartão como ele era quando a janela abriu. */}
+      {telaEmEdicao ? (
+        <EditorDeTela
+          card={telaEmEdicao}
+          dispatch={dispatch}
+          onClose={() => setEditandoTela(null)}
+        />
+      ) : null}
     </section>
   )
 }
@@ -549,7 +592,8 @@ function CartaoNaGaveta({
   videoPerfil,
   cardOverlay,
   dispatch,
-  onFalha
+  onFalha,
+  onEditarTela
 }: {
   card: Cartao
   atalho: number | null
@@ -560,6 +604,7 @@ function CartaoNaGaveta({
   cardOverlay: { enabled: boolean; style: CardOverlayStyle }
   dispatch: (action: Action) => void
   onFalha: (mensagem: string) => void
+  onEditarTela: (cardId: string) => void
 }): React.JSX.Element {
   const { t } = useT()
   const desvinculado = card.kind === 'video' && card.vinculado === false
@@ -759,6 +804,12 @@ function CartaoNaGaveta({
           ) : (
             <Icon name="play" size={18} />
           )
+        ) : card.kind === 'tela' ? (
+          /* o MESMO componente da transmissão, num quadro de 90px de altura:
+             é o que garante que a miniatura não minta sobre o que vai ao ar.
+             A folga embaixo é a faixa do nome, que fica colada na base do
+             ladrilho — sem ela um recado no pé sumiria atrás do nome */
+          <TelaDoCartao card={card} altura={90} folgaInferior={15} />
         ) : (
           <span className="line-clamp-3 px-2 pb-4 text-center text-[12px] leading-snug font-semibold whitespace-pre-wrap text-[var(--color-fog-05)]">
             {card.texto || '—'}
@@ -813,7 +864,9 @@ function CartaoNaGaveta({
               ? t('cards.namePlaceholderImage')
               : card.kind === 'video'
                 ? t('cards.namePlaceholderVideo')
-                : t('cards.namePlaceholderText')
+                : card.kind === 'tela'
+                  ? t('cards.namePlaceholderScreen')
+                  : t('cards.namePlaceholderText')
           }
           onChange={(event) => dispatch({ type: 'card/rename', cardId: card.id, nome: event.target.value })}
           className="absolute inset-x-0 bottom-0 bg-black/70 px-1.5 py-[3px] text-[9px] text-[var(--color-fog-05)] outline-none placeholder:text-[var(--color-fog-3)] focus:bg-black/85"
@@ -831,6 +884,24 @@ function CartaoNaGaveta({
           onArrastar={setArrastando}
           onSoltarArrasto={finalizarArrasto}
         />
+      ) : null}
+
+      {/* A tela não ganha controles no ladrilho: as oito regulagens dela não
+          caberiam em 176px, e a cor de um fundo não se escolhe num selo desse
+          tamanho — quem decide isso está mirando uma tela de 55 polegadas a
+          três metros do apresentador. O ladrilho leva só a porta. */}
+      {card.kind === 'tela' ? (
+        <div className="flex flex-none px-[7px] pt-[7px]">
+          <button
+            type="button"
+            data-card-editar-tela={card.id}
+            {...ajuda('cards.editScreen')}
+            onClick={() => onEditarTela(card.id)}
+            className="flex w-full items-center justify-center gap-1 rounded border border-[var(--color-edge)] bg-[var(--color-ink-3)] py-[3px] text-[10px] text-[var(--color-fog-1)] hover:bg-[var(--color-ink-4)] hover:text-[var(--color-fog-0)]"
+          >
+            {t('cards.editScreen')}
+          </button>
+        </div>
       ) : null}
 
       {/* o miolo cresce com a gaveta: puxar a divisória dá mais linha ao

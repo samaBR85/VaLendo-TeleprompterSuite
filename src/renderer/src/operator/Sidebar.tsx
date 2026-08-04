@@ -15,6 +15,7 @@ import type {
 } from '@shared/types'
 import { ajudaDe, type AjudaId } from '@shared/ajuda'
 import { useT } from '../i18n'
+import { TelaDoCartao } from '../prompter/PrompterCanvas'
 import { Icon } from '../ui/Icon'
 import { ajuda, useAjudaApontada } from '../ui/ajuda'
 import { CabecalhoDePainel, Ficha, SliderConsole } from '../ui/console'
@@ -137,12 +138,18 @@ function CorpoDaAjuda({ keymap }: { keymap: Map<string, string> }): React.JSX.El
  * rodando para pintar um selo.
  */
 function MiniaturaDoCartao({ card, size }: { card: Cartao; size: number }): React.JSX.Element {
+  const altura = Math.round(size * 0.6)
   return (
     <span
-      className="flex flex-none items-center justify-center overflow-hidden rounded-[3px] border border-[var(--color-edge)] bg-[var(--color-ink-3)]"
-      style={{ width: size, height: Math.round(size * 0.6) }}
+      className="relative flex flex-none items-center justify-center overflow-hidden rounded-[3px] border border-[var(--color-edge)] bg-[var(--color-ink-3)]"
+      style={{ width: size, height: altura }}
     >
-      {card.kind === 'image' ? (
+      {card.kind === 'tela' ? (
+        /* o mesmo componente do ar, a 24px de altura: a coluna mostra a cor
+           de verdade do cartão, e não um ícone genérico que não distingue
+           duas telas uma da outra */
+        <TelaDoCartao card={card} altura={altura} />
+      ) : card.kind === 'image' ? (
         <img
           // reimportar pode gerar o MESMO nome de arquivo de antes (mesmo id,
           // mesma extensão) — sem `rev` na URL, o navegador reaproveita a

@@ -396,6 +396,38 @@ export const ajudaEn = {
     nome: 'Add message',
     texto: 'A card of plain text — a note to the presenter, big on screen. Nothing to import; you type it right here.'
   },
+  'cards.addScreen': {
+    nome: 'Add screen',
+    texto: 'A card the app draws: a colour or a gradient, with a message over it if you want. No file, no import — a standby screen without opening an image editor.'
+  },
+  'cards.editScreen': {
+    nome: 'Edit the screen',
+    texto: 'Opens the screen with a big preview. Colour picked on a 176px tile is not the colour you get on a studio monitor.'
+  },
+  'cards.background': {
+    nome: 'Background',
+    texto: 'Flat is one colour. Gradient adds a second one and an angle to run between them.'
+  },
+  'cards.colours': {
+    nome: 'Colours',
+    texto: 'Opens the system colour picker, eyedropper included. Deep and unsaturated reads best behind teleprompter glass.'
+  },
+  'cards.angle': {
+    nome: 'Gradient angle',
+    texto: 'Which way the two colours run. 0° goes up, 90° goes right.'
+  },
+  'cards.screenText': {
+    nome: 'Screen message',
+    texto: 'What is written over the background. Where you press Enter is where it breaks on air. Leave it empty for a plain backdrop.'
+  },
+  'cards.size': {
+    nome: 'Message size',
+    texto: 'A share of the screen height, not a pixel size — so the card looks the same on the drawer tile and on a 55-inch monitor.'
+  },
+  'cards.place': {
+    nome: 'Where it sits',
+    texto: 'Top, middle or bottom. None of them touches the edge: behind glass, the last centimetre of the screen is what goes first.'
+  },
   'cards.close': {
     nome: 'Close drawer',
     texto: 'Hides the cards drawer. The cards stay in the programme; only the drawer goes away.'

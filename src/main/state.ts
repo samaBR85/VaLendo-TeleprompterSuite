@@ -574,6 +574,26 @@ export class Store {
         }
         break
 
+      /*
+       * Remendo parcial, e por isso o espalhamento é campo a campo: mandar
+       * `{...c, fundo: action.fundo}` apagaria a cor de partida toda vez que
+       * o operador mexesse só no ângulo.
+       */
+      case 'card/tela':
+        this.state = {
+          ...this.state,
+          cards: this.state.cards.map((c) =>
+            c.id === action.cardId && c.kind === 'tela'
+              ? {
+                  ...c,
+                  fundo: action.fundo ? { ...c.fundo, ...action.fundo } : c.fundo,
+                  recado: action.recado ? { ...c.recado, ...action.recado } : c.recado
+                }
+              : c
+          )
+        }
+        break
+
       case 'card/imageFile':
         this.state = {
           ...this.state,

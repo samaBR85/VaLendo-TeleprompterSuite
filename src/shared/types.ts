@@ -1,5 +1,6 @@
 import type { Lang } from './i18n/types'
 import type { PerfilDeRede } from './proxy'
+import type { FundoDeTela, RecadoDeTela } from './tela'
 
 /** Bloco de texto. `direction` são anotações em [colchetes], que não contam tempo. */
 export type BlockKind = 'speech' | 'direction' | 'chapter'
@@ -348,6 +349,27 @@ export type Cartao =
       kind: 'text'
       nome: string
       texto: string
+      /** o texto da Transmissão sobrepõe este cartão em vez de substituí-lo */
+      overlay?: boolean
+    }
+  | {
+      id: string
+      /**
+       * Uma tela DESENHADA pelo app: fundo mais recado, sem arquivo nenhum.
+       *
+       * É por isso que ela não tem `arquivo`, `caminho`, `proxy` nem `poster`
+       * como as outras — não há o que copiar, o que converter, o que reapontar
+       * nem o que limpar quando o cartão morre. O cartão inteiro cabe em
+       * meia dúzia de campos e viaja dentro do `.valendo` como texto.
+       *
+       * O cartão de RECADO continua existindo e não foi absorvido por este:
+       * quem quer só escrever "CORTA" não deveria passar por um seletor de
+       * gradiente para chegar lá.
+       */
+      kind: 'tela'
+      nome: string
+      fundo: FundoDeTela
+      recado: RecadoDeTela
       /** o texto da Transmissão sobrepõe este cartão em vez de substituí-lo */
       overlay?: boolean
     }
