@@ -165,8 +165,6 @@ export const de: Dicionario = {
   'insp.clock.target': 'Ziel',
 
   'insp.glass': 'Ausgleich für das Glas',
-  'insp.glass.hint':
-    'Nur auf dem Sprecherbildschirm. Vorschau und Netzseite bleiben ungespiegelt, damit man sie lesen kann.',
   'insp.mirrorH': 'Horizontal spiegeln',
   'insp.mirrorV': 'Vertikal spiegeln',
 

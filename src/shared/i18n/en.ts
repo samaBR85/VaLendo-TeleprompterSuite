@@ -165,7 +165,6 @@ export const en: Dicionario = {
   'insp.clock.target': 'Target',
 
   'insp.glass': 'Glass compensation',
-  'insp.glass.hint': 'Presenter’s screen only. The preview and the network page stay unmirrored, so they can be read.',
   'insp.mirrorH': 'Mirror horizontally',
   'insp.mirrorV': 'Mirror vertically',
 

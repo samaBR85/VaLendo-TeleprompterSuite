@@ -611,15 +611,15 @@ export const ajudaEn = {
   },
   'insp.mirrorH': {
     nome: 'Mirror horizontally',
-    texto: 'Flips the image left to right — what a beam-splitter glass in front of the lens needs to read correctly.'
+    texto: 'Flips the presenter screen left to right — what the beam-splitter glass in front of the lens needs. Your preview and the phones stay unmirrored, so you can read them.'
   },
   'insp.mirrorV': {
     nome: 'Mirror vertically',
-    texto: 'Flips the image top to bottom, for rigs where the monitor faces up into the glass.'
+    texto: 'Flips the presenter screen top to bottom, for rigs where the monitor faces up into the glass. Your preview and the phones are never mirrored.'
   },
   'insp.rotation': {
     nome: 'Rotation',
-    texto: 'Turns the presenter screen in quarter turns — for a monitor mounted on its side.'
+    texto: 'Turns the presenter screen in quarter turns — for a monitor mounted on its side. Your preview and the phones keep the upright image.'
   },
   'insp.saveDefaults': {
     nome: 'Save as default',

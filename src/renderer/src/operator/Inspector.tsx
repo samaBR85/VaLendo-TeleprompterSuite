@@ -185,13 +185,10 @@ interface Props {
  */
 function Group({
   label,
-  hint,
   acao,
   children
 }: {
   label?: string
-  /** explicação do grupo inteiro, só visível ao passar o mouse no rótulo */
-  hint?: string
   /** controle do grupo inteiro, encostado na direita do rótulo */
   acao?: React.ReactNode
   children: React.ReactNode
@@ -201,7 +198,6 @@ function Group({
       {label ? (
         <div className="mb-1.5 flex items-center gap-1 text-[11px] font-medium tracking-wide text-[var(--color-fog-2)]">
           {label}
-          {hint ? <Hint text={hint} /> : null}
           {acao ? <span className="ml-auto flex items-center">{acao}</span> : null}
         </div>
       ) : null}
@@ -321,22 +317,16 @@ function AlvoField({ value, onChange }: { value: number; onChange: (seconds: num
   )
 }
 
-/**
- * Explicação que só aparece ao passar o mouse.
+/*
+ * Aqui morava o "?" — uma explicação que só aparecia ao passar o mouse.
  *
- * Antes, cada uma dessas frases ficava escrita por baixo do controle o tempo
- * todo — e um painel de 214px de largura não aguenta muitas delas sem parecer
- * uma bula. Quem já sabe o que o controle faz nunca lê aquilo de novo; quem
- * não sabe, lê uma vez e pronto. Cabe melhor num "?" que só fala quando
- * perguntado.
+ * Ele resolvia um problema real: um painel de 214px não aguenta as frases
+ * escritas por baixo de cada controle sem virar bula. Mas a Ajuda rápida
+ * passou a fazer isso melhor: apontar o controle mostra a explicação inteira,
+ * sem esperar o balão nascer e sem caber num balão. Os três "?" que existiam
+ * saíram, e o que cada um dizia foi para lá — inclusive o do vidro, que
+ * avisava que espelho e giro valem só na tela do apresentador.
  */
-function Hint({ text }: { text: string }): React.JSX.Element {
-  return (
-    <span title={text} className="flex-none cursor-help text-[var(--color-fog-2)]">
-      <Icon name="info" size={12} />
-    </span>
-  )
-}
 
 /**
  * Uma linha de toggle dentro de um grupo.
@@ -923,7 +913,7 @@ export function Inspector({
         ) : null}
       </Group>
 
-      <Group label={t('insp.glass')} hint={t('insp.glass.hint')}>
+      <Group label={t('insp.glass')}>
         <Toggle
           ajudaId="insp.mirrorH"
           label={t('insp.mirrorH')}

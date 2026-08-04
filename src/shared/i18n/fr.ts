@@ -165,8 +165,6 @@ export const fr: Dicionario = {
   'insp.clock.target': 'Objectif',
 
   'insp.glass': 'Compensation du verre',
-  'insp.glass.hint':
-    'Écran du présentateur uniquement. L’aperçu et la page réseau restent sans miroir, pour rester lisibles.',
   'insp.mirrorH': 'Miroir horizontal',
   'insp.mirrorV': 'Miroir vertical',
 

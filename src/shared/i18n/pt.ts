@@ -178,7 +178,6 @@ export const pt = {
   'insp.clock.target': 'Alvo',
 
   'insp.glass': 'Compensação do vidro',
-  'insp.glass.hint': 'Só na tela do apresentador. A prévia e a rede seguem sem espelho, para dar leitura.',
   'insp.mirrorH': 'Espelhar horizontal',
   'insp.mirrorV': 'Espelhar vertical',
 

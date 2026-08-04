@@ -165,8 +165,6 @@ export const it: Dicionario = {
   'insp.clock.target': 'Obiettivo',
 
   'insp.glass': 'Compensazione del vetro',
-  'insp.glass.hint':
-    'Solo sullo schermo del presentatore. L’anteprima e la pagina di rete restano senza specchio, per poter leggere.',
   'insp.mirrorH': 'Specchia in orizzontale',
   'insp.mirrorV': 'Specchia in verticale',
 

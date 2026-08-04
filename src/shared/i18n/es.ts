@@ -165,8 +165,6 @@ export const es: Dicionario = {
   'insp.clock.target': 'Meta',
 
   'insp.glass': 'Compensación del cristal',
-  'insp.glass.hint':
-    'Solo en la pantalla del presentador. La vista previa y la red siguen sin espejo, para poder leerse.',
   'insp.mirrorH': 'Reflejar horizontal',
   'insp.mirrorV': 'Reflejar vertical',
 
