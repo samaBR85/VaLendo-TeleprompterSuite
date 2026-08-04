@@ -6,6 +6,7 @@ import {
   empurrarDigitoDoAlvo,
   formatAlvo,
   formatClock,
+  parseDuration,
   ppmForTarget,
   relogioIndependenteReading,
   secondsForWords,
@@ -68,6 +69,32 @@ describe('ppm e duração', () => {
   it('ignora direções ao estimar a duração', () => {
     const blocks = blocksFromText('uma duas três quatro\n\n[isto não é falado e não conta tempo]')
     expect(totalWordCount(blocks)).toBe(4)
+  })
+})
+
+describe('parseDuration', () => {
+  it('entende as duas formas que alguém digita com pressa', () => {
+    expect(parseDuration('2:00')).toBe(120)
+    expect(parseDuration('0:45')).toBe(45)
+    expect(parseDuration('10:30')).toBe(630)
+    expect(parseDuration('120')).toBe(120)
+    // o operador digita dentro de um campo, e campo tem espaço sobrando
+    expect(parseDuration('  2:00  ')).toBe(120)
+  })
+
+  it('devolve null para o que não é duração, em vez de zero', () => {
+    // zero seria uma resposta: mandaria o ritmo para o teto por causa de um
+    // engano de digitação. null deixa quem chama devolver o valor de antes
+    expect(parseDuration('')).toBeNull()
+    expect(parseDuration('abc')).toBeNull()
+    expect(parseDuration('0')).toBeNull()
+    expect(parseDuration('-30')).toBeNull()
+  })
+
+  it('recusa minuto com mais de 59 segundos', () => {
+    // "2:75" quase certamente é erro de digitação, não dois minutos e 75s
+    expect(parseDuration('2:75')).toBeNull()
+    expect(parseDuration('2:59')).toBe(179)
   })
 })
 

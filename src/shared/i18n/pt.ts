@@ -103,7 +103,6 @@ export const pt = {
   'toolbar.elapsed': 'decorrido',
   'toolbar.remaining': 'restante',
   'lcd.forecast': 'previsão',
-  'lcd.target': 'alvo',
   'lcd.speed': 'velocidade de rolagem',
 
   /* ---------------------------------------------------------------- ajustes */
@@ -203,8 +202,6 @@ export const pt = {
   'sidebar.help.idleTitle': 'Aponte um controle',
   'sidebar.help.idle': 'Passe o mouse por qualquer botão ou slider da mesa e a explicação dele aparece aqui.',
 
-  'status.words': 'Palavras',
-  'status.duration': 'Duração',
   'status.target': 'Duração-alvo',
   'status.saved': 'salvo',
   'status.notSaved': 'não está salvando',
@@ -213,7 +210,7 @@ export const pt = {
   'status.markers_n': '{n} marcadores',
   'status.undo_1': '{n} passo de desfazer',
   'status.undo_n': '{n} passos de desfazer',
-  'status.paletteHint': 'Ctrl+K comandos',
+  'status.commands': 'comandos',
 
   /* -------------------------------------------------------------------- mesa */
   'deck.timeline': 'Linha do tempo do programa',

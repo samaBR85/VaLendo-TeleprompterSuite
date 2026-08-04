@@ -91,7 +91,6 @@ export const es: Dicionario = {
   'toolbar.elapsed': 'transcurrido',
   'toolbar.remaining': 'restante',
   'lcd.forecast': 'previsión',
-  'lcd.target': 'objetivo',
   'lcd.speed': 'velocidad de desplazamiento',
 
   'insp.tab.text': 'Texto',
@@ -185,8 +184,6 @@ export const es: Dicionario = {
   'sidebar.help.idleTitle': 'Apunta a un control',
   'sidebar.help.idle': 'Pasa el ratón por cualquier botón o control de la mesa y aquí aparece lo que hace.',
 
-  'status.words': 'Palabras',
-  'status.duration': 'Duración',
   'status.target': 'Duración objetivo',
   'status.saved': 'guardado',
   'status.notSaved': 'no está guardando',
@@ -195,7 +192,7 @@ export const es: Dicionario = {
   'status.markers_n': '{n} marcadores',
   'status.undo_1': '{n} paso para deshacer',
   'status.undo_n': '{n} pasos para deshacer',
-  'status.paletteHint': 'Ctrl+K comandos',
+  'status.commands': 'comandos',
 
   'deck.timeline': 'Línea de tiempo del programa',
   'deck.of': 'de',

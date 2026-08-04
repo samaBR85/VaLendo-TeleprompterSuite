@@ -1532,10 +1532,9 @@ function AppConteudo({
         state={state}
         tab={tab}
         history={history}
-        rows={rows}
         storage={storage}
-        dispatch={dispatch}
         onModeChange={(mode) => dispatch({ type: 'layout/mode', mode })}
+        onOpenPalette={() => setPalette(true)}
       />
 
       {notice ? (

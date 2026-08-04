@@ -91,7 +91,6 @@ export const de: Dicionario = {
   'toolbar.elapsed': 'vergangen',
   'toolbar.remaining': 'verbleibend',
   'lcd.forecast': 'Prognose',
-  'lcd.target': 'Ziel',
   'lcd.speed': 'Rollgeschwindigkeit',
 
   'insp.tab.text': 'Text',
@@ -185,8 +184,6 @@ export const de: Dicionario = {
   'sidebar.help.idleTitle': 'Auf ein Bedienelement zeigen',
   'sidebar.help.idle': 'Mit der Maus über eine Taste oder einen Regler fahren — hier steht dann, was sie tut.',
 
-  'status.words': 'Wörter',
-  'status.duration': 'Dauer',
   'status.target': 'Zieldauer',
   'status.saved': 'gespeichert',
   'status.notSaved': 'speichert nicht',
@@ -195,7 +192,7 @@ export const de: Dicionario = {
   'status.markers_n': '{n} Marker',
   'status.undo_1': '{n} Schritt rückgängig',
   'status.undo_n': '{n} Schritte rückgängig',
-  'status.paletteHint': 'Strg+K Befehle',
+  'status.commands': 'Befehle',
 
   'deck.timeline': 'Zeitleiste der Sendung',
   'deck.of': 'von',

@@ -224,6 +224,10 @@ export const ajudaEn = {
     nome: 'Reading pace',
     texto: 'Words per minute — how fast the text scrolls. The mouse wheel works anywhere in the app, not only over this ruler.'
   },
+  'status.target': {
+    nome: 'Target duration',
+    texto: 'How long the script takes at the current pace. Click and type another one — "2:00" or plain seconds — and the pace changes to fit it.'
+  },
   'transport.elapsed': {
     nome: 'Elapsed',
     texto: 'How long the reading has been running. What it counts depends on the clock mode in Settings › Output.'
@@ -631,10 +635,6 @@ export const ajudaEn = {
   },
 
   /* -------------------------------------------------------------- RODAPÉ */
-  'status.target': {
-    nome: 'Target duration',
-    texto: 'Type how long the piece must take and the pace is recalculated to fit it. Accepts "2:00" or plain seconds.'
-  },
   'status.modeSplit': {
     nome: 'Split',
     texto: 'Editor and presenter view side by side — the arrangement for writing and running at the same time.'
@@ -650,5 +650,10 @@ export const ajudaEn = {
   'status.storage': {
     nome: 'Save state',
     texto: 'Says whether Valendo is managing to write your work to disk. It turns amber the moment it cannot — silence would look the same as working.'
+  },
+  'status.palette': {
+    nome: 'Command palette',
+    texto: 'Every command in the app, searchable by name, with its shortcut beside it. The fastest way to find something you use rarely.',
+    comando: 'palette.open'
   }
 } as const satisfies Record<string, Ajuda>

@@ -91,7 +91,6 @@ export const fr: Dicionario = {
   'toolbar.elapsed': 'écoulé',
   'toolbar.remaining': 'restant',
   'lcd.forecast': 'prévision',
-  'lcd.target': 'cible',
   'lcd.speed': 'vitesse de défilement',
 
   'insp.tab.text': 'Texte',
@@ -185,8 +184,6 @@ export const fr: Dicionario = {
   'sidebar.help.idleTitle': 'Pointez une commande',
   'sidebar.help.idle': 'Survolez n’importe quel bouton ou curseur de la console : son rôle s’affiche ici.',
 
-  'status.words': 'Mots',
-  'status.duration': 'Durée',
   'status.target': 'Durée visée',
   'status.saved': 'enregistré',
   'status.notSaved': 'n’enregistre pas',
@@ -195,7 +192,7 @@ export const fr: Dicionario = {
   'status.markers_n': '{n} repères',
   'status.undo_1': '{n} annulation',
   'status.undo_n': '{n} annulations',
-  'status.paletteHint': 'Ctrl+K commandes',
+  'status.commands': 'commandes',
 
   'deck.timeline': 'Chronologie de l’émission',
   'deck.of': 'sur',

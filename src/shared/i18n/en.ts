@@ -91,7 +91,6 @@ export const en: Dicionario = {
   'toolbar.elapsed': 'elapsed',
   'toolbar.remaining': 'remaining',
   'lcd.forecast': 'forecast',
-  'lcd.target': 'target',
   'lcd.speed': 'scroll speed',
 
   'insp.tab.text': 'Text',
@@ -185,8 +184,6 @@ export const en: Dicionario = {
   'sidebar.help.idleTitle': 'Point at a control',
   'sidebar.help.idle': 'Hover any button or slider on the console and what it does shows up here.',
 
-  'status.words': 'Words',
-  'status.duration': 'Duration',
   'status.target': 'Target duration',
   'status.saved': 'saved',
   'status.notSaved': 'not saving',
@@ -195,7 +192,7 @@ export const en: Dicionario = {
   'status.markers_n': '{n} markers',
   'status.undo_1': '{n} undo step',
   'status.undo_n': '{n} undo steps',
-  'status.paletteHint': 'Ctrl+K commands',
+  'status.commands': 'commands',
 
   'deck.timeline': 'Show timeline',
   'deck.of': 'of',

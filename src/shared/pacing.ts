@@ -25,6 +25,22 @@ export function ppmForTarget(wordCount: number, seconds: number): number {
   return (wordCount / seconds) * 60
 }
 
+/**
+ * A duração que o operador digitou, em segundos — ou `null` se não for uma.
+ *
+ * Aceita as duas formas que alguém escreve com pressa: "2:00" e "120". O que
+ * NÃO aceita é tudo o mais, e por isso devolve `null` em vez de zero: zero é
+ * uma duração (e faria o ritmo saltar para o teto), enquanto `null` é a
+ * resposta certa para "isso não era um tempo" — quem chama devolve o campo ao
+ * valor de antes em vez de agir sobre um engano de digitação.
+ */
+export function parseDuration(text: string): number | null {
+  const match = /^(\d+):([0-5]?\d)$/.exec(text.trim())
+  if (match) return Number(match[1]) * 60 + Number(match[2])
+  const seconds = Number(text.trim())
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : null
+}
+
 export interface TimerReading {
   elapsed: string
   remaining: string

@@ -3,7 +3,7 @@ import type { Action } from '@shared/actions'
 import type { ProjetoRecente } from '@shared/api'
 import { composeLines, totalWords } from '@shared/anchor'
 import { formatBinding, parseBinding } from '@shared/commands'
-import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
+import { formatClock, parseDuration, ppmForTarget, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
 import { PPM_MAX, PPM_MIN } from '@shared/ruler'
 import { CHAPTER_MARK } from '@shared/text'
@@ -770,12 +770,92 @@ function LinhaDeProgresso({
   )
 }
 
-/*
- * O "ALVO" clicável saiu daqui junto com o mostrador de progresso: ele era a
- * segunda metade daquela legenda ("PREVISÃO" diz onde o ritmo leva, "ALVO" diz
- * o que foi pedido), e sem ela não tinha onde morar. A mesma conta continua
- * inteira no rodapé, no campo "Duração-alvo" — que sempre foi o original.
+/**
+ * O alvo de duração, ao pé da régua: digitar um tempo é escolher a velocidade
+ * que o cumpre.
+ *
+ * Ele mostra a duração CORRENTE, e não o último valor digitado. Um número
+ * guardado passaria a mentir sozinho — bastaria alguém acrescentar um
+ * parágrafo para o roteiro deixar de caber no tempo que o campo ainda exibe.
+ * Mostrando o que o ritmo de agora entrega, o que se lê é sempre verdade, e
+ * digitar por cima vira o que o operador já queria dizer: "que passe a ser
+ * este".
+ *
+ * A casa é a fileira que era das pontas da escala ("60 … 500"). Aquelas duas
+ * pontas davam medida ao que a régua desenha, e continuam no hover; ficaram
+ * para trás porque a régua já mostra por cor e altura onde o valor cai, e
+ * porque este era o único vão do console onde o alvo coube sem alargar o
+ * mostrador — que é largura tirada do teclado de transporte, ao lado.
  */
+function AlvoDeDuracao({
+  segundos,
+  ruler,
+  dispatch
+}: {
+  segundos: number
+  ruler: number
+  dispatch: (action: Action) => void
+}): React.JSX.Element {
+  const { t } = useT()
+  const [digitando, setDigitando] = useState<string | null>(null)
+
+  const aplicar = (texto: string): void => {
+    const alvo = parseDuration(texto)
+    // roteiro vazio não tem duração para perseguir, e dividir por ele daria um
+    // ritmo de zero — o campo simplesmente volta ao que era
+    if (alvo !== null && ruler > 0) dispatch({ type: 'transport/ppm', ppm: Math.round(ppmForTarget(ruler, alvo)) })
+    setDigitando(null)
+  }
+
+  if (digitando !== null) {
+    return (
+      <input
+        autoFocus
+        data-alvo-campo
+        value={digitando}
+        onChange={(event) => setDigitando(event.target.value)}
+        onBlur={(event) => aplicar(event.target.value)}
+        onKeyDown={(event) => {
+          // sair do campo já aplica (onBlur); Enter só precisa soltar o foco
+          if (event.key === 'Enter') event.currentTarget.blur()
+          // Escape desmonta o campo antes que o `blur` chegue, e é isso que
+          // faz "desistir" desistir de verdade em vez de aplicar na saída
+          if (event.key === 'Escape') setDigitando(null)
+        }}
+        className="k-microcaps w-full rounded-[3px] border border-[color-mix(in_srgb,var(--color-go)_45%,#000)] bg-[#0e1310] text-center tracking-[0.1em] text-[#dff5e7] outline-none"
+      />
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      data-alvo
+      {...ajuda('status.target')}
+      title={t('status.target')}
+      onClick={() => setDigitando(formatClock(segundos))}
+      className="k-microcaps flex items-baseline justify-center gap-[3px] tracking-[0.06em] text-[var(--color-lcd-caption)] hover:text-[var(--color-lcd-label)]"
+    >
+      {/*
+        Só o número, sem a palavra ao lado — e isso foi medido, não escolhido.
+
+        A fileira tem 57px na régua do rodapé e 72px no topo. O nome do
+        recurso mais uma duração longa pede 64px no melhor caso (ALVO +
+        1:23:45) e 92px no pior (OBIETTIVO, em italiano): não cabe em posição
+        nenhuma, em idioma nenhum. Espremer viraria "OBIETT…", que não informa
+        e ainda ocupa o lugar.
+
+        Quem diz que ali se clica é o TRACEJADO, e o nome inteiro está no
+        hover e na Ajuda rápida. O número sozinho já é honesto no lugar em que
+        está: embaixo da régua de velocidade, um tempo é o quanto o roteiro
+        leva nesse ritmo.
+      */}
+      <span className="border-b border-dashed border-[color-mix(in_srgb,var(--color-go)_40%,transparent)] text-[color-mix(in_srgb,var(--color-go)_55%,#dff5e7)]">
+        {formatClock(segundos)}
+      </span>
+    </button>
+  )
+}
 
 /**
  * Decide se a barra do topo comporta todo mundo em tamanho PLENO.
@@ -1063,20 +1143,17 @@ export function BarraDeTransporte({
       {/* metade da largura de antes (186px). A palavra "VELOCIDADE" saiu da
           legenda junto: no espaço que sobrou ela truncaria, e ela já era a
           menos necessária das três coisas ali — o mostrador ao lado diz PPM
-          por extenso. As pontas da faixa ficam, que são o que dá escala ao
-          que a régua mostra; o nome inteiro continua no hover */}
+          por extenso. A fileira de baixo era das pontas da escala; hoje é o
+          alvo de duração, e as pontas vivem no hover junto com o nome */}
       <div
         {...ajuda('transport.speed')}
-        title={t('lcd.speed')}
+        title={`${t('lcd.speed')} — ${PPM_MIN} … ${PPM_MAX}`}
         className={`flex flex-col justify-center border-r border-[var(--color-lcd-line)] ${
           compacto ? 'w-[74px] gap-1 px-2' : 'w-[93px] gap-1.5 px-2.5'
         }`}
       >
         <SpeedRuler ppm={transport.ppm} onChange={(ppm) => dispatch({ type: 'transport/ppm', ppm })} />
-        <div className="k-microcaps flex justify-between tracking-[0.1em] text-[var(--color-lcd-caption)]">
-          <span>{PPM_MIN}</span>
-          <span>{PPM_MAX}</span>
-        </div>
+        <AlvoDeDuracao segundos={total} ruler={ruler} dispatch={dispatch} />
       </div>
       <Digito
         valor={String(transport.ppm)}
