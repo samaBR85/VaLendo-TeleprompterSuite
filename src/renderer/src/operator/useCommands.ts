@@ -5,6 +5,7 @@ import { parseBinding, resolveKeymap } from '@shared/commands'
 import { SPEED_PRESETS } from '@shared/defaults'
 import type { InsertKind } from '@shared/insertBlock'
 import { wordIndexAt } from '@shared/pacing'
+import { proximoPonto } from '@shared/rundown'
 import { chapterTitle } from '@shared/text'
 import type { AppState, Tab } from '@shared/types'
 import { ALWAYS_GLOBAL, isEditable, matchesEvent } from './keys'
@@ -36,21 +37,6 @@ function blockIdUnderReadingLine(state: AppState, tab: Tab, rows: number[]): str
 
 function seekBlock(dispatch: (a: Action) => void, blockId: string): void {
   dispatch({ type: 'transport/seekAnchor', anchor: { blockId, wordOffset: 0 } })
-}
-
-function stepThrough(
-  ids: string[],
-  currentId: string | null,
-  blocks: Tab['blocks'],
-  direction: 1 | -1
-): string | null {
-  if (ids.length === 0) return null
-  const order = new Map(blocks.map((b, i) => [b.id, i]))
-  const current = currentId ? (order.get(currentId) ?? -1) : -1
-  const sorted = [...ids].sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0))
-
-  if (direction === 1) return sorted.find((id) => (order.get(id) ?? 0) > current) ?? sorted[0]
-  return [...sorted].reverse().find((id) => (order.get(id) ?? 0) < current) ?? sorted[sorted.length - 1]
 }
 
 export function useCommands(
@@ -143,7 +129,7 @@ export function useCommands(
         }
         case 'marker.next':
         case 'marker.prev': {
-          const target = stepThrough(
+          const target = proximoPonto(
             tab.markers.map((m) => m.blockId),
             blockIdUnderReadingLine(state, tab, rows),
             tab.blocks,
@@ -154,7 +140,7 @@ export function useCommands(
         }
         case 'chapter.next':
         case 'chapter.prev': {
-          const target = stepThrough(
+          const target = proximoPonto(
             tab.blocks.filter((b) => b.kind === 'chapter').map((b) => b.id),
             blockIdUnderReadingLine(state, tab, rows),
             tab.blocks,

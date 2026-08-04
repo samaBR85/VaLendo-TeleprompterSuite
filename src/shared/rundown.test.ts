@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { composeLines, totalWords } from './anchor'
-import { buildRundown, segmentIndexAt } from './rundown'
+import { buildRundown, segmentIndexAt, proximoPonto } from './rundown'
 import { reconcileBlocks, totalWordCount } from './text'
 import type { Marker, PacingRule } from './types'
 
@@ -147,5 +147,46 @@ describe('segmentIndexAt', () => {
 
   it('depois do fim, cai no último trecho', () => {
     expect(segmentIndexAt(segments, totalWords(lines) + 999)).toBe(segments.length - 1)
+  })
+})
+
+describe('avançar e voltar não dão a volta', () => {
+  /*
+   * Pedido explícito do operador, e a razão é de operação: no meio de um
+   * programa, "próximo capítulo" no último capítulo mandando a leitura para a
+   * abertura leva o apresentador para longe do que está sendo dito — e alguém
+   * tem de achar o caminho de volta com o texto correndo. Parar na ponta não
+   * custa nada.
+   */
+  const blocos = reconcileBlocks([], '## Um\n\nfala\n\n## Dois\n\nfala\n\n## Três\n\nfala')
+  const capitulos = blocos.filter((b) => b.kind === 'chapter').map((b) => b.id)
+
+  it('no último, avançar não faz nada', () => {
+    expect(proximoPonto(capitulos, capitulos[2], blocos, 1)).toBeNull()
+  })
+
+  it('no primeiro, voltar não faz nada', () => {
+    expect(proximoPonto(capitulos, capitulos[0], blocos, -1)).toBeNull()
+  })
+
+  it('no meio, anda normalmente para os dois lados', () => {
+    expect(proximoPonto(capitulos, capitulos[1], blocos, 1)).toBe(capitulos[2])
+    expect(proximoPonto(capitulos, capitulos[1], blocos, -1)).toBe(capitulos[0])
+  })
+
+  it('a partir de um bloco de fala, acha o capítulo dos dois lados', () => {
+    const falaDoMeio = blocos[1].id // a fala entre "Um" e "Dois"
+    expect(proximoPonto(capitulos, falaDoMeio, blocos, 1)).toBe(capitulos[1])
+    expect(proximoPonto(capitulos, falaDoMeio, blocos, -1)).toBe(capitulos[0])
+  })
+
+  it('sem posição conhecida, avançar vai para o primeiro', () => {
+    // é a abertura do programa, não uma volta: não havia onde estar antes
+    expect(proximoPonto(capitulos, null, blocos, 1)).toBe(capitulos[0])
+    expect(proximoPonto(capitulos, null, blocos, -1)).toBeNull()
+  })
+
+  it('lista vazia não tem para onde ir', () => {
+    expect(proximoPonto([], null, blocos, 1)).toBeNull()
   })
 })

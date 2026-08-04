@@ -100,3 +100,32 @@ export function segmentIndexAt(segments: Segment[], rulerPosition: number): numb
   }
   return 0
 }
+
+/**
+ * O próximo (ou o anterior) de uma lista de pontos do roteiro, na ordem em que
+ * eles aparecem no texto — capítulos ou marcadores.
+ *
+ * NÃO dá a volta. Chegou no último, "próximo" não faz nada; no primeiro,
+ * "anterior" não faz nada. Voltar ao começo do roteiro seria o oposto do que
+ * um atalho de avançar promete, e o preço de errar é alto: no meio de um
+ * programa, um salto para a abertura leva a leitura para longe do que está
+ * sendo dito, e o operador precisa achar o caminho de volta com o texto
+ * correndo na cara do apresentador. Parar na ponta não custa nada.
+ *
+ * `null` quando não há para onde ir — quem chama simplesmente não se mexe.
+ */
+export function proximoPonto(
+  ids: string[],
+  atual: string | null,
+  blocks: Block[],
+  direcao: 1 | -1
+): string | null {
+  if (ids.length === 0) return null
+
+  const ordem = new Map(blocks.map((b, i) => [b.id, i]))
+  const onde = atual ? (ordem.get(atual) ?? -1) : -1
+  const emOrdem = [...ids].sort((a, b) => (ordem.get(a) ?? 0) - (ordem.get(b) ?? 0))
+
+  if (direcao === 1) return emOrdem.find((id) => (ordem.get(id) ?? 0) > onde) ?? null
+  return [...emOrdem].reverse().find((id) => (ordem.get(id) ?? 0) < onde) ?? null
+}
