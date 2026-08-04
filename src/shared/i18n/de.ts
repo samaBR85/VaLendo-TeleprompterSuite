@@ -143,6 +143,7 @@ export const de: Dicionario = {
   'insp.readingMark': 'Lesemarke',
   'insp.markOnOutput': 'Linie in der Sendung',
   'insp.focusDim': 'Ränder abdunkeln',
+  'insp.focusDimAmount': 'Stärke',
 
   'insp.rhythm': 'Tempo',
   'insp.uniform': 'Konstante Geschwindigkeit',

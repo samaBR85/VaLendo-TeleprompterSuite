@@ -156,6 +156,7 @@ export const pt = {
   'insp.readingMark': 'Marca de leitura',
   'insp.markOnOutput': 'Linha na transmissão',
   'insp.focusDim': 'Esmaecer bordas',
+  'insp.focusDimAmount': 'Esmaecimento',
 
   'insp.rhythm': 'Ritmo',
   'insp.uniform': 'Velocidade constante',

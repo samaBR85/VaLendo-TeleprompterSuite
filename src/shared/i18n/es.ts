@@ -143,6 +143,7 @@ export const es: Dicionario = {
   'insp.readingMark': 'Marca de lectura',
   'insp.markOnOutput': 'Línea en la emisión',
   'insp.focusDim': 'Atenuar los bordes',
+  'insp.focusDimAmount': 'Atenuación',
 
   'insp.rhythm': 'Ritmo',
   'insp.uniform': 'Velocidad constante',

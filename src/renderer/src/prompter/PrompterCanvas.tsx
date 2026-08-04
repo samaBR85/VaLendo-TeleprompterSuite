@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { anchorFromWordIndex, composeLines, pixelFromAnchor, totalWords, type Layout } from '@shared/anchor'
 import { coresDasLinhas, ehDeixa } from '@shared/apresentadores'
 import { canvasBox, stageSize } from '@shared/output'
+import { mascaraDeFoco } from '@shared/focoDaLeitura'
 import { relogioIndependenteReading, stopwatchReading, timerReading, wordIndexAt } from '@shared/pacing'
 import { chapterTitle } from '@shared/text'
 import {
@@ -559,7 +560,7 @@ export function PrompterCanvas({
             visibility: palcoCoberto ? 'hidden' : undefined,
             maskImage:
               appearance.focusDim && !palcoCoberto
-                ? 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.35) 12%, #000 30%, #000 52%, rgba(0,0,0,0.4) 78%, transparent 100%)'
+                ? mascaraDeFoco(appearance.readingLinePct, appearance.focusDimPct)
                 : undefined
           }}
         >

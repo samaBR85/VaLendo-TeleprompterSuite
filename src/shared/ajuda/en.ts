@@ -562,6 +562,10 @@ export const ajudaEn = {
     nome: 'Dim the rest',
     texto: 'Fades what is far from the reading mark, so the eye lands on the current line instead of wandering.'
   },
+  'insp.focusDimPct': {
+    nome: 'Dim amount',
+    texto: 'How strong the fade is. Low leaves a wide readable window around the mark; high narrows it to a slit. The window follows the mark wherever you put it.'
+  },
   'insp.uniform': {
     nome: 'Constant speed',
     texto: 'Every line gets the same time, whatever it weighs. Off, a heavy line takes longer than a short one — closer to real speech.'

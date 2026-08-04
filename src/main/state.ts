@@ -359,6 +359,7 @@ export class Store {
             draft.appearance.fontSize = clamp(draft.appearance.fontSize, 16, 260)
             draft.appearance.marginPct = clamp(draft.appearance.marginPct, 0, 35)
             draft.appearance.positionPct = clamp(draft.appearance.positionPct, 0, 100)
+            draft.appearance.focusDimPct = clamp(draft.appearance.focusDimPct, 0, 100)
           }
         )
 

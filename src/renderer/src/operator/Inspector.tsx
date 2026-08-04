@@ -758,6 +758,20 @@ export function Inspector({
           active={a.focusDim}
           onClick={() => patch({ focusDim: !a.focusDim })}
         />
+        {/* Só aparece com o esmaecimento ligado: um controle de "quanto" sem
+            nada para medir é um controle que não faz nada, e desligado o valor
+            fica guardado esperando — não some. */}
+        {a.focusDim ? (
+          <Slider
+            ajudaId="insp.focusDimPct"
+            label={t('insp.focusDimAmount')}
+            value={a.focusDimPct}
+            min={0}
+            max={100}
+            suffix="%"
+            onChange={(value) => patch({ focusDimPct: value })}
+          />
+        ) : null}
       </Group>
 
       <Group label={t('insp.rhythm')}>

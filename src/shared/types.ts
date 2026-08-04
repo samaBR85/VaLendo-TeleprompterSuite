@@ -113,6 +113,14 @@ export interface Appearance extends PacingRule {
    */
   readingMarkOnOutput: boolean
   focusDim: boolean
+  /**
+   * Quanto esmaecer, 0..100 — MAIS alto é mais apagado.
+   *
+   * A escala vai no sentido do nome do controle: "esmaecer bordas" subindo tem
+   * de escurecer. No mínimo a janela legível é larga; no máximo vira uma
+   * fresta em volta da marca de leitura. Só vale com `focusDim` ligado.
+   */
+  focusDimPct: number
   mirrorX: boolean
   mirrorY: boolean
   rotation: 0 | 90 | 180 | 270

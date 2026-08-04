@@ -141,6 +141,9 @@ export const DEFAULT_APPEARANCE: Appearance = {
   readingLinePct: 0.38,
   readingMarkOnOutput: false,
   focusDim: true,
+  // 60 é a calibragem que devolve as paradas escritas à mão antes deste
+  // controle existir: quem não mexer no slider não vê diferença nenhuma
+  focusDimPct: 60,
   // ligado de fábrica: o teleprompter devolve a imagem por um vidro
   // semiespelhado, então a montagem comum já pede o espelho horizontal —
   // nascer desligado fazia todo rig novo começar com o texto ao contrário na
