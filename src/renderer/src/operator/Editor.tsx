@@ -272,6 +272,31 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
   }, [tab.id, dispatch])
 
   /**
+   * Guarda a rolagem do editor e devolve quem a repõe.
+   *
+   * Trocar o `value` do textarea zera o `scrollTop` — e os botões da barra
+   * substituem o TEXTO INTEIRO, que é justamente o que os faz entrar no
+   * histórico como um passo só. O efeito era o editor saltar para o começo
+   * do roteiro a cada capítulo ou direção inserida, a cem linhas de onde o
+   * operador estava.
+   *
+   * Digitando `##` ou `[` na mão isso nunca aconteceu, e a diferença é essa:
+   * ali o valor cresce mas o nó do DOM é o mesmo, então a rolagem fica.
+   *
+   * O `<pre>` do realce é reposicionado junto — ele fica ATRÁS do textarea e
+   * as duas rolagens andam casadas; repor só uma descolaria o colorido do
+   * texto até a próxima rolagem manual.
+   */
+  const preservarRolagem = useCallback((): (() => void) => {
+    const antes = areaRef.current?.scrollTop ?? 0
+    return () => {
+      if (areaRef.current) areaRef.current.scrollTop = antes
+      if (preRef.current) preRef.current.scrollTop = antes
+      setRolagem(antes)
+    }
+  }, [])
+
+  /**
    * O botão da barra tira o foco do textarea antes do clique, mas o textarea
    * guarda a última seleção mesmo desfocado — então a inserção cai no ponto
    * onde o cursor estava, e o foco volta logo em seguida.
@@ -281,16 +306,20 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       const area = areaRef.current
       if (!area) return
 
+      const repor = preservarRolagem()
       const result = insertBlock(area.value, area.selectionStart, area.selectionEnd, kind)
       setDraft(result.text)
       push(result.text, 0)
 
       requestAnimationFrame(() => {
-        area.focus()
+        // `preventScroll` para o foco não arrastar a página atrás do editor;
+        // a rolagem de dentro é o `repor` quem devolve
+        area.focus({ preventScroll: true })
         area.setSelectionRange(result.selectionStart, result.selectionEnd)
+        repor()
       })
     },
-    [tab.id, dispatch]
+    [preservarRolagem, tab.id, dispatch]
   )
 
   /**
@@ -308,15 +337,17 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     if (limpo === atual) return
 
     const caret = Math.min(area?.selectionStart ?? 0, limpo.length)
+    const repor = preservarRolagem()
     setDraft(limpo)
     push(limpo, 0)
 
     requestAnimationFrame(() => {
       if (!area) return
-      area.focus()
+      area.focus({ preventScroll: true })
       area.setSelectionRange(caret, caret)
+      repor()
     })
-  }, [draft, tab.id, dispatch])
+  }, [draft, preservarRolagem, tab.id, dispatch])
 
   const caret = useCallback(
     () => ({ text: draft, position: areaRef.current?.selectionStart ?? 0 }),
