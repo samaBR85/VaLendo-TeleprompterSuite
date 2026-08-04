@@ -49,6 +49,16 @@ const ALINHAMENTOS: { id: AlinhamentoDoRecado; icone: IconName; rotulo: Chave }[
    estreitos, onde cada pixel de largura está disputado. */
 const FICHA = 'px-2.5 py-[5px] text-[11px]'
 
+/*
+ * A coluna dos três alinhamentos tem de terminar EXATAMENTE onde o campo de
+ * recado termina — as bases desencontradas são a primeira coisa que o olho
+ * pega. As duas alturas saem da mesma conta em vez de serem dois números
+ * escolhidos à mão que combinam hoje e param de combinar no primeiro ajuste.
+ */
+const ALTURA_DA_FICHA = 18
+const RESPIRO_ENTRE_FICHAS = 3
+const ALTURA_DO_CAMPO = ALTURA_DA_FICHA * 3 + RESPIRO_ENTRE_FICHAS * 2
+
 /**
  * O editor do cartão de tela.
  *
@@ -165,14 +175,17 @@ export function EditorDeTela({
             aria-label={t('cards.message')}
             value={card.recado.texto}
             placeholder={t('cards.messagePlaceholder')}
-            rows={2}
+            style={{ height: ALTURA_DO_CAMPO }}
             onChange={(event) => mexerNoRecado({ texto: event.target.value })}
             className="min-w-0 flex-1 resize-none rounded border border-[var(--color-edge)] bg-[var(--color-ink-0)] px-2 py-1.5 text-[12px] leading-snug outline-none placeholder:text-[var(--color-fog-3)]"
           />
           {/* Encostado no campo, e em coluna: assim o alinhamento fica onde
               se escreve o texto, e a janela não ganha uma fileira só para
-              três botões que cabem na altura que já existe. */}
-          <div className="flex flex-none flex-col gap-[2px]">
+              três botões que cabem na altura que já existe.
+              As duas alturas são a MESMA conta (ver ALTURA_DO_CAMPO), porque
+              base de botão desencontrada da base do campo é o tipo de coisa
+              que ninguém consegue deixar de ver depois de ver uma vez. */}
+          <div className="flex flex-none flex-col" style={{ gap: RESPIRO_ENTRE_FICHAS }}>
             {ALINHAMENTOS.map(({ id, icone, rotulo }) => (
               <Ficha
                 key={id}
@@ -182,7 +195,8 @@ export function EditorDeTela({
                 aria-label={t(rotulo)}
                 ativa={alinhamentoDoRecado(card.recado.alinhamento) === id}
                 onClick={() => mexerNoRecado({ alinhamento: id })}
-                className="grid h-[19px] w-[26px] place-items-center"
+                style={{ height: ALTURA_DA_FICHA }}
+                className="grid w-[26px] place-items-center"
               >
                 <Icon name={icone} size={11} />
               </Ficha>

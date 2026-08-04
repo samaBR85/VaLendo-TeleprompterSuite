@@ -164,6 +164,24 @@ check(
   `${Math.round(larguras.bloco)} contra ${Math.round(larguras.dentro)}`
 )
 
+/* As bases desencontradas são a primeira coisa que o olho pega, e é o tipo de
+   coisa que volta sozinha no próximo ajuste de espaçamento. */
+const bases = await ev(`(() => {
+  const campo = document.querySelector('[data-tela-texto]').getBoundingClientRect()
+  const ultima = document.querySelector('[data-tela-alinhamento="right"]').getBoundingClientRect()
+  return { campo: campo.bottom, ficha: ultima.bottom, topoCampo: campo.top, topoFicha: document.querySelector('[data-tela-alinhamento="left"]').getBoundingClientRect().top }
+})()`)
+check(
+  'a base do campo e a do último botão coincidem',
+  Math.abs(bases.campo - bases.ficha) < 1.5,
+  `campo ${bases.campo.toFixed(1)} contra botão ${bases.ficha.toFixed(1)}`
+)
+check(
+  'e os topos também',
+  Math.abs(bases.topoCampo - bases.topoFicha) < 1.5,
+  `campo ${bases.topoCampo.toFixed(1)} contra botão ${bases.topoFicha.toFixed(1)}`
+)
+
 /* Uma tela feita ANTES deste controle existir não tem o campo. Ela foi escrita
    centralizada, e não pode amanhecer encostada na esquerda. */
 await acao({
