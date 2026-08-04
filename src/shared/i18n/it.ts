@@ -11,6 +11,7 @@ export const it: Dicionario = {
   'app.shortcuts': 'Modifica le scorciatoie',
   'app.palette': 'Palette dei comandi',
   'app.credits': 'Crediti',
+  'app.updateAvailable': 'Versione {versao} disponibile',
   'app.language': 'Lingua',
   'app.uiScale': 'Scala dell’interfaccia',
   'app.uiScaleReset': 'Dimensione normale',

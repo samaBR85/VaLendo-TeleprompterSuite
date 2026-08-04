@@ -13,11 +13,15 @@ const STACK = [
   ['mammoth · pdf.js', 'credits.role.import']
 ] as const
 
+const RELEASES = 'https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest'
+
 interface Props {
+  /** versão anunciada no GitHub, quando é mais nova que esta */
+  atualizacao: string | null
   onClose: () => void
 }
 
-export function Credits({ onClose }: Props): React.JSX.Element {
+export function Credits({ atualizacao, onClose }: Props): React.JSX.Element {
   const { t } = useT()
   return (
     <Modal title={t('app.credits')} width={480} onClose={onClose}>
@@ -26,6 +30,24 @@ export function Credits({ onClose }: Props): React.JSX.Element {
           <Wordmark size={30} />
           <span className="text-[11px] text-[var(--color-fog-2)]">{versionLabel()}</span>
         </div>
+
+        {/* A versão nova aparece aqui, e SÓ quando existe.
+            Aqui porque é onde a pergunta nasce: quem abriu esta caixa está
+            querendo saber de versão. E o app não baixa nada — o link leva à
+            página, e quem decide instalar é a pessoa. */}
+        {atualizacao ? (
+          <a
+            href={RELEASES}
+            onClick={(event) => {
+              event.preventDefault()
+              window.valendo.openExternal(RELEASES)
+            }}
+            className="mt-3 flex items-center gap-2 rounded-md border border-[var(--color-go)]/40 bg-[var(--color-go)]/10 px-3 py-2 text-[12px] text-[var(--color-go)] hover:bg-[var(--color-go)]/16"
+          >
+            <span className="h-1.5 w-1.5 flex-none rounded-full bg-[var(--color-go)]" />
+            {t('app.updateAvailable', { versao: atualizacao })}
+          </a>
+        ) : null}
 
         {/* Aqui morava um parágrafo explicando o que o app faz.
             Saiu: quem abre o About já está DENTRO do app, e o subtítulo

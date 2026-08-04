@@ -18,6 +18,7 @@ export const pt = {
   'app.shortcuts': 'Editar atalhos',
   'app.palette': 'Paleta de comandos',
   'app.credits': 'Créditos',
+  'app.updateAvailable': 'Versão {versao} disponível',
   'app.language': 'Idioma',
   'app.uiScale': 'Escala da interface',
   'app.uiScaleReset': 'Tamanho normal',

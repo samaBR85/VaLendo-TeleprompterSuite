@@ -365,6 +365,7 @@ function AppConteudo({
   storage,
   webview,
   estreia,
+  atualizacao,
   dispatch
 }: ReturnType<typeof useAppState>): React.JSX.Element {
   const { t } = useT()
@@ -842,13 +843,25 @@ function AppConteudo({
           <Wordmark size={30} subtitle={false} />
         </div>
         {/* a versão saiu do rodapé — este é o único lugar que ainda mostra
-            build/versão, e também o gatilho dos créditos (era o rodapé antes) */}
+            build/versão, e também o gatilho dos créditos (era o rodapé antes)
+
+            Com versão nova lá fora, ele fica VERDE e ganha um ponto. Ambiente,
+            e não aviso: não rouba foco, não pede para ser dispensado e não
+            volta a aparecer. Um balão no meio de uma gravação seria pior que
+            ficar desatualizado. Quem quiser saber mais clica e cai no About,
+            onde a linha diz qual é a versão e leva à página. */}
         <button
           type="button"
+          data-atualizacao={atualizacao ?? undefined}
           onClick={() => setCredits(true)}
-          title={t('app.credits')}
-          className="flex-none text-[12px] whitespace-nowrap text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
+          title={atualizacao ? t('app.updateAvailable', { versao: atualizacao }) : t('app.credits')}
+          className={`flex flex-none items-center gap-1.5 text-[12px] whitespace-nowrap ${
+            atualizacao
+              ? 'text-[var(--color-go)]'
+              : 'text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]'
+          }`}
         >
+          {atualizacao ? <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-go)]" /> : null}
           {versionLabel()}
         </button>
 
@@ -1310,7 +1323,7 @@ function AppConteudo({
           onClose={() => setWebviewOpen(false)}
         />
       ) : null}
-      {credits ? <Credits onClose={() => setCredits(false)} /> : null}
+      {credits ? <Credits atualizacao={atualizacao} onClose={() => setCredits(false)} /> : null}
       {palette ? (
         <CommandPalette keymap={keymap} onRun={run} onClose={() => setPalette(false)} />
       ) : null}

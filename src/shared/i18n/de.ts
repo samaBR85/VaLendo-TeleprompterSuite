@@ -11,6 +11,7 @@ export const de: Dicionario = {
   'app.shortcuts': 'Tastenkürzel bearbeiten',
   'app.palette': 'Befehlspalette',
   'app.credits': 'Mitwirkende',
+  'app.updateAvailable': 'Version {versao} verfügbar',
   'app.language': 'Sprache',
   'app.uiScale': 'Oberflächengröße',
   'app.uiScaleReset': 'Normale Größe',

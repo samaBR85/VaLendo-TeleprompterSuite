@@ -11,6 +11,7 @@ export const fr: Dicionario = {
   'app.shortcuts': 'Modifier les raccourcis',
   'app.palette': 'Palette de commandes',
   'app.credits': 'Crédits',
+  'app.updateAvailable': 'Version {versao} disponible',
   'app.language': 'Langue',
   'app.uiScale': 'Échelle de l’interface',
   'app.uiScaleReset': 'Taille normale',

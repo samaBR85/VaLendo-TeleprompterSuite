@@ -15,6 +15,8 @@ export interface AppBinding {
   webview: WebviewInfo
   /** é a primeira abertura do app nesta máquina */
   estreia: boolean
+  /** versão anunciada no GitHub, se for mais nova que esta; `null` no resto */
+  atualizacao: string | null
   dispatch: (action: Action) => void
 }
 
@@ -42,6 +44,14 @@ export function useAppState(): AppBinding {
    * volta na cara de quem acabou de dispensá-las.
    */
   const [estreia, setEstreia] = useState(false)
+  /*
+   * Diferente da `estreia`, esta ACOMPANHA os retratos seguintes.
+   *
+   * A resposta do GitHub chega depois da janela — é uma ida à rede, com prazo
+   * de cinco segundos —, então o primeiro retrato quase sempre traz `null`.
+   * Ler só o primeiro seria garantir que o aviso nunca aparecesse.
+   */
+  const [atualizacao, setAtualizacao] = useState<string | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -54,6 +64,7 @@ export function useAppState(): AppBinding {
       setStorage(snapshot.storage)
       setWebview(snapshot.webview)
       setEstreia(snapshot.estreia)
+      setAtualizacao(snapshot.atualizacao)
     })
     void window.valendo.listDisplays().then((list) => {
       if (alive) setDisplays(list)
@@ -78,6 +89,7 @@ export function useAppState(): AppBinding {
           ? previous
           : snapshot.webview
       )
+      setAtualizacao(snapshot.atualizacao)
     })
     const offDisplays = window.valendo.onDisplays(setDisplays)
 
@@ -90,7 +102,7 @@ export function useAppState(): AppBinding {
 
   const dispatch = useCallback((action: Action) => window.valendo.dispatch(action), [])
 
-  return { state, history, displays, rows, storage, webview, estreia, dispatch }
+  return { state, history, displays, rows, storage, webview, estreia, atualizacao, dispatch }
 }
 
 function sameRows(a: number[], b: number[]): boolean {

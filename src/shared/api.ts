@@ -32,6 +32,16 @@ export interface StateSnapshot {
    * e "este arquivo nasceu num computador que nunca tinha aberto o app".
    */
   estreia: boolean
+  /**
+   * Versão anunciada no GitHub, quando ela é mais nova que esta — `null` em
+   * todo o resto, inclusive quando a consulta não foi possível.
+   *
+   * Aqui pelo mesmo motivo da `estreia`, e o motivo pesa mais neste caso: se
+   * morasse no `AppState`, viajaria dentro do `.valendo`, e um projeto salvo
+   * hoje faria o app anunciar daqui a um ano uma "novidade" que já é velha.
+   * É informação da sessão, e morre com ela.
+   */
+  atualizacao: string | null
 }
 
 /**

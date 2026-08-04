@@ -52,6 +52,7 @@ import {
   workspaceIntegro
 } from './storage'
 import { loadUiScale, saveUiScale } from './uiScale'
+import { versaoMaisNova } from './atualizacao'
 import { buildBroadcastMenu } from './broadcastMenu'
 import {
   broadcastCoversOperator,
@@ -99,6 +100,16 @@ function syncOutput(state: AppState): void {
   }
 }
 
+/**
+ * A versão anunciada no GitHub, quando há uma mais nova.
+ *
+ * Módulo, e não estado: é perguntado UMA vez na abertura e daí em diante só
+ * viaja nos snapshots. Nasce `null`, que é também o valor de quando a pergunta
+ * não pôde ser feita — do ponto de vista da tela, "não sei" e "não há" pedem a
+ * mesma coisa: não mostrar nada.
+ */
+let atualizacaoAnunciada: string | null = null
+
 function snapshot(): StateSnapshot {
   return {
     state: store.getState(),
@@ -106,7 +117,8 @@ function snapshot(): StateSnapshot {
     rows: store.activeRows(),
     storage: storageHealth(),
     webview: webviewInfo(),
-    estreia: ehEstreia()
+    estreia: ehEstreia(),
+    atualizacao: atualizacaoAnunciada
   }
 }
 
@@ -721,6 +733,24 @@ function bootstrap(): void {
 
   createOperatorWindow(store.getState().maquina.window, loadUiScale(userDataRoot()))
   syncOutput(store.getState())
+
+  /*
+   * A pergunta sobre versão nova, e SÓ aqui.
+   *
+   * Sem `await`: a janela não espera a rede para aparecer. Se a resposta vier,
+   * ela chega pelo próximo snapshot e o rótulo da versão muda de cor; se não
+   * vier — sem internet, firewall, portal cativo —, nada acontece e ninguém
+   * fica sabendo que houve pergunta.
+   *
+   * Na abertura nada está no ar: a transmissão nasce desligada, a rede também,
+   * e a tela de boas-vindas ainda está na frente. É por isso que este é o único
+   * momento em que a checagem não precisa perguntar se pode.
+   */
+  void versaoMaisNova(__APP_VERSION__).then((nova) => {
+    if (!nova) return
+    atualizacaoAnunciada = nova
+    sendToAll(CHANNELS.stateChanged, snapshot())
+  })
 }
 
 // uma instância só: duas janelas de operador brigando pelo mesmo workspace.json
