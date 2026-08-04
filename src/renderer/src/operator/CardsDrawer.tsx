@@ -289,7 +289,23 @@ export function CardsDrawer({
           </>
         }
       >
+        {/* Os dois primeiros são os que o app DESENHA — nascem prontos, num
+            clique. Os dois últimos abrem seletor de arquivo e dependem de
+            haver arte pronta em algum lugar. O que não custa nada vem antes
+            do que exige preparação. */}
         <div className="ml-1 flex flex-none items-center gap-[5px]">
+          <BotaoAdicionar
+            ajudaId="cards.addText"
+            atributo="text"
+            rotulo={t('cards.addText')}
+            onClick={adicionarRecado}
+          />
+          <BotaoAdicionar
+            ajudaId="cards.addScreen"
+            atributo="tela"
+            rotulo={t('cards.addScreen')}
+            onClick={adicionarTela}
+          />
           <BotaoAdicionar
             ajudaId="cards.addImage"
             atributo="image"
@@ -303,18 +319,6 @@ export function CardsDrawer({
             rotulo={t('cards.addVideo')}
             desligado={ocupado}
             onClick={() => void adicionarVideo()}
-          />
-          <BotaoAdicionar
-            ajudaId="cards.addText"
-            atributo="text"
-            rotulo={t('cards.addText')}
-            onClick={adicionarRecado}
-          />
-          <BotaoAdicionar
-            ajudaId="cards.addScreen"
-            atributo="tela"
-            rotulo={t('cards.addScreen')}
-            onClick={adicionarTela}
           />
         </div>
 
