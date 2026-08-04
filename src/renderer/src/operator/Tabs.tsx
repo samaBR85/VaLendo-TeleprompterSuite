@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Action } from '@shared/actions'
+import { TAB_DRAG_MIME } from '@shared/cards'
 import type { AppState } from '@shared/types'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
@@ -46,6 +47,34 @@ export function Tabs({ state, dispatch }: Props): React.JSX.Element {
         return (
           <div
             key={tab.id}
+            /* enquanto o nome está em edição a ficha NÃO é arrastável: um
+               elemento `draggable` engole a seleção de texto com o mouse
+               dentro dele, e o operador não conseguiria arrastar para
+               selecionar o que está escrevendo. Foi o mesmo defeito que o
+               arrasto de cartão teve contra a barra do vídeo. */
+            draggable={editing !== tab.id}
+            data-tab-drag={tab.id}
+            onDragStart={(event) => {
+              event.dataTransfer.setData(TAB_DRAG_MIME, tab.id)
+              event.dataTransfer.effectAllowed = 'move'
+            }}
+            onDragOver={(event) => {
+              if (!event.dataTransfer.types.includes(TAB_DRAG_MIME)) return
+              event.preventDefault()
+              // sem isto o navegador não sabe que o "move" é aceito aqui e
+              // mostra o cursor de bloqueado o arrasto inteiro
+              event.dataTransfer.dropEffect = 'move'
+            }}
+            onDrop={(event) => {
+              const arrastada = event.dataTransfer.getData(TAB_DRAG_MIME)
+              if (!arrastada) return
+              event.preventDefault()
+              const rect = event.currentTarget.getBoundingClientRect()
+              // metade esquerda é "antes desta", direita é "depois" — o
+              // mesmo critério da gaveta, trocando Y por X
+              const antes = event.clientX < rect.left + rect.width / 2
+              dispatch({ type: 'tab/reorder', tabId: arrastada, toIndex: antes ? index : index + 1 })
+            }}
             onClick={() => dispatch({ type: 'tab/activate', tabId: tab.id })}
             onDoubleClick={() => setEditing(tab.id)}
             /* o direito aponta QUAL aba: com um botão fixo na barra, duplicar

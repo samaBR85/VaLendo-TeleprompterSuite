@@ -893,6 +893,25 @@ export class Store {
         return
       }
 
+      /*
+       * Mesma conta do `card/reorder`, e de propósito: a ordem do array é o
+       * que numera os atalhos (Ctrl+1..9), então arrastar renumera — igual a
+       * arrastar cartão já faz. A COR não muda, porque ela é gravada na aba
+       * quando nasce e não calculada pela posição: o pontinho continua sendo
+       * a identidade daquele roteiro depois do arrasto.
+       */
+      case 'tab/reorder': {
+        const tabs = [...this.state.tabs]
+        const from = tabs.findIndex((t) => t.id === action.tabId)
+        if (from === -1) return
+        const [movida] = tabs.splice(from, 1)
+        // tirando uma de antes do alvo, tudo desliza uma casa
+        const to = clamp(from < action.toIndex ? action.toIndex - 1 : action.toIndex, 0, tabs.length)
+        tabs.splice(to, 0, movida)
+        this.state = { ...this.state, tabs }
+        break
+      }
+
       case 'tab/close': {
         if (this.state.tabs.length <= 1) return
         const tabs = this.state.tabs.filter((t) => t.id !== action.tabId)

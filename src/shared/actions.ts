@@ -130,6 +130,8 @@ export type Action =
    * renderer poderia colidir: o contador que entra neles é por PROCESSO.
    */
   | { type: 'tab/duplicate'; tabId: string }
+  /** arrastar reordena — `toIndex` medido no array de ANTES de tirar a aba */
+  | { type: 'tab/reorder'; tabId: string; toIndex: number }
   | { type: 'tab/activate'; tabId: string }
   | { type: 'tab/rename'; tabId: string; title: string }
   | { type: 'app/language'; language: Lang }

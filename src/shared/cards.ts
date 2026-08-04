@@ -36,6 +36,16 @@ export function novoCartaoId(agora: number, semente: number): string {
 export const CARD_DRAG_MIME = 'application/x-valendo-card'
 
 /**
+ * O MIME do arrasto de ABA, separado do de cartão.
+ *
+ * Separado porque a gaveta e a fileira de abas convivem na mesma tela, e o
+ * `dragover` de cada uma pergunta pelo tipo antes de aceitar. Com um MIME só,
+ * arrastar um cartão para cima das abas pareceria um alvo válido — e soltar
+ * ali reordenaria alguma coisa que não é aquela.
+ */
+export const TAB_DRAG_MIME = 'application/x-valendo-tab'
+
+/**
  * Os três estilos de legibilidade do OVERLAY, na ordem em que aparecem.
  *
  * Mora aqui, e não em quem desenha, porque agora TRÊS lugares oferecem a
