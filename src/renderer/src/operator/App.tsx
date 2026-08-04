@@ -1124,7 +1124,10 @@ function AppConteudo({
                       decide SE o salto acontece, o Go To é o salto único */}
                   <Tecla
                     {...ajuda('editor.catch')}
-                    title={t('toolbar.catchHint')}
+                    /* só o nome: a frase que explicava o CATCH mora agora na
+                       Ajuda rápida, onde ela cabe inteira e não faz o operador
+                       esperar um segundo parado em cima do botão */
+                    title={t('toolbar.catch')}
                     aria-label={t('toolbar.catch')}
                     acesa={catchAtivo}
                     cor="var(--color-live)"
@@ -1163,15 +1166,21 @@ function AppConteudo({
                   <span className="mx-0.5 h-4 w-px flex-none bg-[var(--color-edge)]" />
                   {/* loop: ao chegar no fim, volta ao início e continua
                       tocando — o Reiniciar do transporte acende junto,
-                      mesmo aceso que este botão usa */}
+                      mesmo aceso que este botão usa.
+
+                      Âmbar, e cheio quando ligado: o loop MUDA o que vai
+                      acontecer no fim do roteiro, e não é uma escolha de
+                      interface como as teclas verdes ao lado. É a mesma
+                      família de tela preta e congelar — muda o que está
+                      acontecendo, então acende inteiro com o ícone branco. */}
                   <Tecla
                     {...ajuda('editor.loop')}
                     title={t('toolbar.loop')}
                     aria-label={t('toolbar.loop')}
                     acesa={state.transport.loop}
-                    cor="var(--color-go)"
-                    className="h-6 w-7"
-                    style={!state.transport.loop ? { color: 'var(--color-go)' } : undefined}
+                    cor="var(--color-warn)"
+                    className={`h-6 w-7 ${state.transport.loop ? 'k-tecla-solida' : ''}`}
+                    style={!state.transport.loop ? { color: 'var(--color-warn)' } : undefined}
                     onClick={() => dispatch({ type: 'transport/loop' })}
                   >
                     <Icon name="loop" size={15} />

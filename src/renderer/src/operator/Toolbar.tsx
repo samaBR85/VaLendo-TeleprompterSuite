@@ -869,8 +869,16 @@ function TecladoDeTransporte({
         {...ajuda('transport.restart')}
         title={`${t('toolbar.restart')}${hint(keymap, 'transport.restart')}`}
         aria-label={t('toolbar.restart')}
+        /* Âmbar, a mesma cor do botão de loop: os dois anunciam o MESMO fato —
+           que a leitura vai voltar sozinha ao início. Em verde, o operador via
+           duas cores para um estado só e tinha de descobrir que eram a mesma
+           coisa.
+           Tingido, e não cheio como o botão de loop: aqui é eco, não
+           interruptor. Quem liga e desliga é o outro; este só mostra que o
+           Reiniciar vai ser chamado sem ninguém apertá-lo. Apagado, volta ao
+           verde do transporte — âmbar em repouso não significaria nada. */
         acesa={loop}
-        cor="var(--color-go)"
+        cor="var(--color-warn)"
         className={lado}
         style={!loop ? { color: 'var(--color-go)' } : undefined}
         onClick={() => run('transport.restart')}
