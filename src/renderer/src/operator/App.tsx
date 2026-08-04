@@ -832,6 +832,17 @@ function AppConteudo({
     FALLBACK_VIEWPORT
   const focusMode = state.layoutMode === 'focus'
 
+  /** o filete que separa as famílias de ferramenta do cabeçalho da Edição */
+  const divisorDeFerramentas = <span className="mx-0.5 h-3.5 w-px bg-[var(--color-line)]" />
+
+  /*
+   * Quatro famílias, separadas por filete, e a ordem é a do trabalho:
+   *
+   *   marcar o texto | quem fala | como o texto se vê | voltar atrás
+   *
+   * Sem os filetes as sete teclas liam como uma fila só, e o olho tinha de
+   * descobrir sozinho que "AA" não tem parentesco com "remover formatação".
+   */
   const editorTools = (
     <>
       <EditorTool
@@ -856,15 +867,11 @@ function AppConteudo({
         disabled={!hasFormatting(tab.blocks)}
         onClick={() => run('edit.clearFormat')}
       />
-      {/* CAIXA ALTA do EDITOR. Tem um irmão nos Ajustes › Texto que faz o
-          mesmo na SAÍDA, e os dois são independentes de propósito: quem
-          digita e quem lê no vidro não precisam da mesma caixa. Ligá-los ao
-          mesmo booleano seria um interruptor com duas alavancas.
-          Pintura nos dois casos — o texto guardado não muda uma letra */}
+
+      {divisorDeFerramentas}
       {/* Quem fala: transforma o nome SELECIONADO no roteiro em apresentador.
-          Fica com as ferramentas que marcam o texto (capítulo, direção), e
-          não com as de aparência — registrar quem fala é estrutura do
-          roteiro, mesmo que o efeito visível seja uma cor. */}
+          Sozinho entre filetes — é a única ferramenta aqui que não age sobre
+          o texto nem sobre a vista dele, mas sobre QUEM diz cada trecho. */}
       <EditorTool
         ajudaId="editor.presenter"
         icon="presenter"
@@ -872,6 +879,13 @@ function AppConteudo({
         disabled={!textoSelecionado}
         onClick={criarApresentador}
       />
+
+      {divisorDeFerramentas}
+      {/* CAIXA ALTA do EDITOR. Tem um irmão nos Ajustes › Texto que faz o
+          mesmo na SAÍDA, e os dois são independentes de propósito: quem
+          digita e quem lê no vidro não precisam da mesma caixa. Ligá-los ao
+          mesmo booleano seria um interruptor com duas alavancas.
+          Pintura nos dois casos — o texto guardado não muda uma letra */}
       <EditorTool
         ajudaId="editor.allCaps"
         texto="AA"
@@ -881,7 +895,8 @@ function AppConteudo({
           dispatch({ type: 'maquina/patch', patch: { editorAllCaps: !state.maquina.editorAllCaps } })
         }
       />
-      <span className="mx-0.5 h-3.5 w-px bg-[var(--color-line)]" />
+
+      {divisorDeFerramentas}
       {/* aceso também com digitação ainda no respiro de 140ms: nesse instante
           o main ainda não sabe do que foi escrito (`canUndo` falso), mas há
           sim o que desfazer — o comando descarrega o pendente antes de

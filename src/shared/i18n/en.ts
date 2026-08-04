@@ -39,14 +39,14 @@ export const en: Dicionario = {
   'panel.follow.key': 'FOLLOW',
   'panel.livePreview': 'Live preview',
 
-  'editor.chapter': 'Insert chapter — becomes ## in the text',
-  'editor.direction': 'Insert stage direction — becomes [brackets], not read aloud',
+  'editor.chapter': 'Chapter',
+  'editor.direction': 'Stage direction',
   'editor.undo': 'Undo',
   'editor.fontSize': 'Editor font size',
   'editor.fontSmaller': 'Smaller editor font',
   'editor.fontBigger': 'Larger editor font',
-  'editor.clearFormat': 'Clear formatting: chapters and directions become plain text',
-  'editor.allCaps': 'ALL CAPS in the editor — display only, does not change the broadcast',
+  'editor.clearFormat': 'Clear formatting',
+  'editor.allCaps': 'All caps',
   'editor.redo': 'Redo',
   'editor.placeholder':
     'Paste or type the script. Where you break the line, it breaks on the presenter’s screen. [brackets] mark directions, ## opens a chapter.',
@@ -120,7 +120,7 @@ export const en: Dicionario = {
   'insp.alignCenter': 'Centred',
   'insp.alignRight': 'Right',
 
-  'editor.presenter': 'Make the selection a presenter',
+  'editor.presenter': 'Presenter',
   'insp.presenterHide': 'Hide this name on the output',
   'insp.presenterHideAll': 'Hide every name on the output',
   'insp.presenterHideAll.key': 'HIDE',

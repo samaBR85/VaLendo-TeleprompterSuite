@@ -49,14 +49,14 @@ export const pt = {
   'panel.livePreview': 'Prévia ao vivo',
 
   /* ----------------------------------------------------------------- editor */
-  'editor.chapter': 'Inserir capítulo — vira ## no texto',
-  'editor.direction': 'Inserir direção de cena — vira [colchetes], não é lida',
+  'editor.chapter': 'Capítulo',
+  'editor.direction': 'Direção de cena',
   'editor.undo': 'Desfazer',
   'editor.fontSize': 'Tamanho da fonte do editor',
   'editor.fontSmaller': 'Diminuir a fonte do editor',
   'editor.fontBigger': 'Aumentar a fonte do editor',
-  'editor.clearFormat': 'Remover formatação: capítulos e direções viram texto simples',
-  'editor.allCaps': 'CAIXA ALTA no editor — só a exibição, não muda a transmissão',
+  'editor.clearFormat': 'Remover formatação',
+  'editor.allCaps': 'Caixa alta',
   'editor.redo': 'Refazer',
   'editor.placeholder':
     'Cole ou digite o roteiro. Onde você quebrar a linha, ela quebra na tela do apresentador. [colchetes] marcam direções, ## abre capítulo.',
@@ -133,7 +133,7 @@ export const pt = {
   'insp.alignCenter': 'Centro',
   'insp.alignRight': 'Direita',
 
-  'editor.presenter': 'Tornar a seleção um apresentador',
+  'editor.presenter': 'Apresentador',
   'insp.presenterHide': 'Esconder este nome na saída',
   'insp.presenterHideAll': 'Esconder o nome de todos na saída',
   'insp.presenterHideAll.key': 'HIDE',

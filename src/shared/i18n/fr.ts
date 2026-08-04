@@ -39,14 +39,14 @@ export const fr: Dicionario = {
   'panel.follow.key': 'SUIVRE',
   'panel.livePreview': 'Aperçu en direct',
 
-  'editor.chapter': 'Insérer un chapitre — devient ## dans le texte',
-  'editor.direction': 'Insérer une indication — devient [crochets], non lue',
+  'editor.chapter': 'Chapitre',
+  'editor.direction': 'Indication',
   'editor.undo': 'Annuler',
   'editor.fontSize': 'Taille de police de l’éditeur',
   'editor.fontSmaller': 'Réduire la police de l’éditeur',
   'editor.fontBigger': 'Agrandir la police de l’éditeur',
-  'editor.clearFormat': 'Effacer la mise en forme : chapitres et indications deviennent du texte simple',
-  'editor.allCaps': 'MAJUSCULES dans l’éditeur — affichage seul, ne change pas la diffusion',
+  'editor.clearFormat': 'Effacer la mise en forme',
+  'editor.allCaps': 'Majuscules',
   'editor.redo': 'Rétablir',
   'editor.placeholder':
     'Collez ou tapez le texte. Là où vous coupez la ligne, elle se coupe sur l’écran du présentateur. Les [crochets] marquent les indications, ## ouvre un chapitre.',
@@ -120,7 +120,7 @@ export const fr: Dicionario = {
   'insp.alignCenter': 'Centré',
   'insp.alignRight': 'Droite',
 
-  'editor.presenter': 'Faire de la sélection un présentateur',
+  'editor.presenter': 'Présentateur',
   'insp.presenterHide': 'Masquer ce nom sur la sortie',
   'insp.presenterHideAll': 'Masquer tous les noms sur la sortie',
   'insp.presenterHideAll.key': 'HIDE',

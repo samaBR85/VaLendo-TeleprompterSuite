@@ -39,14 +39,14 @@ export const it: Dicionario = {
   'panel.follow.key': 'SEGUI',
   'panel.livePreview': 'Anteprima dal vivo',
 
-  'editor.chapter': 'Inserisci capitolo — diventa ## nel testo',
-  'editor.direction': 'Inserisci indicazione di regia — diventa [parentesi], non si legge',
+  'editor.chapter': 'Capitolo',
+  'editor.direction': 'Indicazione',
   'editor.undo': 'Annulla',
   'editor.fontSize': 'Dimensione del carattere dell’editor',
   'editor.fontSmaller': 'Riduci il carattere dell’editor',
   'editor.fontBigger': 'Ingrandisci il carattere dell’editor',
-  'editor.clearFormat': 'Rimuovi formattazione: capitoli e indicazioni diventano testo semplice',
-  'editor.allCaps': 'MAIUSCOLE nell’editor — solo la vista, non cambia la trasmissione',
+  'editor.clearFormat': 'Rimuovi formattazione',
+  'editor.allCaps': 'Maiuscole',
   'editor.redo': 'Ripeti',
   'editor.placeholder':
     'Incolla o scrivi il copione. Dove spezzi la riga, si spezza sullo schermo del presentatore. Le [parentesi] segnano le indicazioni, ## apre un capitolo.',
@@ -120,7 +120,7 @@ export const it: Dicionario = {
   'insp.alignCenter': 'Centrato',
   'insp.alignRight': 'Destra',
 
-  'editor.presenter': 'Rendi la selezione un presentatore',
+  'editor.presenter': 'Presentatore',
   'insp.presenterHide': 'Nascondi questo nome in uscita',
   'insp.presenterHideAll': 'Nascondi tutti i nomi in uscita',
   'insp.presenterHideAll.key': 'HIDE',

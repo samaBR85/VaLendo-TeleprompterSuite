@@ -39,14 +39,14 @@ export const de: Dicionario = {
   'panel.follow.key': 'FOLGEN',
   'panel.livePreview': 'Live-Vorschau',
 
-  'editor.chapter': 'Kapitel einfügen — wird im Text zu ##',
-  'editor.direction': 'Regieanweisung einfügen — wird zu [Klammern], wird nicht gelesen',
+  'editor.chapter': 'Kapitel',
+  'editor.direction': 'Regieanweisung',
   'editor.undo': 'Rückgängig',
   'editor.fontSize': 'Schriftgröße des Editors',
   'editor.fontSmaller': 'Editorschrift verkleinern',
   'editor.fontBigger': 'Editorschrift vergrößern',
-  'editor.clearFormat': 'Formatierung entfernen: Kapitel und Regieanweisungen werden zu einfachem Text',
-  'editor.allCaps': 'GROSSBUCHSTABEN im Editor — nur die Anzeige, ändert die Sendung nicht',
+  'editor.clearFormat': 'Formatierung entfernen',
+  'editor.allCaps': 'Großbuchstaben',
   'editor.redo': 'Wiederholen',
   'editor.placeholder':
     'Skript einfügen oder tippen. Wo Sie die Zeile umbrechen, bricht sie auch auf dem Bildschirm des Sprechers. [Klammern] kennzeichnen Regieanweisungen, ## öffnet ein Kapitel.',
@@ -120,7 +120,7 @@ export const de: Dicionario = {
   'insp.alignCenter': 'Zentriert',
   'insp.alignRight': 'Rechts',
 
-  'editor.presenter': 'Auswahl zum Sprecher machen',
+  'editor.presenter': 'Sprecher',
   'insp.presenterHide': 'Diesen Namen in der Ausgabe verbergen',
   'insp.presenterHideAll': 'Alle Namen in der Ausgabe verbergen',
   'insp.presenterHideAll.key': 'HIDE',
