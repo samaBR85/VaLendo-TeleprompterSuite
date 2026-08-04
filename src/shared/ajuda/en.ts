@@ -168,11 +168,11 @@ export const ajudaEn = {
   },
   'ar.webview': {
     nome: 'View on network',
-    texto: 'Publishes a page on the local wi-fi: any phone reads the same script. Opens the panel with the address and QR code.'
+    texto: 'Publishes a page on the local network: any device with a browser reads the same script. Opens the panel with the address and QR code.'
   },
   'ar.webviewSound': {
     nome: 'Sound over the network',
-    texto: 'Whether a video card sends its audio to the phones. Off, the page never even offers to unmute. Dark until the network is up.'
+    texto: 'Whether a video card sends its audio over the network. Off, the page never even offers to unmute. Dark until the network is up.'
   },
 
   /* ---------------------------------------------------------------- OUTPUT */
@@ -426,7 +426,7 @@ export const ajudaEn = {
   },
   'cards.videoNetwork': {
     nome: 'Video on the network',
-    texto: 'Whether the phones on the wi-fi can play this file. Some formats a browser refuses even though the app plays them fine.'
+    texto: 'Whether browsers on the network can play this file. Some formats a browser refuses even though the app plays them fine.'
   },
   'cards.videoPlay': {
     nome: 'Play video',
@@ -611,15 +611,15 @@ export const ajudaEn = {
   },
   'insp.mirrorH': {
     nome: 'Mirror horizontally',
-    texto: 'Flips the presenter screen left to right — what the beam-splitter glass in front of the lens needs. Your preview and the phones stay unmirrored, so you can read them.'
+    texto: 'Flips the presenter screen left to right — what the beam-splitter glass in front of the lens needs. Your preview and the network page stay unmirrored, so you can read them.'
   },
   'insp.mirrorV': {
     nome: 'Mirror vertically',
-    texto: 'Flips the presenter screen top to bottom, for rigs where the monitor faces up into the glass. Your preview and the phones are never mirrored.'
+    texto: 'Flips the presenter screen top to bottom, for rigs where the monitor faces up into the glass. Your preview and the network page are never mirrored.'
   },
   'insp.rotation': {
     nome: 'Rotation',
-    texto: 'Turns the presenter screen in quarter turns — for a monitor mounted on its side. Your preview and the phones keep the upright image.'
+    texto: 'Turns the presenter screen in quarter turns — for a monitor mounted on its side. Your preview and the network page keep the upright image.'
   },
   'insp.saveDefaults': {
     nome: 'Save as default',

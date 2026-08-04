@@ -224,7 +224,7 @@ export const fr: Dicionario = {
   'web.publish': 'Publier sur le réseau local',
   'web.live': 'En direct sur le réseau local',
   'web.multiNet':
-    'Cette machine est sur plusieurs réseaux — pointez la caméra vers le code du réseau où se trouve le téléphone :',
+    'Cette machine est sur plusieurs réseaux — pointez la caméra vers le code du réseau où se trouve l’appareil :',
   'web.copy': 'copier',
   'web.copied': 'copié',
   'web.noNetwork': 'Cette machine n’est sur aucun réseau. Branchez le câble ou rejoignez le wi-fi.',

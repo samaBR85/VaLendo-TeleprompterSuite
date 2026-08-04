@@ -245,7 +245,7 @@ export const pt = {
   'web.title': 'Ver na rede',
   'web.publish': 'Publicar na rede local',
   'web.live': 'No ar na rede local',
-  'web.multiNet': 'Esta máquina está em mais de uma rede — aponte a câmera para o código da rede em que o telefone está:',
+  'web.multiNet': 'Esta máquina está em mais de uma rede — aponte a câmera para o código da rede em que o aparelho está:',
   'web.copy': 'copiar',
   'web.copied': 'copiado',
   'web.noNetwork': 'Esta máquina não está em nenhuma rede. Conecte o cabo ou o wi-fi.',

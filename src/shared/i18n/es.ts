@@ -224,7 +224,7 @@ export const es: Dicionario = {
   'web.publish': 'Publicar en la red local',
   'web.live': 'Al aire en la red local',
   'web.multiNet':
-    'Esta máquina está en más de una red — apunta la cámara al código de la red en la que está el teléfono:',
+    'Esta máquina está en más de una red — apunta la cámara al código de la red en la que está el aparato:',
   'web.copy': 'copiar',
   'web.copied': 'copiado',
   'web.noNetwork': 'Esta máquina no está en ninguna red. Conecta el cable o el wifi.',

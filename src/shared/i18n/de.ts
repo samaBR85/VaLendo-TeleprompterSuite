@@ -224,7 +224,7 @@ export const de: Dicionario = {
   'web.publish': 'Im lokalen Netz veröffentlichen',
   'web.live': 'Live im lokalen Netz',
   'web.multiNet':
-    'Dieser Rechner ist in mehreren Netzen — richten Sie die Kamera auf den Code des Netzes, in dem das Telefon ist:',
+    'Dieser Rechner ist in mehreren Netzen — richten Sie die Kamera auf den Code des Netzes, in dem das Gerät ist:',
   'web.copy': 'kopieren',
   'web.copied': 'kopiert',
   'web.noNetwork': 'Dieser Rechner ist in keinem Netz. Kabel einstecken oder ins WLAN gehen.',

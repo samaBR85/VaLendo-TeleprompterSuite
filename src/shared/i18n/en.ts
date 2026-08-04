@@ -223,7 +223,7 @@ export const en: Dicionario = {
   'web.title': 'View on the network',
   'web.publish': 'Publish on the local network',
   'web.live': 'Live on the local network',
-  'web.multiNet': 'This machine is on more than one network — point the camera at the code for the network the phone is on:',
+  'web.multiNet': 'This machine is on more than one network — point the camera at the code for the network your device is on:',
   'web.copy': 'copy',
   'web.copied': 'copied',
   'web.noNetwork': 'This machine is not on any network. Plug in the cable or join the wi-fi.',
