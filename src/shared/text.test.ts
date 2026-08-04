@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   anchorFromCaret,
+  caretFromAnchor,
   blockWordCount,
   blocksFromText,
   chapterTitle,
@@ -149,6 +150,69 @@ describe('anchorFromCaret — o "Go To" do rodapé da edição', () => {
 
   it('texto vazio não tem para onde ir', () => {
     expect(anchorFromCaret([], '', 0)).toBeNull()
+  })
+})
+
+describe('caretFromAnchor — o editor seguindo a leitura', () => {
+  it('acha onde começa a palavra que está sendo lida', () => {
+    const text = 'boa noite a todos\n\nsegundo parágrafo aqui'
+    const blocks = blocksFromText(text)
+
+    // terceira palavra do primeiro parágrafo ("a", offset 2)
+    expect(caretFromAnchor(blocks, text, { blockId: blocks[0].id, wordOffset: 2 })).toBe(text.indexOf('a todos'))
+    // primeira do segundo
+    expect(caretFromAnchor(blocks, text, { blockId: blocks[1].id, wordOffset: 0 })).toBe(text.indexOf('segundo'))
+  })
+
+  it('é a volta exata do "Go To" — ida e volta cai na mesma palavra', () => {
+    /*
+     * O par tem de fechar, senão "seguir a leitura" mostra um lugar e o "Go To"
+     * manda para outro, e as duas ferramentas passam a discordar na cara do
+     * operador.
+     */
+    const text = '## Abertura\n\nboa noite a todos que nos acompanham\n\n[pausa]'
+    const blocks = blocksFromText(text)
+
+    for (const caret of [0, 14, 20, 31, text.length - 2]) {
+      const anchor = anchorFromCaret(blocks, text, caret)
+      const volta = caretFromAnchor(blocks, text, anchor!)
+      // volta ao COMEÇO da palavra onde o cursor estava — não ao caractere
+      // exato, que seria pedir mais precisão do que a âncora carrega
+      expect(anchorFromCaret(blocks, text, volta!)).toEqual(anchor)
+    }
+  })
+
+  it('não conta espaço de sobra: dois espaços não deslocam a marca', () => {
+    // `words()` colapsa o espaço; somar comprimentos de palavra erraria aqui
+    const text = 'um  dois   três'
+    const blocks = blocksFromText(text)
+    expect(caretFromAnchor(blocks, text, { blockId: blocks[0].id, wordOffset: 2 })).toBe(text.indexOf('três'))
+  })
+
+  it('quebra simples dentro do parágrafo continua contando certo', () => {
+    const text = 'primeira linha\nsegunda linha'
+    const blocks = blocksFromText(text)
+    expect(caretFromAnchor(blocks, text, { blockId: blocks[0].id, wordOffset: 2 })).toBe(text.indexOf('segunda'))
+  })
+
+  it('capítulo e direção pousam no início da linha', () => {
+    const text = '## Abertura\n\n[olhar câmera 2]'
+    const blocks = blocksFromText(text)
+    expect(caretFromAnchor(blocks, text, { blockId: blocks[1].id, wordOffset: 0 })).toBe(text.indexOf('[olhar'))
+  })
+
+  it('bloco que não existe mais no texto não move nada', () => {
+    // o operador apagou o parágrafo que estava no ar; melhor não mexer do que
+    // pousar a marca num parágrafo qualquer
+    const text = 'só isto sobrou'
+    expect(caretFromAnchor(blocksFromText(text), text, { blockId: 'sumiu', wordOffset: 0 })).toBeNull()
+    expect(caretFromAnchor([], '', { blockId: 'x', wordOffset: 0 })).toBeNull()
+  })
+
+  it('palavra além do fim do parágrafo pousa no fim dele', () => {
+    const text = 'duas palavras'
+    const blocks = blocksFromText(text)
+    expect(caretFromAnchor(blocks, text, { blockId: blocks[0].id, wordOffset: 9 })).toBe(text.length)
   })
 })
 

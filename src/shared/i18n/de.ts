@@ -34,6 +34,8 @@ export const de: Dicionario = {
   'panel.broadcasting': 'Sendung',
   'panel.expand': 'Sendung vergrößern · F11',
   'panel.collapse': 'Zurück zum Split · F11',
+  'panel.follow': 'Der Lesung im Editor folgen',
+  'panel.follow.key': 'FOLGEN',
   'panel.livePreview': 'Live-Vorschau',
 
   'editor.chapter': 'Kapitel einfügen — wird im Text zu ##',

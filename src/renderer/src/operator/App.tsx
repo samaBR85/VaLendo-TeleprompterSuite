@@ -4,9 +4,9 @@ import type { MotivosDeFechar } from '@shared/api'
 import type { InsertKind } from '@shared/insertBlock'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import { PrompterStage } from '../prompter/PrompterStage'
-import { composeLines, totalWords } from '@shared/anchor'
+import { anchorFromWordIndex, composeLines, totalWords } from '@shared/anchor'
 import { cartaoNoAr } from '@shared/cards'
-import { formatClock, secondsForWords } from '@shared/pacing'
+import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { anchorFromCaret, hasFormatting, totalWordCount } from '@shared/text'
 import type { Tab } from '@shared/types'
 import { LANGS, type Lang } from '@shared/i18n'
@@ -422,6 +422,15 @@ function AppConteudo({
    */
   const [catchAtivo, setCatchAtivo] = useState(false)
   /**
+   * O editor acompanhando a leitura — o sentido inverso do CATCH.
+   *
+   * Os dois nunca ficam ligados juntos, e não é preferência: o CATCH move a
+   * leitura para onde o cursor está, este move a tela do editor para onde a
+   * leitura está. Ligados ao mesmo tempo, um alimentaria o outro e os dois
+   * ficariam se perseguindo. Ligar um desliga o outro, na função abaixo.
+   */
+  const [seguirLeitura, setSeguirLeitura] = useState(false)
+  /**
    * Há digitação ainda dentro do respiro de 140ms do editor.
    *
    * Serve só para o botão DESFAZER acender nesse intervalo — o `canUndo` vem
@@ -584,6 +593,67 @@ function AppConteudo({
       if (catchTimer.current) clearTimeout(catchTimer.current)
     }
   }, [])
+
+  /*
+   * Os dois interruptores num lugar só: ligar um sempre desliga o outro.
+   *
+   * Escrito como par, e não como dois `setState` espalhados pelos botões, para
+   * que a regra fique impossível de esquecer no dia em que aparecer um terceiro
+   * caminho para ligá-los (a paleta de comandos, um atalho de teclado).
+   */
+  const alternarCatch = useCallback(() => {
+    setCatchAtivo((ligado) => {
+      if (!ligado) setSeguirLeitura(false)
+      return !ligado
+    })
+  }, [])
+  const alternarSeguir = useCallback(() => {
+    setSeguirLeitura((ligado) => {
+      if (!ligado) setCatchAtivo(false)
+      return !ligado
+    })
+  }, [])
+
+  /**
+   * SEGUIR: o caminho de volta do Go To — o editor acompanha a leitura.
+   *
+   * Roda por relógio próprio, e não por `useNow()` no corpo do App: a leitura
+   * anda o tempo todo, e re-renderizar a mesa inteira quatro vezes por segundo
+   * para mexer numa faixa dentro do editor sairia caro justamente com o
+   * programa no ar. Aqui o efeito chama o editor pela referência, e só o
+   * editor redesenha.
+   *
+   * Quatro vezes por segundo dá conta: a 200 ppm a leitura anda três palavras
+   * nesse intervalo, e a faixa marca a LINHA, não a palavra.
+   */
+  useEffect(() => {
+    if (!seguirLeitura || !state) return
+    // sem editor na tela não há o que acompanhar — no Foco e na Mesa ele não existe
+    if (state.layoutMode !== 'split') return
+
+    let ultima = ''
+    const acompanhar = (): void => {
+      const aba = activeTabOf(state)
+      const linhas = composeLines(aba.blocks, aba.appearance, rows)
+      const anchor = anchorFromWordIndex(linhas, wordIndexAt(state.transport, Date.now()))
+      if (!anchor) return
+      // só incomoda o editor quando a palavra muda de verdade
+      const chave = `${anchor.blockId}:${anchor.wordOffset}`
+      if (chave === ultima) return
+      ultima = chave
+      editorRef.current?.mostrarAncora(anchor)
+    }
+
+    acompanhar()
+    const relogio = setInterval(acompanhar, 250)
+    return () => clearInterval(relogio)
+  }, [seguirLeitura, state, rows])
+
+  /* ao desligar (ou ao sair do Split), a faixa some junto: marca parada num
+     lugar qualquer viraria uma informação velha se passando por atual */
+  useEffect(() => {
+    if (!seguirLeitura || state?.layoutMode !== 'split') editorRef.current?.limparMarca()
+  }, [seguirLeitura, state?.layoutMode])
 
   /**
    * A roda do mouse muda o ritmo em QUALQUER lugar da mesa — menos onde ela
@@ -1129,11 +1199,12 @@ function AppConteudo({
                        esperar um segundo parado em cima do botão */
                     title={t('toolbar.catch')}
                     aria-label={t('toolbar.catch')}
+                    aria-pressed={catchAtivo}
                     acesa={catchAtivo}
                     cor="var(--color-live)"
                     className={`h-6 w-8 text-[9px] font-bold tracking-[0.04em] ${catchAtivo ? 'k-tecla-solida' : ''}`}
                     style={!catchAtivo ? { color: 'var(--color-go)' } : undefined}
-                    onClick={() => setCatchAtivo((v) => !v)}
+                    onClick={alternarCatch}
                   >
                     <Icon name="catch" size={13} />
                   </Tecla>
@@ -1263,6 +1334,26 @@ function AppConteudo({
                   ponto
                   action={
                     <>
+                      {/* SEGUIR mora aqui, no cabeçalho de quem produz a
+                          informação: é a leitura desta tela que o editor vai
+                          acompanhar. Do outro lado, no rodapé da Edição, está
+                          o par inverso (CATCH e Go To) — cada sentido no
+                          painel de onde ele parte. */}
+                      <Tecla
+                        {...ajuda('panel.follow')}
+                        title={t('panel.follow')}
+                        aria-label={t('panel.follow')}
+                        aria-pressed={seguirLeitura}
+                        acesa={seguirLeitura}
+                        cor="var(--color-go)"
+                        className={`h-[18px] px-1.5 text-[9px] font-bold tracking-[0.04em] ${
+                          seguirLeitura ? 'k-tecla-solida' : ''
+                        }`}
+                        style={!seguirLeitura ? { color: 'var(--color-go)' } : undefined}
+                        onClick={alternarSeguir}
+                      >
+                        {t('panel.follow.key')}
+                      </Tecla>
                       <span className="font-mono text-[10px] text-[var(--color-fog-3)]">{`${viewport.width} × ${viewport.height}`}</span>
                       <button
                         type="button"

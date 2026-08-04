@@ -208,3 +208,47 @@ export function anchorFromCaret(previousBlocks: Block[], text: string, caret: nu
   const offsetInParagraph = Math.max(0, Math.min(span.text.length, caret - span.start))
   return { blockId: block.id, wordOffset: words(span.text.slice(0, offsetInParagraph)).length }
 }
+
+/**
+ * O caminho de volta: onde, no texto do editor, está a palavra que a
+ * transmissão está lendo agora.
+ *
+ * A inversa exata de `anchorFromCaret`, e mora coladinha nela de propósito —
+ * as duas leem a mesma `paragraphSpans` e a mesma reconciliação de ids, então
+ * qualquer mudança na forma de partir o texto move as duas juntas. Separadas,
+ * uma passaria a apontar meio parágrafo adiante da outra sem ninguém notar.
+ *
+ * Devolve o começo da palavra, não o fim: é ali que a marca do editor pousa, e
+ * é o que faz "seguir a leitura" mostrar a palavra que está sendo dita em vez
+ * da seguinte.
+ */
+export function caretFromAnchor(previousBlocks: Block[], text: string, anchor: Anchor): number | null {
+  const spans = paragraphSpans(text)
+  if (spans.length === 0) return null
+
+  const index = reconcileBlocks(previousBlocks, text).findIndex((b) => b.id === anchor.blockId)
+  const span = index === -1 ? undefined : spans[index]
+  // bloco que não existe mais neste texto: melhor não mexer em nada do que
+  // pousar a marca num parágrafo qualquer
+  if (!span) return null
+
+  if (anchor.wordOffset <= 0) return span.start
+
+  /*
+   * Anda `wordOffset` palavras contando os espaços do jeito que estão.
+   *
+   * `words()` normaliza (corta e colapsa espaço), então não dá para somar
+   * comprimentos: dois espaços entre palavras, ou uma quebra de linha no meio
+   * do parágrafo, deslocariam a conta e a marca cairia adiante do lugar. Aqui
+   * a varredura é sobre o texto ORIGINAL, que é onde o cursor mora.
+   */
+  const parte = /\S+/g
+  let achadas = 0
+  let match: RegExpExecArray | null
+  while ((match = parte.exec(span.text)) !== null) {
+    if (achadas === anchor.wordOffset) return span.start + match.index
+    achadas += 1
+  }
+  // pediram uma palavra além do fim do parágrafo — pousa no fim dele
+  return span.start + span.text.length
+}

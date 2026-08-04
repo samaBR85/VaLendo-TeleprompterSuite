@@ -34,6 +34,8 @@ export const en: Dicionario = {
   'panel.broadcasting': 'Broadcast',
   'panel.expand': 'Expand the broadcast · F11',
   'panel.collapse': 'Back to split · F11',
+  'panel.follow': 'Follow the reading in the editor',
+  'panel.follow.key': 'FOLLOW',
   'panel.livePreview': 'Live preview',
 
   'editor.chapter': 'Insert chapter — becomes ## in the text',

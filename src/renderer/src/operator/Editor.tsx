@@ -1,10 +1,10 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { insertBlock, type InsertKind } from '@shared/insertBlock'
-import { blocksFromText, serializeBlocks, stripFormatting } from '@shared/text'
+import { blocksFromText, caretFromAnchor, serializeBlocks, stripFormatting } from '@shared/text'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
-import type { Tab } from '@shared/types'
+import type { Anchor, Tab } from '@shared/types'
 
 const TYPE_SETTINGS: React.CSSProperties = {
   margin: 0,
@@ -16,6 +16,57 @@ const TYPE_SETTINGS: React.CSSProperties = {
   whiteSpace: 'pre-wrap',
   overflowWrap: 'break-word',
   tabSize: 2
+}
+
+/**
+ * Quanto tempo o editor fica só seu depois de você mexer nele.
+ *
+ * Rolar para ler adiante, ou digitar, desliga o acompanhamento por este tempo.
+ * Sem isso, o "seguir a leitura" puxaria a tela de volta a cada palavra e
+ * consultar um trecho mais abaixo viraria impossível — o recurso brigaria com
+ * o próprio operador.
+ */
+const RESPEITO_MS = 4_000
+
+/** Onde a marca da leitura fica, em coordenadas do conteúdo (não da tela). */
+interface MarcaDaLeitura {
+  top: number
+  height: number
+}
+
+/**
+ * O retângulo do caractere `posicao` dentro do `<pre>` colorido.
+ *
+ * Um `Range` sobre os nós de texto: é o próprio navegador respondendo onde
+ * aquela letra foi parar depois de quebrar linha, com a fonte e a largura
+ * reais. Qualquer conta nossa (linha × altura) erraria em parágrafo que
+ * envolve, que é o caso comum num roteiro.
+ *
+ * Devolve em coordenadas do CONTEÚDO — já somado o scroll —, para a marca não
+ * precisar ser recalculada a cada rolagem.
+ */
+function retanguloDoTexto(pre: HTMLPreElement, posicao: number): MarcaDaLeitura | null {
+  const caminhante = document.createTreeWalker(pre, NodeFilter.SHOW_TEXT)
+  let percorrido = 0
+  let no = caminhante.nextNode() as Text | null
+  while (no) {
+    const fim = percorrido + no.length
+    if (posicao <= fim) {
+      const range = document.createRange()
+      const dentro = Math.max(0, Math.min(no.length, posicao - percorrido))
+      range.setStart(no, dentro)
+      // um range vazio não tem retângulo em todo navegador; um caractere de
+      // largura sempre tem
+      range.setEnd(no, Math.min(no.length, dentro + 1))
+      const caixa = range.getBoundingClientRect()
+      const molde = pre.getBoundingClientRect()
+      if (caixa.height === 0) return null
+      return { top: caixa.top - molde.top + pre.scrollTop, height: caixa.height }
+    }
+    percorrido = fim
+    no = caminhante.nextNode() as Text | null
+  }
+  return null
 }
 
 interface Props {
@@ -45,6 +96,14 @@ interface Props {
 }
 
 export interface EditorHandle {
+  /**
+   * Mostra no editor a palavra que a transmissão está lendo — rola até ela e
+   * a marca. Nunca mexe no cursor: ver onde a leitura está não pode custar o
+   * ponto onde a mão estava.
+   */
+  mostrarAncora: (anchor: Anchor) => void
+  /** apaga a marca — ao desligar o acompanhamento */
+  limparMarca: () => void
   /** manda agora, sem esperar o debounce, o que ainda estiver pendente. */
   flush: () => void
   /** insere capítulo ou direção no cursor, já com o miolo selecionado. */
@@ -73,6 +132,12 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
 
   const areaRef = useRef<HTMLTextAreaElement>(null)
   const preRef = useRef<HTMLPreElement>(null)
+  /** onde desenhar a marca da leitura, ou nada quando não se está seguindo */
+  const [marca, setMarca] = useState<MarcaDaLeitura | null>(null)
+  /** quando o operador mexeu no editor pela última vez — ver `RESPEITO_MS` */
+  const ultimoToque = useRef(0)
+  /** a rolagem de agora, só para reposicionar a marca na tela */
+  const [rolagem, setRolagem] = useState(0)
   const lastSent = useRef(incoming)
   /**
    * A forma normalizada do que mandamos.
@@ -247,13 +312,64 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     [draft]
   )
 
+  /**
+   * Mostra no editor a palavra que a transmissão está lendo — o caminho de
+   * volta do "Go To".
+   *
+   * NÃO mexe no cursor, de propósito. Mover o caret enquanto a leitura corre
+   * roubaria o ponto de digitação de quem está corrigindo um trecho mais
+   * abaixo, e a letra seguinte cairia noutro lugar. O que ela faz é rolar e
+   * marcar — o operador vê onde a leitura está sem perder onde a mão estava.
+   *
+   * A medida sai do `<pre>` colorido, não de uma conta: ele tem a mesma fonte
+   * e quebra nos mesmos pontos que o textarea, então um `Range` sobre o texto
+   * dele devolve o retângulo exato do caractere — inclusive em que linha
+   * VISUAL de um parágrafo longo ele caiu, que nenhuma conta por índice de
+   * linha daria.
+   */
+  const mostrarAncora = useCallback(
+    (anchor: Anchor): void => {
+      const area = areaRef.current
+      const pre = preRef.current
+      if (!area || !pre) return
+
+      // cede a vez a quem está usando o editor: enquanto a mão está lá, seguir
+      // a leitura vira briga — a rolagem puxaria de volta a cada segundo
+      if (Date.now() - ultimoToque.current < RESPEITO_MS) return
+
+      const posicao = caretFromAnchor(tab.blocks, draft, anchor)
+      if (posicao === null) return setMarca(null)
+
+      const alvo = retanguloDoTexto(pre, posicao)
+      if (!alvo) return setMarca(null)
+
+      setMarca(alvo)
+
+      /*
+       * Só rola quando a marca sai da faixa confortável (o miolo da caixa).
+       *
+       * Rolando para centralizar a cada palavra, o texto ficaria em movimento
+       * perpétuo debaixo do olho de quem lê. Assim ele fica parado enquanto a
+       * leitura atravessa a tela, e dá um salto só quando ela chega perto da
+       * borda.
+       */
+      const altura = area.clientHeight
+      const relativo = alvo.top - area.scrollTop
+      if (relativo >= altura * 0.15 && relativo <= altura * 0.75) return
+      area.scrollTop = Math.max(0, alvo.top - altura * 0.35)
+      pre.scrollTop = area.scrollTop
+    },
+    [draft, tab.blocks]
+  )
+
   useImperativeHandle(
     ref,
-    () => ({ flush, insert, removerFormatacao, caret }),
-    [flush, insert, removerFormatacao, caret]
+    () => ({ flush, insert, removerFormatacao, caret, mostrarAncora, limparMarca: () => setMarca(null) }),
+    [flush, insert, removerFormatacao, caret, mostrarAncora]
   )
 
   const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    ultimoToque.current = Date.now()
     setDraft(event.target.value)
     push(event.target.value, 140)
   }
@@ -331,6 +447,24 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
         {highlighted}
         {'\n'}
       </pre>
+      {/* A marca da leitura: uma faixa na linha que está sendo dita agora.
+          Fica ENTRE o <pre> colorido e o textarea — por cima do texto pintado,
+          por baixo da camada que recebe o clique — e não intercepta ponteiro
+          nenhum, senão selecionar texto pararia de funcionar na linha marcada.
+          A posição vem em coordenadas do conteúdo; o `- rolagem` traz para a
+          tela. */}
+      {marca ? (
+        <div
+          data-marca-leitura
+          className="pointer-events-none absolute right-0 left-0"
+          style={{
+            top: marca.top - rolagem,
+            height: marca.height,
+            background: 'color-mix(in srgb, var(--color-go) 16%, transparent)',
+            borderLeft: '3px solid var(--color-go)'
+          }}
+        />
+      ) : null}
       <textarea
         ref={areaRef}
         {...ajuda('editor.script')}
@@ -340,6 +474,20 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
         onSelect={onCaretMove}
         onScroll={() => {
           if (preRef.current && areaRef.current) preRef.current.scrollTop = areaRef.current.scrollTop
+          // só custa um render quando há marca para reposicionar; desligado, a
+          // rolagem do editor não deve nada a este recurso
+          if (marca) setRolagem(areaRef.current?.scrollTop ?? 0)
+        }}
+        /* rolar com a roda ou arrastando a barra é o operador procurando
+           alguma coisa: o acompanhamento sai da frente por `RESPEITO_MS`. O
+           `onScroll` sozinho não serviria para isto — ele também dispara na
+           rolagem que o próprio acompanhamento faz, e o recurso se desligaria
+           a si mesmo no primeiro salto */
+        onWheel={() => {
+          ultimoToque.current = Date.now()
+        }}
+        onPointerDown={() => {
+          ultimoToque.current = Date.now()
         }}
         spellCheck={false}
         placeholder={t('editor.placeholder')}
