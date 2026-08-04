@@ -15,7 +15,7 @@ import { reconcileBlocks, words } from './text'
 import type { Anchor, Block, PacingRule } from './types'
 
 /** Velocidade constante é o padrão do app; o modo por palavras é a exceção. */
-const RULE: PacingRule = { minWords: 3, maxWords: 6, uniformSpeed: true, nomesOcultos: [] }
+const RULE: PacingRule = { minWords: 3, maxWords: 6, uniformSpeed: true, deixas: [] }
 const BY_WORDS: PacingRule = { ...RULE, uniformSpeed: false }
 
 /** Simula a medição do DOM: toda linha com a mesma altura. */
@@ -422,8 +422,8 @@ describe('esconder o nome de quem fala tira a linha da régua', () => {
    * troca de apresentador. Ela sai da COMPOSIÇÃO — e é isso que se cobra aqui.
    */
   const roteiro = doc('HARI\nboa noite a todos', 'ROBSON\nboa noite também')
-  const comNome: PacingRule = { ...RULE, nomesOcultos: [] }
-  const semNome: PacingRule = { ...RULE, nomesOcultos: ['HARI', 'ROBSON'] }
+  const comNome: PacingRule = { ...RULE, deixas: [] }
+  const semNome: PacingRule = { ...RULE, deixas: [{ nome: 'HARI', oculto: true }, { nome: 'ROBSON', oculto: true }] }
 
   it('a linha do nome some da composição, e só ela', () => {
     const antes = composeLines(roteiro, comNome).filter((l) => !l.spacer)
@@ -438,7 +438,7 @@ describe('esconder o nome de quem fala tira a linha da régua', () => {
   })
 
   it('sem caixa: o nome registrado em minúscula esconde o escrito em maiúscula', () => {
-    const linhas = composeLines(roteiro, { ...RULE, nomesOcultos: ['hari'] })
+    const linhas = composeLines(roteiro, { ...RULE, deixas: [{ nome: 'hari', oculto: true }] })
     expect(linhas.map((l) => l.text)).not.toContain('HARI')
     expect(linhas.map((l) => l.text)).toContain('ROBSON')
   })
@@ -456,7 +456,7 @@ describe('esconder o nome de quem fala tira a linha da régua', () => {
      * não existe mais na tela. Melhor um nome visível do que uma âncora órfã.
      */
     const soNome = doc('HARI', 'a fala vem no parágrafo seguinte')
-    const linhas = composeLines(soNome, { ...RULE, nomesOcultos: ['HARI'] })
+    const linhas = composeLines(soNome, { ...RULE, deixas: [{ nome: 'HARI', oculto: true }] })
     expect(linhas.some((l) => l.blockId === soNome[0].id && !l.spacer)).toBe(true)
   })
 

@@ -62,6 +62,14 @@ export function apresentadorDaLinha(
 export interface LinhaPintavel {
   kind: BlockKind
   text: string
+  /**
+   * De quem é esta fala, quando a composição já sabe.
+   *
+   * As linhas da SAÍDA chegam carimbadas por `composeLines` — e é o carimbo
+   * que sustenta a cor quando a linha do nome foi escondida. As linhas do
+   * EDITOR não têm carimbo: lá o nome está sempre visível, e o texto basta.
+   */
+  dono?: string
 }
 
 /**
@@ -79,13 +87,22 @@ export interface LinhaPintavel {
 export function coresDasLinhas(linhas: LinhaPintavel[], apresentadores: Apresentador[]): (string | null)[] {
   if (apresentadores.length === 0) return linhas.map(() => null)
 
+  const porNome = new Map(apresentadores.map((a) => [chaveDoNome(a.nome), a]))
   let corrente: string | null = null
+
   return linhas.map((linha) => {
+    // o carimbo da composição vem primeiro: ele responde mesmo quando a linha
+    // do nome não existe mais na saída
+    const carimbado = linha.dono ? porNome.get(chaveDoNome(linha.dono)) : undefined
+    if (carimbado) corrente = carimbado.cor
+
     if (linha.kind !== 'speech') return null
 
-    const dono = apresentadorDaLinha(linha.text, apresentadores)
+    const dono = porNome.get(chaveDoNome(linha.text))
     if (dono) {
       corrente = dono.cor
+      // a linha do NOME não recebe a cor do corpo: ela é a deixa, e tem
+      // tratamento próprio na tela
       return null
     }
     return corrente
@@ -93,14 +110,17 @@ export function coresDasLinhas(linhas: LinhaPintavel[], apresentadores: Apresent
 }
 
 /**
- * Os nomes que NÃO entram na composição da saída.
+ * As deixas como a composição precisa delas: o nome de cada um e se sai da tela.
  *
  * `global` força todos, como o OVERLAY dos cartões: ligado, os interruptores
  * individuais ficam travados e acesos; desligado, cada apresentador decide
  * sozinho pelo próprio `oculto`.
  */
-export function nomesOcultos(apresentadores: Apresentador[], global: boolean): string[] {
-  return apresentadores.filter((a) => global || a.oculto).map((a) => a.nome)
+export function deixasDaSaida(
+  apresentadores: Apresentador[],
+  global: boolean
+): { nome: string; oculto: boolean }[] {
+  return apresentadores.map((a) => ({ nome: a.nome, oculto: global || (a.oculto ?? false) }))
 }
 
 /** Esta linha é a deixa de um apresentador? Serve para desenhá-la diferente. */

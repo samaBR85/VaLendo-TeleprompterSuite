@@ -4,7 +4,7 @@ import { buildRundown, segmentIndexAt } from './rundown'
 import { reconcileBlocks, totalWordCount } from './text'
 import type { Marker, PacingRule } from './types'
 
-const RULE: PacingRule = { minWords: 3, maxWords: 6, uniformSpeed: true, nomesOcultos: [] }
+const RULE: PacingRule = { minWords: 3, maxWords: 6, uniformSpeed: true, deixas: [] }
 
 function doc(...texts: string[]) {
   return reconcileBlocks([], texts.join('\n\n'))

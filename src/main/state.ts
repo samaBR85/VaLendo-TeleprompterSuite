@@ -6,7 +6,7 @@ import {
   totalWords,
   wordIndexFromAnchor
 } from '@shared/anchor'
-import { chaveDoNome, nomesOcultos, proximaCor } from '@shared/apresentadores'
+import { chaveDoNome, deixasDaSaida, proximaCor } from '@shared/apresentadores'
 import { cartaoNoAr } from '@shared/cards'
 import { COMMANDS_BY_ID } from '@shared/commands'
 import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
@@ -253,7 +253,7 @@ export class Store {
   private replaceTab(tab: Tab): AppState {
     const index = this.state.tabs.findIndex((t) => t.id === tab.id)
     if (index === -1) return this.state
-    return { ...this.state, tabs: this.state.tabs.with(index, comNomesOcultos(tab)) }
+    return { ...this.state, tabs: this.state.tabs.with(index, comDeixas(tab)) }
   }
 
   /** Mutação que entra no histórico de desfazer. */
@@ -1191,9 +1191,9 @@ export class Store {
 }
 
 /**
- * Mantém `appearance.nomesOcultos` em dia com quem está escondido.
+ * Mantém `appearance.deixas` em dia com quem fala e quem está escondido.
  *
- * A lista de nomes é DERIVADA dos apresentadores, mas fica guardada dentro da
+ * A lista é DERIVADA dos apresentadores, mas fica guardada dentro da
  * aparência — e isso é de propósito. A régua de rolagem é composta em quinze
  * lugares, no main e nos três renderers; se cada um recalculasse a lista, um
  * deles acabaria calculando diferente e a marca de leitura apontaria para o
@@ -1203,11 +1203,14 @@ export class Store {
  * aqui, no funil por onde TODA troca de aba passa (`replaceTab`), e não nos
  * casos que mexem em apresentador. Assim não há como esquecer um.
  */
-function comNomesOcultos(tab: Tab): Tab {
-  const devidos = nomesOcultos(tab.apresentadores, tab.appearance.ocultarApresentadores)
-  const atuais = tab.appearance.nomesOcultos
+function comDeixas(tab: Tab): Tab {
+  const devidas = deixasDaSaida(tab.apresentadores, tab.appearance.ocultarApresentadores)
+  const atuais = tab.appearance.deixas
   // só troca quando muda de verdade: um objeto novo a cada mutação invalidaria
   // os memos do renderer que dependem da aparência
-  if (devidos.length === atuais.length && devidos.every((n, i) => n === atuais[i])) return tab
-  return { ...tab, appearance: { ...tab.appearance, nomesOcultos: devidos } }
+  const iguais =
+    devidas.length === atuais.length &&
+    devidas.every((d, i) => d.nome === atuais[i].nome && d.oculto === atuais[i].oculto)
+  if (iguais) return tab
+  return { ...tab, appearance: { ...tab.appearance, deixas: devidas } }
 }

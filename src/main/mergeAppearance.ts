@@ -29,12 +29,12 @@ export function mergeAppearance(saved: Partial<Appearance> | undefined): Appeara
     ...DEFAULT_APPEARANCE,
     ...saved,
     /*
-     * A lista de nomes escondidos é DERIVADA dos apresentadores, e o `spread`
+     * A lista de deixas é DERIVADA dos apresentadores, e o `spread`
      * acima traria a versão gravada — que pode estar velha, ou vir de um
      * projeto onde a lista nem existia. Zerar aqui é seguro: quem a preenche é
-     * `comNomesOcultos`, no funil de estado, na primeira troca de aba.
+     * `comDeixas`, no funil de estado, na primeira troca de aba.
      */
-    nomesOcultos: [],
+    deixas: [],
     timers: {
       ...DEFAULT_APPEARANCE.timers,
       ...savedTimers,

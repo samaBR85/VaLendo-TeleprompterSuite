@@ -123,3 +123,52 @@ describe('chaveDoNome', () => {
     expect(coresDasLinhas([fala('HARI'), fala(''), fala('a fala')], DOIS)).toEqual([null, HARI.cor, HARI.cor])
   })
 })
+
+describe('a cor sobrevive ao nome escondido', () => {
+  /*
+   * O defeito que este teste tranca, visto na tela: ligar o HIDE apagava a cor
+   * de todo mundo. A cor era descoberta LENDO a linha do nome — escondida a
+   * linha, não sobrava nada para ler, e a fala voltava ao branco. Justamente
+   * quando a cor é a ÚNICA coisa que diz quem fala.
+   *
+   * Agora quem responde é o carimbo que a composição põe em cada linha.
+   */
+  it('a fala continua colorida mesmo sem a deixa na composição', () => {
+    const cores = coresDasLinhas(
+      [
+        { kind: 'speech', text: 'primeira fala', dono: 'HARI' },
+        { kind: 'speech', text: 'segunda fala, mesmo dono', dono: 'HARI' },
+        { kind: 'speech', text: 'a resposta', dono: 'ROBSON' }
+      ],
+      DOIS
+    )
+    expect(cores).toEqual([HARI.cor, HARI.cor, ROBSON.cor])
+  })
+
+  it('o carimbo ignora a caixa, como todo o resto', () => {
+    const cores = coresDasLinhas([{ kind: 'speech', text: 'fala', dono: 'hari' }], DOIS)
+    expect(cores).toEqual([HARI.cor])
+  })
+
+  it('capítulo carimbado continua sem cor de apresentador, e não troca o turno', () => {
+    const cores = coresDasLinhas(
+      [
+        { kind: 'speech', text: 'fala do hari', dono: 'HARI' },
+        { kind: 'chapter', text: '## Bloco 2', dono: 'HARI' },
+        { kind: 'speech', text: 'ainda o hari', dono: 'HARI' }
+      ],
+      DOIS
+    )
+    expect(cores).toEqual([HARI.cor, null, HARI.cor])
+  })
+
+  it('sem carimbo, a leitura pelo texto continua valendo — é o caminho do editor', () => {
+    const cores = coresDasLinhas([fala('HARI'), fala('a fala')], DOIS)
+    expect(cores).toEqual([null, HARI.cor])
+  })
+
+  it('carimbo de apresentador que já foi removido não pinta nada', () => {
+    const cores = coresDasLinhas([{ kind: 'speech', text: 'fala órfã', dono: 'QUEM' }], DOIS)
+    expect(cores).toEqual([null])
+  })
+})

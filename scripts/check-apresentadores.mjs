@@ -51,15 +51,57 @@ const ok = (rotulo, cond, detalhe = '') => {
 }
 
 const roteiro = readFileSync('teste_projetos/ROTEIRO-2_apresentadores.txt', 'utf-8')
+
+/*
+ * Os nomes saem do PRÓPRIO roteiro, não de constantes aqui.
+ *
+ * Já custou uma rodada de falsos negativos: o operador renomeou "HARI" para
+ * "HARIANE" no arquivo, o script continuou procurando o nome antigo e reprovou
+ * meia dúzia de coisas que estavam certas. Deixa é a primeira linha de um
+ * parágrafo que se repete — é o que define uma deixa num roteiro.
+ */
+const primeiras = roteiro
+  .split(/\n{2,}/)
+  .map((p) => p.split('\n')[0].trim())
+  .filter((l) => l.length > 0 && !l.startsWith('#'))
+const vezes = new Map()
+for (const l of primeiras) vezes.set(l, (vezes.get(l) ?? 0) + 1)
+const [NOME_A, NOME_B] = [...vezes.entries()]
+  .filter(([, n]) => n > 1)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 2)
+  .map(([nome]) => nome)
+if (!NOME_A || !NOME_B) throw new Error('o roteiro de teste não tem dois nomes que se repetem')
+console.log(`apresentadores no roteiro: ${NOME_A} e ${NOME_B}
+`)
+/*
+ * Semeia pelo MESMO caminho por onde a digitação chega ao main.
+ *
+ * Escrever no `value` do textarea e disparar `input` parecia mais realista,
+ * mas é frágil: depende do rastreador interno do React e falhou em silêncio
+ * quando a aba já tinha um roteiro parecido — o teste seguiu rodando sobre o
+ * texto velho e reprovou coisas que estavam certas. A ação é o contrato de
+ * verdade; a digitação já é coberta pelos outros scripts.
+ */
 await ev(`
-  (() => {
-    const area = document.querySelector('[data-sem-roda] textarea')
-    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
-    setter.call(area, ${JSON.stringify(roteiro)})
-    area.dispatchEvent(new Event('input', { bubbles: true }))
-  })()
+  window.valendo.getState().then((s) =>
+    window.valendo.dispatch({ type: 'text/set', tabId: s.state.activeTabId, text: ${JSON.stringify(roteiro)} })
+  )
 `)
 await espera(900)
+
+/*
+ * Limpa os apresentadores que já estivessem registrados.
+ *
+ * O script escreve por cima da aba ativa, mas a LISTA de apresentadores é
+ * outra coisa e sobrevive — e um teste que depende do estado deixado pela
+ * sessão anterior não prova nada. Já custou uma rodada inteira de falsos
+ * negativos: o operador tinha renomeado HARI para HARIANE testando à mão.
+ */
+while ((await ev(`document.querySelectorAll('[data-apresentador-chip]').length`)) > 0) {
+  await ev(`document.querySelector('[data-apresentador-chip] button[aria-label]:last-of-type').click()`)
+  await espera(250)
+}
 
 /** Seleciona um nome no editor como o mouse selecionaria, e clica no botão. */
 async function registrar(nome) {
@@ -87,8 +129,8 @@ async function registrar(nome) {
   await espera(400)
 }
 
-await registrar('HARI')
-await registrar('ROBSON')
+await registrar(NOME_A)
+await registrar(NOME_B)
 
 const chips = await ev(`[...document.querySelectorAll('[data-apresentador-chip]')].map((c) => c.innerText.trim())`)
 ok('os dois chips aparecem nos Ajustes', chips.length === 2, JSON.stringify(chips))
@@ -119,7 +161,7 @@ ok('o capítulo NÃO recebeu cor de apresentador', palco.capitulo?.c !== palco.f
 const editor = await ev(`
   (() => {
     const spans = [...document.querySelectorAll('[data-sem-roda] pre span')]
-    const i = spans.findIndex((s) => s.textContent.trim() === 'HARI')
+    const i = spans.findIndex((s) => s.textContent.trim() === ${JSON.stringify(NOME_A)})
     if (i === -1) return null
     return {
       nome: getComputedStyle(spans[i]).color,
@@ -139,26 +181,38 @@ const temNome = (n) =>
   `[...document.querySelectorAll('[data-line]')].some((l) => l.textContent.trim() === ${JSON.stringify(n)})`
 
 const linhasAntes = await ev(contaLinhas)
-ok('antes de esconder, os nomes estão na saída', (await ev(temNome('HARI'))) === true)
+ok('antes de esconder, os nomes estão na saída', (await ev(temNome(NOME_A))) === true)
 
 await ev(`document.querySelectorAll('[data-esconder-apresentador]')[0].click()`)
 await espera(500)
-ok('esconder um tira o nome dele da saída', (await ev(temNome('HARI'))) === false)
-ok('e mantém o do outro', (await ev(temNome('ROBSON'))) === true)
+ok('esconder um tira o nome dele da saída', (await ev(temNome(NOME_A))) === false)
+ok('e mantém o do outro', (await ev(temNome(NOME_B))) === true)
 
 /*
  * A prova que separa esta implementação da fácil: a linha SAIU da composição.
  * Se ela só tivesse ficado invisível, a contagem seria a mesma — e a leitura
  * gastaria o tempo de uma linha parada em cada troca de apresentador.
  */
+/*
+ * E a COR sobrevive — o defeito que apareceu na tela: escondido o nome, a fala
+ * voltava ao branco, justamente quando a cor é a única coisa que diz quem fala.
+ */
+const corEscondida = await ev(`
+  (() => {
+    const l = [...document.querySelectorAll('[data-line]')].find((x) => x.textContent.trim().startsWith('E agora The Bear'))
+    return l ? getComputedStyle(l).color : null
+  })()
+`)
+ok('a fala continua colorida com o nome escondido', corEscondida === palco.falaHari?.c, `${corEscondida} vs ${palco.falaHari?.c}`)
+
 const linhasDepois = await ev(contaLinhas)
 ok('a linha saiu da composição, não virou linha em branco', linhasDepois < linhasAntes, `${linhasAntes} → ${linhasDepois}`)
 
 await ev(`document.querySelector('[data-esconder-global]').click()`)
 await espera(500)
 const comGlobal = await ev(`({
-  hari: ${temNome('HARI')},
-  robson: ${temNome('ROBSON')},
+  hari: ${temNome(NOME_A)},
+  robson: ${temNome(NOME_B)},
   travados: [...document.querySelectorAll('[data-esconder-apresentador]')].every((b) => b.disabled)
 })`)
 ok('o GLOBAL esconde todos', comGlobal.hari === false && comGlobal.robson === false, JSON.stringify(comGlobal))
@@ -169,11 +223,11 @@ await ev(`document.querySelector('[data-esconder-global]').click()`)
 await espera(400)
 await ev(`document.querySelectorAll('[data-esconder-apresentador]')[0].click()`)
 await espera(600)
-ok('desligar devolve os nomes', (await ev(temNome('HARI'))) === true)
+ok('desligar devolve os nomes', (await ev(temNome(NOME_A))) === true)
 ok('e a composição volta ao tamanho de antes', (await ev(contaLinhas)) === linhasAntes, `${await ev(contaLinhas)} vs ${linhasAntes}`)
 ok(
   'o roteiro no editor jamais perdeu o nome',
-  (await ev(`document.querySelector('[data-sem-roda] textarea').value.includes('HARI')`)) === true
+  (await ev(`document.querySelector('[data-sem-roda] textarea').value.includes(${JSON.stringify(NOME_A)})`)) === true
 )
 
 socket.close()

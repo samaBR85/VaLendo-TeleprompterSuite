@@ -37,7 +37,7 @@ export interface PacingRule extends LineRule {
    */
   uniformSpeed: boolean
   /**
-   * Nomes de apresentador que NÃO entram na composição da saída.
+   * As deixas do roteiro: o nome de cada apresentador e se ele sai da saída.
    *
    * Obrigatório de propósito, e não opcional: esconder um nome tira uma linha
    * da régua de rolagem, e a régua é calculada em quinze lugares — main e
@@ -46,9 +46,13 @@ export interface PacingRule extends LineRule {
    * sem erro nenhum aparecer. Campo obrigatório é o que faz o compilador
    * listar os quinze e não deixar nenhum para trás.
    *
-   * Vazio no caso comum — um apresentador só, ou nenhum escondido.
+   * A lista traz TODOS, não só os escondidos, porque a composição precisa
+   * reconhecer a deixa para carimbar de quem é a fala que vem embaixo — e é
+   * esse carimbo que mantém a cor quando o nome deixa de ser desenhado.
+   *
+   * Vazia no caso comum: um apresentador só, sem nome escrito no roteiro.
    */
-  nomesOcultos: string[]
+  deixas: { nome: string; oculto: boolean }[]
 }
 
 export interface Appearance extends PacingRule {

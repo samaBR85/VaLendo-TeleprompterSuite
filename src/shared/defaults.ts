@@ -130,7 +130,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   minWords: 4,
   maxWords: 7,
   uniformSpeed: true,
-  nomesOcultos: [],
+  deixas: [],
   ocultarApresentadores: false,
   // branco no preto é o que um teleprompter deve ser, e não acompanha o tema
   // do app: isto é o que o apresentador lê, não o cromo em volta

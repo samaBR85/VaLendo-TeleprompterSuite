@@ -29,6 +29,15 @@ export interface LineSpec {
    * escreveu, e por isso pesa na régua como qualquer outra.
    */
   spacer?: boolean
+  /**
+   * De quem é esta fala, quando o roteiro tem apresentadores.
+   *
+   * Carimbado na composição, e não descoberto depois lendo o texto: a linha
+   * do nome pode ter sido ESCONDIDA da saída, e aí não sobra nada para ler —
+   * era exatamente assim que a cor se perdia ao ligar o HIDE. Aqui a resposta
+   * viaja com a linha, escondida ou não.
+   */
+  dono?: string
 }
 
 export interface LineGeometry {
@@ -45,6 +54,7 @@ interface LineDraft {
   text: string
   words: number
   spacer?: boolean
+  dono?: string
 }
 
 /**
@@ -71,9 +81,12 @@ export type MeasuredRows = number[]
  */
 export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredRows): LineSpec[] {
   const drafts: LineDraft[] = []
-  // comparação sem caixa, a mesma que decide de quem é cada fala
-  const ocultos = new Set(rule.nomesOcultos.map(chaveDoNome))
+  // as deixas por nome comparável — sem caixa, como em todo o resto
+  const deixas = new Map(rule.deixas.map((d) => [chaveDoNome(d.nome), d]))
   let previous: Block | null = null
+  /* quem está falando agora. Atravessa parágrafos e sobrevive a capítulo e
+     direção — eles interrompem o roteiro, não o turno de quem fala. */
+  let dono: string | undefined
 
   for (const block of blocks) {
     // a linha em branco que separa dois parágrafos no editor é diagramação:
@@ -81,7 +94,7 @@ export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredR
     // do apresentador. Fica presa ao bloco anterior para que saltar para um
     // capítulo ou marcador caia no texto, não no branco acima dele
     if (previous) {
-      drafts.push({ blockId: previous.id, kind: previous.kind, text: '', words: 0, spacer: true })
+      drafts.push({ blockId: previous.id, kind: previous.kind, text: '', words: 0, spacer: true, dono })
     }
     previous = block
 
@@ -104,10 +117,17 @@ export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredR
        * que uma âncora órfã.
        */
       const digitadas = block.text.split('\n')
-      const sobrando = digitadas.filter((typed) => !ocultos.has(chaveDoNome(typed)))
-      for (const typed of sobrando.length > 0 ? sobrando : digitadas) {
+      const escondida = (typed: string): boolean => deixas.get(chaveDoNome(typed))?.oculto === true
+      const sobraAlgo = digitadas.some((typed) => !escondida(typed))
+
+      for (const typed of digitadas) {
+        // a deixa manda no turno mesmo quando não vai ser desenhada
+        const quem = deixas.get(chaveDoNome(typed))
+        if (quem) dono = quem.nome
+        if (quem?.oculto && sobraAlgo) continue
+
         for (const text of senseLines(typed, rule)) {
-          drafts.push({ blockId: block.id, kind: block.kind, text, words: words(text).length })
+          drafts.push({ blockId: block.id, kind: block.kind, text, words: words(text).length, dono })
         }
       }
     } else {
@@ -115,7 +135,8 @@ export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredR
         blockId: block.id,
         kind: block.kind,
         text: block.text,
-        words: words(block.text).length
+        words: words(block.text).length,
+        dono
       })
     }
   }
@@ -146,7 +167,8 @@ export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredR
       wordCount,
       blockWordStart: blockWords,
       wordStart: globalWords,
-      ...(draft.spacer ? { spacer: true } : {})
+      ...(draft.spacer ? { spacer: true } : {}),
+      ...(draft.dono ? { dono: draft.dono } : {})
     })
     blockWords += wordCount
     globalWords += wordCount
