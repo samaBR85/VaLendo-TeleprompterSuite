@@ -134,6 +134,9 @@ export const pt = {
   'insp.alignRight': 'Direita',
 
   'editor.presenter': 'Tornar a seleção um apresentador',
+  'insp.presenterHide': 'Esconder este nome na saída',
+  'insp.presenterHideAll': 'Esconder o nome de todos na saída',
+  'insp.presenterHideAll.key': 'HIDE',
   'insp.presenters': 'Apresentadores',
   'insp.presenterColor': 'Cor de {nome}',
   'insp.presenterOrphan': 'Este nome não está mais no roteiro. Selecione o nome novo no editor e use RELINK.',

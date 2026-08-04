@@ -121,6 +121,9 @@ export const es: Dicionario = {
   'insp.alignRight': 'Derecha',
 
   'editor.presenter': 'Convertir la selección en presentador',
+  'insp.presenterHide': 'Ocultar este nombre en la salida',
+  'insp.presenterHideAll': 'Ocultar el nombre de todos en la salida',
+  'insp.presenterHideAll.key': 'HIDE',
   'insp.presenters': 'Presentadores',
   'insp.presenterColor': 'Color de {nome}',
   'insp.presenterOrphan': 'Este nombre ya no está en el guion. Selecciona el nombre nuevo en el editor y usa RELINK.',

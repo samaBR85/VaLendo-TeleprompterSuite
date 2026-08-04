@@ -15,7 +15,7 @@ import { reconcileBlocks, words } from './text'
 import type { Anchor, Block, PacingRule } from './types'
 
 /** Velocidade constante é o padrão do app; o modo por palavras é a exceção. */
-const RULE: PacingRule = { minWords: 3, maxWords: 6, uniformSpeed: true }
+const RULE: PacingRule = { minWords: 3, maxWords: 6, uniformSpeed: true, nomesOcultos: [] }
 const BY_WORDS: PacingRule = { ...RULE, uniformSpeed: false }
 
 /** Simula a medição do DOM: toda linha com a mesma altura. */
@@ -411,5 +411,64 @@ describe('ancoraEmPalavrasReais — a régua traduzida para o texto', () => {
       blockId: 'sumiu',
       wordOffset: 4
     })
+  })
+})
+
+describe('esconder o nome de quem fala tira a linha da régua', () => {
+  /*
+   * A parte perigosa da ferramenta. Esconder não pode ser "não desenhar": uma
+   * linha invisível continuaria pesando na régua (a medição faz
+   * `Math.max(1, …)`) e a leitura ficaria parada o tempo de uma linha em cada
+   * troca de apresentador. Ela sai da COMPOSIÇÃO — e é isso que se cobra aqui.
+   */
+  const roteiro = doc('HARI\nboa noite a todos', 'ROBSON\nboa noite também')
+  const comNome: PacingRule = { ...RULE, nomesOcultos: [] }
+  const semNome: PacingRule = { ...RULE, nomesOcultos: ['HARI', 'ROBSON'] }
+
+  it('a linha do nome some da composição, e só ela', () => {
+    const antes = composeLines(roteiro, comNome).filter((l) => !l.spacer)
+    const depois = composeLines(roteiro, semNome).filter((l) => !l.spacer)
+
+    expect(antes.map((l) => l.text)).toContain('HARI')
+    expect(depois.map((l) => l.text)).not.toContain('HARI')
+    expect(depois.map((l) => l.text)).not.toContain('ROBSON')
+    // a fala continua inteira
+    expect(depois.map((l) => l.text).join(' ')).toContain('boa noite a todos')
+    expect(depois.length).toBe(antes.length - 2)
+  })
+
+  it('sem caixa: o nome registrado em minúscula esconde o escrito em maiúscula', () => {
+    const linhas = composeLines(roteiro, { ...RULE, nomesOcultos: ['hari'] })
+    expect(linhas.map((l) => l.text)).not.toContain('HARI')
+    expect(linhas.map((l) => l.text)).toContain('ROBSON')
+  })
+
+  it('o texto do bloco NÃO muda — desligar traz o nome de volta', () => {
+    composeLines(roteiro, semNome)
+    expect(roteiro[0].text).toBe('HARI\nboa noite a todos')
+    expect(composeLines(roteiro, comNome).map((l) => l.text)).toContain('HARI')
+  })
+
+  it('um parágrafo que só tem o nome NÃO fica sem linha nenhuma', () => {
+    /*
+     * Sem esta guarda o bloco não produziria linha alguma, e a âncora que
+     * aponta para ele ficaria sem destino — a leitura pararia num bloco que
+     * não existe mais na tela. Melhor um nome visível do que uma âncora órfã.
+     */
+    const soNome = doc('HARI', 'a fala vem no parágrafo seguinte')
+    const linhas = composeLines(soNome, { ...RULE, nomesOcultos: ['HARI'] })
+    expect(linhas.some((l) => l.blockId === soNome[0].id && !l.spacer)).toBe(true)
+  })
+
+  it('a régua encolhe, e a velocidade constante continua constante', () => {
+    // menos linhas para atravessar, mesmo peso por linha: o texto sobe no
+    // mesmo ritmo, o programa é que fica mais curto — e é a verdade, porque
+    // ninguém lê o nome em voz alta
+    const antes = composeLines(roteiro, comNome)
+    const depois = composeLines(roteiro, semNome)
+    expect(totalWords(depois)).toBeLessThan(totalWords(antes))
+
+    const pesos = depois.filter((l) => l.kind === 'speech' && !l.spacer).map((l) => l.wordCount)
+    expect(new Set(pesos).size).toBe(1)
   })
 })

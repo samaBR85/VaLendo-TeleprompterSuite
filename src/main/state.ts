@@ -6,7 +6,7 @@ import {
   totalWords,
   wordIndexFromAnchor
 } from '@shared/anchor'
-import { chaveDoNome, proximaCor } from '@shared/apresentadores'
+import { chaveDoNome, nomesOcultos, proximaCor } from '@shared/apresentadores'
 import { cartaoNoAr } from '@shared/cards'
 import { COMMANDS_BY_ID } from '@shared/commands'
 import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
@@ -253,7 +253,7 @@ export class Store {
   private replaceTab(tab: Tab): AppState {
     const index = this.state.tabs.findIndex((t) => t.id === tab.id)
     if (index === -1) return this.state
-    return { ...this.state, tabs: this.state.tabs.with(index, tab) }
+    return { ...this.state, tabs: this.state.tabs.with(index, comNomesOcultos(tab)) }
   }
 
   /** Mutação que entra no histórico de desfazer. */
@@ -802,6 +802,13 @@ export class Store {
         })
         break
 
+      case 'presenter/hidden':
+        this.mutateTab(action.tabId, `apresentador:ocultar:${action.presenterId}`, (draft) => {
+          const alvo = draft.apresentadores.find((a) => a.id === action.presenterId)
+          if (alvo) alvo.oculto = action.oculto
+        })
+        break
+
       case 'presenter/remove':
         this.mutateTab(action.tabId, `apresentador:remover:${action.presenterId}`, (draft) => {
           draft.apresentadores = draft.apresentadores.filter((a) => a.id !== action.presenterId)
@@ -1181,4 +1188,26 @@ export class Store {
 
     this.setState(this.state)
   }
+}
+
+/**
+ * Mantém `appearance.nomesOcultos` em dia com quem está escondido.
+ *
+ * A lista de nomes é DERIVADA dos apresentadores, mas fica guardada dentro da
+ * aparência — e isso é de propósito. A régua de rolagem é composta em quinze
+ * lugares, no main e nos três renderers; se cada um recalculasse a lista, um
+ * deles acabaria calculando diferente e a marca de leitura apontaria para o
+ * lugar errado sem erro nenhum aparecer. Guardada, todos leem o MESMO vetor.
+ *
+ * O preço de guardar um derivado é ele ficar velho — por isso a sincronia mora
+ * aqui, no funil por onde TODA troca de aba passa (`replaceTab`), e não nos
+ * casos que mexem em apresentador. Assim não há como esquecer um.
+ */
+function comNomesOcultos(tab: Tab): Tab {
+  const devidos = nomesOcultos(tab.apresentadores, tab.appearance.ocultarApresentadores)
+  const atuais = tab.appearance.nomesOcultos
+  // só troca quando muda de verdade: um objeto novo a cada mutação invalidaria
+  // os memos do renderer que dependem da aparência
+  if (devidos.length === atuais.length && devidos.every((n, i) => n === atuais[i])) return tab
+  return { ...tab, appearance: { ...tab.appearance, nomesOcultos: devidos } }
 }

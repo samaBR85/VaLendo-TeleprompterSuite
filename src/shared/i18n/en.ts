@@ -121,6 +121,9 @@ export const en: Dicionario = {
   'insp.alignRight': 'Right',
 
   'editor.presenter': 'Make the selection a presenter',
+  'insp.presenterHide': 'Hide this name on the output',
+  'insp.presenterHideAll': 'Hide every name on the output',
+  'insp.presenterHideAll.key': 'HIDE',
   'insp.presenters': 'Presenters',
   'insp.presenterColor': 'Colour for {nome}',
   'insp.presenterOrphan': 'This name is no longer in the script. Select the new name in the editor and use RELINK.',

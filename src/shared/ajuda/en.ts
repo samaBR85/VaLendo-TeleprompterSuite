@@ -510,6 +510,14 @@ export const ajudaEn = {
     nome: 'Invert',
     texto: 'Swaps text and background colours — light on dark becomes dark on light, in one click.'
   },
+  'insp.presenterHide': {
+    nome: 'Hide this name',
+    texto: 'Takes this presenter’s name off the presenter screen — the speech stays, in their colour. Your script is never touched.'
+  },
+  'insp.presenterHideAll': {
+    nome: 'Hide every name',
+    texto: 'Takes every presenter name off the output at once, and locks the individual switches while it rules. The editor always keeps them.'
+  },
   'insp.presenterRelink': {
     nome: 'Relink presenter',
     texto: 'The name changed in the script. Select the new one in the editor and click: same presenter, same colour, new name — nothing already painted is lost.'

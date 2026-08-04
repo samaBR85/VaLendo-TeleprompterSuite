@@ -92,6 +92,17 @@ export function coresDasLinhas(linhas: LinhaPintavel[], apresentadores: Apresent
   })
 }
 
+/**
+ * Os nomes que NÃO entram na composição da saída.
+ *
+ * `global` força todos, como o OVERLAY dos cartões: ligado, os interruptores
+ * individuais ficam travados e acesos; desligado, cada apresentador decide
+ * sozinho pelo próprio `oculto`.
+ */
+export function nomesOcultos(apresentadores: Apresentador[], global: boolean): string[] {
+  return apresentadores.filter((a) => global || a.oculto).map((a) => a.nome)
+}
+
 /** Esta linha é a deixa de um apresentador? Serve para desenhá-la diferente. */
 export function ehDeixa(linha: LinhaPintavel, apresentadores: Apresentador[]): Apresentador | undefined {
   if (linha.kind !== 'speech') return undefined

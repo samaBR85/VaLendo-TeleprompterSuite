@@ -93,7 +93,11 @@ export function StatusBar({
   // "Palavras" é a contagem de fala de verdade. A régua de rolagem é outra
   // coisa: inclui o peso das linhas de direção e capítulo, que não são ditas
   // mas ocupam tempo de tela — por isso alimenta os tempos, não a contagem
-  const spoken = useMemo(() => totalWordCount(tab.blocks), [tab.blocks])
+  const spoken = useMemo(
+    // o nome de quem fala está no roteiro para o operador, não para ser dito
+    () => totalWordCount(tab.blocks, tab.apresentadores.map((a) => a.nome)),
+    [tab.blocks, tab.apresentadores]
+  )
   const ruler = useMemo(
     () => totalWords(composeLines(tab.blocks, tab.appearance, rows)),
     [tab.blocks, tab.appearance.minWords, tab.appearance.maxWords, tab.appearance.uniformSpeed, rows]

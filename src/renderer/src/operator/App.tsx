@@ -70,7 +70,12 @@ export function PanelHeader({
  */
 function MetaDaEdicao({ tab, rows, ppm }: { tab: Tab; rows: number[]; ppm: number }): React.JSX.Element {
   const { t, lang } = useT()
-  const spoken = useMemo(() => totalWordCount(tab.blocks), [tab.blocks])
+  /* o nome de quem fala não é falado: fora da contagem, esteja ele escondido
+     na saída ou não — a duração tem de bater com o que sai pela boca */
+  const spoken = useMemo(
+    () => totalWordCount(tab.blocks, tab.apresentadores.map((a) => a.nome)),
+    [tab.blocks, tab.apresentadores]
+  )
   const ruler = useMemo(
     () => totalWords(composeLines(tab.blocks, tab.appearance, rows)),
     [tab.blocks, tab.appearance.minWords, tab.appearance.maxWords, tab.appearance.uniformSpeed, rows]

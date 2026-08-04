@@ -36,6 +36,19 @@ export interface PacingRule extends LineRule {
    * teleprompter é sobre previsibilidade, então o padrão é ligado.
    */
   uniformSpeed: boolean
+  /**
+   * Nomes de apresentador que NÃO entram na composição da saída.
+   *
+   * Obrigatório de propósito, e não opcional: esconder um nome tira uma linha
+   * da régua de rolagem, e a régua é calculada em quinze lugares — main e
+   * renderer. Se um deles compusesse 40 linhas e outro 38, o índice 12 de um
+   * seria o 14 do outro e a marca de leitura apontaria para o lugar errado,
+   * sem erro nenhum aparecer. Campo obrigatório é o que faz o compilador
+   * listar os quinze e não deixar nenhum para trás.
+   *
+   * Vazio no caso comum — um apresentador só, ou nenhum escondido.
+   */
+  nomesOcultos: string[]
 }
 
 export interface Appearance extends PacingRule {
@@ -59,6 +72,18 @@ export interface Appearance extends PacingRule {
    * aparência, não uma edição do roteiro.
    */
   allCaps: boolean
+  /**
+   * Esconder o nome de TODOS os apresentadores na saída.
+   *
+   * Aqui, e não na lista de apresentadores, por dois motivos: é decisão de
+   * como a saída se parece (entra no "salvar como padrão", e quem opera dois
+   * apresentadores sempre quer isso ligado), e a régua já recebe a aparência
+   * em todos os pontos de chamada.
+   *
+   * Ligado, força todos e trava os interruptores individuais — o mesmo
+   * desenho do OVERLAY dos cartões.
+   */
+  ocultarApresentadores: boolean
   /** margem lateral em % da largura do viewport */
   marginPct: number
   /**
@@ -183,6 +208,14 @@ export interface Apresentador {
   /** o texto que aparece sozinho numa linha do roteiro, como o operador escreveu */
   nome: string
   cor: string
+  /**
+   * O nome deste sai da tela do apresentador — a fala continua, na cor dele.
+   *
+   * Por apresentador, e não só global, porque um programa pode querer esconder
+   * o repórter e manter o âncora. O interruptor global ao lado do título força
+   * todos, como o OVERLAY dos cartões já faz.
+   */
+  oculto?: boolean
 }
 
 export interface Tab {

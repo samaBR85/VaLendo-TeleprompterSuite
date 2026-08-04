@@ -37,13 +37,18 @@ import { Ficha, SliderConsole, Tecla } from '../ui/console'
 function ChipDeApresentador({
   quem,
   orfao,
+  global,
   onCor,
+  onOcultar,
   onRelink,
   onRemover
 }: {
   quem: Apresentador
   orfao: boolean
+  /** o GLOBAL está mandando: este interruptor mostra o forçado e trava */
+  global: boolean
   onCor: (cor: string) => void
+  onOcultar: () => void
   onRelink?: () => void
   onRemover: () => void
 }): React.JSX.Element {
@@ -67,6 +72,26 @@ function ChipDeApresentador({
       <span className="min-w-0 flex-1 truncate text-[11px]" style={{ color: orfao ? 'var(--color-warn)' : quem.cor }}>
         {quem.nome}
       </span>
+      {/* esconder SÓ este nome na saída. Travado enquanto o GLOBAL manda:
+          editá-lo não mudaria nada, e deixá-lo clicável sugeriria o contrário */}
+      <button
+        type="button"
+        data-esconder-apresentador={quem.id}
+        {...ajuda('insp.presenterHide')}
+        title={t('insp.presenterHide')}
+        aria-pressed={global || (quem.oculto ?? false)}
+        disabled={global}
+        onClick={onOcultar}
+        className={`flex-none rounded-[4px] px-1 py-0.5 text-[8px] font-bold tracking-[0.04em] transition-colors ${
+          global
+            ? 'cursor-not-allowed bg-[var(--color-accent)] text-[#1c1020]'
+            : quem.oculto
+              ? 'bg-[var(--color-accent)] text-[#1c1020]'
+              : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+        }`}
+      >
+        {t('insp.presenterHideAll.key')}
+      </button>
       {orfao ? (
         <>
           <span className="flex-none text-[9px] text-[var(--color-warn)]" title={t('insp.presenterOrphan')}>
@@ -124,11 +149,14 @@ interface Props {
 function Group({
   label,
   hint,
+  acao,
   children
 }: {
   label?: string
   /** explicação do grupo inteiro, só visível ao passar o mouse no rótulo */
   hint?: string
+  /** controle do grupo inteiro, encostado na direita do rótulo */
+  acao?: React.ReactNode
   children: React.ReactNode
 }): React.JSX.Element {
   return (
@@ -137,6 +165,7 @@ function Group({
         <div className="mb-1.5 flex items-center gap-1 text-[11px] font-medium tracking-wide text-[var(--color-fog-2)]">
           {label}
           {hint ? <Hint text={hint} /> : null}
+          {acao ? <span className="ml-auto flex items-center">{acao}</span> : null}
         </div>
       ) : null}
       <div className="flex flex-col gap-2">{children}</div>
@@ -581,7 +610,30 @@ export function Inspector({
           sai na tela. Só aparece depois que existe alguém: um grupo vazio
           seria uma seção pedindo para ser preenchida sem dizer como. */}
       {tab.apresentadores.length > 0 ? (
-        <Group label={t('insp.presenters')}>
+        <Group
+          label={t('insp.presenters')}
+          acao={
+            /* GLOBAL: esconde o nome de TODOS na saída, e trava os
+               interruptores individuais enquanto manda — o mesmo desenho do
+               OVERLAY dos cartões, para o operador não ter de aprender duas
+               gramáticas de "global x individual" no mesmo app. */
+            <button
+              type="button"
+              data-esconder-global
+              {...ajuda('insp.presenterHideAll')}
+              title={t('insp.presenterHideAll')}
+              aria-pressed={a.ocultarApresentadores}
+              onClick={() => patch({ ocultarApresentadores: !a.ocultarApresentadores })}
+              className={`flex-none rounded-[4px] px-1 py-0.5 text-[8px] font-bold tracking-[0.04em] transition-colors ${
+                a.ocultarApresentadores
+                  ? 'bg-[var(--color-accent)] text-[#1c1020]'
+                  : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+              }`}
+            >
+              {t('insp.presenterHideAll.key')}
+            </button>
+          }
+        >
           {tab.apresentadores.map((quem) => (
             <ChipDeApresentador
               key={quem.id}
@@ -590,6 +642,15 @@ export function Inspector({
                  acusa, senão a cor sumiria sem explicação */
               orfao={!temParNoRoteiro(candidatas, quem)}
               onCor={(cor) => dispatch({ type: 'presenter/color', tabId: tab.id, presenterId: quem.id, cor })}
+              global={a.ocultarApresentadores}
+              onOcultar={() =>
+                dispatch({
+                  type: 'presenter/hidden',
+                  tabId: tab.id,
+                  presenterId: quem.id,
+                  oculto: !(quem.oculto ?? false)
+                })
+              }
               onRelink={onRelink ? () => onRelink(quem.id) : undefined}
               onRemover={() => dispatch({ type: 'presenter/remove', tabId: tab.id, presenterId: quem.id })}
             />

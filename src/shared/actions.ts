@@ -102,6 +102,7 @@ export type Action =
   | { type: 'presenter/add'; tabId: string; nome: string }
   | { type: 'presenter/rename'; tabId: string; presenterId: string; nome: string }
   | { type: 'presenter/color'; tabId: string; presenterId: string; cor: string }
+  | { type: 'presenter/hidden'; tabId: string; presenterId: string; oculto: boolean }
   | { type: 'presenter/remove'; tabId: string; presenterId: string }
   | { type: 'tab/add' }
   | { type: 'tab/close'; tabId: string }

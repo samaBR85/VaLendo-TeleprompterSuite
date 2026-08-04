@@ -1,5 +1,6 @@
 import type { Anchor, Block, BlockKind, PacingRule } from './types'
 import { senseLines } from './senseLines'
+import { chaveDoNome } from './apresentadores'
 import { blockWordCount, words } from './text'
 
 /** Linha composta, ainda sem geometria. */
@@ -70,6 +71,8 @@ export type MeasuredRows = number[]
  */
 export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredRows): LineSpec[] {
   const drafts: LineDraft[] = []
+  // comparação sem caixa, a mesma que decide de quem é cada fala
+  const ocultos = new Set(rule.nomesOcultos.map(chaveDoNome))
   let previous: Block | null = null
 
   for (const block of blocks) {
@@ -86,7 +89,23 @@ export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredR
       // a quebra de linha que o operador digitou é respeitada: ele a colocou
       // ali de propósito, para marcar respiração ou ênfase. A regra de
       // palavras por linha só entra depois, para dividir o que sobrou comprido
-      for (const typed of block.text.split('\n')) {
+      /*
+       * O nome de quem fala pode sair da saída — e sair de VERDADE, não virar
+       * linha em branco: uma linha invisível continuaria pesando na régua (a
+       * medição faz `Math.max(1, …)`), e a leitura ficaria parada o tempo de
+       * uma linha inteira a cada troca de apresentador.
+       *
+       * Some da COMPOSIÇÃO, nunca do texto: o roteiro guardado não muda uma
+       * letra, e desligar o interruptor traz o nome de volta na hora.
+       *
+       * A não ser que sobrasse um bloco VAZIO — um parágrafo que só tem o nome,
+       * sem fala embaixo. Ele deixaria de produzir qualquer linha, e as âncoras
+       * que apontam para ele ficariam sem destino. Melhor um nome visível do
+       * que uma âncora órfã.
+       */
+      const digitadas = block.text.split('\n')
+      const sobrando = digitadas.filter((typed) => !ocultos.has(chaveDoNome(typed)))
+      for (const typed of sobrando.length > 0 ? sobrando : digitadas) {
         for (const text of senseLines(typed, rule)) {
           drafts.push({ blockId: block.id, kind: block.kind, text, words: words(text).length })
         }

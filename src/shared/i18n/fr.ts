@@ -121,6 +121,9 @@ export const fr: Dicionario = {
   'insp.alignRight': 'Droite',
 
   'editor.presenter': 'Faire de la sélection un présentateur',
+  'insp.presenterHide': 'Masquer ce nom sur la sortie',
+  'insp.presenterHideAll': 'Masquer tous les noms sur la sortie',
+  'insp.presenterHideAll.key': 'HIDE',
   'insp.presenters': 'Présentateurs',
   'insp.presenterColor': 'Couleur de {nome}',
   'insp.presenterOrphan': 'Ce nom n’est plus dans le texte. Sélectionnez le nouveau nom dans l’éditeur et utilisez RELINK.',

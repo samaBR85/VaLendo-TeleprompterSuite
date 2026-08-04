@@ -25,10 +25,27 @@ export function blockWordCount(block: Block): number {
   return block.kind === 'speech' ? words(block.text).length : 0
 }
 
-/** Só fala conta tempo; direções e títulos de capítulo ficam fora. */
-export function totalWordCount(blocks: Block[]): number {
+/**
+ * Só fala conta tempo; direções e títulos de capítulo ficam fora.
+ *
+ * E o NOME de quem fala também, quando há apresentadores registrados: "HARIANE"
+ * está escrito no roteiro para o operador saber de quem é a fala, mas ninguém
+ * o diz em voz alta. Contado, ele inflava a duração estimada — e o erro crescia
+ * com o número de trocas de turno, que num roteiro de dois é a cada parágrafo.
+ */
+export function totalWordCount(blocks: Block[], nomes: string[] = []): number {
+  const deixas = new Set(nomes.map((n) => n.trim().toLocaleLowerCase()))
   let n = 0
-  for (const b of blocks) n += blockWordCount(b)
+  for (const b of blocks) {
+    if (b.kind !== 'speech' || deixas.size === 0) {
+      n += blockWordCount(b)
+      continue
+    }
+    for (const linha of b.text.split('\n')) {
+      if (deixas.has(linha.trim().toLocaleLowerCase())) continue
+      n += words(linha).length
+    }
+  }
   return n
 }
 

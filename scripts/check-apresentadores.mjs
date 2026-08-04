@@ -132,6 +132,50 @@ ok('o editor pinta a fala com a cor do apresentador', editor && editor.nome === 
 ok('e a cor do editor é a mesma da transmissão', editor && editor.fala === palco.falaHari?.c, `${editor?.fala} vs ${palco.falaHari?.c}`)
 ok('o nome vem em negrito, para se distinguir da fala', editor?.peso === '700', String(editor?.peso))
 
+/* ------------------------------------------------- esconder o nome na saída */
+
+const contaLinhas = `document.querySelectorAll('[data-line]').length`
+const temNome = (n) =>
+  `[...document.querySelectorAll('[data-line]')].some((l) => l.textContent.trim() === ${JSON.stringify(n)})`
+
+const linhasAntes = await ev(contaLinhas)
+ok('antes de esconder, os nomes estão na saída', (await ev(temNome('HARI'))) === true)
+
+await ev(`document.querySelectorAll('[data-esconder-apresentador]')[0].click()`)
+await espera(500)
+ok('esconder um tira o nome dele da saída', (await ev(temNome('HARI'))) === false)
+ok('e mantém o do outro', (await ev(temNome('ROBSON'))) === true)
+
+/*
+ * A prova que separa esta implementação da fácil: a linha SAIU da composição.
+ * Se ela só tivesse ficado invisível, a contagem seria a mesma — e a leitura
+ * gastaria o tempo de uma linha parada em cada troca de apresentador.
+ */
+const linhasDepois = await ev(contaLinhas)
+ok('a linha saiu da composição, não virou linha em branco', linhasDepois < linhasAntes, `${linhasAntes} → ${linhasDepois}`)
+
+await ev(`document.querySelector('[data-esconder-global]').click()`)
+await espera(500)
+const comGlobal = await ev(`({
+  hari: ${temNome('HARI')},
+  robson: ${temNome('ROBSON')},
+  travados: [...document.querySelectorAll('[data-esconder-apresentador]')].every((b) => b.disabled)
+})`)
+ok('o GLOBAL esconde todos', comGlobal.hari === false && comGlobal.robson === false, JSON.stringify(comGlobal))
+ok('e trava os interruptores individuais', comGlobal.travados === true)
+
+// desligar devolve tudo: o texto nunca foi tocado
+await ev(`document.querySelector('[data-esconder-global]').click()`)
+await espera(400)
+await ev(`document.querySelectorAll('[data-esconder-apresentador]')[0].click()`)
+await espera(600)
+ok('desligar devolve os nomes', (await ev(temNome('HARI'))) === true)
+ok('e a composição volta ao tamanho de antes', (await ev(contaLinhas)) === linhasAntes, `${await ev(contaLinhas)} vs ${linhasAntes}`)
+ok(
+  'o roteiro no editor jamais perdeu o nome',
+  (await ev(`document.querySelector('[data-sem-roda] textarea').value.includes('HARI')`)) === true
+)
+
 socket.close()
 console.log(falhas ? `\n${falhas} falha(s)` : '\ntudo certo')
 process.exit(falhas ? 1 : 0)
