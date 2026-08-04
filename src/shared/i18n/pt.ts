@@ -156,14 +156,10 @@ export const pt = {
   'insp.maxWords': 'Máximo por linha',
   'insp.readingMark': 'Marca de leitura',
   'insp.markOnOutput': 'Linha na transmissão',
-  'insp.markOn.yes': 'O apresentador também vê a linha.',
-  'insp.markOn.no': 'A linha fica só na sua prévia.',
   'insp.focusDim': 'Esmaecer bordas',
 
   'insp.rhythm': 'Ritmo',
   'insp.uniform': 'Velocidade constante',
-  'insp.uniform.yes': 'Mesmo ritmo do começo ao fim.',
-  'insp.uniform.no': 'Linha com mais palavras demora mais para passar.',
 
   'insp.clocks': 'Relógios',
   'insp.clock.elapsed': 'Tempo decorrido',

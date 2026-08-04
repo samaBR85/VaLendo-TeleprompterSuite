@@ -143,14 +143,10 @@ export const de: Dicionario = {
   'insp.maxWords': 'Maximum pro Zeile',
   'insp.readingMark': 'Lesemarke',
   'insp.markOnOutput': 'Linie in der Sendung',
-  'insp.markOn.yes': 'Der Sprecher sieht die Linie ebenfalls.',
-  'insp.markOn.no': 'Die Linie bleibt nur in Ihrer Vorschau.',
   'insp.focusDim': 'Ränder abdunkeln',
 
   'insp.rhythm': 'Tempo',
   'insp.uniform': 'Konstante Geschwindigkeit',
-  'insp.uniform.yes': 'Gleiches Tempo von Anfang bis Ende.',
-  'insp.uniform.no': 'Eine Zeile mit mehr Wörtern braucht länger.',
 
   'insp.clocks': 'Uhren',
   'insp.clock.elapsed': 'Vergangene Zeit',

@@ -143,14 +143,10 @@ export const es: Dicionario = {
   'insp.maxWords': 'Máximo por línea',
   'insp.readingMark': 'Marca de lectura',
   'insp.markOnOutput': 'Línea en la emisión',
-  'insp.markOn.yes': 'El presentador también ve la línea.',
-  'insp.markOn.no': 'La línea se queda solo en tu vista previa.',
   'insp.focusDim': 'Atenuar los bordes',
 
   'insp.rhythm': 'Ritmo',
   'insp.uniform': 'Velocidad constante',
-  'insp.uniform.yes': 'El mismo ritmo de principio a fin.',
-  'insp.uniform.no': 'Una línea con más palabras tarda más en pasar.',
 
   'insp.clocks': 'Relojes',
   'insp.clock.elapsed': 'Tiempo transcurrido',

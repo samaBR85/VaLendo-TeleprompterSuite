@@ -339,35 +339,27 @@ function Hint({ text }: { text: string }): React.JSX.Element {
 }
 
 /**
- * Uma linha de toggle dentro de um grupo — sempre com a mesma largura,
- * tenha ou não uma dica ao lado.
+ * Uma linha de toggle dentro de um grupo.
  *
- * Sem o espaço reservado do placeholder, um toggle com dica ficava mais
- * estreito que o vizinho sem dica (o ícone "?" e o respiro antes dele saíam
- * da largura do botão), e as bolinhas de estado acabavam em colunas
- * diferentes — a régua vertical que devia alinhá-las quebrava.
+ * Já teve um "?" ao lado, com o espaço dele reservado para as bolinhas de
+ * estado ficarem na mesma coluna tivesse ou não dica. Os dois "?" que existiam
+ * saíram: a Ajuda rápida explica cada interruptor por inteiro, e um ícone que
+ * repete o que o quadro já diz é ruído numa coluna de 214px. Sem dica nenhuma,
+ * todas as linhas têm a mesma largura sozinhas — o espaço reservado deixou de
+ * ter função.
  */
 function ToggleRow({
   label,
   active,
   onClick,
-  ajudaId,
-  hint
+  ajudaId
 }: {
   label: string
   active: boolean
   onClick: () => void
   ajudaId: AjudaId
-  hint?: string
 }): React.JSX.Element {
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className="min-w-0 flex-1">
-        <Toggle label={label} active={active} ajudaId={ajudaId} onClick={onClick} />
-      </div>
-      {hint ? <Hint text={hint} /> : <span className="w-3 flex-none" />}
-    </div>
-  )
+  return <Toggle label={label} active={active} ajudaId={ajudaId} onClick={onClick} />
 }
 
 function Toggle({
@@ -769,7 +761,6 @@ export function Inspector({
           label={t('insp.markOnOutput')}
           active={a.readingMarkOnOutput}
           onClick={() => patch({ readingMarkOnOutput: !a.readingMarkOnOutput })}
-          hint={a.readingMarkOnOutput ? t('insp.markOn.yes') : t('insp.markOn.no')}
         />
         <ToggleRow
           ajudaId="insp.focusDim"
@@ -785,7 +776,6 @@ export function Inspector({
           label={t('insp.uniform')}
           active={a.uniformSpeed}
           onClick={() => patch({ uniformSpeed: !a.uniformSpeed })}
-          hint={a.uniformSpeed ? t('insp.uniform.yes') : t('insp.uniform.no')}
         />
       </Group>
 
