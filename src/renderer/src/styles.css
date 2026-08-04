@@ -397,3 +397,234 @@
     margin-top: -3px;
   }
 }
+
+/* =========================================================================
+ * Os fundos animados do cartão de TELA.
+ *
+ * Moram aqui, e não no componente, por dois motivos que se somam:
+ *
+ * 1. `styles.css` é carregado pelas TRÊS janelas — operador, transmissão e
+ *    página da rede. Um efeito escrito em style inline teria de ser repetido
+ *    em cada superfície, e a que ficasse para trás mostraria outra coisa.
+ * 2. Animação em CSS é composta pela GPU. A página da rede abre em celular
+ *    disputando com o vídeo de um cartão, e é justamente lá que animar por
+ *    JavaScript apareceria como engasgo.
+ *
+ * As cores vêm de `--tela-de` e `--tela-ate`, postas no elemento pelo
+ * componente: seis efeitos servindo a paleta de cada cartão, sem seis folhas.
+ *
+ * Todos são LENTOS de propósito. O ciclo mais rápido aqui tem 7 segundos —
+ * um fundo apressado atrás de um recado briga com quem está lendo.
+ *
+ * `prefers-reduced-motion` NÃO desliga estes efeitos, ao contrário do que
+ * costuma ser certo: eles não são enfeite de interface, são o conteúdo que o
+ * operador escolheu pôr no ar. Congelá-los deixaria a miniatura e a prévia
+ * paradas enquanto a tela do apresentador se mexe — a miniatura mentindo de
+ * novo, agora com a desculpa da acessibilidade.
+ * ====================================================================== */
+@layer components {
+  .tela-fundo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  /* DERIVA — o gradiente atravessa devagar e nunca emenda */
+  .tela-deriva {
+    background: linear-gradient(
+      115deg,
+      var(--tela-de),
+      var(--tela-ate),
+      var(--tela-de),
+      var(--tela-ate),
+      var(--tela-de)
+    );
+    background-size: 320% 320%;
+    animation: tela-deriva 22s ease-in-out infinite;
+  }
+
+  @keyframes tela-deriva {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  /* RESPIRO — um halo que abre e fecha */
+  .tela-respiro {
+    background: var(--tela-de);
+  }
+
+  .tela-respiro::before {
+    content: '';
+    position: absolute;
+    inset: -30%;
+    background: radial-gradient(circle at 50% 55%, var(--tela-ate), transparent 62%);
+    animation: tela-respiro 9s ease-in-out infinite;
+  }
+
+  @keyframes tela-respiro {
+    0%,
+    100% {
+      transform: scale(0.82);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1.12);
+      opacity: 0.95;
+    }
+  }
+
+  /* VARREDURA — uma luz cruza o quadro */
+  .tela-varredura {
+    background: linear-gradient(140deg, var(--tela-de), var(--tela-ate));
+  }
+
+  .tela-varredura::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    bottom: -60%;
+    width: 34%;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.16), transparent);
+    transform: rotate(14deg);
+    animation: tela-varredura 7s linear infinite;
+  }
+
+  @keyframes tela-varredura {
+    from {
+      left: -45%;
+    }
+    to {
+      left: 110%;
+    }
+  }
+
+  /* ONDAS — dois campos girando fora de fase */
+  .tela-ondas {
+    background: var(--tela-de);
+  }
+
+  /*
+   * Os dois campos são MANCHAS, não formas.
+   *
+   * A primeira tentativa foi um retângulo de cantos muito arredondados
+   * girando: no ladrilho ele virava uma aresta reta atravessando o quadro —
+   * lia como um corte, não como onda. Um preenchimento radial resolve, mas
+   * um radial CENTRADO seria simétrico, e girar algo simétrico não se vê:
+   * a mancha precisa ser elíptica e fora do centro para o giro aparecer.
+   */
+  .tela-ondas::before,
+  .tela-ondas::after {
+    content: '';
+    position: absolute;
+    width: 170%;
+    height: 170%;
+    left: -35%;
+    top: -35%;
+    background: radial-gradient(ellipse 62% 46% at 38% 42%, var(--tela-ate), transparent 70%);
+    opacity: 0.45;
+    animation: tela-girar 18s linear infinite;
+  }
+
+  .tela-ondas::after {
+    background: radial-gradient(ellipse 55% 62% at 64% 58%, var(--tela-ate), transparent 72%);
+    opacity: 0.3;
+    animation-duration: 26s;
+    animation-direction: reverse;
+  }
+
+  @keyframes tela-girar {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* BARRAS — para quando entra música e a tela não pode ficar morta */
+  .tela-barras {
+    background: var(--tela-de);
+  }
+
+  .tela-barras-fila {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 58%;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5%;
+    padding: 0 1.5%;
+  }
+
+  .tela-barras-fila i {
+    flex: 1;
+    height: 100%;
+    background: linear-gradient(var(--tela-ate), var(--tela-de));
+    border-radius: 2px 2px 0 0;
+    transform-origin: bottom;
+    opacity: 0.8;
+    animation: tela-pular 2.6s ease-in-out infinite;
+  }
+
+  @keyframes tela-pular {
+    0%,
+    100% {
+      transform: scaleY(0.18);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
+
+  /* POEIRA — pontos subindo, quase parado */
+  .tela-poeira {
+    background: var(--tela-de);
+  }
+
+  /*
+   * A haste ocupa a ALTURA TODA e o ponto mora no pé dela.
+   *
+   * É o que permite animar `translateY(-100%)` — cem por cento da haste é a
+   * altura do quadro — em vez de animar `top`, que refaz o layout a cada
+   * quadro. Num celular com um vídeo tocando ao lado, essa diferença é a
+   * diferença entre subir liso e engasgar. E o ponto sendo dimensionado em
+   * porcentagem da LARGURA, com `aspect-ratio`, ele sai redondo e do mesmo
+   * tamanho relativo na miniatura de 90px e na saída de 1080.
+   */
+  .tela-poeira i {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 0.9%;
+    animation: tela-subir 11s linear infinite;
+  }
+
+  .tela-poeira i b {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--tela-ate);
+  }
+
+  @keyframes tela-subir {
+    0% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+    12%,
+    88% {
+      opacity: 0.85;
+    }
+    100% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+  }
+}

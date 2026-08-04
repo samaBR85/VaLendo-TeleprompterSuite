@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest'
 import {
   alinhamentoDoRecado,
   ANGULO_PADRAO,
+  animacaoDoFundo,
+  ANIMACOES,
   apoioDoRecado,
+  classeDoFundo,
+  coresDoFundo,
   corpoDoRecado,
   CORPO_MAX,
   CORPO_MIN,
@@ -72,6 +76,50 @@ describe('o recado', () => {
     expect(corpoDoRecado(-40, 1000)).toBeCloseTo((1000 * CORPO_MIN) / 100, 6)
     expect(corpoDoRecado(9999, 1000)).toBeCloseTo((1000 * CORPO_MAX) / 100, 6)
     expect(corpoDoRecado(undefined, 1000)).toBeGreaterThan(0)
+  })
+})
+
+describe('os fundos animados', () => {
+  it('cada efeito vira a classe do seu nome', () => {
+    for (const nome of ANIMACOES) {
+      expect(classeDoFundo({ de: '#000', animacao: nome })).toBe(`tela-fundo tela-${nome}`)
+    }
+  })
+
+  it('fundo parado não ganha classe nenhuma', () => {
+    expect(classeDoFundo({ de: '#000' })).toBeUndefined()
+    expect(classeDoFundo({ de: '#000', ate: '#fff' })).toBeUndefined()
+  })
+
+  it('nome desconhecido é fundo parado, não uma classe que não existe', () => {
+    /*
+     * Um `.tela-fulano` sem regra nenhuma NÃO dá erro: ele só deixa o cartão
+     * sem fundo. E cartão sem fundo no ar é o roteiro aparecendo por baixo do
+     * que deveria estar cobrindo ele — na tela do apresentador, ao vivo.
+     */
+    expect(animacaoDoFundo({ de: '#000', animacao: 'plasma' as never })).toBeNull()
+    expect(classeDoFundo({ de: '#000', animacao: 'plasma' as never })).toBeUndefined()
+  })
+
+  it('as duas cores viram variáveis para o CSS', () => {
+    expect(coresDoFundo({ de: '#123456', ate: '#abcdef' })).toEqual({
+      '--tela-de': '#123456',
+      '--tela-ate': '#abcdef'
+    })
+  })
+
+  it('sem segunda cor, ela repete a primeira em vez de sumir', () => {
+    // um efeito que precisa de duas cores e recebe uma só desaparece da tela;
+    // monocromático é feio, invisível é defeito
+    expect(coresDoFundo({ de: '#123456' })).toEqual({
+      '--tela-de': '#123456',
+      '--tela-ate': '#123456'
+    })
+  })
+
+  it('são seis, e sem nome repetido', () => {
+    expect(ANIMACOES).toHaveLength(6)
+    expect(new Set(ANIMACOES).size).toBe(6)
   })
 })
 

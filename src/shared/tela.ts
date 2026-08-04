@@ -27,6 +27,44 @@ export type PosicaoDoRecado = 'topo' | 'meio' | 'pe'
  */
 export type AlinhamentoDoRecado = 'left' | 'center' | 'right'
 
+/**
+ * Os seis fundos que se mexem.
+ *
+ * Seis, e não um editor de efeitos: o operador está ali para conduzir um
+ * programa. Todos são lentos de propósito — um fundo apressado atrás de um
+ * recado briga com quem está lendo, e o cartão existe para ser lido.
+ */
+export type AnimacaoDeFundo = 'deriva' | 'respiro' | 'varredura' | 'ondas' | 'barras' | 'poeira'
+
+export const ANIMACOES: AnimacaoDeFundo[] = [
+  'deriva',
+  'respiro',
+  'varredura',
+  'ondas',
+  'barras',
+  'poeira'
+]
+
+/** Quantas peças cada efeito que não cabe em pseudo-elemento precisa. */
+export const BARRAS = 18
+
+/**
+ * Os atrasos de cada ponto da Poeira, embaralhados à mão.
+ *
+ * A primeira versão calculava o atraso a partir do índice, e as colunas
+ * estando igualmente espaçadas o resultado foi uma DIAGONAL perfeita
+ * atravessando o quadro — lia como um padrão, não como poeira. O que se quer
+ * aqui é desordem, e desordem não sai de uma progressão.
+ *
+ * Escritos e não sorteados de propósito: o mesmo cartão tem de sair igual na
+ * miniatura, na prévia e na tela do apresentador, e `Math.random()` daria
+ * três poeiras diferentes ao mesmo tempo.
+ */
+export const ATRASOS_DA_POEIRA = [-0.5, -6.2, -2.8, -9.1, -4, -7.7, -1.3, -10.4, -3.5, -8.6, -5.4, -2]
+
+/** Quantos pontos — sai da tabela, para os dois não poderem discordar. */
+export const POEIRA = ATRASOS_DA_POEIRA.length
+
 /** O que define o fundo de uma tela. */
 export interface FundoDeTela {
   /** cor de partida — sozinha, quando `ate` não existe */
@@ -35,6 +73,14 @@ export interface FundoDeTela {
   ate?: string
   /** graus, no sentido do CSS: 0 sobe, 90 vai para a direita */
   angulo?: number
+  /**
+   * Qual efeito anima o fundo. Ausente é o normal: uma tela parada.
+   *
+   * As duas cores continuam valendo — o efeito é COMO elas se mexem, não uma
+   * paleta pronta. É o que permite ligar a animação num fundo já escolhido
+   * sem apagar e refazer o cartão.
+   */
+  animacao?: AnimacaoDeFundo
 }
 
 /** O recado desenhado sobre o fundo. Sem texto, a tela é só o fundo. */
@@ -94,6 +140,38 @@ export function apoioDoRecado(posicao: PosicaoDoRecado | undefined): 'flex-start
   if (posicao === 'topo') return 'flex-start'
   if (posicao === 'pe') return 'flex-end'
   return 'center'
+}
+
+/**
+ * Qual efeito anima este fundo, ou `null` se ele está parado.
+ *
+ * Um valor que não é dos seis vira `null` em vez de virar uma classe CSS que
+ * não existe: um `.tela-fulano` sem regra nenhuma não dá erro, ele só deixa
+ * o cartão sem fundo — e um cartão sem fundo no ar é o roteiro aparecendo por
+ * baixo do que deveria estar cobrindo ele.
+ */
+export function animacaoDoFundo(fundo: FundoDeTela | undefined): AnimacaoDeFundo | null {
+  const nome = fundo?.animacao
+  return nome && ANIMACOES.includes(nome) ? nome : null
+}
+
+/** A classe do efeito, para o CSS fazer o resto. */
+export function classeDoFundo(fundo: FundoDeTela | undefined): string | undefined {
+  const nome = animacaoDoFundo(fundo)
+  return nome ? `tela-fundo tela-${nome}` : undefined
+}
+
+/**
+ * As duas cores como variáveis CSS.
+ *
+ * O efeito é escrito em `styles.css` e as cores vêm daqui — é o que permite
+ * seis efeitos com a paleta de cada cartão, sem seis folhas de estilo. Sem a
+ * segunda cor escolhida, ela repete a primeira: um efeito que precisa de duas
+ * e recebe uma some, e sumir sem avisar é pior que ficar monocromático.
+ */
+export function coresDoFundo(fundo: FundoDeTela | undefined): Record<string, string> {
+  const de = corSegura(fundo?.de)
+  return { '--tela-de': de, '--tela-ate': fundo?.ate ? corSegura(fundo.ate) : de }
 }
 
 /**

@@ -201,6 +201,69 @@ const antiga = await ev(
 check('tela sem o campo continua centralizada', antiga === 'center', antiga)
 await acao({ type: 'card/remove', cardId: 'tela-sem-campo' })
 
+/* ---------------------------------------------------------- os seis efeitos */
+
+await clicar('[data-tela-fundo="animado"]')
+check('ligar o animado esconde o ângulo', !(await ev(`Boolean(document.querySelector('[data-tela-angulo]'))`)))
+check(
+  'e garante a segunda cor',
+  Boolean((await estado()).cards.find((c) => c.id === tela.id).fundo.ate),
+  'sem segunda cor um efeito roda sem nada para mostrar'
+)
+
+for (const nome of ['deriva', 'respiro', 'varredura', 'ondas', 'barras', 'poeira']) {
+  await clicar(`[data-tela-efeito="${nome}"]`)
+  const medida = await ev(`(() => {
+    const el = document.querySelector('[data-tela-previa] [data-card-tela-efeito=${JSON.stringify(nome)}]')
+    if (!el) return null
+    const s = getComputedStyle(el)
+    /* getAnimations com subtree pega também as dos PSEUDO-elementos, que é
+       onde metade destes efeitos mora. Sem isto, Respiro, Varredura e Ondas
+       pareceriam parados para a checagem mesmo rodando na tela. */
+    const rodando = el.getAnimations({ subtree: true }).map((a) => a.animationName)
+    return {
+      classe: el.className,
+      fundo: s.backgroundImage === 'none' ? s.backgroundColor : s.backgroundImage,
+      rodando,
+      pecas: el.querySelectorAll('i').length,
+      recadoAcima: Number(getComputedStyle(el.querySelector('[data-card-tela-recado]')).zIndex) >= 1
+    }
+  })()`)
+  if (!medida) {
+    check(`efeito ${nome} chega na prévia`, false, 'elemento não encontrado')
+    continue
+  }
+  check(`efeito ${nome} chega na prévia`, medida.classe.includes(`tela-${nome}`), medida.classe)
+  /* A armadilha silenciosa: uma classe sem regra nenhuma no CSS não dá erro,
+     só deixa o cartão sem fundo — e cartão sem fundo no ar é o roteiro
+     aparecendo por baixo do que deveria estar cobrindo ele. */
+  check(
+    `efeito ${nome} pinta alguma coisa`,
+    medida.fundo !== 'none' && medida.fundo !== 'rgba(0, 0, 0, 0)',
+    medida.fundo
+  )
+  check(
+    `efeito ${nome} está de fato animando`,
+    medida.rodando.length > 0 && medida.rodando.every((a) => a.startsWith('tela-')),
+    medida.rodando.join(',') || 'nenhuma animação'
+  )
+  check(`efeito ${nome} deixa o recado por cima`, medida.recadoAcima)
+  if (nome === 'barras') check('as barras são 18', medida.pecas === 18, String(medida.pecas))
+  if (nome === 'poeira') check('a poeira são 12 pontos', medida.pecas === 12, String(medida.pecas))
+}
+
+/* Voltar para parado tem de LIMPAR o efeito, senão a ficha "Chapado" acende
+   com a tela continuando a se mexer. */
+await clicar('[data-tela-fundo="chapado"]')
+const parado = (await estado()).cards.find((c) => c.id === tela.id)
+check('voltar ao chapado desliga o efeito', !parado.fundo.animacao, String(parado.fundo.animacao))
+check('e tira a segunda cor', parado.fundo.ate === undefined, String(parado.fundo.ate))
+
+// volta ao gradiente animado, que é o estado que as fotos abaixo esperam
+await clicar('[data-tela-fundo="animado"]')
+await clicar('[data-tela-efeito="deriva"]')
+await acao({ type: 'card/tela', cardId: tela.id, fundo: { animacao: undefined, ate: '#8e3fd4', angulo: 135 } })
+
 // fecha o editor
 await ev(`document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`)
 await ev(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))`)

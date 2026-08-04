@@ -16,7 +16,18 @@ import {
   type Transport,
   type VideoClock
 } from '@shared/types'
-import { alinhamentoDoRecado, apoioDoRecado, corpoDoRecado, fundoDaTela } from '@shared/tela'
+import {
+  alinhamentoDoRecado,
+  animacaoDoFundo,
+  apoioDoRecado,
+  ATRASOS_DA_POEIRA,
+  BARRAS,
+  classeDoFundo,
+  coresDoFundo,
+  corpoDoRecado,
+  fundoDaTela,
+  POEIRA
+} from '@shared/tela'
 import { posicaoDoVideo } from '@shared/video'
 
 export interface Viewport {
@@ -191,13 +202,18 @@ export function TelaDoCartao({
    */
   folgaInferior?: number
 }): React.JSX.Element {
+  const efeito = animacaoDoFundo(card.fundo)
   return (
     <div
       data-card-tela={card.id}
+      data-card-tela-efeito={efeito ?? undefined}
+      className={classeDoFundo(card.fundo)}
       style={{
         position: 'absolute',
         inset: 0,
-        background: fundoDaTela(card.fundo),
+        /* com efeito, quem pinta é a classe: um `background` inline aqui
+           ganharia dela e a animação sumiria sem erro nenhum */
+        ...(efeito ? coresDoFundo(card.fundo) : { background: fundoDaTela(card.fundo) }),
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -208,6 +224,28 @@ export function TelaDoCartao({
         overflow: 'hidden'
       }}
     >
+      {/* Os dois efeitos que não cabem num pseudo-elemento: eles precisam de
+          muitas peças, cada uma com o próprio atraso. Os atrasos saem do
+          ÍNDICE e não de sorteio — sorteado, o mesmo cartão sairia diferente
+          na miniatura, na prévia e na tela do apresentador. */}
+      {efeito === 'barras' ? (
+        <div className="tela-barras-fila" aria-hidden="true">
+          {Array.from({ length: BARRAS }, (_, i) => (
+            <i key={i} style={{ animationDelay: `${-((i * 7) % 26) / 10}s` }} />
+          ))}
+        </div>
+      ) : null}
+
+      {efeito === 'poeira' ? (
+        <div className="absolute inset-0" aria-hidden="true">
+          {ATRASOS_DA_POEIRA.map((atraso, i) => (
+            <i key={i} style={{ left: `${4 + (i * 92) / (POEIRA - 1)}%`, animationDelay: `${atraso}s` }}>
+              <b />
+            </i>
+          ))}
+        </div>
+      ) : null}
+
       {card.recado?.texto ? (
         <div
           data-card-tela-recado
@@ -219,6 +257,10 @@ export function TelaDoCartao({
             // sem a largura toda, o bloco encolhe até o texto e alinhar
             // à esquerda ou à direita não move nada
             width: '100%',
+            // acima dos pseudo-elementos dos efeitos, senão o halo do
+            // Respiro e os borrões das Ondas passam por cima do recado
+            position: 'relative',
+            zIndex: 1,
             textAlign: alinhamentoDoRecado(card.recado.alinhamento),
             color: card.recado.cor,
             overflowWrap: 'break-word',

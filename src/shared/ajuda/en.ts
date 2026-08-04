@@ -420,6 +420,10 @@ export const ajudaEn = {
     nome: 'Screen message',
     texto: 'What is written over the background. Where you press Enter is where it breaks on air. Leave it empty for a plain backdrop.'
   },
+  'cards.screenEffect': {
+    nome: 'Animated background',
+    texto: 'Six ways for the two colours to move. All of them are slow on purpose — a restless background argues with whoever is reading. Each screen runs its own copy, so they are not frame-locked to each other.'
+  },
   'cards.screenAlign': {
     nome: 'Paragraph alignment',
     texto: 'How the lines sit against each other. Independent of where the block sits on the screen — that is Place.'

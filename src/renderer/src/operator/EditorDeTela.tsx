@@ -3,9 +3,12 @@ import type { Chave } from '@shared/i18n'
 import {
   alinhamentoDoRecado,
   ANGULO_PADRAO,
+  animacaoDoFundo,
+  ANIMACOES,
   CORPO_MAX,
   CORPO_MIN,
   type AlinhamentoDoRecado,
+  type AnimacaoDeFundo,
   type PosicaoDoRecado
 } from '@shared/tela'
 import type { Cartao } from '@shared/types'
@@ -38,6 +41,20 @@ const POSICOES: PosicaoDoRecado[] = ['topo', 'meio', 'pe']
 /* Os rótulos de alinhamento já existem nos 6 idiomas, do painel de Ajustes —
    é o mesmo conceito, e traduzir duas vezes a mesma palavra é como as duas
    acabam divergindo. */
+/* A segunda cor que entra quando o operador pede gradiente ou efeito num
+   fundo que ainda era chapado — a mesma dos dois lados, para "gradiente" e
+   depois "animado" não devolverem paletas diferentes. */
+const SEGUNDA_COR = '#8e3fd4'
+
+const ROTULO_DO_EFEITO: Record<AnimacaoDeFundo, Chave> = {
+  deriva: 'cards.fxDrift',
+  respiro: 'cards.fxBreathe',
+  varredura: 'cards.fxSweep',
+  ondas: 'cards.fxWaves',
+  barras: 'cards.fxBars',
+  poeira: 'cards.fxDust'
+}
+
 const ALINHAMENTOS: { id: AlinhamentoDoRecado; icone: IconName; rotulo: Chave }[] = [
   { id: 'left', icone: 'alinharEsquerda', rotulo: 'insp.alignLeft' },
   { id: 'center', icone: 'alinharCentro', rotulo: 'insp.alignCenter' },
@@ -85,6 +102,7 @@ export function EditorDeTela({
 }): React.JSX.Element {
   const { t } = useT()
   const gradiente = card.fundo.ate !== undefined
+  const efeito = animacaoDoFundo(card.fundo)
 
   const mexerNoFundo = (fundo: Partial<CartaoDeTela['fundo']>): void => {
     dispatch({ type: 'card/tela', cardId: card.id, fundo })
@@ -111,11 +129,11 @@ export function EditorDeTela({
               data-tela-fundo="chapado"
               {...ajuda('cards.background')}
               className={FICHA}
-              ativa={!gradiente}
+              ativa={!gradiente && !efeito}
               /* tirar a segunda cor é o que devolve o chapado — e ela some do
                  objeto, não vira string vazia, senão o fundo continuaria
                  sendo um gradiente para lugar nenhum */
-              onClick={() => mexerNoFundo({ ate: undefined })}
+              onClick={() => mexerNoFundo({ ate: undefined, animacao: undefined })}
             >
               {t('cards.flat')}
             </Ficha>
@@ -123,15 +141,52 @@ export function EditorDeTela({
               data-tela-fundo="gradiente"
               {...ajuda('cards.background')}
               className={FICHA}
-              ativa={gradiente}
+              ativa={gradiente && !efeito}
               onClick={() =>
-                mexerNoFundo({ ate: card.fundo.ate ?? '#8e3fd4', angulo: card.fundo.angulo ?? ANGULO_PADRAO })
+                mexerNoFundo({
+                  ate: card.fundo.ate ?? SEGUNDA_COR,
+                  angulo: card.fundo.angulo ?? ANGULO_PADRAO,
+                  animacao: undefined
+                })
               }
             >
               {t('cards.gradient')}
             </Ficha>
+            <Ficha
+              data-tela-fundo="animado"
+              {...ajuda('cards.screenEffect')}
+              className={FICHA}
+              ativa={Boolean(efeito)}
+              /* Ligar o efeito garante a segunda cor: os seis se movem ENTRE
+                 duas cores, e num fundo chapado eles rodariam sem nada para
+                 mostrar — o operador veria o controle não fazer nada. */
+              onClick={() =>
+                mexerNoFundo({ animacao: efeito ?? 'deriva', ate: card.fundo.ate ?? SEGUNDA_COR })
+              }
+            >
+              {t('cards.animated')}
+            </Ficha>
           </div>
         </Linha>
+
+        {efeito ? (
+          <Linha rotulo={t('cards.effect')}>
+            <div className="flex flex-wrap gap-[3px]">
+              {ANIMACOES.map((nome) => (
+                <Ficha
+                  key={nome}
+                  data-tela-efeito={nome}
+                  {...ajuda('cards.screenEffect')}
+                  className={FICHA}
+                  ativa={efeito === nome}
+                  onClick={() => mexerNoFundo({ animacao: nome })}
+                >
+                  {t(ROTULO_DO_EFEITO[nome])}
+                </Ficha>
+              ))}
+            </div>
+          </Linha>
+        ) : null}
 
         <Linha rotulo={t('cards.colours')}>
           <Amostra
@@ -141,13 +196,18 @@ export function EditorDeTela({
             onCor={(cor) => mexerNoFundo({ de: cor })}
           />
           {gradiente ? (
+            <Amostra
+              valor={card.fundo.ate ?? SEGUNDA_COR}
+              rotulo={t('cards.colourTo')}
+              marca="ate"
+              onCor={(cor) => mexerNoFundo({ ate: cor })}
+            />
+          ) : null}
+          {/* O ângulo só existe no gradiente PARADO: cada efeito tem o
+              caminho próprio pelo qual as cores andam, e um controle que o
+              operador mexe sem nada acontecer é pior que controle nenhum. */}
+          {gradiente && !efeito ? (
             <>
-              <Amostra
-                valor={card.fundo.ate ?? '#8e3fd4'}
-                rotulo={t('cards.colourTo')}
-                marca="ate"
-                onCor={(cor) => mexerNoFundo({ ate: cor })}
-              />
               <span className="ml-1 text-[11px] text-[var(--color-fog-2)]">{t('cards.angle')}</span>
               <SliderConsole
                 data-tela-angulo
