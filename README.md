@@ -75,6 +75,12 @@ Pick a monitor, flash a number on each screen to be sure which is which, then se
 
 ![Choosing the monitor and going on air](docs/screenshots/d05-output.png)
 
+**Dim the edges** fades the script away from the line being read, so the presenter's eye has one place to land. The clear window follows the reading mark wherever you put it, and a slider decides how wide it stays — from most of the screen at the low end down to a band about one line tall at the top.
+
+<p align="center">
+  <img src="docs/screenshots/d27-focus-dim.png" width="230" alt="The reading controls: the mark, edge dimming and how much" />
+</p>
+
 ---
 
 ## Three ways to work
@@ -85,7 +91,7 @@ Pick a monitor, flash a number on each screen to be sure which is which, then se
 
 ![Desk mode with the rundown and the timeline](docs/screenshots/07-desk.png)
 
-Every appearance control is live while the show runs — family, size, weight, line height, letter spacing, ALL CAPS, margin, horizontal position, words per line, alignment, colour presets.
+Every appearance control is live while the show runs — family, size, weight, line height, letter spacing, ALL CAPS, margin, horizontal position, words per line, alignment, colour presets, edge dimming.
 
 <p align="center">
   <img src="docs/screenshots/d11-inspector.png" width="200" alt="The appearance panel" />
@@ -111,7 +117,7 @@ It also greets you in the language of your operating system, and lets you change
 
 | Area | What is there |
 |---|---|
-| Reading | Semantic anchor, word-rule line composition, reading line, chapters, markers, go-to-cursor |
+| Reading | Semantic anchor, word-rule line composition, reading line, adjustable edge dimming, chapters, markers, go-to-cursor |
 | Transport | Play/pause, WPM ruler, nudge, seek by words, restart, loop with delay, auto-pause at the end |
 | Pacing | Formula (words ÷ WPM), stopwatch, free run; elapsed, remaining and target duration |
 | Appearance | Family, size, weight, line height, letter spacing, ALL CAPS, margin, horizontal position, words per line, alignment, colour presets, invert, reading-contrast swatches |
@@ -153,7 +159,7 @@ Without it macOS says *"Valendo is damaged and can't be opened"* and offers only
 
 ```bash
 curl -L -o ~/Downloads/Valendo.dmg \
-  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.2.0-arm64.dmg
+  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.3.0-arm64.dmg
 ```
 
 The reason is that the app is **not notarised**. It is signed ad-hoc, which is what lets it run at all on Apple Silicon, but Apple's notarisation stamp requires a paid developer account this project does not have. Building from source has no such block, because nothing was downloaded.

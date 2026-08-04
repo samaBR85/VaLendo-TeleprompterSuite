@@ -314,6 +314,20 @@ if (!SO || SO === 'detalhes') {
   await recorte('d24-footer', 'footer', 0)
   await recorte('d11-inspector', '[data-inspector]', 0)
 
+  /* A janela de leitura: a marca, o esmaecimento das bordas e o quanto
+     esmaecer. O controle do "quanto" só é desenhado com o esmaecimento
+     LIGADO — sem ligar antes, a foto sai sem justamente o recurso que ela
+     deveria mostrar, e ninguém percebe porque a imagem fica plausível. */
+  await clicar('[data-aba="leitura"]')
+  await acao({ type: 'appearance/patch', tabId: abaAtiva, patch: { focusDim: true } })
+  await wait(600)
+  await recorte(
+    'd27-focus-dim',
+    `document.querySelector('[data-ajuda="insp.focusDim"]')?.closest('div[class*="border-b"]')`,
+    6
+  )
+  await clicar('[data-aba="texto"]')
+
   // a lista de capítulos: o primeiro painel da coluna
   await recorte('d08-chapters', `document.querySelector('[data-chapter]')?.closest('div[class*="flex-col"]')?.parentElement`, 6)
 
