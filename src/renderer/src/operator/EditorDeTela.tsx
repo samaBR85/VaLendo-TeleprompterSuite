@@ -9,15 +9,27 @@ import { ajuda } from '../ui/ajuda'
 
 type CartaoDeTela = Extract<Cartao, { kind: 'tela' }>
 
+const LARGURA = 450
 /*
- * A prévia tem altura fixa e conhecida porque o corpo do recado é proporcional
- * à altura do quadro: sem um número aqui, o texto sairia num tamanho e no ar
- * noutro. 236px em 16:9 é o maior quadro que cabe na janela de 560 sem empurrar
- * os controles para fora da dobra.
+ * A prévia é 16:9 de verdade, e a altura sai da largura em vez de ser um
+ * número solto.
+ *
+ * Ela era mais larga que alta do que a saída real, e isso não é detalhe de
+ * enquadramento: o recado se posiciona em cima, no meio ou no pé, e num quadro
+ * achatado o "pé" fica num lugar que não é o pé da tela do apresentador.
+ *
+ * O número precisa existir (e não ser só CSS) porque o corpo do recado é
+ * proporcional à altura do quadro — sem saber a altura aqui, a prévia mostraria
+ * um tamanho de texto e o ar mostraria outro.
  */
-const ALTURA_DA_PREVIA = 236
+const ALTURA_DA_PREVIA = Math.round(((LARGURA - 24) * 9) / 16)
 
 const POSICOES: PosicaoDoRecado[] = ['topo', 'meio', 'pe']
+
+/* `.k-ficha` não traz respiro nenhum — quem usa é que diz quanto. Aqui a
+   janela tem espaço, então o texto ganha uma folga maior que a dos painéis
+   estreitos, onde cada pixel de largura está disputado. */
+const FICHA = 'px-2.5 py-[5px] text-[11px]'
 
 /**
  * O editor do cartão de tela.
@@ -54,8 +66,8 @@ export function EditorDeTela({
   }
 
   return (
-    <Modal title={card.nome || t('cards.screen')} subtitle={t('cards.editScreen')} width={560} onClose={onClose}>
-      <div className="flex flex-col gap-3 overflow-y-auto p-3.5">
+    <Modal title={card.nome || t('cards.screen')} subtitle={t('cards.editScreen')} width={LARGURA} onClose={onClose}>
+      <div className="flex flex-col gap-2.5 overflow-y-auto p-3">
         <div
           data-tela-previa
           style={{ height: ALTURA_DA_PREVIA }}
@@ -70,6 +82,7 @@ export function EditorDeTela({
             <Ficha
               data-tela-fundo="chapado"
               {...ajuda('cards.background')}
+              className={FICHA}
               ativa={!gradiente}
               /* tirar a segunda cor é o que devolve o chapado — e ela some do
                  objeto, não vira string vazia, senão o fundo continuaria
@@ -81,6 +94,7 @@ export function EditorDeTela({
             <Ficha
               data-tela-fundo="gradiente"
               {...ajuda('cards.background')}
+              className={FICHA}
               ativa={gradiente}
               onClick={() =>
                 mexerNoFundo({ ate: card.fundo.ate ?? '#8e3fd4', angulo: card.fundo.angulo ?? ANGULO_PADRAO })
@@ -166,6 +180,7 @@ export function EditorDeTela({
                 key={posicao}
                 data-tela-posicao={posicao}
                 {...ajuda('cards.place')}
+                className={FICHA}
                 ativa={card.recado.posicao === posicao}
                 onClick={() => mexerNoRecado({ posicao })}
               >
@@ -191,8 +206,8 @@ function Linha({
   children: React.ReactNode
 }): React.JSX.Element {
   return (
-    <div className={`flex gap-2.5 ${topo ? 'items-start' : 'items-center'}`}>
-      <label className={`w-[92px] flex-none text-[12px] text-[var(--color-fog-2)] ${topo ? 'pt-1.5' : ''}`}>
+    <div className={`flex gap-2 ${topo ? 'items-start' : 'items-center'}`}>
+      <label className={`w-[76px] flex-none text-[11px] text-[var(--color-fog-2)] ${topo ? 'pt-1.5' : ''}`}>
         {rotulo}
       </label>
       {children}
