@@ -34,8 +34,8 @@ describe('a cópia leva o que é conteúdo', () => {
     // mexer na outra, e o defeito só apareceria com as duas no ar
     const origem = original()
     const copia = duplicarAba(origem, [], TAB_COLORS[1])
-    copia.appearance.timers.showElapsed = !copia.appearance.timers.showElapsed
-    expect(origem.appearance.timers.showElapsed).not.toBe(copia.appearance.timers.showElapsed)
+    copia.appearance.timers.elapsed = !copia.appearance.timers.elapsed
+    expect(origem.appearance.timers.elapsed).not.toBe(copia.appearance.timers.elapsed)
   })
 })
 
