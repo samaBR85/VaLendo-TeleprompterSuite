@@ -52,6 +52,9 @@ export const en: Dicionario = {
     'Paste or type the script. Where you break the line, it breaks on the presenter’s screen. [brackets] mark directions, ## opens a chapter.',
 
   'tabs.new': 'New tab',
+  'tabs.duplicate': 'Duplicate',
+  'tabs.rename': 'Rename',
+  'tabs.closeItem': 'Close',
   'tabs.new.hint': 'New tab · Ctrl+T',
   'tabs.close': 'Close {title}',
   'tabs.max': '10 tabs',
@@ -355,6 +358,7 @@ export const en: Dicionario = {
   'cmd.edit.redo': 'Redo',
   'cmd.tab.new': 'New tab',
   'cmd.tab.close': 'Close tab',
+  'cmd.tab.duplicate': 'Duplicate tab',
   'cmd.view.focusMode': 'Toggle focus mode',
   'cmd.view.inspector': 'Open or close the settings',
   'cmd.view.sidebar': 'Open or close Assets',

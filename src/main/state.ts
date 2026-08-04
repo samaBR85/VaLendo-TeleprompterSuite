@@ -24,6 +24,7 @@ import {
   createTab
 } from '@shared/defaults'
 import { History } from '@shared/history'
+import { duplicarAba } from '@shared/duplicarAba'
 import { reconcileBlocks } from '@shared/text'
 import type { Anchor, Appearance, AppState, PacingRule, StopwatchClock, Tab, Transport } from '@shared/types'
 import { CRONOMETRO_PARADO, secondsForWords, segundosDoCronometro, wordIndexAt } from '@shared/pacing'
@@ -867,6 +868,28 @@ export class Store {
         const tab = createTab(`Aba ${this.state.tabs.length + 1}`, '', color, this.defaults.appearance)
         this.state = { ...this.state, tabs: [...this.state.tabs, tab] }
         this.dispatch({ type: 'tab/activate', tabId: tab.id })
+        return
+      }
+
+      case 'tab/duplicate': {
+        if (this.state.tabs.length >= 10) return
+        const origem = this.state.tabs.find((t) => t.id === action.tabId)
+        if (!origem) return
+
+        const nova = duplicarAba(
+          origem,
+          this.state.tabs,
+          // cor da vez, e não a da original: duas abas da mesma cor leem como
+          // engano, e o pontinho é justamente o que distingue uma da outra
+          TAB_COLORS[this.state.tabs.length % TAB_COLORS.length]
+        )
+
+        // ao lado da original, não no fim da fila: uma cópia pertence ao pé da
+        // sua fonte, e é lá que a mão vai procurar
+        const tabs = [...this.state.tabs]
+        tabs.splice(tabs.findIndex((t) => t.id === origem.id) + 1, 0, nova)
+        this.state = { ...this.state, tabs }
+        this.dispatch({ type: 'tab/activate', tabId: nova.id })
         return
       }
 

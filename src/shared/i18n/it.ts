@@ -52,6 +52,9 @@ export const it: Dicionario = {
     'Incolla o scrivi il copione. Dove spezzi la riga, si spezza sullo schermo del presentatore. Le [parentesi] segnano le indicazioni, ## apre un capitolo.',
 
   'tabs.new': 'Nuova scheda',
+  'tabs.duplicate': 'Duplica',
+  'tabs.rename': 'Rinomina',
+  'tabs.closeItem': 'Chiudi',
   'tabs.new.hint': 'Nuova scheda · Ctrl+T',
   'tabs.close': 'Chiudi {title}',
   'tabs.max': '10 schede',
@@ -358,6 +361,7 @@ export const it: Dicionario = {
   'cmd.edit.redo': 'Ripeti',
   'cmd.tab.new': 'Nuova scheda',
   'cmd.tab.close': 'Chiudi scheda',
+  'cmd.tab.duplicate': 'Duplica la scheda',
   'cmd.view.focusMode': 'Attiva o disattiva il modo focus',
   'cmd.view.inspector': 'Apri o chiudi le impostazioni',
   'cmd.view.sidebar': 'Apri o chiudi Assets',

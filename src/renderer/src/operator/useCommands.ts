@@ -247,6 +247,9 @@ export function useCommands(
         case 'tab.close':
           dispatch({ type: 'tab/close', tabId: tab.id })
           break
+        case 'tab.duplicate':
+          dispatch({ type: 'tab/duplicate', tabId: tab.id })
+          break
 
         case 'view.focusMode':
           ui.toggleFocusMode()

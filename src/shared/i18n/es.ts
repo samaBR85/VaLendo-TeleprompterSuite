@@ -52,6 +52,9 @@ export const es: Dicionario = {
     'Pega o escribe el guion. Donde cortes la línea, se corta en la pantalla del presentador. [corchetes] marcan acotaciones, ## abre capítulo.',
 
   'tabs.new': 'Pestaña nueva',
+  'tabs.duplicate': 'Duplicar',
+  'tabs.rename': 'Renombrar',
+  'tabs.closeItem': 'Cerrar',
   'tabs.new.hint': 'Pestaña nueva · Ctrl+T',
   'tabs.close': 'Cerrar {title}',
   'tabs.max': '10 pestañas',
@@ -356,6 +359,7 @@ export const es: Dicionario = {
   'cmd.edit.redo': 'Rehacer',
   'cmd.tab.new': 'Pestaña nueva',
   'cmd.tab.close': 'Cerrar pestaña',
+  'cmd.tab.duplicate': 'Duplicar la pestaña',
   'cmd.view.focusMode': 'Alternar el modo foco',
   'cmd.view.inspector': 'Abrir o cerrar los ajustes',
   'cmd.view.sidebar': 'Abrir o cerrar Assets',

@@ -92,6 +92,9 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'edit.redo', group: 'Documento', defaultBinding: 'Mod+Shift+Z' },
   { id: 'tab.new', group: 'Documento', defaultBinding: 'Mod+T' },
   { id: 'tab.close', group: 'Documento', defaultBinding: 'Mod+W' },
+  /* duplicar a aba ATIVA — pelo teclado não há onde apontar. O gesto que
+     escolhe qual aba é o direito na ficha, na barra */
+  { id: 'tab.duplicate', group: 'Documento', defaultBinding: 'Mod+D' },
 
   { id: 'view.focusMode', group: 'Visão', defaultBinding: 'F11' },
   /* Split, Foco e Mesa são os três MODOS da mesa — telas inteiras, mutuamente

@@ -63,6 +63,9 @@ export const pt = {
 
   /* ------------------------------------------------------------------- abas */
   'tabs.new': 'Nova aba',
+  'tabs.duplicate': 'Duplicar',
+  'tabs.rename': 'Renomear',
+  'tabs.closeItem': 'Fechar',
   'tabs.new.hint': 'Nova aba · Ctrl+T',
   'tabs.close': 'Fechar {title}',
   'tabs.max': '10 abas',
@@ -383,6 +386,7 @@ export const pt = {
   'cmd.edit.redo': 'Refazer',
   'cmd.tab.new': 'Nova aba',
   'cmd.tab.close': 'Fechar aba',
+  'cmd.tab.duplicate': 'Duplicar a aba',
   'cmd.view.focusMode': 'Alternar modo foco',
   'cmd.view.inspector': 'Abrir ou fechar os ajustes',
   'cmd.view.sidebar': 'Abrir ou fechar Assets',

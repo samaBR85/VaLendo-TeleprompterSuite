@@ -52,6 +52,9 @@ export const fr: Dicionario = {
     'Collez ou tapez le texte. Là où vous coupez la ligne, elle se coupe sur l’écran du présentateur. Les [crochets] marquent les indications, ## ouvre un chapitre.',
 
   'tabs.new': 'Nouvel onglet',
+  'tabs.duplicate': 'Dupliquer',
+  'tabs.rename': 'Renommer',
+  'tabs.closeItem': 'Fermer',
   'tabs.new.hint': 'Nouvel onglet · Ctrl+T',
   'tabs.close': 'Fermer {title}',
   'tabs.max': '10 onglets',
@@ -358,6 +361,7 @@ export const fr: Dicionario = {
   'cmd.edit.redo': 'Rétablir',
   'cmd.tab.new': 'Nouvel onglet',
   'cmd.tab.close': 'Fermer l’onglet',
+  'cmd.tab.duplicate': 'Dupliquer l’onglet',
   'cmd.view.focusMode': 'Basculer le mode focus',
   'cmd.view.inspector': 'Ouvrir ou fermer les réglages',
   'cmd.view.sidebar': 'Ouvrir ou fermer Assets',

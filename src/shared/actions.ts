@@ -122,6 +122,14 @@ export type Action =
   | { type: 'presenter/remove'; tabId: string; presenterId: string }
   | { type: 'tab/add' }
   | { type: 'tab/close'; tabId: string }
+  /**
+   * Copia uma aba inteira: texto, aparência, apresentadores e marcadores.
+   *
+   * Vai só o id porque todo o resto é derivável de dentro — e porque quem
+   * conta as abas, escolhe a cor da vez e cunha ids é o reducer. Cunhar id no
+   * renderer poderia colidir: o contador que entra neles é por PROCESSO.
+   */
+  | { type: 'tab/duplicate'; tabId: string }
   | { type: 'tab/activate'; tabId: string }
   | { type: 'tab/rename'; tabId: string; title: string }
   | { type: 'app/language'; language: Lang }

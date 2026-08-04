@@ -143,7 +143,7 @@ export const ajudaEn = {
   /* ------------------------------------------------------------------ TABS */
   'tabs.tab': {
     nome: 'Script tab',
-    texto: 'Each tab is a separate script with its own appearance and markers. Only the active one goes on air.'
+    texto: 'Each tab is a separate script with its own appearance and markers. Only the active one goes on air. Right-click one to duplicate, rename or close it.'
   },
   'tabs.close': {
     nome: 'Close tab',

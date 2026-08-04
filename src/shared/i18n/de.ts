@@ -52,6 +52,9 @@ export const de: Dicionario = {
     'Skript einfügen oder tippen. Wo Sie die Zeile umbrechen, bricht sie auch auf dem Bildschirm des Sprechers. [Klammern] kennzeichnen Regieanweisungen, ## öffnet ein Kapitel.',
 
   'tabs.new': 'Neuer Tab',
+  'tabs.duplicate': 'Duplizieren',
+  'tabs.rename': 'Umbenennen',
+  'tabs.closeItem': 'Schließen',
   'tabs.new.hint': 'Neuer Tab · Strg+T',
   'tabs.close': '{title} schließen',
   'tabs.max': '10 Tabs',
@@ -358,6 +361,7 @@ export const de: Dicionario = {
   'cmd.edit.redo': 'Wiederholen',
   'cmd.tab.new': 'Neuer Tab',
   'cmd.tab.close': 'Tab schließen',
+  'cmd.tab.duplicate': 'Tab duplizieren',
   'cmd.view.focusMode': 'Fokusmodus umschalten',
   'cmd.view.inspector': 'Einstellungen öffnen oder schließen',
   'cmd.view.sidebar': 'Assets öffnen oder schließen',
