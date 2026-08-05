@@ -1237,6 +1237,30 @@ function AppConteudo({
             />
             {stage}
             {markerStrip}
+
+            {/* A régua mora DENTRO da coluna do meio, como no Split.
+                Ela ficava fora do `<main>`, de quando o Foco não tinha nem
+                Assets nem Ajustes e a largura da janela ERA a largura do
+                conteúdo. Com os dois painéis acesos, a régua de fora passa
+                por baixo deles e atravessa a tela inteira, enquanto a gaveta
+                — que é irmã dela aqui dentro — para na coluna. As duas
+                pertencem ao mesmo conteúdo e têm de medir o mesmo. */}
+            {state.transportPosition === 'regua' ? (
+              <BarraDeTransporte
+                state={state}
+                tab={tab}
+                displays={displays}
+                keymap={keymap}
+                rows={rows}
+                dispatch={dispatch}
+                run={run}
+                onImport={importDocument}
+                onNewProject={novoProjeto}
+                onOpenRecent={(caminho) => void project('abrir', caminho)}
+                position="regua"
+              />
+            ) : null}
+
             {cardsDrawer}
           </div>
 
@@ -1544,9 +1568,11 @@ function AppConteudo({
         </main>
       )}
 
-      {/* Foco e Mesa não têm coluna nem inspetor — a régua fica fora do
-          conteúdo do modo, entre o roteiro e o resto da tela, igual já era */}
-      {state.transportPosition === 'regua' && state.layoutMode !== 'split' ? (
+      {/* Só a MESA. Ela é a única que não tem coluna nem inspetor, então a
+          largura da janela é mesmo a largura do conteúdo dela — e a régua
+          pode ficar aqui fora, ao lado da gaveta, que também é de fora.
+          Split e Foco montam a régua dentro da própria coluna do meio. */}
+      {state.transportPosition === 'regua' && state.layoutMode === 'deck' ? (
         <BarraDeTransporte
           state={state}
           tab={tab}
