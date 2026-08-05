@@ -165,13 +165,46 @@ await wait(2500)
 
 /* ------------------------------------------------------- boas-vindas */
 
+/**
+ * As duas fileiras da estreia, e não um botão de cada.
+ *
+ * `[data-welcome-acao="novo"]` e `[data-welcome-lang="en"]` traziam UM item —
+ * e as legendas ("Quatro caminhos", "Seis idiomas") descreviam a fileira que a
+ * foto não mostrava. Subir até o ancestral que contém DOIS acha a fileira sem
+ * depender de quantas camadas existem.
+ *
+ * Só a passada com histórico mostra os QUATRO caminhos: "Continuar de onde
+ * parei" só existe quando há trabalho salvo. Por isso a campanha roda uma
+ * segunda vez, com `boas-vindas`, contra o perfil que ela mesma encheu.
+ */
+const fileiraDe = (marca) => `(() => {
+  const um = document.querySelector('[${marca}]')
+  if (!um) return null
+  let el = um
+  while (el.parentElement && el.parentElement.querySelectorAll('[${marca}]').length < 2) {
+    el = el.parentElement
+  }
+  return el.parentElement
+})()`
+
 const temModal = await ev(`Boolean(document.querySelector('[data-welcome-acao]'))`)
 if (temModal) {
   await ev(`document.querySelector('[data-welcome-lang="en"]')?.click()`)
   await wait(900)
+  const caminhos = await ev(`document.querySelectorAll('[data-welcome-acao]').length`)
+  console.log('caminhos na estreia:', caminhos)
   await foto('01-welcome', `document.querySelector('[data-welcome-acao]')`)
-  await recorte('d16-welcome-paths', '[data-welcome-acao="novo"]', 0)
-  await recorte('d15-languages', '[data-welcome-lang="en"]', 0)
+  await recorte('d16-welcome-paths', fileiraDe('data-welcome-acao'), 8)
+  await recorte('d15-languages', fileiraDe('data-welcome-lang'), 8)
+  if (SO === 'boas-vindas') {
+    /* a passada curta existe só para estas três fotos: seguir daqui refaria a
+       montagem inteira num perfil que já está cheio, e duplicaria os cartões */
+    if (caminhos !== 4) problemas.push(`a estreia tinha ${caminhos} caminhos, não os 4 com histórico`)
+    console.log('\n--- feitas:', feitas.length)
+    for (const p of problemas) console.log('   *', p)
+    ws.close()
+    process.exit(problemas.length ? 1 : 0)
+  }
   await clicar('[data-welcome-acao="novo"]')
   await wait(1400)
 }

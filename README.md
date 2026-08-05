@@ -65,9 +65,9 @@ That is the director, the floor manager, the presenter rehearsing in the dressin
 
 ![A video card on air with the script riding over it](docs/screenshots/05-overlay-video.png)
 
-Images, video and messages reach the presenter's screen with one click or a number key. Each card either **replaces** the script or **rides over it**, which is how a lower third and a caption share the same screen. Legibility over a card is a three-way choice: dark band, per-letter shadow, or nothing.
+Images, video, messages and screens reach the presenter's screen with one click or a number key. Each card either **replaces** the script or **rides over it**, which is how a lower third and a caption share the same screen. Legibility over a card is a three-way choice: dark band, per-letter shadow, or nothing.
 
-![The cards drawer with an image, a video and a message](docs/screenshots/d17-cards-row.png)
+![The cards drawer with an image, a video, a message and a screen](docs/screenshots/d17-cards-row.png)
 
 Video plays the file as it arrived whenever the browser can handle it. When it cannot, ffmpeg first tries to change only the container — seconds, no pixel touched — and re-encodes only when the content genuinely will not fit an mp4.
 
@@ -182,7 +182,7 @@ Without it macOS says *"Valendo is damaged and can't be opened"* and offers only
 
 ```bash
 curl -L -o ~/Downloads/Valendo.dmg \
-  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.3.0-arm64.dmg
+  https://github.com/samaBR85/Valendo-TeleprompterSuite/releases/latest/download/Valendo-1.4.0-arm64.dmg
 ```
 
 The reason is that the app is **not notarised**. It is signed ad-hoc, which is what lets it run at all on Apple Silicon, but Apple's notarisation stamp requires a paid developer account this project does not have. Building from source has no such block, because nothing was downloaded.
