@@ -242,6 +242,14 @@ export const ajudaIt = {
     texto: 'Invio per la successiva, Maiusc+Invio per la precedente, Esc chiude su quella che vedi. Ignora maiuscole e accenti. Muove solo l’editor — la lettura non si sposta.',
     comando: 'edit.find'
   },
+  'editor.replace': {
+    nome: 'Sostituisci con',
+    texto: 'Che cosa prende il posto di quello che hai trovato. Invio sostituisce quella attuale, Maiusc+Invio tutte. Sostituire tutte è UN passo di annulla, non trenta.'
+  },
+  'editor.findAll': {
+    nome: 'Segna tutte le occorrenze',
+    texto: 'Disegna il riquadro su tutte insieme, quella attuale più forte. Utile prima di sostituire tutte: vedi che cosa cambierà.'
+  },
   'editor.clearFormat': {
     nome: 'Rimuovi formattazione',
     texto: 'Riporta capitoli e indicazioni a testo semplice. Le parole restano; annulla le riporta.',

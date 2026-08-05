@@ -242,6 +242,14 @@ export const ajudaEs = {
     texto: 'Enter va a la siguiente, Shift+Enter a la anterior, Esc cierra en la que ves. Ignora mayúsculas y acentos: "acao" encuentra "ação". Mueve solo el editor — la lectura no se mueve.',
     comando: 'edit.find'
   },
+  'editor.replace': {
+    nome: 'Reemplazar por',
+    texto: 'Lo que entra en lugar de lo que encontraste. Enter reemplaza la actual, Shift+Enter todas. Reemplazar todas es UN paso de deshacer, no treinta.'
+  },
+  'editor.findAll': {
+    nome: 'Marcar todas las apariciones',
+    texto: 'Dibuja la caja en todas a la vez, la actual más fuerte. Útil antes de reemplazar todas: ves lo que va a cambiar.'
+  },
   'editor.clearFormat': {
     nome: 'Quitar formato',
     texto: 'Vuelve a convertir capítulos y acotaciones en texto plano. Las palabras se quedan; deshacer trae las marcas de vuelta.',

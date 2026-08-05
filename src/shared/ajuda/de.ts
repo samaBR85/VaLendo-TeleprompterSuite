@@ -242,6 +242,14 @@ export const ajudaDe = {
     texto: 'Enter zum nächsten, Umschalt+Enter zum vorigen, Esc schließt beim aktuellen. Ignoriert Groß-/Kleinschreibung und Akzente. Bewegt nur den Editor — die Leseposition rührt sich nicht.',
     comando: 'edit.find'
   },
+  'editor.replace': {
+    nome: 'Ersetzen durch',
+    texto: 'Was an die Stelle des Treffers tritt. Enter ersetzt den aktuellen, Umschalt+Enter alle. Alle zu ersetzen ist EIN Rückgängig-Schritt, nicht dreißig.'
+  },
+  'editor.findAll': {
+    nome: 'Alle Treffer markieren',
+    texto: 'Zeichnet alle Treffer auf einmal, den aktuellen kräftiger. Nützlich vor dem Ersetzen: Sie sehen, was sich ändern wird.'
+  },
   'editor.clearFormat': {
     nome: 'Formatierung entfernen',
     texto: 'Macht aus Kapiteln und Regieanweisungen wieder reinen Text. Die Wörter bleiben; Rückgängig bringt die Markierungen zurück.',

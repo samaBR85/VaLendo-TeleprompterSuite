@@ -269,6 +269,14 @@ export const ajudaEn = {
     texto: 'Enter for the next, Shift+Enter for the previous, Esc closes on the one you see. Ignores case and accents: "acao" finds "ação". Moves the editor only — the reading position never budges.',
     comando: 'edit.find'
   },
+  'editor.replace': {
+    nome: 'Replace with',
+    texto: 'What goes in place of what you found. Enter replaces the current one, Shift+Enter replaces them all. Replacing all is a single undo step, not thirty.'
+  },
+  'editor.findAll': {
+    nome: 'Mark every occurrence',
+    texto: 'Draws a box around every match at once, the current one brighter than the rest. Useful before replacing all: you see what is about to change.'
+  },
   'editor.clearFormat': {
     nome: 'Clear formatting',
     texto: 'Turns chapters and directions back into plain text. The words stay; undo brings the marks back.',

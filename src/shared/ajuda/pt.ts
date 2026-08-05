@@ -242,6 +242,14 @@ export const ajudaPt = {
     texto: 'Enter vai para a próxima, Shift+Enter para a anterior, Esc fecha na que você vê. Ignora caixa e acento: "acao" acha "ação". Mexe só no editor — a posição de leitura não sai do lugar.',
     comando: 'edit.find'
   },
+  'editor.replace': {
+    nome: 'Trocar por',
+    texto: 'O que entra no lugar do que você achou. Enter troca a atual, Shift+Enter troca todas. Trocar todas é UM passo de desfazer, não trinta.'
+  },
+  'editor.findAll': {
+    nome: 'Marcar todas as ocorrências',
+    texto: 'Desenha a caixa em todas de uma vez, a atual mais forte que as outras. Útil antes de trocar todas: você vê o que vai mudar.'
+  },
   'editor.clearFormat': {
     nome: 'Remover formatação',
     texto: 'Transforma capítulos e direções de volta em texto simples. As palavras ficam; desfazer traz as marcas de volta.',

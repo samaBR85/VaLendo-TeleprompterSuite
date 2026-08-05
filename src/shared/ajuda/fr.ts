@@ -242,6 +242,14 @@ export const ajudaFr = {
     texto: 'Entrée pour la suivante, Maj+Entrée pour la précédente, Échap ferme sur celle que vous voyez. Ignore la casse et les accents. Ne bouge que l’éditeur — la lecture ne bouge pas.',
     comando: 'edit.find'
   },
+  'editor.replace': {
+    nome: 'Remplacer par',
+    texto: 'Ce qui prend la place de ce que vous avez trouvé. Entrée remplace l’occurrence courante, Maj+Entrée toutes. Tout remplacer, c’est UNE annulation, pas trente.'
+  },
+  'editor.findAll': {
+    nome: 'Marquer toutes les occurrences',
+    texto: 'Encadre toutes les occurrences d’un coup, la courante plus vive. Utile avant de tout remplacer : vous voyez ce qui va changer.'
+  },
   'editor.clearFormat': {
     nome: 'Effacer la mise en forme',
     texto: 'Retransforme chapitres et indications en texte brut. Les mots restent ; annuler ramène les marques.',

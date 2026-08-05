@@ -934,6 +934,18 @@ function AppConteudo({
         onClick={() => run('edit.clearFormat')}
       />
 
+      {/* Procurar: fica junto de "remover formatação" porque as duas agem sobre
+          o texto INTEIRO, e não sobre o ponto onde o cursor está — as duas de
+          cima inserem no cursor. O Ctrl+F já faz isto; o botão existe para
+          quem não sabe que existe um Ctrl+F. */}
+      <EditorTool
+        ajudaId="editor.find"
+        icon="search"
+        label={t('editor.find')}
+        atalho={hint(keymap, 'edit.find')}
+        onClick={() => run('edit.find')}
+      />
+
       {divisorDeFerramentas}
       {/* Quem fala: transforma o nome SELECIONADO no roteiro em apresentador.
           Sozinho entre filetes — é a única ferramenta aqui que não age sobre

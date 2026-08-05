@@ -3,7 +3,7 @@ import type { Action } from '@shared/actions'
 import { insertBlock, type InsertKind } from '@shared/insertBlock'
 import { coresDasLinhas, ehDeixa, type LinhaPintavel } from '@shared/apresentadores'
 import { blocksFromText, caretFromAnchor, serializeBlocks, stripFormatting } from '@shared/text'
-import { acharTodas, indiceDaProxima } from '@shared/busca'
+import { acharTodas, indiceDaProxima, type Ocorrencia } from '@shared/busca'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
 import type { Anchor, Apresentador, BlockKind, Tab } from '@shared/types'
@@ -79,7 +79,7 @@ export interface CaixaDoAchado {
 }
 
 /**
- * O retângulo de um TRECHO, para a busca desenhar a caixa em volta da palavra.
+ * Os retângulos de VÁRIOS trechos, numa varredura só.
  *
  * Irmão de `retanguloDoTexto`, e pelo mesmo motivo: quem responde onde o texto
  * caiu é o navegador, sobre o `<pre>` colorido que tem a fonte e a quebra
@@ -88,41 +88,64 @@ export interface CaixaDoAchado {
  * leitura está; o achado precisa cercar a PALAVRA, senão procurar num
  * parágrafo denso devolve uma faixa que não diz qual das dez palavras é.
  *
+ * Plural de propósito: com o FIND ALL ligado, um roteiro de meia hora pode ter
+ * duzentas ocorrências, e medir uma por vez percorreria o texto inteiro
+ * duzentas vezes. Como os trechos chegam em ordem, uma passagem só resolve
+ * todos — e a lista sai na MESMA ordem que entrou, com `null` onde não deu
+ * para medir.
+ *
  * Achado que envolve para a linha de baixo devolve a união dos dois pedaços —
  * uma caixa larga demais. É raro (termo de busca é curto) e o estrago é
  * cosmético, então não vale o preço de desenhar dois retângulos.
  */
-function caixaDoTrecho(pre: HTMLPreElement, inicio: number, fim: number): CaixaDoAchado | null {
+function caixasDeTrechos(pre: HTMLPreElement, trechos: Ocorrencia[]): (CaixaDoAchado | null)[] {
+  const fora: (CaixaDoAchado | null)[] = trechos.map(() => null)
+  if (trechos.length === 0) return fora
+
+  const molde = pre.getBoundingClientRect()
   const caminhante = document.createTreeWalker(pre, NodeFilter.SHOW_TEXT)
+  const range = document.createRange()
   let percorrido = 0
+  let no = caminhante.nextNode() as Text | null
+  let alvo = 0
   let noInicio: Text | null = null
   let dentroInicio = 0
-  let no = caminhante.nextNode() as Text | null
-  const range = document.createRange()
 
-  while (no) {
+  while (no && alvo < trechos.length) {
     const acaba = percorrido + no.length
-    if (!noInicio && inicio <= acaba) {
-      noInicio = no
-      dentroInicio = Math.max(0, Math.min(no.length, inicio - percorrido))
-    }
-    if (noInicio && fim <= acaba) {
+
+    // um nó pode conter o começo de um trecho, o fim de outro, ou vários
+    // inteiros — daí o `while` de dentro
+    for (;;) {
+      if (alvo >= trechos.length) break
+      const { inicio, fim } = trechos[alvo]
+      if (!noInicio) {
+        if (inicio > acaba) break
+        noInicio = no
+        dentroInicio = Math.max(0, Math.min(no.length, inicio - percorrido))
+      }
+      if (fim > acaba) break
+
       range.setStart(noInicio, dentroInicio)
       range.setEnd(no, Math.max(0, Math.min(no.length, fim - percorrido)))
       const caixa = range.getBoundingClientRect()
-      const molde = pre.getBoundingClientRect()
-      if (caixa.height === 0) return null
-      return {
-        top: caixa.top - molde.top + pre.scrollTop,
-        left: caixa.left - molde.left,
-        width: caixa.width,
-        height: caixa.height
-      }
+      fora[alvo] =
+        caixa.height === 0
+          ? null
+          : {
+              top: caixa.top - molde.top + pre.scrollTop,
+              left: caixa.left - molde.left,
+              width: caixa.width,
+              height: caixa.height
+            }
+      noInicio = null
+      alvo += 1
     }
+
     percorrido = acaba
     no = caminhante.nextNode() as Text | null
   }
-  return null
+  return fora
 }
 
 /** As três teclinhas da barra de busca: anterior, próxima, fechar. */
@@ -537,8 +560,12 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
    *    sente nada.
    */
   const [busca, setBusca] = useState<string | null>(null)
+  const [troca, setTroca] = useState('')
   const [atual, setAtual] = useState(0)
   const [achado, setAchado] = useState<CaixaDoAchado | null>(null)
+  /** FIND ALL: as caixas de TODAS as ocorrências, medidas de uma vez */
+  const [todas, setTodas] = useState(false)
+  const [caixas, setCaixas] = useState<(CaixaDoAchado | null)[]>([])
   const campoBusca = useRef<HTMLInputElement>(null)
 
   const ocorrencias = useMemo(() => (busca === null ? [] : acharTodas(draft, busca)), [draft, busca])
@@ -555,7 +582,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       // ponto do texto, e ser puxado de volta seria o app discordando da mão
       ultimoToque.current = Date.now()
 
-      const caixa = caixaDoTrecho(pre, alvo.inicio, alvo.fim)
+      const [caixa] = caixasDeTrechos(pre, [alvo])
       setAchado(caixa)
       if (!caixa) return
 
@@ -588,6 +615,56 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     const daqui = ocorrencias[atual]
     const de = daqui ? (paraTras ? daqui.inicio : daqui.inicio + 1) : 0
     irParaAchado(indiceDaProxima(ocorrencias, de, paraTras))
+  }
+
+  /*
+   * As caixas do FIND ALL.
+   *
+   * Refeitas quando a lista muda, quando o interruptor liga, e quando o corpo
+   * da fonte muda — os três casos em que o texto se recompõe por baixo. A
+   * ROLAGEM não entra: as caixas vêm em coordenadas do conteúdo, e quem traz
+   * para a tela é o `- rolagem` do desenho.
+   */
+  useEffect(() => {
+    const pre = preRef.current
+    if (!todas || busca === null || !pre) return setCaixas([])
+    setCaixas(caixasDeTrechos(pre, ocorrencias))
+  }, [todas, busca, ocorrencias, fontSize])
+
+  /**
+   * Trocar uma ocorrência, ou todas.
+   *
+   * De trás para a frente, e é o detalhe que faz funcionar: trocando do fim
+   * para o começo, os índices das ocorrências ainda não visitadas continuam
+   * valendo. Do começo para o fim, a primeira troca já deslocaria todas as
+   * outras — e um termo de tamanho diferente do substituto faria a segunda
+   * troca cair no lugar errado.
+   *
+   * "Trocar todas" sai daqui como UM texto novo, e não como trinta edições:
+   * são trinta trocas e um único passo de desfazer, que é o que a mão espera
+   * de um comando chamado "todas".
+   */
+  const trocar = (todasAsVezes: boolean): void => {
+    const area = areaRef.current
+    if (!area || busca === null || busca === '' || ocorrencias.length === 0) return
+    const alvos = todasAsVezes ? ocorrencias : ocorrencias[atual] ? [ocorrencias[atual]] : []
+    if (alvos.length === 0) return
+
+    const repor = preservarRolagem()
+    let texto = draft
+    for (let i = alvos.length - 1; i >= 0; i -= 1) {
+      texto = texto.slice(0, alvos[i].inicio) + troca + texto.slice(alvos[i].fim)
+    }
+    setDraft(texto)
+    push(texto, 0)
+
+    // o cursor fica DEPOIS do que acabou de entrar: assim o próximo "trocar"
+    // pega a ocorrência seguinte, e não fica batendo na mesma
+    const depois = alvos[0].inicio + troca.length
+    requestAnimationFrame(() => {
+      area.setSelectionRange(depois, depois)
+      repor()
+    })
   }
 
   const fecharBusca = (comCursor: boolean): void => {
@@ -734,8 +811,9 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       {busca !== null ? (
         <div
           data-busca
-          className="absolute top-2 right-4 z-20 flex items-center gap-1 rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1 shadow-[0_6px_20px_rgba(0,0,0,.5)]"
+          className="absolute top-2 right-4 z-20 flex flex-col gap-1 rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1 shadow-[0_6px_20px_rgba(0,0,0,.5)]"
         >
+          <div className="flex items-center gap-1">
           <input
             ref={campoBusca}
             data-busca-campo
@@ -792,6 +870,67 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
           <BotaoDeBusca marca="fechar" rotulo={t('app.close')} onClick={() => fecharBusca(false)}>
             ×
           </BotaoDeBusca>
+          </div>
+
+          {/* a segunda linha: trocar. Sempre visível, e não escondida atrás de
+              mais um botão — quem abre a busca para trocar não quer descobrir
+              onde fica o trocar */}
+          <div className="flex items-center gap-1">
+            <input
+              data-troca-campo
+              {...ajuda('editor.replace')}
+              value={troca}
+              placeholder={t('editor.replacePlaceholder')}
+              aria-label={t('editor.replace')}
+              onChange={(e) => setTroca(e.currentTarget.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  trocar(e.shiftKey)
+                }
+                if (e.key === 'Escape') {
+                  e.preventDefault()
+                  fecharBusca(true)
+                }
+              }}
+              className="h-6 w-36 rounded border border-[var(--color-edge)] bg-[var(--color-ink-0)] px-2 text-[11.5px] text-[var(--color-fog-0)] outline-none"
+            />
+            {/* FIND ALL fica na linha de baixo, junto do trocar: os dois falam
+                de "todas as ocorrências", e vê-los juntos é o que explica o
+                "trocar todas" sem ninguém ler nada */}
+            <button
+              type="button"
+              data-find-all
+              {...ajuda('editor.findAll')}
+              title={t('editor.findAll')}
+              aria-pressed={todas}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setTodas((v) => !v)}
+              className={`h-6 w-12 flex-none rounded text-[8px] font-bold tracking-[0.06em] ${
+                todas
+                  ? 'bg-[var(--color-warn)] text-[#201a06]'
+                  : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+              }`}
+            >
+              ALL
+            </button>
+            <BotaoDeBusca
+              marca="trocar"
+              rotulo={t('editor.replaceOne')}
+              desligado={ocorrencias.length === 0}
+              onClick={() => trocar(false)}
+            >
+              ↹
+            </BotaoDeBusca>
+            <BotaoDeBusca
+              marca="trocar-todas"
+              rotulo={t('editor.replaceAll', { n: ocorrencias.length })}
+              desligado={ocorrencias.length === 0}
+              onClick={() => trocar(true)}
+            >
+              ⇊
+            </BotaoDeBusca>
+          </div>
         </div>
       ) : null}
       <pre
@@ -814,6 +953,28 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
           achado precisa dizer QUAL palavra, e num parágrafo denso uma faixa
           não diria. Âmbar para não se confundir com o verde da leitura, que
           pode estar na tela ao mesmo tempo. */}
+      {/* FIND ALL: as outras ocorrências, mais fracas que a atual. Mais fracas
+          de propósito — todas com o mesmo peso e você perde de vista em qual
+          está, que é a informação que o Enter usa */}
+      {todas
+        ? caixas.map((caixa, i) =>
+            caixa && i !== atual ? (
+              <div
+                key={i}
+                data-achado-todos={i}
+                className="pointer-events-none absolute rounded-[2px]"
+                style={{
+                  top: caixa.top - rolagem,
+                  left: caixa.left,
+                  width: caixa.width,
+                  height: caixa.height,
+                  background: 'color-mix(in srgb, var(--color-warn) 12%, transparent)',
+                  outline: '1px solid color-mix(in srgb, var(--color-warn) 35%, transparent)'
+                }}
+              />
+            ) : null
+          )
+        : null}
       {achado ? (
         <div
           data-achado-busca
