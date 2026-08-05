@@ -1,5 +1,6 @@
 import type { Action, HistoryInfo } from './actions'
 import type { Lang } from './i18n/types'
+import type { Presets } from './presets'
 import type {
   Apresentador,
   Appearance,
@@ -57,6 +58,16 @@ export interface StateSnapshot {
    * É informação da sessão, e morre com ela.
    */
   atualizacao: string | null
+  /**
+   * Os cinco presets de aparência desta máquina.
+   *
+   * Aqui, e não no `AppState`, pelo mesmo motivo dos dois acima — e este é o
+   * caso em que a diferença mais se vê: um preset dentro do estado viajaria no
+   * `.valendo` e chegaria junto com o roteiro na máquina de um colega,
+   * escrevendo por cima dos presets dele. O preset é o jeito de quem opera, não
+   * parte do programa que se entrega.
+   */
+  presets: Presets
 }
 
 /**

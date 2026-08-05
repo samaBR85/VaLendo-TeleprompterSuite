@@ -118,7 +118,8 @@ function snapshot(): StateSnapshot {
     storage: storageHealth(),
     webview: webviewInfo(),
     estreia: ehEstreia(),
-    atualizacao: atualizacaoAnunciada
+    atualizacao: atualizacaoAnunciada,
+    presets: store.getPresets()
   }
 }
 

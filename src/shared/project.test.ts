@@ -24,6 +24,8 @@ function programa(): AppState {
       editorAllCaps: false,
       cardVolume: 0.4,
       ajudaAberta: false,
+    presetsAberto: true,
+    apresentadoresAberto: true,
       abaDosAjustes: 'saida'
     },
     sidebarWidth: 260,
@@ -143,6 +145,8 @@ describe('o que é da máquina não entra no projeto', () => {
       editorAllCaps: false,
       cardVolume: 0,
       ajudaAberta: false,
+    presetsAberto: true,
+    apresentadoresAberto: true,
       abaDosAjustes: 'leitura'
     }
 

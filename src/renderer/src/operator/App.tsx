@@ -446,6 +446,7 @@ function AppConteudo({
   webview,
   estreia,
   atualizacao,
+  presets,
   dispatch
 }: ReturnType<typeof useAppState>): React.JSX.Element {
   const { t } = useT()
@@ -1321,9 +1322,9 @@ function AppConteudo({
           {state.inspectorVisible ? (
             <Inspector
               tab={tab}
-              presets={state.presets}
+              paletas={state.presets}
               metrics={metrics}
-              customDefaults={state.customDefaults}
+              presets={presets}
               maquina={state.maquina}
               onRelink={reapontarApresentador}
               dispatch={dispatch}
@@ -1608,9 +1609,9 @@ function AppConteudo({
           {state.inspectorVisible ? (
             <Inspector
               tab={tab}
-              presets={state.presets}
+              paletas={state.presets}
               metrics={metrics}
-              customDefaults={state.customDefaults}
+              presets={presets}
               maquina={state.maquina}
               onRelink={reapontarApresentador}
               dispatch={dispatch}

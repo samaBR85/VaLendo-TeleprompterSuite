@@ -87,6 +87,8 @@ export const MAQUINA_PADRAO: PreferenciasDaMaquina = {
   editorAllCaps: false,
   cardVolume: 1,
   ajudaAberta: true,
+  presetsAberto: true,
+  apresentadoresAberto: true,
   abaDosAjustes: 'texto'
 }
 
@@ -280,7 +282,6 @@ export function createInitialState(
     cards: [],
     cardOverlay: DEFAULT_CARD_OVERLAY,
     keymap: {},
-    customDefaults: false,
     // `som` nasce ligado: é o comportamento que já existia antes de haver
     // interruptor, e ninguém é pego de surpresa por isso — quem assiste ainda
     // precisa tocar no botão para liberar o áudio no próprio aparelho

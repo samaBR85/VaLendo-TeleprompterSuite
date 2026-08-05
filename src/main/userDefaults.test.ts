@@ -116,7 +116,6 @@ describe('o padrão chega em quem nasce depois', () => {
     const state = createInitialState({ appearance: DEFAULT_APPEARANCE, ppm: 260 })
 
     expect(state.transport.ppm).toBe(260)
-    expect(state.customDefaults).toBe(false)
   })
 
   it('sem padrão informado, o workspace novo é o de fábrica', () => {

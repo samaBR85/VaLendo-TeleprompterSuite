@@ -571,6 +571,22 @@ export const ajudaDe = {
     nome: 'Horizontale Position',
     texto: 'Verschiebt das ganze Textfeld nach links oder rechts, ohne es zu vergrößern. Rastet nahe 50 % genau in der Mitte ein.'
   },
+  'insp.presentersToggle': {
+    nome: 'Sprecher',
+    texto: 'Wer dieses Skript spricht, und in welcher Farbe. Zugeklappt sagen die Punkte weiter, wie viele registriert sind und welche Farben sie haben.'
+  },
+  'insp.presetsToggle': {
+    nome: 'Presets',
+    texto: 'Fünf Plätze für einen ganzen Look — Schrift, Farben, Ränder und die Sprecher. Zugeklappt zeigt er weiter den, mit dem neue Tabs starten.'
+  },
+  'insp.presetSlot': {
+    nome: 'Ein Preset',
+    texto: 'Ein Klick zieht ihn diesem Tab an. Rechtsklick zum Umbenennen, Umfärben, Markieren oder Löschen. Strg+Z macht das in einem Schritt rückgängig.'
+  },
+  'insp.presetSave': {
+    nome: 'Preset speichern',
+    texto: 'Fotografiert den aktiven Tab und fragt dann, auf welchem der fünf Plätze. Zwei Schritte mit Absicht: einen benannten zu überschreiben darf kein Fehlklick sein.'
+  },
   'insp.margin': {
     nome: 'Rand',
     texto: 'Wie viel vom Bildschirmrand auf jeder Seite leer bleibt. Schmalerer Text bedeutet kürzere Zeilen und weniger Augenbewegung.'
@@ -661,14 +677,6 @@ export const ajudaDe = {
   'insp.rotation': {
     nome: 'Drehung',
     texto: 'Dreht den Bildschirm des Sprechers in Vierteldrehungen — für einen seitlich montierten Monitor. Vorschau und Netzseite bleiben aufrecht.'
-  },
-  'insp.saveDefaults': {
-    nome: 'Als Standard speichern',
-    texto: 'Macht diese Einstellungen zu denen, mit denen jeder neue Tab startet. Bestehendes bleibt unverändert.'
-  },
-  'insp.resetDefaults': {
-    nome: 'Zurück auf Werkseinstellung',
-    texto: 'Verwirft Ihre gespeicherten Standards und kehrt zu denen zurück, mit denen Valendo ausgeliefert wird. Offene Tabs bleiben unberührt.'
   },
 
   /* -------------------------------------------------------------- RODAPÉ */

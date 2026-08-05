@@ -6,7 +6,7 @@ import {
   totalWords,
   wordIndexFromAnchor
 } from '@shared/anchor'
-import { chaveDoNome, deixasDaSaida, proximaCor, renomearNasDeixas } from '@shared/apresentadores'
+import { chaveDoNome, deixasDaSaida, linhasCandidatas, proximaCor, renomearNasDeixas } from '@shared/apresentadores'
 import { cartaoNoAr } from '@shared/cards'
 import { COMMANDS_BY_ID } from '@shared/commands'
 import { podeIrAoAr, posicaoDoVideo } from '@shared/video'
@@ -43,13 +43,16 @@ import {
   saveState,
   userDataRoot
 } from './storage'
+import { type UserDefaults } from './userDefaults'
+import { defaultsDosPresets, loadPresets, savePresets } from './presets'
 import {
-  FACTORY_DEFAULTS,
-  clearUserDefaults,
-  loadUserDefaults,
-  saveUserDefaults,
-  type UserDefaults
-} from './userDefaults'
+  CORES_DE_PRESET,
+  aparenciaDoPreset,
+  apresentadoresAoAplicar,
+  lugarValido,
+  type Preset,
+  type Presets
+} from '@shared/presets'
 
 /** Palavras devolvidas ao pausar, para o apresentador reentrar sem tropeço. */
 const REWIND_ON_PAUSE = 2
@@ -87,7 +90,6 @@ function emBranco(defaults: UserDefaults, base: AppState): AppState {
     ...createInitialState(defaults, base.language),
     tabs: [tab],
     activeTabId: tab.id,
-    customDefaults: base.customDefaults,
     maquina: base.maquina
   }
 }
@@ -109,8 +111,11 @@ export class Store {
   /** Há um despacho de fora em andamento — ver `dispatch`. */
   private despachando = false
 
-  /** Com o que uma aba nova nasce. Vive fora do workspace, ver userDefaults.ts. */
+  /** Com o que uma aba nova nasce: o preset da estrela, ou a fábrica. */
   private defaults: UserDefaults
+
+  /** Os cinco presets desta máquina. Fora do AppState — ver `shared/presets.ts`. */
+  private presets: Presets
 
   /**
    * O trabalho gravado, de lado, esperando o operador pedir.
@@ -123,8 +128,8 @@ export class Store {
   private guardado: AppState
 
   constructor() {
-    const loaded = loadUserDefaults(userDataRoot())
-    this.defaults = loaded.defaults
+    this.presets = loadPresets(userDataRoot())
+    this.defaults = defaultsDosPresets(this.presets)
     // recalculado na abertura, nunca lido do workspace: o arquivo de padrões
     // pode ter sido apagado com o app fechado
     /*
@@ -136,7 +141,7 @@ export class Store {
      * reserva. Quem corrige é o `bootstrap` em index.ts, que pergunta na hora
      * certa e refaz a amostra antes da janela abrir.
      */
-    this.guardado = { ...loadState(loaded.defaults), customDefaults: loaded.custom }
+    this.guardado = loadState(this.defaults)
     /*
      * A tela começa em BRANCO, e o gravado espera de lado.
      *
@@ -149,6 +154,30 @@ export class Store {
 
   getState(): AppState {
     return this.state
+  }
+
+  getPresets(): Presets {
+    return this.presets
+  }
+
+  /**
+   * Grava os cinco no disco e reaponta com o que abas novas nascem.
+   *
+   * A memória muda antes do disco de propósito: se a gravação falhar, o que o
+   * operador vê na tela continua sendo o que ele acabou de fazer, e a falha
+   * aparece na faixa do rodapé em vez de a tela voltar sozinha ao estado
+   * anterior sem explicação.
+   */
+  private gravarPresets(next: Presets): void {
+    this.presets = next
+    this.defaults = defaultsDosPresets(next)
+    try {
+      savePresets(userDataRoot(), next)
+    } catch (error) {
+      reportStorageProblem(
+        `Não deu para gravar os presets (${(error as Error).message}). Eles valem nesta sessão, mas podem não estar aqui na próxima abertura.`
+      )
+    }
   }
 
   /** Fileiras medidas da aba ativa, para main e renderer usarem a mesma régua. */
@@ -1185,40 +1214,123 @@ export class Store {
       }
 
       /**
-       * Congela os ajustes de agora como o padrão de abas novas.
+       * Fotografa a aba ativa e guarda num dos cinco lugares.
        *
-       * Grava a aparência da aba ativa e o ritmo em uso — que é o par que o
-       * operador enxerga como "o meu jeito". As outras abas ficam como estão:
-       * aparência é por aba de propósito, e mexer nelas sem pedir seria mudar
-       * um roteiro que pode estar no ar.
+       * A aparência E os apresentadores, que é o par que o operador enxerga
+       * como "o meu jeito" — mais o ritmo em uso, que fica guardado mas só
+       * entra quando uma aba NASCE (ver `defaultsDosPresets`).
+       *
+       * Nome e cor do lugar sobrevivem a gravar por cima: o lugar 2 continua
+       * sendo o "Igreja" mesmo depois de você atualizar o que tem dentro dele.
+       * As outras abas não são tocadas — aparência é por aba de propósito, e
+       * mexer nelas sem pedir seria mudar um roteiro que pode estar no ar.
        */
-      case 'defaults/save': {
+      case 'preset/guardar': {
         const tab = this.activeTab()
-        if (!tab) return
-        const next: UserDefaults = {
-          appearance: { ...tab.appearance, timers: { ...tab.appearance.timers } },
+        if (!tab || !lugarValido(action.lugar)) return
+        const antigo = this.presets.slots[action.lugar]
+        const preset: Preset = {
+          nome: antigo?.nome ?? '',
+          cor: antigo?.cor ?? CORES_DE_PRESET[action.lugar % CORES_DE_PRESET.length],
+          // as deixas não vão: são derivadas dos apresentadores, e quem as
+          // mantém em dia é o funil por onde toda troca de aba passa
+          appearance: { ...tab.appearance, timers: { ...tab.appearance.timers }, deixas: [] },
+          apresentadores: tab.apresentadores.map((a) => ({ ...a })),
           ppm: this.state.transport.ppm
         }
-        try {
-          saveUserDefaults(userDataRoot(), next)
-          this.defaults = next
-          this.state = { ...this.state, customDefaults: true }
-        } catch (error) {
-          reportStorageProblem(
-            `Não deu para gravar o padrão (${(error as Error).message}). Os ajustes desta aba continuam valendo, mas abas novas não vão herdá-los.`
-          )
-        }
+        this.gravarPresets({ ...this.presets, slots: this.presets.slots.with(action.lugar, preset) })
         break
       }
 
-      case 'defaults/reset': {
-        try {
-          clearUserDefaults(userDataRoot())
-          this.defaults = FACTORY_DEFAULTS
-          this.state = { ...this.state, customDefaults: false }
-        } catch (error) {
-          reportStorageProblem(`Não deu para apagar o padrão gravado (${(error as Error).message}).`)
-        }
+      /**
+       * Veste o preset numa aba — a parte perigosa, e por isso num passo só.
+       *
+       * Aparência e apresentadores mudam dentro do MESMO `mutateTab`, então o
+       * histórico registra um degrau único: um `Ctrl+Z` devolve os dois juntos.
+       * Em duas chamadas, o desfazer voltaria pela metade — e num roteiro no ar
+       * "metade do jeito antigo" é pior que qualquer um dos dois inteiros.
+       *
+       * A velocidade NÃO entra: o ppm é do transporte, não da aba, e mudá-lo
+       * com o programa rodando mudaria o ritmo do apresentador na hora, sem
+       * desfazer que devolvesse.
+       *
+       * O reancorar no fim é o mesmo cuidado de `appearance/patch`, e aqui é
+       * mais fácil de esquecer porque a mudança vem em bloco: palavras por
+       * linha e velocidade constante recompõem a régua, e sem reancorar a
+       * leitura saltaria para outro ponto do texto.
+       */
+      case 'preset/aplicar': {
+        if (!lugarValido(action.lugar)) return
+        const preset = this.presets.slots[action.lugar]
+        const alvo = this.state.tabs.find((t) => t.id === action.tabId)
+        if (!preset || !alvo) return
+
+        const mudaARegua =
+          preset.appearance.minWords !== alvo.appearance.minWords ||
+          preset.appearance.maxWords !== alvo.appearance.maxWords ||
+          preset.appearance.uniformSpeed !== alvo.appearance.uniformSpeed
+        const anchorBefore = mudaARegua ? this.anchorNow(alvo) : null
+
+        // as linhas que PODEM ser deixa neste roteiro: é o porteiro que decide
+        // quais apresentadores do preset entram (ver `apresentadoresAoAplicar`)
+        const citadas = linhasCandidatas(alvo.blocks)
+        const agora = Date.now()
+
+        const updated = this.mutateTab(action.tabId, `preset:${action.lugar}`, (draft) => {
+          draft.appearance = aparenciaDoPreset(preset)
+          draft.apresentadores = apresentadoresAoAplicar(
+            preset.apresentadores,
+            draft.apresentadores,
+            citadas,
+            (i) => `p${agora.toString(36)}${i.toString(36)}`
+          )
+        })
+
+        if (updated && mudaARegua) this.rebase(updated, anchorBefore ?? updated.anchor)
+        break
+      }
+
+      case 'preset/renomear': {
+        if (!lugarValido(action.lugar)) return
+        const alvo = this.presets.slots[action.lugar]
+        if (!alvo) return
+        // nome vazio é legítimo: volta a mostrar "Preset N" no idioma do app
+        const nome = action.nome.trim().slice(0, 24)
+        this.gravarPresets({
+          ...this.presets,
+          slots: this.presets.slots.with(action.lugar, { ...alvo, nome })
+        })
+        break
+      }
+
+      case 'preset/cor': {
+        if (!lugarValido(action.lugar)) return
+        const alvo = this.presets.slots[action.lugar]
+        if (!alvo) return
+        this.gravarPresets({
+          ...this.presets,
+          slots: this.presets.slots.with(action.lugar, { ...alvo, cor: action.cor })
+        })
+        break
+      }
+
+      case 'preset/apagar': {
+        if (!lugarValido(action.lugar)) return
+        this.gravarPresets({
+          slots: this.presets.slots.with(action.lugar, null),
+          // apagar o que tinha a estrela devolve o nascimento à fábrica: uma
+          // estrela apontando para lugar vazio não é estado que se guarde
+          padrao: this.presets.padrao === action.lugar ? null : this.presets.padrao
+        })
+        break
+      }
+
+      /* A estrela: com qual preset as abas novas nascem. `null` volta à
+         fábrica — é isto que aposentou o botão "voltar ao de fábrica". */
+      case 'preset/padrao': {
+        const lugar = action.lugar
+        if (lugar !== null && (!lugarValido(lugar) || !this.presets.slots[lugar])) return
+        this.gravarPresets({ ...this.presets, padrao: lugar })
         break
       }
 
@@ -1261,7 +1373,6 @@ export class Store {
        * As abas do projeto têm ids próprios, então o histórico de desfazer em
        * memória não vale mais nada — apagá-lo é o que impede um Ctrl+Z de
        * aplicar, no roteiro recém-aberto, o inverso de uma edição feita noutro.
-       * `customDefaults` não vem do arquivo: é do app desta máquina.
        */
       case 'project/replace': {
         this.histories.clear()
@@ -1270,13 +1381,13 @@ export class Store {
         const ativa = aberto.tabs.some((t) => t.id === aberto.activeTabId)
           ? aberto.activeTabId
           : aberto.tabs[0].id
-        // `maquina` sobrevive pelo mesmo motivo de `customDefaults`: e do
-        // operador nesta maquina, e o projeto que chega nao tem opiniao sobre
-        // o monitor de quem o abriu
+        // `maquina` sobrevive porque e do operador NESTA maquina: o projeto
+        // que chega nao tem opiniao sobre o monitor de quem o abriu. Os presets
+        // nem entram aqui — vivem fora do AppState, justamente para nao
+        // viajarem dentro do .valendo
         this.state = {
           ...aberto,
           activeTabId: ativa,
-          customDefaults: this.state.customDefaults,
           maquina: this.state.maquina
         }
         this.dispatch({ type: 'tab/activate', tabId: ativa })
@@ -1286,9 +1397,8 @@ export class Store {
       /**
        * Programa em branco — mesma casca de um app recém-instalado, e não a
        * mesma amostra de exemplo (`roteiroDeExemplo`) que `createInitialState`
-       * dá de graça: "em branco" é isso mesmo, uma aba vazia. `customDefaults`
-       * sobrevive pelo mesmo motivo do `project/replace`: é do operador nesta
-       * máquina, não do programa que estava aberto.
+       * dá de graça: "em branco" é isso mesmo, uma aba vazia. A aba nasce com
+       * o preset da estrela, como qualquer aba nova.
        */
       case 'project/new': {
         this.histories.clear()
@@ -1320,7 +1430,6 @@ export class Store {
         this.rows.clear()
         this.state = {
           ...createInitialState(this.defaults, this.state.language),
-          customDefaults: this.state.customDefaults,
           maquina: this.state.maquina
         }
         this.dispatch({ type: 'tab/activate', tabId: this.state.activeTabId })

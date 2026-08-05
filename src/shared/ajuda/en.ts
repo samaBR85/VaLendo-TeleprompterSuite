@@ -598,6 +598,22 @@ export const ajudaEn = {
     nome: 'Horizontal position',
     texto: 'Slides the whole text box left or right without resizing it. Snaps to the exact centre near 50%.'
   },
+  'insp.presentersToggle': {
+    nome: 'Presenters',
+    texto: 'Who speaks this script, and in which colour. Closed, the dots still tell you how many are registered and which colours they carry.'
+  },
+  'insp.presetsToggle': {
+    nome: 'Presets',
+    texto: 'Five places to keep a whole look — type, colours, margins and the presenters. Closed, it still shows the one new tabs are born with.'
+  },
+  'insp.presetSlot': {
+    nome: 'A preset',
+    texto: 'One click dresses this tab in it. Right-click to rename, recolour, star or delete. Ctrl+Z undoes an application in one step.'
+  },
+  'insp.presetSave': {
+    nome: 'Save preset',
+    texto: 'Photographs the active tab, then asks which of the five to keep it in. Two steps on purpose: writing over a named preset should not happen by a stray click.'
+  },
   'insp.margin': {
     nome: 'Margin',
     texto: 'How much of the screen edge stays empty on each side. Narrower text means shorter lines and fewer eye movements.'
@@ -688,14 +704,6 @@ export const ajudaEn = {
   'insp.rotation': {
     nome: 'Rotation',
     texto: 'Turns the presenter screen in quarter turns — for a monitor mounted on its side. Your preview and the network page keep the upright image.'
-  },
-  'insp.saveDefaults': {
-    nome: 'Save as default',
-    texto: 'Makes these settings the ones every new tab is born with. It changes nothing that already exists.'
-  },
-  'insp.resetDefaults': {
-    nome: 'Back to factory',
-    texto: 'Throws away your saved defaults and returns to the ones Valendo ships with. Open tabs are untouched.'
   },
 
   /* -------------------------------------------------------------- RODAPÉ */

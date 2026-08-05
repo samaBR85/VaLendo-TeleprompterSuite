@@ -552,6 +552,16 @@ export interface PreferenciasDaMaquina {
   cardVolume: number
   /** a caixa "Ajuda rápida", no rodapé da coluna, está aberta */
   ajudaAberta: boolean
+  /**
+   * As duas seções colapsáveis dos Ajustes estão abertas.
+   *
+   * Nascem abertas: uma coisa que nasce escondida é uma coisa que ninguém
+   * descobre. Fechada, cada uma continua informando — Apresentadores mostra os
+   * pontinhos de quem está registrado, Presets mostra o que tem a estrela —,
+   * então fechar custa o clique de agir, nunca a informação.
+   */
+  presetsAberto: boolean
+  apresentadoresAberto: boolean
   /** em qual aba o painel de Ajustes reabre */
   abaDosAjustes: AbaDosAjustes
 }
@@ -610,14 +620,6 @@ export interface AppState {
   cardOverlay: { enabled: boolean; style: CardOverlayStyle }
   /** commandId -> binding, sobrepondo o padrão do registro */
   keymap: Record<string, string>
-  /**
-   * O operador gravou os próprios padrões, em vez dos de fábrica.
-   *
-   * Derivado da existência de `defaults.json`, e recalculado a cada abertura:
-   * o valor que estiver no workspace gravado não vale nada, porque o arquivo
-   * de padrões pode ter sido apagado enquanto o app estava fechado.
-   */
-  customDefaults: boolean
   /**
    * A página que quem está na mesma rede abre para acompanhar a leitura.
    *

@@ -571,6 +571,22 @@ export const ajudaIt = {
     nome: 'Posizione orizzontale',
     texto: 'Sposta tutto il riquadro di testo a sinistra o a destra senza ridimensionarlo. Scatta al centro esatto vicino al 50%.'
   },
+  'insp.presentersToggle': {
+    nome: 'Presentatori',
+    texto: 'Chi legge questo copione, e di che colore. Chiusa, i pallini dicono ancora quanti sono e con quali colori.'
+  },
+  'insp.presetsToggle': {
+    nome: 'Presets',
+    texto: 'Cinque posti per un aspetto intero — carattere, colori, margini e i presentatori. Chiuso, mostra ancora quello da cui nascono le schede nuove.'
+  },
+  'insp.presetSlot': {
+    nome: 'Un preset',
+    texto: 'Un clic veste questa scheda. Tasto destro per rinominare, cambiare colore, mettere la stella o eliminare. Ctrl+Z annulla in un passo solo.'
+  },
+  'insp.presetSave': {
+    nome: 'Salva preset',
+    texto: 'Fotografa la scheda attiva e poi chiede in quale dei cinque tenerla. Due passi apposta: sovrascrivere uno con un nome non può dipendere da un clic storto.'
+  },
   'insp.margin': {
     nome: 'Margine',
     texto: 'Quanto bordo dello schermo resta vuoto su ogni lato. Testo più stretto vuol dire righe più corte e meno movimenti dell’occhio.'
@@ -661,14 +677,6 @@ export const ajudaIt = {
   'insp.rotation': {
     nome: 'Rotazione',
     texto: 'Ruota lo schermo del presentatore a scatti di 90° — per un monitor montato di lato. Anteprima e pagina di rete mantengono l’immagine dritta.'
-  },
-  'insp.saveDefaults': {
-    nome: 'Salva come predefinito',
-    texto: 'Rende queste impostazioni quelle con cui nasce ogni scheda nuova. Non cambia nulla di ciò che esiste già.'
-  },
-  'insp.resetDefaults': {
-    nome: 'Torna di fabbrica',
-    texto: 'Butta via le tue impostazioni predefinite salvate e torna a quelle di fabbrica di Valendo. Le schede aperte non vengono toccate.'
   },
 
   /* -------------------------------------------------------------- RODAPÉ */

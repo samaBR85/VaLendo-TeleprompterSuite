@@ -571,6 +571,22 @@ export const ajudaPt = {
     nome: 'Posição horizontal',
     texto: 'Desliza a caixa de texto inteira para a esquerda ou direita sem redimensionar. Encaixa no centro exato perto de 50%.'
   },
+  'insp.presentersToggle': {
+    nome: 'Apresentadores',
+    texto: 'Quem fala este roteiro, e de que cor. Fechada, os pontinhos continuam dizendo quantos estão registrados e de que cores.'
+  },
+  'insp.presetsToggle': {
+    nome: 'Presets',
+    texto: 'Cinco lugares para guardar um jeito inteiro — letra, cores, margens e os apresentadores. Fechado, ainda mostra aquele com que abas novas nascem.'
+  },
+  'insp.presetSlot': {
+    nome: 'Um preset',
+    texto: 'Um clique veste esta aba com ele. Botão direito para renomear, trocar a cor, marcar a estrela ou apagar. Ctrl+Z desfaz num passo só.'
+  },
+  'insp.presetSave': {
+    nome: 'Guardar preset',
+    texto: 'Fotografa a aba ativa e pergunta em qual dos cinco guardar. Dois passos de propósito: escrever por cima de um preset nomeado não pode ser um clique torto.'
+  },
   'insp.margin': {
     nome: 'Margem',
     texto: 'Quanto da borda da tela fica vazio de cada lado. Texto mais estreito significa linhas mais curtas e menos movimento dos olhos.'
@@ -661,14 +677,6 @@ export const ajudaPt = {
   'insp.rotation': {
     nome: 'Rotação',
     texto: 'Gira a tela do apresentador em quartos de volta — para um monitor montado de lado. Sua prévia e a página de rede mantêm a imagem em pé.'
-  },
-  'insp.saveDefaults': {
-    nome: 'Salvar como padrão',
-    texto: 'Faz destes ajustes os que toda aba nova nasce com. Não muda nada que já existe.'
-  },
-  'insp.resetDefaults': {
-    nome: 'Voltar ao padrão de fábrica',
-    texto: 'Descarta seus padrões salvos e volta aos que o Valendo traz de fábrica. Abas abertas não são tocadas.'
   },
 
   /* -------------------------------------------------------------- RODAPÉ */

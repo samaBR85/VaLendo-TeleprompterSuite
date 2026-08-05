@@ -571,6 +571,22 @@ export const ajudaEs = {
     nome: 'Posición horizontal',
     texto: 'Desliza todo el cuadro de texto a la izquierda o derecha sin cambiar su tamaño. Se ajusta al centro exacto cerca del 50%.'
   },
+  'insp.presentersToggle': {
+    nome: 'Presentadores',
+    texto: 'Quién habla este guion, y de qué color. Cerrada, los puntos siguen diciendo cuántos hay y de qué colores.'
+  },
+  'insp.presetsToggle': {
+    nome: 'Presets',
+    texto: 'Cinco lugares para guardar un estilo entero — letra, colores, márgenes y los presentadores. Cerrado, sigue mostrando con cuál nacen las pestañas nuevas.'
+  },
+  'insp.presetSlot': {
+    nome: 'Un preset',
+    texto: 'Un clic viste esta pestaña con él. Clic derecho para renombrar, cambiar el color, poner la estrella o borrar. Ctrl+Z lo deshace de un paso.'
+  },
+  'insp.presetSave': {
+    nome: 'Guardar preset',
+    texto: 'Fotografía la pestaña activa y pregunta en cuál de los cinco guardarla. Dos pasos a propósito: sobrescribir uno con nombre no puede ser un clic torcido.'
+  },
   'insp.margin': {
     nome: 'Margen',
     texto: 'Cuánto del borde de pantalla queda vacío en cada lado. Texto más angosto significa líneas más cortas y menos movimiento de ojos.'
@@ -661,14 +677,6 @@ export const ajudaEs = {
   'insp.rotation': {
     nome: 'Rotación',
     texto: 'Gira la pantalla del presentador en cuartos de vuelta — para un monitor montado de lado. Tu vista previa y la página de red mantienen la imagen derecha.'
-  },
-  'insp.saveDefaults': {
-    nome: 'Guardar como predeterminado',
-    texto: 'Hace que estos ajustes sean con los que nace cada pestaña nueva. No cambia nada de lo que ya existe.'
-  },
-  'insp.resetDefaults': {
-    nome: 'Volver a fábrica',
-    texto: 'Descarta tus ajustes predeterminados guardados y vuelve a los de fábrica de Valendo. Las pestañas abiertas no se tocan.'
   },
 
   /* -------------------------------------------------------------- RODAPÉ */

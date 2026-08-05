@@ -158,8 +158,18 @@ export type Action =
   | { type: 'output/set'; displayId: number | null; enabled: boolean }
   | { type: 'output/viewport'; width: number; height: number }
   | { type: 'keymap/set'; commandId: string; binding: string | null }
-  | { type: 'defaults/save' }
-  | { type: 'defaults/reset' }
+  /* Presets de aparência: os cinco lugares do rodapé dos Ajustes.
+     `preset/guardar` fotografa a aba ativa; `preset/aplicar` veste essa
+     fotografia noutra aba, num passo só de histórico — meio desfazer seria
+     pior que nenhum. Ver `shared/presets.ts` para o que entra e o que fica. */
+  | { type: 'preset/guardar'; lugar: number }
+  | { type: 'preset/aplicar'; lugar: number; tabId: string }
+  | { type: 'preset/renomear'; lugar: number; nome: string }
+  | { type: 'preset/cor'; lugar: number; cor: string }
+  | { type: 'preset/apagar'; lugar: number }
+  /* a estrela: com qual preset as abas novas nascem. `lugar: null` volta o
+     nascimento para o de fábrica — é o que aposentou o botão ↺ */
+  | { type: 'preset/padrao'; lugar: number | null }
   | { type: 'storage/dismissNotice' }
   | { type: 'document/exportedTo'; tabId: string; path: string }
   | { type: 'project/replace'; state: AppState }

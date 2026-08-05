@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { Action, HistoryInfo } from '@shared/actions'
 import type { StorageHealth, WebviewInfo } from '@shared/api'
+import type { Presets } from '@shared/presets'
+import { presetsVazios } from '@shared/presets'
 import type { AppState, DisplayInfo, Tab } from '@shared/types'
 
 export interface AppBinding {
@@ -17,6 +19,8 @@ export interface AppBinding {
   estreia: boolean
   /** versão anunciada no GitHub, se for mais nova que esta; `null` no resto */
   atualizacao: string | null
+  /** os cinco presets de aparência desta máquina; nunca entram no .valendo */
+  presets: Presets
   dispatch: (action: Action) => void
 }
 
@@ -52,6 +56,9 @@ export function useAppState(): AppBinding {
    * Ler só o primeiro seria garantir que o aviso nunca aparecesse.
    */
   const [atualizacao, setAtualizacao] = useState<string | null>(null)
+  // lido em TODO retrato, como `atualizacao` e ao contrário de `estreia`: o
+  // operador pode guardar, renomear ou apagar preset a qualquer momento
+  const [presets, setPresets] = useState<Presets>(presetsVazios)
 
   useEffect(() => {
     let alive = true
@@ -65,6 +72,7 @@ export function useAppState(): AppBinding {
       setWebview(snapshot.webview)
       setEstreia(snapshot.estreia)
       setAtualizacao(snapshot.atualizacao)
+      setPresets(snapshot.presets)
     })
     void window.valendo.listDisplays().then((list) => {
       if (alive) setDisplays(list)
@@ -90,6 +98,7 @@ export function useAppState(): AppBinding {
           : snapshot.webview
       )
       setAtualizacao(snapshot.atualizacao)
+      setPresets(snapshot.presets)
     })
     const offDisplays = window.valendo.onDisplays(setDisplays)
 
@@ -102,7 +111,7 @@ export function useAppState(): AppBinding {
 
   const dispatch = useCallback((action: Action) => window.valendo.dispatch(action), [])
 
-  return { state, history, displays, rows, storage, webview, estreia, atualizacao, dispatch }
+  return { state, history, displays, rows, storage, webview, estreia, atualizacao, presets, dispatch }
 }
 
 function sameRows(a: number[], b: number[]): boolean {

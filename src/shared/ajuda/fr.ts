@@ -571,6 +571,22 @@ export const ajudaFr = {
     nome: 'Position horizontale',
     texto: 'Glisse tout le bloc de texte à gauche ou à droite sans le redimensionner. S’aligne au centre exact près de 50%.'
   },
+  'insp.presentersToggle': {
+    nome: 'Présentateurs',
+    texto: 'Qui dit ce script, et de quelle couleur. Replié, les points disent encore combien sont enregistrés et avec quelles couleurs.'
+  },
+  'insp.presetsToggle': {
+    nome: 'Presets',
+    texto: 'Cinq emplacements pour un look entier — police, couleurs, marges et les présentateurs. Replié, il montre encore celui dont héritent les nouveaux onglets.'
+  },
+  'insp.presetSlot': {
+    nome: 'Un preset',
+    texto: 'Un clic habille cet onglet avec. Clic droit pour renommer, recolorer, étoiler ou supprimer. Ctrl+Z annule en une seule fois.'
+  },
+  'insp.presetSave': {
+    nome: 'Enregistrer le preset',
+    texto: 'Photographie l’onglet actif, puis demande dans lequel des cinq le garder. Deux étapes volontaires : écraser un preset nommé ne doit pas tenir à un clic de travers.'
+  },
   'insp.margin': {
     nome: 'Marge',
     texto: 'Combien de bord d’écran reste vide de chaque côté. Un texte plus étroit fait des lignes plus courtes et moins de mouvements d’œil.'
@@ -661,14 +677,6 @@ export const ajudaFr = {
   'insp.rotation': {
     nome: 'Rotation',
     texto: 'Fait pivoter l’écran du présentateur par quarts de tour — pour un moniteur monté sur le côté. Aperçu et page réseau gardent l’image droite.'
-  },
-  'insp.saveDefaults': {
-    nome: 'Enregistrer par défaut',
-    texto: 'Fait de ces réglages ceux avec lesquels naît chaque nouvel onglet. Ne change rien à ce qui existe déjà.'
-  },
-  'insp.resetDefaults': {
-    nome: 'Réglages d’usine',
-    texto: 'Efface vos réglages par défaut enregistrés et revient à ceux fournis avec Valendo. Les onglets ouverts ne changent pas.'
   },
 
   /* -------------------------------------------------------------- RODAPÉ */

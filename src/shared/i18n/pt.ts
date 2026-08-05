@@ -177,13 +177,21 @@ export const pt = {
   'insp.mirrorH': 'Espelhar horizontal',
   'insp.mirrorV': 'Espelhar vertical',
 
-  'insp.saveDefaults': 'Salvar como padrão',
-  'insp.saved': 'Salvo',
-  'insp.defaults.custom': 'Salvar como padrão — hoje: os seus ajustes',
-  'insp.defaults.factory': 'Salvar como padrão — hoje: fábrica',
-  'insp.defaults.reset': 'Voltar ao padrão de fábrica',
 
   /* ------------------------------------------------------------ barra de baixo */
+  'insp.presets': 'Presets',
+  'insp.presetSave': 'GUARDAR PRESET',
+  'insp.presetCancel': 'ESC PARA CANCELAR',
+  'insp.presetN': 'Preset {n}',
+  'insp.presetEmpty': 'vazio',
+  'insp.presetEmptySlot': 'Lugar {n}, vazio',
+  'insp.presetApply': 'Aplicar nesta aba',
+  'insp.presetRename': 'Renomear',
+  'insp.presetStar': 'Abas novas nascem assim',
+  'insp.presetDelete': 'Apagar',
+  'insp.presetOverwrite': 'Guardar num que já tem nome escreve por cima dele.',
+  'insp.presetUndo': 'Ctrl+Z devolve como estava — apresentadores inclusive.',
+
   'sidebar.chapters': 'Capítulos',
   'sidebar.cards': 'Cartões do bloco',
   'sidebar.help': 'Ajuda rápida',

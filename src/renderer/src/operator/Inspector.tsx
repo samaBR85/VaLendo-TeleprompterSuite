@@ -24,7 +24,9 @@ import { larguraDoPainel } from '@shared/i18n'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
 import { Icon } from '../ui/Icon'
-import { Ficha, SliderConsole, Tecla } from '../ui/console'
+import { Ficha, SliderConsole } from '../ui/console'
+import type { Presets } from '@shared/presets'
+import { FileiraDePresets } from './Presets'
 
 /**
  * O chip de um apresentador: a cor que ele pinta, o nome como está no roteiro,
@@ -163,10 +165,16 @@ function ChipDeApresentador({
 
 interface Props {
   tab: Tab
-  presets: ColorPreset[]
+  /* as paletas do CONTRASTE DE LEITURA — clássico, papel, âmbar…
+     Chamavam-se `presets` e foram renomeadas quando os presets de APARÊNCIA
+     chegaram ao rodapé deste mesmo painel: duas coisas com o mesmo nome no
+     mesmo componente é um engano esperando acontecer. O campo do AppState
+     continua `presets` — renomeá-lo mudaria o formato do .valendo por
+     nada. */
+  paletas: ColorPreset[]
   metrics: PrompterMetrics | null
-  /** o operador já gravou um padrão próprio? */
-  customDefaults: boolean
+  /** os cinco presets desta máquina — vêm do snapshot, não do AppState */
+  presets: Presets
   /** conforto desta máquina: em qual aba o painel reabre */
   maquina: PreferenciasDaMaquina
   /**
@@ -186,22 +194,66 @@ interface Props {
 function Group({
   label,
   acao,
+  aberto,
+  onAberto,
+  resumo,
+  marca,
+  ajudaId,
   children
 }: {
   label?: string
   /** controle do grupo inteiro, encostado na direita do rótulo */
   acao?: React.ReactNode
+  /**
+   * Grupo que fecha. `undefined` é o caso comum — grupo fixo, como sempre foi.
+   *
+   * Existe porque a coluna rola: uma seção que você não usa hoje custa altura
+   * de todas as que você usa. O gesto é o mesmo da Ajuda rápida da coluna
+   * esquerda (cabeçalho clicável e setinha que gira), e o estado mora em
+   * `maquina` pelo mesmo motivo — sobrevive a fechar o app e nunca entra no
+   * `.valendo`.
+   */
+  aberto?: boolean
+  onAberto?: (aberto: boolean) => void
+  /** o que o cabeçalho continua dizendo com o grupo fechado */
+  resumo?: React.ReactNode
+  marca?: string
+  ajudaId?: AjudaId
   children: React.ReactNode
 }): React.JSX.Element {
+  const colapsavel = aberto !== undefined
+
   return (
     <div className="border-b border-[var(--color-line)]/60 px-3 py-2.5">
-      {label ? (
+      {label && colapsavel ? (
+        <button
+          type="button"
+          {...(marca ? { [`data-${marca}`]: '' } : {})}
+          {...(ajudaId ? ajuda(ajudaId) : {})}
+          aria-expanded={aberto}
+          onClick={() => onAberto?.(!aberto)}
+          className="mb-1.5 flex w-full items-center gap-1.5 text-left text-[11px] font-medium tracking-wide text-[var(--color-fog-2)]"
+        >
+          {label}
+          {/* fechado, o cabeçalho continua informando: sem isso a linha que ele
+              ocupa não paga o próprio espaço */}
+          {!aberto && resumo ? <span className="flex items-center gap-1">{resumo}</span> : null}
+          {acao ? <span className="ml-auto flex items-center">{acao}</span> : null}
+          <Icon
+            name="down"
+            size={11}
+            className={`${acao ? '' : 'ml-auto'} flex-none text-[var(--color-fog-3)] transition-transform ${
+              aberto ? '' : '-rotate-90'
+            }`}
+          />
+        </button>
+      ) : label ? (
         <div className="mb-1.5 flex items-center gap-1 text-[11px] font-medium tracking-wide text-[var(--color-fog-2)]">
           {label}
           {acao ? <span className="ml-auto flex items-center">{acao}</span> : null}
         </div>
       ) : null}
-      <div className="flex flex-col gap-2">{children}</div>
+      {colapsavel && !aberto ? null : <div className="flex flex-col gap-2">{children}</div>}
     </div>
   )
 }
@@ -392,9 +444,9 @@ function Toggle({
 
 export function Inspector({
   tab,
-  presets,
+  paletas,
   metrics,
-  customDefaults,
+  presets,
   maquina,
   onRelink,
   dispatch
@@ -586,7 +638,7 @@ export function Inspector({
             {t('insp.contrast')}
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {presets.map((preset) => {
+            {paletas.map((preset) => {
               /* qual paleta está valendo agora — comparado pelo par de cores,
                  e não por um id guardado: o operador pode ter mexido no
                  seletor de cor à mão depois de escolher um preset, e aí
@@ -631,6 +683,20 @@ export function Inspector({
       {tab.apresentadores.length > 0 ? (
         <Group
           label={t('insp.presenters')}
+          aberto={maquina.apresentadoresAberto}
+          onAberto={(apresentadoresAberto) =>
+            dispatch({ type: 'maquina/patch', patch: { apresentadoresAberto } })
+          }
+          marca="apresentadores-toggle"
+          ajudaId="insp.presentersToggle"
+          resumo={tab.apresentadores.map((quem) => (
+            <span
+              key={quem.id}
+              className="h-2 w-2 rounded-full"
+              style={{ background: quem.cor }}
+              title={quem.nome}
+            />
+          ))}
           acao={
             /* GLOBAL: esconde o nome de TODOS na saída, e trava os
                interruptores individuais enquanto manda — o mesmo desenho do
@@ -958,37 +1024,15 @@ export function Inspector({
       ) : null}
       </div>
 
-      {/* fora das abas, no rodapé: guardar o padrão vale para o painel inteiro,
-          não para a aba que está aberta — dentro de uma delas, pareceria
-          guardar só aquele pedaço */}
-      <div className="flex flex-none items-center gap-2 border-t border-[var(--color-edge)] p-2.5">
-        <Tecla
-          data-save-defaults
-          {...ajuda('insp.saveDefaults')}
-          title={customDefaults ? t('insp.defaults.custom') : t('insp.defaults.factory')}
-          acesa={salvou}
-          cor="var(--color-go)"
-          onClick={() => {
-            dispatch({ type: 'defaults/save' })
-            setSalvou(true)
-          }}
-          className="h-[30px] min-w-0 flex-1 rounded-md text-[11px] font-semibold"
-        >
-          <span className="max-w-full truncate">{salvou ? t('insp.saved') : t('insp.saveDefaults')}</span>
-        </Tecla>
-        {customDefaults ? (
-          <Tecla
-            data-reset-defaults
-            {...ajuda('insp.resetDefaults')}
-            title={t('insp.defaults.reset')}
-            aria-label={t('insp.defaults.reset')}
-            onClick={() => dispatch({ type: 'defaults/reset' })}
-            className="h-[30px] w-[30px] flex-none rounded-md"
-          >
-            <Icon name="restart" size={13} />
-          </Tecla>
-        ) : null}
-      </div>
+      {/* fora das abas, no rodapé: um preset vale para o painel inteiro — dentro
+          de uma delas, pareceria guardar só aquele pedaço */}
+      <FileiraDePresets
+        presets={presets}
+        tabId={tab.id}
+        aberto={maquina.presetsAberto}
+        onAberto={(presetsAberto) => dispatch({ type: 'maquina/patch', patch: { presetsAberto } })}
+        dispatch={dispatch}
+      />
     </aside>
   )
 }
