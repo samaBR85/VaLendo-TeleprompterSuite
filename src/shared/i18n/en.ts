@@ -37,6 +37,7 @@ export const en: Dicionario = {
 
   'editor.chapter': 'Chapter',
   'editor.direction': 'Stage direction',
+  'editor.goTo': 'Go To',
   'editor.undo': 'Undo',
   'editor.fontSize': 'Editor font size',
   'editor.fontSmaller': 'Smaller editor font',

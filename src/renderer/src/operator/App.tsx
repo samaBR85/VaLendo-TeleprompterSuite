@@ -1337,8 +1337,8 @@ function AppConteudo({
                   </Tecla>
                   <Tecla
                     {...ajuda('editor.goTo')}
-                    title="Go To"
-                    aria-label="Go To"
+                    title={t('editor.goTo')}
+                    aria-label={t('editor.goTo')}
                     cor="var(--color-go)"
                     className="h-6 w-7"
                     style={{ color: 'var(--color-go)' }}

@@ -47,6 +47,7 @@ export const pt = {
   /* ----------------------------------------------------------------- editor */
   'editor.chapter': 'Capítulo',
   'editor.direction': 'Direção de cena',
+  'editor.goTo': 'Ir Para',
   'editor.undo': 'Desfazer',
   'editor.fontSize': 'Tamanho da fonte do editor',
   'editor.fontSmaller': 'Diminuir a fonte do editor',
