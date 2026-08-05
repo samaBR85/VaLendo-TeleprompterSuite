@@ -27,6 +27,14 @@ export const ajudaEs = {
     nome: 'Volver al 100%',
     texto: 'Devuelve la interfaz a su tamaño natural. Aparece atenuado cuando ya estás ahí.'
   },
+  'header.uiScaleDown': {
+    nome: 'Reducir la interfaz',
+    texto: 'Un clic, un escalón de 5%. El deslizador cruza toda la franja de un gesto, pero acertar el 105% exacto con él es suerte.'
+  },
+  'header.uiScaleUp': {
+    nome: 'Ampliar la interfaz',
+    texto: 'Un clic, un escalón de 5%. Llega hasta 160% — útil en un panel 4K, donde el tamaño normal se lee pequeño a distancia de operación.'
+  },
   'header.dismissNotice': {
     nome: 'Descartar este aviso',
     texto: 'Borra una advertencia sobre algo que ya pasó. Un problema que sigue activo no tiene botón de descartar — desaparece cuando se resuelve.'

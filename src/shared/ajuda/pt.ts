@@ -27,6 +27,14 @@ export const ajudaPt = {
     nome: 'Voltar a 100%',
     texto: 'Volta a interface ao tamanho natural. Fica apagado quando você já está nele.'
   },
+  'header.uiScaleDown': {
+    nome: 'Diminuir a interface',
+    texto: 'Um clique, um degrau de 5%. O slider atravessa a faixa inteira num gesto, mas acertar exatamente 105% nele é sorte.'
+  },
+  'header.uiScaleUp': {
+    nome: 'Aumentar a interface',
+    texto: 'Um clique, um degrau de 5%. Vai até 160% — útil num painel 4K, onde o tamanho normal fica pequeno à distância de operação.'
+  },
   'header.dismissNotice': {
     nome: 'Dispensar este aviso',
     texto: 'Limpa um aviso sobre algo que já aconteceu. Um problema que ainda está acontecendo não tem botão de dispensar — some quando é corrigido.'

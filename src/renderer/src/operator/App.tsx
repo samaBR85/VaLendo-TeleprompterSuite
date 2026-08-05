@@ -174,6 +174,41 @@ function FontStep({
 }
 
 /**
+ * Um degrau das pontas do slider de escala: um clique anda 5%.
+ *
+ * Mesma razão dos "Aa" do editor, e aqui vale mais ainda: a faixa vai de 80% a
+ * 160% em 17 degraus dentro de 200 pixels, então cada degrau tem 12 pixels de
+ * alvo. Acertar 105% arrastando é sorte; clicando, é uma vez.
+ */
+function EscalaStep({
+  glifo,
+  label,
+  ajudaId,
+  disabled,
+  onClick
+}: {
+  glifo: string
+  label: string
+  ajudaId: AjudaId
+  disabled?: boolean
+  onClick: () => void
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      {...ajuda(ajudaId)}
+      title={label}
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="h-6 w-6 flex-none rounded border border-[var(--color-line)] text-[13px] leading-none text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[var(--color-fog-1)]"
+    >
+      {glifo}
+    </button>
+  )
+}
+
+/**
  * O globo fica com os outros ícones do app — ajustes, atalhos, paleta,
  * créditos —, e não nos Ajustes: aquele painel é aparência da aba, e idioma é
  * do programa inteiro. Cada idioma aparece escrito nele mesmo, porque quem
@@ -303,17 +338,33 @@ function ScalePicker({
             <span className="text-[11px] text-[var(--color-fog-1)]">{t('app.uiScale')}</span>
             <span className="font-mono text-[12px] text-[var(--color-fog-0)] tabular-nums">{porcento}%</span>
           </div>
-          <SliderConsole
-            value={scale}
-            min={UI_SCALE_MIN}
-            max={UI_SCALE_MAX}
-            step={UI_SCALE_STEP}
-            cor="var(--color-accent)"
-            {...ajuda('header.uiScaleSlider')}
-            aria-label={t('app.uiScale')}
-            onValue={onChange}
-            className="w-full"
-          />
+          <div className="flex items-center gap-2">
+            <EscalaStep
+              glifo="−"
+              label={t('app.uiScaleDown')}
+              ajudaId="header.uiScaleDown"
+              disabled={scale <= UI_SCALE_MIN}
+              onClick={() => onChange(clampUiScale(scale - UI_SCALE_STEP))}
+            />
+            <SliderConsole
+              value={scale}
+              min={UI_SCALE_MIN}
+              max={UI_SCALE_MAX}
+              step={UI_SCALE_STEP}
+              cor="var(--color-accent)"
+              {...ajuda('header.uiScaleSlider')}
+              aria-label={t('app.uiScale')}
+              onValue={onChange}
+              className="min-w-0 flex-1"
+            />
+            <EscalaStep
+              glifo="+"
+              label={t('app.uiScaleUp')}
+              ajudaId="header.uiScaleUp"
+              disabled={scale >= UI_SCALE_MAX}
+              onClick={() => onChange(clampUiScale(scale + UI_SCALE_STEP))}
+            />
+          </div>
           <div className="mt-2 flex items-center justify-between">
             <span className="k-microcaps text-[var(--color-fog-3)]">
               {Math.round(UI_SCALE_MIN * 100)}% · {Math.round(UI_SCALE_MAX * 100)}%

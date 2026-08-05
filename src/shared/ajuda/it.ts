@@ -27,6 +27,14 @@ export const ajudaIt = {
     nome: 'Torna al 100%',
     texto: 'Riporta l’interfaccia alla dimensione naturale. In grigio quando sei già lì.'
   },
+  'header.uiScaleDown': {
+    nome: 'Riduci l’interfaccia',
+    texto: 'Un clic, uno scatto del 5%. Il cursore attraversa tutta la fascia in un gesto, ma centrare esattamente il 105% è fortuna.'
+  },
+  'header.uiScaleUp': {
+    nome: 'Ingrandisci l’interfaccia',
+    texto: 'Un clic, uno scatto del 5%. Fino al 160% — utile su un pannello 4K, dove la dimensione normale si legge piccola a distanza di lavoro.'
+  },
   'header.dismissNotice': {
     nome: 'Ignora questo avviso',
     texto: 'Cancella un avviso su qualcosa già successo. Un problema ancora in corso non ha un pulsante per ignorarlo — sparisce quando è risolto.'

@@ -22,6 +22,8 @@ export const pt = {
   'app.language': 'Idioma',
   'app.uiScale': 'Escala da interface',
   'app.uiScaleReset': 'Tamanho normal',
+  'app.uiScaleDown': 'Diminuir a interface',
+  'app.uiScaleUp': 'Aumentar a interface',
   'app.splitReset': 'Divisória Edição / Transmissão',
   'app.onAir': 'No ar',
   'app.offAir': 'fora do ar',

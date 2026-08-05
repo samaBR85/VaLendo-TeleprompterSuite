@@ -27,6 +27,14 @@ export const ajudaDe = {
     nome: 'Zurück auf 100 %',
     texto: 'Setzt die Oberfläche auf ihre natürliche Größe zurück. Ausgegraut, wenn Sie dort schon sind.'
   },
+  'header.uiScaleDown': {
+    nome: 'Oberfläche verkleinern',
+    texto: 'Ein Klick, eine Stufe von 5 %. Der Regler durchquert den ganzen Bereich in einer Geste, aber genau 105 % zu treffen ist Glückssache.'
+  },
+  'header.uiScaleUp': {
+    nome: 'Oberfläche vergrößern',
+    texto: 'Ein Klick, eine Stufe von 5 %. Bis 160 % — nützlich an einem 4K-Panel, wo die normale Größe aus Bedienabstand klein wirkt.'
+  },
   'header.dismissNotice': {
     nome: 'Hinweis ausblenden',
     texto: 'Blendet eine Warnung zu etwas Vergangenem aus. Ein noch bestehendes Problem hat keinen Ausblenden-Knopf — es verschwindet, wenn es behoben ist.'

@@ -15,6 +15,8 @@ export const en: Dicionario = {
   'app.language': 'Language',
   'app.uiScale': 'Interface scale',
   'app.uiScaleReset': 'Normal size',
+  'app.uiScaleDown': 'Smaller interface',
+  'app.uiScaleUp': 'Larger interface',
   'app.splitReset': 'Editing / Broadcast divider',
   'app.onAir': 'On air',
   'app.offAir': 'off air',

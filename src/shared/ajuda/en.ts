@@ -54,6 +54,14 @@ export const ajudaEn = {
     nome: 'Back to 100%',
     texto: 'Returns the interface to its natural size. Greyed out when you are already there.'
   },
+  'header.uiScaleDown': {
+    nome: 'Smaller interface',
+    texto: 'One click, one step of 5%. The slider crosses the whole range in a gesture, but landing on exactly 105% with it is luck.'
+  },
+  'header.uiScaleUp': {
+    nome: 'Larger interface',
+    texto: 'One click, one step of 5%. Goes up to 160% — useful on a 4K panel where the default reads small from operating distance.'
+  },
   'header.dismissNotice': {
     nome: 'Dismiss this notice',
     texto: 'Clears a warning about something that already happened. A problem that is still happening has no dismiss button — it goes when it is fixed.'

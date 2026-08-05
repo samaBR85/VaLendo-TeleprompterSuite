@@ -15,6 +15,8 @@ export const it: Dicionario = {
   'app.language': 'Lingua',
   'app.uiScale': 'Scala dell’interfaccia',
   'app.uiScaleReset': 'Dimensione normale',
+  'app.uiScaleDown': 'Riduci l’interfaccia',
+  'app.uiScaleUp': 'Ingrandisci l’interfaccia',
   'app.splitReset': 'Divisore Modifica / Trasmissione',
   'app.onAir': 'In onda',
   'app.offAir': 'fuori onda',

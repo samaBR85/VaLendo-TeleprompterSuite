@@ -27,6 +27,14 @@ export const ajudaFr = {
     nome: 'Retour à 100%',
     texto: 'Ramène l’interface à sa taille normale. Grisé quand elle y est déjà.'
   },
+  'header.uiScaleDown': {
+    nome: 'Réduire l’interface',
+    texto: 'Un clic, un cran de 5%. Le curseur traverse toute la plage d’un geste, mais tomber pile sur 105% avec lui tient de la chance.'
+  },
+  'header.uiScaleUp': {
+    nome: 'Agrandir l’interface',
+    texto: 'Un clic, un cran de 5%. Jusqu’à 160% — utile sur un écran 4K, où la taille normale paraît petite à distance de travail.'
+  },
   'header.dismissNotice': {
     nome: 'Masquer cet avis',
     texto: 'Efface un avertissement sur quelque chose de déjà arrivé. Un problème en cours n’a pas de bouton — il part une fois résolu.'

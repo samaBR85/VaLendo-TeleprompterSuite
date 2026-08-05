@@ -15,6 +15,8 @@ export const de: Dicionario = {
   'app.language': 'Sprache',
   'app.uiScale': 'Oberflächengröße',
   'app.uiScaleReset': 'Normale Größe',
+  'app.uiScaleDown': 'Oberfläche verkleinern',
+  'app.uiScaleUp': 'Oberfläche vergrößern',
   'app.splitReset': 'Trenner Bearbeitung / Sendung',
   'app.onAir': 'Auf Sendung',
   'app.offAir': 'nicht auf Sendung',
