@@ -23,14 +23,10 @@ export const en: Dicionario = {
   'app.loading': 'Loading…',
 
   'mode.split': 'Split',
-  'mode.split.hint': 'editing and broadcast side by side',
   'mode.focus': 'Focus',
-  'mode.focus.hint': 'broadcast at full width · F11',
   'mode.deck': 'Desk',
-  'mode.deck.hint': 'timeline and rundown for a show with several blocks',
 
   'panel.edit': 'Editing',
-  'panel.edit.hint': '[directions] · ## chapters',
   'panel.broadcasting': 'Broadcast',
   'panel.expand': 'Expand the broadcast',
   'panel.collapse': 'Back to split',
@@ -55,7 +51,6 @@ export const en: Dicionario = {
   'tabs.duplicate': 'Duplicate',
   'tabs.rename': 'Rename',
   'tabs.closeItem': 'Close',
-  'tabs.new.hint': 'New tab · Ctrl+T',
   'tabs.close': 'Close {title}',
   'tabs.max': '10 tabs',
 
@@ -97,11 +92,8 @@ export const en: Dicionario = {
   'lcd.speed': 'scroll speed',
 
   'insp.tab.text': 'Text',
-  'insp.tab.text.hint': 'font, size, alignment and colours',
   'insp.tab.reading': 'Reading',
-  'insp.tab.reading.hint': 'margin, words per line, reading mark and pace',
   'insp.tab.output': 'Output',
-  'insp.tab.output.hint': 'clocks, mirror and rotation of the presenter’s screen',
 
   'insp.wrapping': 'Lines are wrapping',
   'insp.wrapping.detail': '{words} words do not fit this output’s width at {size}px.',
@@ -162,9 +154,6 @@ export const en: Dicionario = {
   'insp.clock.modeWords': 'Formula',
   'insp.clock.modeStopwatch': 'Stopwatch',
   'insp.clock.modeFree': 'Free',
-  'insp.clock.modeWords.hint': 'Calculated from word index and pace — changes with speed and edits.',
-  'insp.clock.modeStopwatch.hint': 'A real stopwatch: only the text’s play moves it. Remaining counts down to the target, then up.',
-  'insp.clock.modeFree.hint': 'Same as Stopwatch, but elapsed doesn’t pause when the text pauses — it keeps counting until you restart.',
   'insp.clock.target': 'Target',
 
   'insp.glass': 'Glass compensation',
