@@ -1239,6 +1239,21 @@ function AppConteudo({
             {markerStrip}
             {cardsDrawer}
           </div>
+
+          {/* mesmo painel do Split, com as mesmas props — Ajustes é um
+              PAINEL como Assets e Cards, não uma tela de escrita, então o
+              Foco não tem por que escondê-lo */}
+          {state.inspectorVisible ? (
+            <Inspector
+              tab={tab}
+              presets={state.presets}
+              metrics={metrics}
+              customDefaults={state.customDefaults}
+              maquina={state.maquina}
+              onRelink={reapontarApresentador}
+              dispatch={dispatch}
+            />
+          ) : null}
         </main>
       ) : (
         <main className="flex min-h-0 flex-1">
