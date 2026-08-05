@@ -1,0 +1,31 @@
+# Como este projeto guarda o fim de linha.
+#
+# Todo arquivo de texto marca onde uma linha acaba, e a marca do Windows é
+# diferente da do Mac e do Linux. É invisível na tela, mas o Git a enxerga: uma
+# ferramenta que reescreva um arquivo com a outra marca faz o Git anunciar o
+# arquivo INTEIRO como mudado, e a mudança de verdade — três linhas — some no
+# meio de quinhentas que não mudaram nada. Um ano depois, o histórico não conta
+# mais por que as coisas ficaram como estão.
+#
+# Este arquivo tira a decisão das mãos das ferramentas: o repositório guarda LF,
+# venha de onde vier, em qualquer máquina.
+
+* text=auto eol=lf
+
+# As amostras de importação são o material do teste, não código: uma delas é um
+# arquivo do Windows de verdade — CP1252, com CRLF —, e é justamente disso que o
+# teste trata. Arrumar o fim de linha aqui seria apagar o que está sendo testado.
+src/main/import/__fixtures__/** -text
+
+# A exceção: o .bat é lido pelo cmd.exe, que espera a marca do Windows. Fica LF
+# guardado e sai CRLF no disco — quem precisa dela, recebe.
+*.bat text eol=crlf
+
+# Binários. O Git não deve tocar em um byte destes: "corrigir" um fim de linha
+# dentro de um PNG ou de um MP4 é corromper o arquivo.
+*.png binary
+*.ico binary
+*.icns binary
+*.pdf binary
+*.mp4 binary
+*.docx binary
