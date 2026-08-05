@@ -1,7 +1,12 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { ajudaDe, ajudaEn, temAjuda, type Ajuda } from './index'
+import { ajudaPt } from './pt'
+import { ajudaEs } from './es'
+import { ajudaDe as ajudaDeDicionario } from './de'
+import { ajudaFr } from './fr'
+import { ajudaIt } from './it'
 
 /* `as const` deixa cada entrada com o tipo literal dela, então quem não tem
    `comando` não tem a propriedade — esta visão uniforme é só para varrer. */
@@ -59,12 +64,52 @@ describe('o dicionário da Ajuda rápida', () => {
   })
 })
 
+describe('os cinco dicionários traduzidos', () => {
+  const DICIONARIOS: [string, Partial<Record<string, Ajuda>>][] = [
+    ['pt-BR', ajudaPt],
+    ['es', ajudaEs],
+    ['de', ajudaDeDicionario],
+    ['fr', ajudaFr],
+    ['it', ajudaIt]
+  ]
+
+  it('têm exatamente as mesmas chaves do inglês, nem uma a mais nem a menos', () => {
+    const chavesEn = Object.keys(ajudaEn).sort()
+    for (const [lang, dicionario] of DICIONARIOS) {
+      expect(Object.keys(dicionario).sort(), lang).toEqual(chavesEn)
+    }
+  })
+
+  it('nunca traduzem o campo `comando` — é um id de código, não texto', () => {
+    for (const [lang, dicionario] of DICIONARIOS) {
+      for (const [id, entrada] of Object.entries(TODAS)) {
+        expect(dicionario[id]?.comando, `${lang} → ${id}`).toBe(entrada.comando)
+      }
+    }
+  })
+
+  it('já respondem com a própria tradução, e não caem mais na reserva', () => {
+    // se isto voltar a ser igual ao inglês, ou a chave sumiu do dicionário
+    // traduzido ou a entrada nunca foi escrita — os dois merecem alarme
+    expect(ajudaDe('pt-BR', 'transport.playPause').nome).not.toBe(ajudaEn['transport.playPause'].nome)
+    expect(ajudaDe('es', 'ar.blackout').texto.length).toBeGreaterThan(0)
+  })
+})
+
 describe('a reserva no inglês', () => {
-  it('responde em qualquer idioma enquanto a tradução não existe', () => {
-    // é isto que permite escrever só o inglês agora: nenhum idioma fica com a
-    // caixa vazia por não ter sido traduzido ainda
-    expect(ajudaDe('pt-BR', 'transport.playPause').nome).toBe(ajudaEn['transport.playPause'].nome)
-    expect(ajudaDe('de', 'ar.blackout').texto.length).toBeGreaterThan(0)
+  it('ainda cobre uma chave que falte num idioma traduzido', async () => {
+    // os seis dicionários estão completos hoje, mas a reserva existe para o
+    // dia em que uma chave nova nascer em `en.ts` antes de chegar aos outros
+    // cinco — simulado aqui com um dicionário parcial, sem tocar nos de verdade
+    vi.resetModules()
+    vi.doMock('./de', () => ({
+      ajudaDe: { 'ar.blackout': { nome: 'Prova', texto: 'Só esta chave existe neste teste.' } }
+    }))
+    const { ajudaDe: ajudaDeComReserva, ajudaEn: enDepoisDoMock } = await import('./index')
+    expect(ajudaDeComReserva('de', 'ar.blackout').nome).toBe('Prova')
+    expect(ajudaDeComReserva('de', 'transport.playPause').nome).toBe(enDepoisDoMock['transport.playPause'].nome)
+    vi.doUnmock('./de')
+    vi.resetModules()
   })
 
   it('reconhece um id de verdade e recusa um inventado', () => {

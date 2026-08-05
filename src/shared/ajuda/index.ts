@@ -1,5 +1,10 @@
 import type { Lang } from '../i18n/types'
 import { ajudaEn, type Ajuda } from './en'
+import { ajudaPt } from './pt'
+import { ajudaEs } from './es'
+import { ajudaDe as ajudaDeDicionario } from './de'
+import { ajudaFr } from './fr'
+import { ajudaIt } from './it'
 
 export type { Ajuda } from './en'
 
@@ -16,11 +21,17 @@ export type AjudaId = keyof typeof ajudaEn
  * conjunto completo, e cada idioma novo entra em `POR_IDIOMA` com o que já
  * tiver traduzido — o que faltar cai no inglês em vez de sumir da tela.
  *
- * Quando os seis estiverem escritos, este mapa fica cheio e a reserva deixa de
- * ser usada; até lá ela é o que mantém o recurso inteiro funcionando em
- * qualquer idioma.
+ * Os seis já estão escritos, então a reserva não é mais usada na prática —
+ * mas continua sendo o que mantém o recurso inteiro de pé se uma chave nova
+ * nascer em `en.ts` sem passar ainda pelos outros cinco.
  */
-const POR_IDIOMA: Partial<Record<Lang, Partial<Record<AjudaId, Ajuda>>>> = {}
+const POR_IDIOMA: Partial<Record<Lang, Partial<Record<AjudaId, Ajuda>>>> = {
+  'pt-BR': ajudaPt,
+  es: ajudaEs,
+  de: ajudaDeDicionario,
+  fr: ajudaFr,
+  it: ajudaIt
+}
 
 /** O texto de um controle, no idioma pedido, com reserva no inglês. */
 export function ajudaDe(lang: Lang, id: AjudaId): Ajuda {
