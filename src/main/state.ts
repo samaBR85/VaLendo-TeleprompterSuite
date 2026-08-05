@@ -24,6 +24,7 @@ import {
   createTab
 } from '@shared/defaults'
 import { History } from '@shared/history'
+import { traduzir } from '@shared/i18n'
 import { duplicarAba } from '@shared/duplicarAba'
 import { reconcileBlocks } from '@shared/text'
 import type { Anchor, Appearance, AppState, PacingRule, StopwatchClock, Tab, Transport } from '@shared/types'
@@ -79,7 +80,7 @@ function sameRows(a: number[], b: number[]): boolean {
  * um `this` completo.
  */
 function emBranco(defaults: UserDefaults, base: AppState): AppState {
-  const tab = createTab('Aba 1', '', TAB_COLORS[0], defaults.appearance)
+  const tab = createTab(traduzir(base.language, 'tabs.defaultName', { n: 1 }), '', TAB_COLORS[0], defaults.appearance)
   return {
     ...createInitialState(defaults, base.language),
     tabs: [tab],
@@ -865,7 +866,8 @@ export class Store {
       case 'tab/add': {
         if (this.state.tabs.length >= 10) return
         const color = TAB_COLORS[this.state.tabs.length % TAB_COLORS.length]
-        const tab = createTab(`Aba ${this.state.tabs.length + 1}`, '', color, this.defaults.appearance)
+        const nome = traduzir(this.state.language, 'tabs.defaultName', { n: this.state.tabs.length + 1 })
+        const tab = createTab(nome, '', color, this.defaults.appearance)
         this.state = { ...this.state, tabs: [...this.state.tabs, tab] }
         this.dispatch({ type: 'tab/activate', tabId: tab.id })
         return

@@ -49,6 +49,7 @@ export const it: Dicionario = {
     'Incolla o scrivi il copione. Dove spezzi la riga, si spezza sullo schermo del presentatore. Le [parentesi] segnano le indicazioni, ## apre un capitolo.',
 
   'tabs.new': 'Nuova scheda',
+  'tabs.defaultName': 'Scheda {n}',
   'tabs.duplicate': 'Duplica',
   'tabs.rename': 'Rinomina',
   'tabs.closeItem': 'Chiudi',

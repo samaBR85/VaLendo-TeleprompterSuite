@@ -72,6 +72,26 @@ describe('arrastar aba reordena', () => {
     expect(store.getState().activeTabId).toBe(ativa)
   })
 
+  it('a aba nasce com o nome no idioma do app, e não em português', async () => {
+    /*
+     * O nome estava escrito à mão — `'Aba 1'` e `` `Aba ${n}` `` —, então
+     * TODO usuário, em qualquer um dos seis idiomas, recebia abas em
+     * português. Não dava erro, não quebrava nada, e aparecia na barra a
+     * sessão inteira.
+     */
+    const { Store } = await import('./state')
+    const store = new Store()
+    store.dispatch({ type: 'app/language', language: 'en' })
+    store.dispatch({ type: 'tab/add' })
+    const nomes = store.getState().tabs.map((t) => t.title)
+    expect(nomes[nomes.length - 1]).toBe(`Tab ${nomes.length}`)
+
+    store.dispatch({ type: 'app/language', language: 'fr' })
+    store.dispatch({ type: 'tab/add' })
+    const depois = store.getState().tabs.map((t) => t.title)
+    expect(depois[depois.length - 1]).toBe(`Onglet ${depois.length}`)
+  })
+
   it('a cor acompanha a aba, e não a posição', async () => {
     // a cor é gravada quando a aba nasce; se ela viesse do índice, arrastar
     // repintaria os pontinhos e o operador perderia a referência visual

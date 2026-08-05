@@ -49,6 +49,7 @@ export const fr: Dicionario = {
     'Collez ou tapez le texte. Là où vous coupez la ligne, elle se coupe sur l’écran du présentateur. Les [crochets] marquent les indications, ## ouvre un chapitre.',
 
   'tabs.new': 'Nouvel onglet',
+  'tabs.defaultName': 'Onglet {n}',
   'tabs.duplicate': 'Dupliquer',
   'tabs.rename': 'Renommer',
   'tabs.closeItem': 'Fermer',

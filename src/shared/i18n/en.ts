@@ -49,6 +49,7 @@ export const en: Dicionario = {
     'Paste or type the script. Where you break the line, it breaks on the presenter’s screen. [brackets] mark directions, ## opens a chapter.',
 
   'tabs.new': 'New tab',
+  'tabs.defaultName': 'Tab {n}',
   'tabs.duplicate': 'Duplicate',
   'tabs.rename': 'Rename',
   'tabs.closeItem': 'Close',

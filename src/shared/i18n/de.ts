@@ -49,6 +49,7 @@ export const de: Dicionario = {
     'Skript einfügen oder tippen. Wo Sie die Zeile umbrechen, bricht sie auch auf dem Bildschirm des Sprechers. [Klammern] kennzeichnen Regieanweisungen, ## öffnet ein Kapitel.',
 
   'tabs.new': 'Neuer Tab',
+  'tabs.defaultName': 'Tab {n}',
   'tabs.duplicate': 'Duplizieren',
   'tabs.rename': 'Umbenennen',
   'tabs.closeItem': 'Schließen',

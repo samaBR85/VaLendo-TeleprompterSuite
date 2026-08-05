@@ -60,6 +60,7 @@ export const pt = {
 
   /* ------------------------------------------------------------------- abas */
   'tabs.new': 'Nova aba',
+  'tabs.defaultName': 'Aba {n}',
   'tabs.duplicate': 'Duplicar',
   'tabs.rename': 'Renomear',
   'tabs.closeItem': 'Fechar',

@@ -49,6 +49,7 @@ export const es: Dicionario = {
     'Pega o escribe el guion. Donde cortes la línea, se corta en la pantalla del presentador. [corchetes] marcan acotaciones, ## abre capítulo.',
 
   'tabs.new': 'Pestaña nueva',
+  'tabs.defaultName': 'Pestaña {n}',
   'tabs.duplicate': 'Duplicar',
   'tabs.rename': 'Renombrar',
   'tabs.closeItem': 'Cerrar',
