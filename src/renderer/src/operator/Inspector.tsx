@@ -26,7 +26,7 @@ import { ajuda } from '../ui/ajuda'
 import { Icon } from '../ui/Icon'
 import { Ficha, SliderConsole } from '../ui/console'
 import type { Presets } from '@shared/presets'
-import { FileiraDePresets } from './Presets'
+import { FileiraDePresets, SecaoDoRodape } from './Presets'
 
 /**
  * O chip de um apresentador: a cor que ele pinta, o nome como está no roteiro,
@@ -677,74 +677,6 @@ export function Inspector({
         </Ficha>
       </Group>
 
-      {/* Quem fala, abaixo das cores — é a mesma decisão: de que cor o texto
-          sai na tela. Só aparece depois que existe alguém: um grupo vazio
-          seria uma seção pedindo para ser preenchida sem dizer como. */}
-      {tab.apresentadores.length > 0 ? (
-        <Group
-          label={t('insp.presenters')}
-          aberto={maquina.apresentadoresAberto}
-          onAberto={(apresentadoresAberto) =>
-            dispatch({ type: 'maquina/patch', patch: { apresentadoresAberto } })
-          }
-          marca="apresentadores-toggle"
-          ajudaId="insp.presentersToggle"
-          resumo={tab.apresentadores.map((quem) => (
-            <span
-              key={quem.id}
-              className="h-2 w-2 rounded-full"
-              style={{ background: quem.cor }}
-              title={quem.nome}
-            />
-          ))}
-          acao={
-            /* GLOBAL: esconde o nome de TODOS na saída, e trava os
-               interruptores individuais enquanto manda — o mesmo desenho do
-               OVERLAY dos cartões, para o operador não ter de aprender duas
-               gramáticas de "global x individual" no mesmo app. */
-            <button
-              type="button"
-              data-esconder-global
-              {...ajuda('insp.presenterHideAll')}
-              title={t('insp.presenterHideAll')}
-              aria-pressed={a.ocultarApresentadores}
-              onClick={() => patch({ ocultarApresentadores: !a.ocultarApresentadores })}
-              className={`flex-none rounded-[4px] px-1 py-0.5 text-[8px] font-bold tracking-[0.04em] transition-colors ${
-                a.ocultarApresentadores
-                  ? 'bg-[var(--color-accent)] text-[#1c1020]'
-                  : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
-              }`}
-            >
-              {t('insp.presenterHideAll.key')}
-            </button>
-          }
-        >
-          {tab.apresentadores.map((quem) => (
-            <ChipDeApresentador
-              key={quem.id}
-              quem={quem}
-              /* o par se perde quando o nome muda no roteiro — é o chip que
-                 acusa, senão a cor sumiria sem explicação */
-              orfao={!temParNoRoteiro(candidatas, quem)}
-              onCor={(cor) => dispatch({ type: 'presenter/color', tabId: tab.id, presenterId: quem.id, cor })}
-              global={a.ocultarApresentadores}
-              onRenomear={(nome) =>
-                dispatch({ type: 'presenter/rewrite', tabId: tab.id, presenterId: quem.id, nome })
-              }
-              onOcultar={() =>
-                dispatch({
-                  type: 'presenter/hidden',
-                  tabId: tab.id,
-                  presenterId: quem.id,
-                  oculto: !(quem.oculto ?? false)
-                })
-              }
-              onRelink={onRelink ? () => onRelink(quem.id) : undefined}
-              onRemover={() => dispatch({ type: 'presenter/remove', tabId: tab.id, presenterId: quem.id })}
-            />
-          ))}
-        </Group>
-      ) : null}
         </>
       ) : null}
 
@@ -1023,6 +955,82 @@ export function Inspector({
         </>
       ) : null}
       </div>
+
+      {/* Apresentadores e Presets: as duas tiras do rodapé, na MESMA casca.
+          Antes esta seção era um grupo da área que rola e a outra uma tira
+          colada no fundo — com as duas fechadas sobrava um buraco de duzentos
+          pixels entre elas. Saindo do mesmo componente, elas encostam uma na
+          outra e não têm como divergir de novo.
+
+          Só aparece depois que existe alguém: uma seção vazia seria uma tira
+          pedindo para ser preenchida sem dizer como. */}
+      {tab.apresentadores.length > 0 ? (
+        <SecaoDoRodape
+          marca="apresentadores-toggle"
+          ajudaId="insp.presentersToggle"
+          rotulo={t('insp.presenters')}
+          aberto={maquina.apresentadoresAberto}
+          onAberto={(apresentadoresAberto) =>
+            dispatch({ type: 'maquina/patch', patch: { apresentadoresAberto } })
+          }
+          resumo={tab.apresentadores.map((quem) => (
+            <span
+              key={quem.id}
+              className="h-2 w-2 flex-none rounded-full"
+              style={{ background: quem.cor }}
+              title={quem.nome}
+            />
+          ))}
+          acao={
+            /* GLOBAL: esconde o nome de TODOS na saída, e trava os
+               interruptores individuais enquanto manda — o mesmo desenho do
+               OVERLAY dos cartões, para o operador não ter de aprender duas
+               gramáticas de "global x individual" no mesmo app. */
+            <button
+              type="button"
+              data-esconder-global
+              {...ajuda('insp.presenterHideAll')}
+              title={t('insp.presenterHideAll')}
+              aria-pressed={a.ocultarApresentadores}
+              onClick={() => patch({ ocultarApresentadores: !a.ocultarApresentadores })}
+              className={`flex-none rounded-[4px] px-1 py-0.5 text-[8px] font-bold tracking-[0.04em] transition-colors ${
+                a.ocultarApresentadores
+                  ? 'bg-[var(--color-accent)] text-[#1c1020]'
+                  : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+              }`}
+            >
+              {t('insp.presenterHideAll.key')}
+            </button>
+          }
+        >
+          <div className="flex flex-col gap-2">
+          {tab.apresentadores.map((quem) => (
+            <ChipDeApresentador
+              key={quem.id}
+              quem={quem}
+              /* o par se perde quando o nome muda no roteiro — é o chip que
+                 acusa, senão a cor sumiria sem explicação */
+              orfao={!temParNoRoteiro(candidatas, quem)}
+              onCor={(cor) => dispatch({ type: 'presenter/color', tabId: tab.id, presenterId: quem.id, cor })}
+              global={a.ocultarApresentadores}
+              onRenomear={(nome) =>
+                dispatch({ type: 'presenter/rewrite', tabId: tab.id, presenterId: quem.id, nome })
+              }
+              onOcultar={() =>
+                dispatch({
+                  type: 'presenter/hidden',
+                  tabId: tab.id,
+                  presenterId: quem.id,
+                  oculto: !(quem.oculto ?? false)
+                })
+              }
+              onRelink={onRelink ? () => onRelink(quem.id) : undefined}
+              onRemover={() => dispatch({ type: 'presenter/remove', tabId: tab.id, presenterId: quem.id })}
+            />
+          ))}
+          </div>
+        </SecaoDoRodape>
+      ) : null}
 
       {/* fora das abas, no rodapé: um preset vale para o painel inteiro — dentro
           de uma delas, pareceria guardar só aquele pedaço */}

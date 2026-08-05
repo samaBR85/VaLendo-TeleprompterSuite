@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
+import type { AjudaId } from '@shared/ajuda'
 import { CORES_DE_PRESET, type Preset, type Presets } from '@shared/presets'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
@@ -91,39 +92,25 @@ export function FileiraDePresets({
   const comEstrela = presets.padrao !== null ? presets.slots[presets.padrao] : null
 
   return (
-    <div className="flex-none border-t border-[var(--color-edge)]" onMouseDown={(e) => e.stopPropagation()}>
-      <button
-        type="button"
-        data-presets-toggle
-        {...ajuda('insp.presetsToggle')}
-        aria-expanded={aberto}
-        onClick={() => onAberto(!aberto)}
-        className="flex h-[26px] w-full items-center gap-1.5 px-2.5 text-left"
-      >
-        <span className="k-microcaps flex-none">{t('insp.presets')}</span>
-        {/* fechado continua informando: sem isto a linha que ele ocupa não
-            paga o próprio espaço */}
-        {!aberto && comEstrela ? (
-          <span className="flex min-w-0 items-center gap-1.5">
+    <SecaoDoRodape
+      marca="presets-toggle"
+      ajudaId="insp.presetsToggle"
+      rotulo={t('insp.presets')}
+      aberto={aberto}
+      onAberto={onAberto}
+      resumo={
+        comEstrela ? (
+          <>
             <span className="text-[9px] text-[var(--color-warn)]">★</span>
-            <span
-              className="h-[7px] w-[7px] flex-none rounded-full"
-              style={{ background: comEstrela.cor }}
-            />
+            <span className="h-[7px] w-[7px] flex-none rounded-full" style={{ background: comEstrela.cor }} />
             <span className="truncate text-[10px] text-[var(--color-fog-2)]">
               {nomeDe(comEstrela, presets.padrao as number)}
             </span>
-          </span>
-        ) : null}
-        <Icon
-          name="down"
-          size={11}
-          className={`ml-auto flex-none text-[var(--color-fog-3)] transition-transform ${aberto ? '' : '-rotate-90'}`}
-        />
-      </button>
-
-      {aberto ? (
-        <div className="px-2.5 pt-0.5 pb-2.5">
+          </>
+        ) : null
+      }
+    >
+        <div>
           <div className="k-poco flex-col gap-[3px]">
             {presets.slots.map((preset, lugar) => (
               <LugarDePreset
@@ -190,7 +177,71 @@ export function FileiraDePresets({
             />
           ) : null}
         </div>
-      ) : null}
+    </SecaoDoRodape>
+  )
+}
+
+/**
+ * A casca das seções ancoradas no rodapé dos Ajustes.
+ *
+ * Uma só para Apresentadores e Presets de propósito. As duas nasceram com
+ * cascas diferentes — uma era um `Group` da área que rola, a outra uma tira
+ * colada no fundo — e o resultado foi um buraco de duzentos pixels entre elas
+ * quando as duas estavam fechadas. Vivendo do mesmo componente, elas não têm
+ * como divergir de novo: encostam uma na outra e fecham igual.
+ *
+ * Fechada, cada uma continua informando pelo `resumo` — a linha de 26px que ela
+ * ocupa precisa pagar o próprio espaço.
+ */
+export function SecaoDoRodape({
+  marca,
+  ajudaId,
+  rotulo,
+  aberto,
+  onAberto,
+  resumo,
+  acao,
+  children
+}: {
+  marca: string
+  ajudaId: AjudaId
+  rotulo: string
+  aberto: boolean
+  onAberto: (aberto: boolean) => void
+  resumo?: React.ReactNode
+  /** controle da seção inteira, à direita — o HIDE global dos apresentadores */
+  acao?: React.ReactNode
+  children: React.ReactNode
+}): React.JSX.Element {
+  return (
+    <div className="flex-none border-t border-[var(--color-edge)]" onMouseDown={(e) => e.stopPropagation()}>
+      <div className="flex h-[26px] items-center gap-1.5 pr-2.5">
+        <button
+          type="button"
+          {...{ [`data-${marca}`]: '' }}
+          {...ajuda(ajudaId)}
+          aria-expanded={aberto}
+          onClick={() => onAberto(!aberto)}
+          className="flex h-full min-w-0 flex-1 items-center gap-1.5 pl-2.5 text-left"
+        >
+          <span className="k-microcaps flex-none">{rotulo}</span>
+          {!aberto && resumo ? (
+            <span className="flex min-w-0 items-center gap-1.5">{resumo}</span>
+          ) : null}
+          <Icon
+            name="down"
+            size={11}
+            className={`ml-auto flex-none text-[var(--color-fog-3)] transition-transform ${
+              aberto ? '' : '-rotate-90'
+            }`}
+          />
+        </button>
+        {/* fora do botão: um controle dentro de outro controle não pode, e
+            clicar no HIDE não deve fechar a seção */}
+        {acao ? <span className="flex flex-none items-center">{acao}</span> : null}
+      </div>
+
+      {aberto ? <div className="px-2.5 pt-0.5 pb-2.5">{children}</div> : null}
     </div>
   )
 }
