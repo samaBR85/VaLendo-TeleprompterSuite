@@ -264,6 +264,11 @@ export const ajudaEn = {
     texto: 'Marks the line as a direction — it becomes [brackets] in the text. An instruction to the presenter, never counted as spoken words.',
     comando: 'insert.direction'
   },
+  'editor.find': {
+    nome: 'Find in the script',
+    texto: 'Enter for the next, Shift+Enter for the previous, Esc closes on the one you see. Ignores case and accents: "acao" finds "ação". Moves the editor only — the reading position never budges.',
+    comando: 'edit.find'
+  },
   'editor.clearFormat': {
     nome: 'Clear formatting',
     texto: 'Turns chapters and directions back into plain text. The words stay; undo brings the marks back.',

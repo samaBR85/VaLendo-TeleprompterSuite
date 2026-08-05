@@ -237,6 +237,11 @@ export const ajudaEs = {
     texto: 'Marca la línea como acotación — se vuelve [corchetes] en el texto. Una instrucción para el presentador, nunca contada como palabra hablada.',
     comando: 'insert.direction'
   },
+  'editor.find': {
+    nome: 'Buscar en el guion',
+    texto: 'Enter va a la siguiente, Shift+Enter a la anterior, Esc cierra en la que ves. Ignora mayúsculas y acentos: "acao" encuentra "ação". Mueve solo el editor — la lectura no se mueve.',
+    comando: 'edit.find'
+  },
   'editor.clearFormat': {
     nome: 'Quitar formato',
     texto: 'Vuelve a convertir capítulos y acotaciones en texto plano. Las palabras se quedan; deshacer trae las marcas de vuelta.',

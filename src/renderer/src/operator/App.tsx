@@ -846,6 +846,7 @@ function AppConteudo({
       flushEditor: () => editorRef.current?.flush(),
       insertBlock: (kind: InsertKind) => editorRef.current?.insert(kind),
       removerFormatacao: () => editorRef.current?.removerFormatacao(),
+      abrirBusca: () => editorRef.current?.abrirBusca(),
       exportDocument: (saveAs: boolean) => void exportDocument(saveAs),
       project: (acao: 'salvar' | 'salvarComo' | 'abrir') => void project(acao),
       novoProjeto: () => void novoProjeto(),

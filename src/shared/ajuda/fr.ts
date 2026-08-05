@@ -237,6 +237,11 @@ export const ajudaFr = {
     texto: 'Marque la ligne comme indication — elle devient [entre crochets]. Une instruction au présentateur, jamais comptée comme parole.',
     comando: 'insert.direction'
   },
+  'editor.find': {
+    nome: 'Rechercher dans le script',
+    texto: 'Entrée pour la suivante, Maj+Entrée pour la précédente, Échap ferme sur celle que vous voyez. Ignore la casse et les accents. Ne bouge que l’éditeur — la lecture ne bouge pas.',
+    comando: 'edit.find'
+  },
   'editor.clearFormat': {
     nome: 'Effacer la mise en forme',
     texto: 'Retransforme chapitres et indications en texte brut. Les mots restent ; annuler ramène les marques.',

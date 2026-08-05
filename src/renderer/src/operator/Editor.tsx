@@ -3,6 +3,7 @@ import type { Action } from '@shared/actions'
 import { insertBlock, type InsertKind } from '@shared/insertBlock'
 import { coresDasLinhas, ehDeixa, type LinhaPintavel } from '@shared/apresentadores'
 import { blocksFromText, caretFromAnchor, serializeBlocks, stripFormatting } from '@shared/text'
+import { acharTodas, indiceDaProxima } from '@shared/busca'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
 import type { Anchor, Apresentador, BlockKind, Tab } from '@shared/types'
@@ -70,6 +71,92 @@ function retanguloDoTexto(pre: HTMLPreElement, posicao: number): MarcaDaLeitura 
   return null
 }
 
+export interface CaixaDoAchado {
+  top: number
+  left: number
+  width: number
+  height: number
+}
+
+/**
+ * O retângulo de um TRECHO, para a busca desenhar a caixa em volta da palavra.
+ *
+ * Irmão de `retanguloDoTexto`, e pelo mesmo motivo: quem responde onde o texto
+ * caiu é o navegador, sobre o `<pre>` colorido que tem a fonte e a quebra
+ * reais. A diferença é que aqui o `Range` cobre o achado inteiro, e não um
+ * caractere — a marca de leitura é uma faixa de linha porque marca ONDE a
+ * leitura está; o achado precisa cercar a PALAVRA, senão procurar num
+ * parágrafo denso devolve uma faixa que não diz qual das dez palavras é.
+ *
+ * Achado que envolve para a linha de baixo devolve a união dos dois pedaços —
+ * uma caixa larga demais. É raro (termo de busca é curto) e o estrago é
+ * cosmético, então não vale o preço de desenhar dois retângulos.
+ */
+function caixaDoTrecho(pre: HTMLPreElement, inicio: number, fim: number): CaixaDoAchado | null {
+  const caminhante = document.createTreeWalker(pre, NodeFilter.SHOW_TEXT)
+  let percorrido = 0
+  let noInicio: Text | null = null
+  let dentroInicio = 0
+  let no = caminhante.nextNode() as Text | null
+  const range = document.createRange()
+
+  while (no) {
+    const acaba = percorrido + no.length
+    if (!noInicio && inicio <= acaba) {
+      noInicio = no
+      dentroInicio = Math.max(0, Math.min(no.length, inicio - percorrido))
+    }
+    if (noInicio && fim <= acaba) {
+      range.setStart(noInicio, dentroInicio)
+      range.setEnd(no, Math.max(0, Math.min(no.length, fim - percorrido)))
+      const caixa = range.getBoundingClientRect()
+      const molde = pre.getBoundingClientRect()
+      if (caixa.height === 0) return null
+      return {
+        top: caixa.top - molde.top + pre.scrollTop,
+        left: caixa.left - molde.left,
+        width: caixa.width,
+        height: caixa.height
+      }
+    }
+    percorrido = acaba
+    no = caminhante.nextNode() as Text | null
+  }
+  return null
+}
+
+/** As três teclinhas da barra de busca: anterior, próxima, fechar. */
+function BotaoDeBusca({
+  marca,
+  rotulo,
+  desligado,
+  onClick,
+  children
+}: {
+  marca: string
+  rotulo: string
+  desligado?: boolean
+  onClick: () => void
+  children: React.ReactNode
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      {...{ [`data-busca-${marca}`]: '' }}
+      title={rotulo}
+      aria-label={rotulo}
+      disabled={desligado}
+      /* o foco NUNCA sai do campo: clicar numa seta e perder o cursor de
+         digitação obrigaria a clicar de volta a cada salto */
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onClick}
+      className="h-6 w-6 flex-none rounded border border-[var(--color-edge)] text-[12px] leading-none text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] disabled:opacity-30 disabled:hover:bg-transparent"
+    >
+      {children}
+    </button>
+  )
+}
+
 interface Props {
   tab: Tab
   /** tamanho da fonte do textarea editável — não é a fonte da SAÍDA, só de digitar */
@@ -113,6 +200,8 @@ export interface EditorHandle {
   insert: (kind: InsertKind) => void
   /** tira a marcação do roteiro inteiro: sem capítulos, sem direções. */
   removerFormatacao: () => void
+  /** abre a busca no editor, semeada com o que estiver selecionado (Ctrl+F). */
+  abrirBusca: () => void
   /** o texto atual do rascunho e onde o cursor está nele — para o "Go To". */
   caret: () => { text: string; position: number }
   /**
@@ -428,10 +517,116 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     [draft, tab.blocks]
   )
 
+  /* ------------------------------------------------------------------ busca */
+
+  /**
+   * Procurar no roteiro sem tirar o dedo do lugar.
+   *
+   * Duas decisões que valem mais que o recurso em si:
+   *
+   * 1. O foco NUNCA sai do campo de busca. Um `setSelectionRange` no textarea
+   *    exigiria focá-lo, e aí a próxima letra digitada iria para o roteiro em
+   *    vez de para a busca. Por isso o achado é desenhado por nós, com o mesmo
+   *    mecanismo da marca de leitura — e de quebra ele aparece mesmo com o
+   *    textarea sem foco, coisa que a seleção nativa não faz.
+   *
+   * 2. Procurar segura o acompanhamento automático (`ultimoToque`). Sem isso, a
+   *    leitura correndo puxaria a tela de volta um segundo depois de cada salto,
+   *    e o operador ficaria brigando com o próprio app para ler o que achou.
+   *    Procurar mexe na tela, NUNCA na posição de leitura: quem está no ar não
+   *    sente nada.
+   */
+  const [busca, setBusca] = useState<string | null>(null)
+  const [atual, setAtual] = useState(0)
+  const [achado, setAchado] = useState<CaixaDoAchado | null>(null)
+  const campoBusca = useRef<HTMLInputElement>(null)
+
+  const ocorrencias = useMemo(() => (busca === null ? [] : acharTodas(draft, busca)), [draft, busca])
+
+  const irParaAchado = useCallback(
+    (indice: number): void => {
+      const area = areaRef.current
+      const pre = preRef.current
+      const alvo = ocorrencias[indice]
+      if (!area || !pre || !alvo) return setAchado(null)
+
+      setAtual(indice)
+      // o acompanhamento sai da frente: quem procura está olhando para outro
+      // ponto do texto, e ser puxado de volta seria o app discordando da mão
+      ultimoToque.current = Date.now()
+
+      const caixa = caixaDoTrecho(pre, alvo.inicio, alvo.fim)
+      setAchado(caixa)
+      if (!caixa) return
+
+      const altura = area.clientHeight
+      const relativo = caixa.top - area.scrollTop
+      if (relativo < altura * 0.12 || relativo > altura * 0.78) {
+        area.scrollTop = Math.max(0, caixa.top - altura * 0.35)
+        pre.scrollTop = area.scrollTop
+        setRolagem(area.scrollTop)
+      }
+    },
+    [ocorrencias]
+  )
+
+  /* a cada tecla no campo, cai na primeira ocorrência a partir de onde o cursor
+     estava — e não sempre na primeira do texto, que faria a busca ignorar onde
+     a pessoa está trabalhando */
+  useEffect(() => {
+    if (busca === null) return
+    if (ocorrencias.length === 0) return setAchado(null)
+    const de = areaRef.current?.selectionStart ?? 0
+    irParaAchado(Math.max(0, indiceDaProxima(ocorrencias, de)))
+    // de propósito só quando a lista muda: andar entre ocorrências é trabalho
+    // do Enter e das setas, não deste efeito
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ocorrencias])
+
+  const andar = (paraTras: boolean): void => {
+    if (ocorrencias.length === 0) return
+    const daqui = ocorrencias[atual]
+    const de = daqui ? (paraTras ? daqui.inicio : daqui.inicio + 1) : 0
+    irParaAchado(indiceDaProxima(ocorrencias, de, paraTras))
+  }
+
+  const fecharBusca = (comCursor: boolean): void => {
+    const alvo = ocorrencias[atual]
+    setBusca(null)
+    setAchado(null)
+    const area = areaRef.current
+    if (!area) return
+    area.focus()
+    // Esc devolve o cursor PARA o achado: quem procurou quer editar ali. O ×
+    // não mexe no cursor — foi um gesto de fechar, não de ir
+    if (comCursor && alvo) area.setSelectionRange(alvo.inicio, alvo.fim)
+  }
+
+  const abrirBusca = useCallback((): void => {
+    const area = areaRef.current
+    // semeia com o que estiver selecionado, como todo editor faz
+    const selecionado = area ? draft.slice(area.selectionStart, area.selectionEnd) : ''
+    // seleção de várias linhas não vira termo de busca: seria um termo que
+    // ninguém quis, e ela some do campo assim que a pessoa digita
+    setBusca(selecionado.includes('\n') ? '' : selecionado)
+    setAtual(0)
+    // o campo só existe depois do render que o `busca` não-nulo provoca
+    setTimeout(() => campoBusca.current?.select(), 0)
+  }, [draft])
+
   useImperativeHandle(
     ref,
-    () => ({ flush, insert, removerFormatacao, caret, selecao, mostrarAncora, limparMarca: () => setMarca(null) }),
-    [flush, insert, removerFormatacao, caret, selecao, mostrarAncora]
+    () => ({
+      flush,
+      insert,
+      removerFormatacao,
+      caret,
+      selecao,
+      mostrarAncora,
+      abrirBusca,
+      limparMarca: () => setMarca(null)
+    }),
+    [flush, insert, removerFormatacao, caret, selecao, mostrarAncora, abrirBusca]
   )
 
   const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
@@ -532,6 +727,73 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     // fica aqui e não no textarea porque o `<pre>` colorido por baixo também
     // está nesta caixa
     <div data-sem-roda className="relative min-h-0 flex-1 overflow-hidden">
+      {/* A barra de busca: FLUTUA por cima do texto, no canto de cima. Não
+          empurra o editor para baixo de propósito — reflowar o roteiro para
+          abrir uma busca moveria todo o texto sob o olho de quem só queria
+          achar uma palavra. */}
+      {busca !== null ? (
+        <div
+          data-busca
+          className="absolute top-2 right-4 z-20 flex items-center gap-1 rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1 shadow-[0_6px_20px_rgba(0,0,0,.5)]"
+        >
+          <input
+            ref={campoBusca}
+            data-busca-campo
+            {...ajuda('editor.find')}
+            value={busca}
+            placeholder={t('editor.findPlaceholder')}
+            aria-label={t('editor.find')}
+            onChange={(e) => setBusca(e.currentTarget.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                andar(e.shiftKey)
+              }
+              if (e.key === 'Escape') {
+                e.preventDefault()
+                fecharBusca(true)
+              }
+              // as setas andam entre achados sem tirar a mão do campo
+              if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault()
+                andar(e.key === 'ArrowUp')
+              }
+            }}
+            className="h-6 w-36 rounded border border-[var(--color-edge)] bg-[var(--color-ink-0)] px-2 text-[11.5px] text-[var(--color-fog-0)] outline-none"
+          />
+          {/* a contagem é o que diz se vale continuar apertando — e "0" precisa
+              gritar, senão a pessoa fica batendo Enter num termo que não existe */}
+          <span
+            data-busca-contagem
+            className={`w-12 flex-none text-center font-mono text-[10px] tabular-nums ${
+              busca !== '' && ocorrencias.length === 0
+                ? 'text-[var(--color-live)]'
+                : 'text-[var(--color-fog-2)]'
+            }`}
+          >
+            {ocorrencias.length === 0 ? '0' : `${atual + 1}/${ocorrencias.length}`}
+          </span>
+          <BotaoDeBusca
+            marca="anterior"
+            rotulo={t('editor.findPrev')}
+            desligado={ocorrencias.length === 0}
+            onClick={() => andar(true)}
+          >
+            ↑
+          </BotaoDeBusca>
+          <BotaoDeBusca
+            marca="proxima"
+            rotulo={t('editor.findNext')}
+            desligado={ocorrencias.length === 0}
+            onClick={() => andar(false)}
+          >
+            ↓
+          </BotaoDeBusca>
+          <BotaoDeBusca marca="fechar" rotulo={t('app.close')} onClick={() => fecharBusca(false)}>
+            ×
+          </BotaoDeBusca>
+        </div>
+      ) : null}
       <pre
         ref={preRef}
         aria-hidden="true"
@@ -547,6 +809,25 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
           nenhum, senão selecionar texto pararia de funcionar na linha marcada.
           A posição vem em coordenadas do conteúdo; o `- rolagem` traz para a
           tela. */}
+      {/* O achado da busca: uma caixa em volta da palavra, não uma faixa de
+          linha. A marca de leitura é faixa porque diz ONDE a leitura está; o
+          achado precisa dizer QUAL palavra, e num parágrafo denso uma faixa
+          não diria. Âmbar para não se confundir com o verde da leitura, que
+          pode estar na tela ao mesmo tempo. */}
+      {achado ? (
+        <div
+          data-achado-busca
+          className="pointer-events-none absolute rounded-[2px]"
+          style={{
+            top: achado.top - rolagem,
+            left: achado.left,
+            width: achado.width,
+            height: achado.height,
+            background: 'color-mix(in srgb, var(--color-warn) 30%, transparent)',
+            outline: '1px solid var(--color-warn)'
+          }}
+        />
+      ) : null}
       {marca ? (
         <div
           data-marca-leitura

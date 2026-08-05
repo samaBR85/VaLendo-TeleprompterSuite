@@ -237,6 +237,11 @@ export const ajudaIt = {
     texto: 'Segna la riga come indicazione — diventa [parentesi] nel testo. Un’istruzione per il presentatore, mai contata come parole dette.',
     comando: 'insert.direction'
   },
+  'editor.find': {
+    nome: 'Cerca nel copione',
+    texto: 'Invio per la successiva, Maiusc+Invio per la precedente, Esc chiude su quella che vedi. Ignora maiuscole e accenti. Muove solo l’editor — la lettura non si sposta.',
+    comando: 'edit.find'
+  },
   'editor.clearFormat': {
     nome: 'Rimuovi formattazione',
     texto: 'Riporta capitoli e indicazioni a testo semplice. Le parole restano; annulla le riporta.',

@@ -237,6 +237,11 @@ export const ajudaPt = {
     texto: 'Marca a linha como direção de cena — vira [colchetes] no texto. Uma instrução ao apresentador, nunca contada como palavra falada.',
     comando: 'insert.direction'
   },
+  'editor.find': {
+    nome: 'Procurar no roteiro',
+    texto: 'Enter vai para a próxima, Shift+Enter para a anterior, Esc fecha na que você vê. Ignora caixa e acento: "acao" acha "ação". Mexe só no editor — a posição de leitura não sai do lugar.',
+    comando: 'edit.find'
+  },
   'editor.clearFormat': {
     nome: 'Remover formatação',
     texto: 'Transforma capítulos e direções de volta em texto simples. As palavras ficam; desfazer traz as marcas de volta.',

@@ -19,6 +19,8 @@ export interface CommandUi {
   insertBlock: (kind: InsertKind) => void
   /** tira capítulos e direções do roteiro inteiro, deixando só texto simples */
   removerFormatacao: () => void
+  /** abre a busca do editor — Ctrl+F */
+  abrirBusca: () => void
   /** escala da interface: +1 e -1 andam um degrau, 0 volta a 100% */
   escala: (delta: 1 | -1 | 0) => void
   exportDocument: (saveAs: boolean) => void
@@ -227,6 +229,9 @@ export function useCommands(
           ui.insertBlock('direction')
           break
 
+        case 'edit.find':
+          ui.abrirBusca()
+          break
         case 'edit.clearFormat':
           ui.removerFormatacao()
           break

@@ -47,7 +47,6 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'transport.restart', group: 'Transporte', defaultBinding: 'Mod+Home' },
   { id: 'transport.jumpBack', group: 'Transporte', defaultBinding: 'ArrowUp' },
   { id: 'transport.jumpForward', group: 'Transporte', defaultBinding: 'ArrowDown' },
-  { id: 'transport.freeze', group: 'Transporte', defaultBinding: 'Mod+Shift+F' },
 
   { id: 'speed.increase', group: 'Ritmo', defaultBinding: 'ArrowRight' },
   { id: 'speed.decrease', group: 'Ritmo', defaultBinding: 'ArrowLeft' },
@@ -70,6 +69,21 @@ export const COMMANDS: CommandSpec[] = [
   { id: 'colors.invert', group: 'Aparência', defaultBinding: 'Mod+I' },
 
   { id: 'output.blackout', group: 'Saída', defaultBinding: 'Mod+B' },
+  /*
+   * Congelar saiu de `Mod+Shift+F` e de Transporte, e as duas mudanças são a
+   * mesma correção.
+   *
+   * A tecla saiu porque `Mod+F` passou a ser a busca no editor — e aí o par
+   * mentiria: Shift prometeria "variante da busca" e entregaria congelar. Ao
+   * lado de `Mod+B`, a promessa passa a ser verdade, porque tela preta e
+   * congelar são irmãos de fato: os dois interrompem o que o apresentador vê
+   * sem tocar no roteiro.
+   *
+   * E o grupo saiu de Transporte porque congelar nunca foi transporte: ele não
+   * mexe na leitura, mexe na SAÍDA. Estava catalogado errado desde sempre, e o
+   * par com a tela preta é o que deixou isso à vista.
+   */
+  { id: 'transport.freeze', group: 'Saída', defaultBinding: 'Mod+Shift+B' },
   { id: 'output.mirror', group: 'Saída', defaultBinding: 'Mod+Alt+M' },
   { id: 'output.rotate', group: 'Saída', defaultBinding: 'Mod+Alt+R' },
   { id: 'output.toggle', group: 'Saída', defaultBinding: 'Mod+Enter' },
@@ -87,6 +101,9 @@ export const COMMANDS: CommandSpec[] = [
      aqui prometeria que isto é uma variante dela — a regra das teclas desta
      lista, que o teste de semântica cobra. `Mod+L` não é comando de ninguém,
      então o Shift não promete nada. */
+  /* a tecla que o mundo inteiro usa para procurar. Foi ela que empurrou o
+     congelar para longe do `Mod+Shift+F` — ver a nota lá em cima */
+  { id: 'edit.find', group: 'Documento', defaultBinding: 'Mod+F' },
   { id: 'edit.clearFormat', group: 'Documento', defaultBinding: 'Mod+Shift+L' },
   { id: 'edit.undo', group: 'Documento', defaultBinding: 'Mod+Z' },
   { id: 'edit.redo', group: 'Documento', defaultBinding: 'Mod+Shift+Z' },

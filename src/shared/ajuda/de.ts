@@ -237,6 +237,11 @@ export const ajudaDe = {
     texto: 'Markiert die Zeile als Regieanweisung — sie wird zu [Klammern] im Text. Eine Anweisung an den Sprecher, nie als gesprochen gezählt.',
     comando: 'insert.direction'
   },
+  'editor.find': {
+    nome: 'Im Skript suchen',
+    texto: 'Enter zum nächsten, Umschalt+Enter zum vorigen, Esc schließt beim aktuellen. Ignoriert Groß-/Kleinschreibung und Akzente. Bewegt nur den Editor — die Leseposition rührt sich nicht.',
+    comando: 'edit.find'
+  },
   'editor.clearFormat': {
     nome: 'Formatierung entfernen',
     texto: 'Macht aus Kapiteln und Regieanweisungen wieder reinen Text. Die Wörter bleiben; Rückgängig bringt die Markierungen zurück.',
