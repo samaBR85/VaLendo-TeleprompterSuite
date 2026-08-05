@@ -233,9 +233,24 @@ await wait(2600)
 await acao({ type: 'card/add', card: { id: 'shot-txt', kind: 'text', nome: 'Standby', texto: 'BACK IN 2 MIN' } })
 await wait(600)
 
+/* A TELA: o cartão que o app desenha sozinho. Entra com gradiente E efeito
+   ligados de propósito — é o estado que mostra o recurso inteiro numa foto só,
+   e um chapado sem recado sairia indistinguível de um retângulo qualquer. */
+await acao({
+  type: 'card/add',
+  card: {
+    id: 'shot-tela',
+    kind: 'tela',
+    nome: 'Break screen',
+    fundo: { de: '#16253f', ate: '#8e3fd4', angulo: 135, animacao: 'deriva', frequencia: 100, intensidade: 70 },
+    recado: { texto: 'WE WILL BE\nRIGHT BACK', corpoPct: 13, cor: '#ffffff', posicao: 'meio', alinhamento: 'center' }
+  }
+})
+await wait(700)
+
 const comCartoes = await estado()
 console.log('cartões:', comCartoes.cards.map((c) => `${c.kind}:${c.nome}`).join(', ') || 'NENHUM')
-if (comCartoes.cards.length !== 3) problemas.push('os três cartões não entraram')
+if (comCartoes.cards.length !== 4) problemas.push('os quatro cartões não entraram')
 
 /* ------------------------------------------------------------ marcadores */
 
@@ -302,14 +317,64 @@ if (!SO || SO === 'detalhes') {
   await recorte('d02-progress', '[data-progresso]', 0)
   await recorte('d03-speed', `document.querySelector('[data-alvo]').closest('.k-lcd')`, 8)
   await recorte('d04-clocks', `document.querySelector('${REGUA} [data-relogios]')`, 10)
-  /* a fileira das abas não tem marca própria, e a aba é um DIV, não um botão:
-     sai pelo rótulo de uma delas, subindo dois níveis até o container que
-     segura as duas e o botão de nova aba */
+  /* A FILEIRA das abas, com as duas e o botão de nova.
+     Subir um número fixo de níveis a partir do rótulo deixou de chegar na
+     fileira quando o arrasto embrulhou cada ficha — a foto saía com uma aba
+     só, e o site a legendava como se fossem as abas dos Ajustes. Subir até o
+     ancestral que contém DUAS fichas acha a fileira sem contar camadas. */
   await recorte(
     'd06-tabs',
-    `[...document.querySelectorAll('span')].find((e) => !e.children.length && e.textContent.trim() === 'Programme')?.parentElement?.parentElement`,
+    `(() => {
+      const t = document.querySelector('[data-tab-drag]')
+      if (!t) return null
+      let el = t
+      while (el.parentElement && el.parentElement.querySelectorAll('[data-tab-drag]').length < 2) {
+        el = el.parentElement
+      }
+      return el.parentElement
+    })()`,
     6
   )
+
+  /* O menu do botão direito na ficha da aba. O `contextmenu` sintético serve
+     aqui porque o handler é do React e não depende de foco nem de posição real
+     do ponteiro — o que ele lê do evento é só `clientX/clientY`, para o menu
+     nascer onde a mão está. A foto sai da ficha INTEIRA mais o menu: recortar
+     só o menu perderia de qual aba ele saiu, que é o ponto do recurso. */
+  const abriuMenu = await ev(`(() => {
+    const ficha = document.querySelector('[data-tab-drag]')
+    if (!ficha) return false
+    const b = ficha.getBoundingClientRect()
+    ficha.dispatchEvent(new MouseEvent('contextmenu', {
+      bubbles: true, cancelable: true, clientX: b.left + 20, clientY: b.bottom - 4
+    }))
+    return true
+  })()`)
+  await wait(500)
+  if (!abriuMenu || !(await ev(`Boolean(document.querySelector('[data-tab-menu]'))`))) {
+    problemas.push('o menu do botão direito da aba não abriu — d28 ficou sem foto')
+  } else {
+    await recorte(
+      'd28-tab-menu',
+      `(() => {
+        const menu = document.querySelector('[data-tab-menu]')
+        const ficha = document.querySelector('[data-tab-drag]')
+        const a = ficha.getBoundingClientRect(), b = menu.getBoundingClientRect()
+        const caixa = document.createElement('div')
+        caixa.getBoundingClientRect = () => ({
+          left: Math.min(a.left, b.left), top: Math.min(a.top, b.top),
+          width: Math.max(a.right, b.right) - Math.min(a.left, b.left),
+          height: Math.max(a.bottom, b.bottom) - Math.min(a.top, b.top)
+        })
+        return caixa
+      })()`,
+      8
+    )
+    // fecha o menu pela cortina, que é como o operador fecha
+    await ev(`document.querySelector('[data-sem-roda].fixed.inset-0')?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))`)
+    await wait(400)
+  }
+
   await recorte('d07-modes', '[data-mode-switch]', 10)
   await recorte('d24-footer', 'footer', 0)
   await recorte('d11-inspector', '[data-inspector]', 0)
@@ -383,10 +448,63 @@ if (!SO || SO === 'cartoes') {
     problemas.push('a gaveta de cartões não abriu — 03-cards, d09 e d17 dependem dela')
   } else {
     await foto('03-cards')
-    await recorte('d17-cards-row', `document.querySelector('[data-card-tile]')?.parentElement`, 8)
+    /* A FILEIRA, e não um ladrilho.
+       `tile.parentElement` deixou de ser a fileira no dia em que arrastar para
+       reordenar embrulhou cada cartão num wrapper próprio — e a foto passou a
+       sair com um cartão só, ainda plausível, ainda publicada. Subir até o
+       primeiro ancestral que contém DOIS ladrilhos acha a fileira sem depender
+       de quantas camadas de embrulho existem hoje. */
+    await recorte(
+      'd17-cards-row',
+      `(() => {
+        const t = document.querySelector('[data-card-tile]')
+        if (!t) return null
+        let el = t
+        while (el.parentElement && el.parentElement.querySelectorAll('[data-card-tile]').length < 2) {
+          el = el.parentElement
+        }
+        return el.parentElement
+      })()`,
+      8
+    )
     await recorte('d09-card-video', '[data-card-tile="shot-vid"]', 6)
     await recorte('d10-overlay', `document.querySelector('[data-drawer-overlay-style]')?.parentElement`, 6)
   }
+
+  /* ------------------------------------------------------ o cartão de TELA */
+
+  /*
+   * O editor de tela, com a prévia grande.
+   *
+   * A janela é o recurso: as oito regulagens não cabem no ladrilho de 176px, e
+   * uma cor escolhida num selo desse tamanho não é a cor que sai numa tela de
+   * 55 polegadas. A foto precisa mostrar a prévia E os controles juntos.
+   */
+  const abriuEditor = await ev(`(() => {
+    const b = document.querySelector('[data-card-editar-tela="shot-tela"]')
+    if (!b) return false
+    b.click()
+    return true
+  })()`)
+  await wait(1200)
+  if (!abriuEditor || !(await ev(`Boolean(document.querySelector('[data-tela-previa]'))`))) {
+    problemas.push('o editor de tela não abriu — d29 e 10 ficaram sem foto')
+  } else {
+    await foto('10-screen-editor', `document.querySelector('[data-tela-previa]')`)
+    await recorte('d29-screen-editor', `document.querySelector('[data-tela-corpo]')?.parentElement`, 0)
+    // os seis efeitos: a grade de três por três, com um deles aceso
+    await recorte('d30-screen-effects', `document.querySelector('[data-tela-efeito="deriva"]')?.parentElement`, 8)
+    await ev(`document.querySelector('[data-sem-roda].fixed.inset-0')?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))`)
+    await wait(600)
+  }
+
+  /* A tela no ar, na superfície de verdade: é ela que prova que o mesmo
+     punhado de números desenha igual no ladrilho e na saída. */
+  await acao({ type: 'card/show', cardId: 'shot-tela' })
+  await wait(1600)
+  await recorte('11-screen-on-air', `document.querySelector('[data-prompter-surface]')`, 0)
+  await acao({ type: 'card/show', cardId: null })
+  await wait(700)
 
   /* Sobreposição: o texto rola POR CIMA do cartão. É o caso que mais precisa
      de foto, porque é o que ninguém acredita antes de ver. */

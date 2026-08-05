@@ -454,7 +454,6 @@ export const es: Dicionario = {
   'cards.count_1': '{n} tarjeta',
   'cards.count_n': '{n} tarjetas',
   'cards.blackoutWins': 'La pantalla negra está encendida y tapa la tarjeta.',
-  'cards.max': 'Son seis tarjetas, el número de atajos.',
   'cmd.card.hide': 'Quitar la tarjeta de la pantalla',
   'cmd.card.show': 'Mostrar la tarjeta {n}',
 

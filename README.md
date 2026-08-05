@@ -15,7 +15,7 @@
 | **The script** | Import `txt` `md` `docx` `pdf`, up to ten tabs, chapters, stage directions, markers, undo that survives closing the app |
 | **Timing** | Words per minute on a ruler, elapsed and remaining, a target duration the pace bends to meet, loop with a delay |
 | **The presenter's screen** | Any connected monitor, identified before you send a show to it, mirrored or rotated to suit the glass, and it survives being unplugged |
-| **Cards** | Images, video and messages — replacing the script or riding over it |
+| **Cards** | Images, video, messages, and standby screens the app draws itself — replacing the script or riding over it |
 | **The network** | One switch and any device on the wi-fi is a second prompter screen |
 | **The console** | Three working layouts, a command palette, remappable keys, interface zoom, six languages |
 
@@ -32,6 +32,12 @@ No other prompter lets you do this, and the reason is technical: they store the 
 Here nothing jumps. Fix a typo three paragraphs above the reading line, raise the type size, widen the margin: the word being read stays exactly where it is. That is what makes editing on air a normal thing to do instead of a stunt.
 
 Two marks are all the markup there is — `##` opens a chapter, `[square brackets]` make a stage direction that is never counted as words to be spoken.
+
+Each tab is a separate script with its own appearance and markers, and only the active one goes on air. Right-click one to duplicate it — the rehearsed version and the one about to run, side by side — to rename it, or to close it. Drag them to put the running order in the order it will actually run.
+
+<p align="center">
+  <img src="docs/screenshots/d28-tab-menu.png" width="300" alt="Right-clicking a tab: duplicate, rename, close" />
+</p>
 
 <p align="center">
   <img src="docs/screenshots/d08-chapters.png" width="240" alt="The chapter list with a duration for each" />
@@ -64,6 +70,22 @@ Images, video and messages reach the presenter's screen with one click or a numb
 ![The cards drawer with an image, a video and a message](docs/screenshots/d17-cards-row.png)
 
 Video plays the file as it arrived whenever the browser can handle it. When it cannot, ffmpeg first tries to change only the container — seconds, no pixel touched — and re-encodes only when the content genuinely will not fit an mp4.
+
+---
+
+## A standby screen without opening Photoshop
+
+![The screen editor: a live preview above the controls that change it](docs/screenshots/d29-screen-editor.png)
+
+The fourth kind of card is one **the app draws itself**. A colour, or two colours and an angle, or one of six slow animated backgrounds — drift, breathe, sweep, waves, bars, dust — with a message over it if you want one. Nothing to import, nothing to keep beside the project, nothing to break when a folder moves.
+
+That is the real difference, and it is not about looks: an image card points at a **file**, a screen card is a **handful of numbers**. It weighs nothing inside the `.valendo`, has no link that can go stale, needs no lighter copy made for the network, and the same numbers draw it at 176 pixels in the drawer and at full resolution on the presenter's monitor.
+
+The six effects are slow on purpose — a restless background argues with whoever is reading — and two sliders scale the whole set at once: how fast it moves, and how much the movement shows over the base colour.
+
+<p align="center">
+  <img src="docs/screenshots/d30-screen-effects.png" width="380" alt="The six animated backgrounds" />
+</p>
 
 ---
 
@@ -122,10 +144,11 @@ It also greets you in the language of your operating system, and lets you change
 | Pacing | Formula (words ÷ WPM), stopwatch, free run; elapsed, remaining and target duration |
 | Appearance | Family, size, weight, line height, letter spacing, ALL CAPS, margin, horizontal position, words per line, alignment, colour presets, invert, reading-contrast swatches |
 | Output | Monitor picker, identify displays, hot-plug survival, mirror X/Y, rotation, blackout, freeze |
-| Cards | Image, video, message; overlay per card and globally; band/shadow/none; drag to reorder; video scrub, loop, volume, relink |
+| Cards | Image, video, message, screen; overlay per card and globally; band/shadow/none; drag to reorder; video scrub, loop, volume, relink |
+| Screens | Flat, gradient with angle and fade distance, six animated backgrounds; speed and intensity; message with size, colour, alignment and placement |
 | Network | Local page with QR, five video weight profiles, only the on-air tab is published |
 | Files | Import `txt` `md` `docx` `pdf`; export `txt` `md` `docx` `pdf`; `.valendo` projects; recent projects; autosave |
-| Editing | Infinite undo, persisted across sessions; strip formatting; up to 10 tabs |
+| Editing | Infinite undo, persisted across sessions; strip formatting; up to 10 tabs, duplicated or dragged into order |
 | Console | Command palette, remappable keys, UI scale, transport at the top or in the footer bar |
 | Languages | English, Portuguese (Brazil), Spanish, German, French, Italian |
 

@@ -485,7 +485,6 @@ export const pt = {
   'cards.count_1': '{n} cartão',
   'cards.count_n': '{n} cartões',
   'cards.blackoutWins': 'A tela preta está ligada e cobre o cartão.',
-  'cards.max': 'São seis cartões, o número de atalhos.',
   'cmd.card.hide': 'Tirar o cartão da tela',
   'cmd.card.show': 'Mostrar o cartão {n}',
 

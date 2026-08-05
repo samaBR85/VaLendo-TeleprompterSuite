@@ -456,7 +456,6 @@ export const it: Dicionario = {
   'cards.count_1': '{n} cartello',
   'cards.count_n': '{n} cartelli',
   'cards.blackoutWins': 'Lo schermo nero è acceso e copre il cartello.',
-  'cards.max': 'Sei cartelli, quante sono le scorciatoie.',
   'cmd.card.hide': 'Togli il cartello dallo schermo',
   'cmd.card.show': 'Mostra il cartello {n}',
 

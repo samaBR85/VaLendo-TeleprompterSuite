@@ -453,7 +453,6 @@ export const en: Dicionario = {
   'cards.count_1': '{n} card',
   'cards.count_n': '{n} cards',
   'cards.blackoutWins': 'The black screen is on and covers the card.',
-  'cards.max': 'Six cards, one per shortcut.',
   'cmd.card.hide': 'Take the card off screen',
   'cmd.card.show': 'Show card {n}',
 

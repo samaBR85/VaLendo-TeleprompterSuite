@@ -456,7 +456,6 @@ export const de: Dicionario = {
   'cards.count_1': '{n} Karte',
   'cards.count_n': '{n} Karten',
   'cards.blackoutWins': 'Das Schwarzbild ist an und verdeckt die Karte.',
-  'cards.max': 'Sechs Karten, so viele wie Tastenkürzel.',
   'cmd.card.hide': 'Karte vom Bildschirm nehmen',
   'cmd.card.show': 'Karte {n} zeigen',
 

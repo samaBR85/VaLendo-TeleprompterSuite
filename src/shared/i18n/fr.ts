@@ -456,7 +456,6 @@ export const fr: Dicionario = {
   'cards.count_1': '{n} carton',
   'cards.count_n': '{n} cartons',
   'cards.blackoutWins': 'L’écran noir est activé et recouvre le carton.',
-  'cards.max': 'Six cartons, autant que de raccourcis.',
   'cmd.card.hide': 'Retirer le carton de l’écran',
   'cmd.card.show': 'Afficher le carton {n}',
 
