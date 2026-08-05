@@ -276,6 +276,7 @@ export const en: Dicionario = {
   'notice.projectOpenFail': 'Could not open the project',
   'notice.importInfo': 'About the import',
   'notice.unknownError': 'unknown error',
+  'notice.actionFailed': 'An action could not be completed and was undone ({acao}).',
 
   'main.importTitle': 'Import script',
   'main.importFail': 'Import failed',

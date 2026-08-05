@@ -302,6 +302,8 @@ export const pt = {
   'notice.projectOpenFail': 'Não deu para abrir o projeto',
   'notice.importInfo': 'Sobre a importação',
   'notice.unknownError': 'erro desconhecido',
+  // {acao} é o código da ação, e não se traduz: é o que o log e o suporte usam
+  'notice.actionFailed': 'Uma ação não pôde ser concluída e foi desfeita ({acao}).',
 
   /* ------------------------------------------------- processo principal (main) */
   'main.importTitle': 'Importar roteiro',

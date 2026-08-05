@@ -277,6 +277,7 @@ export const it: Dicionario = {
   'notice.projectOpenFail': 'Non è stato possibile aprire il progetto',
   'notice.importInfo': 'Sull’importazione',
   'notice.unknownError': 'errore sconosciuto',
+  'notice.actionFailed': 'Un’azione non è stata completata ed è stata annullata ({acao}).',
 
   'main.importTitle': 'Importa copione',
   'main.importFail': 'Importazione fallita',

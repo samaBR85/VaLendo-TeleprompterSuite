@@ -37,6 +37,8 @@ import {
   dismissStorageNotice,
   loadHistorySteps,
   loadState,
+  log,
+  reportStorageNotice,
   reportStorageProblem,
   saveState,
   userDataRoot
@@ -103,6 +105,9 @@ export class Store {
   private readonly rows = new Map<string, number[]>()
   /** o alarme de fim de roteiro — loop (reinicia) ou auto-pausa (pausa) */
   private loopTimer: ReturnType<typeof setTimeout> | null = null
+
+  /** Há um despacho de fora em andamento — ver `dispatch`. */
+  private despachando = false
 
   /** Com o que uma aba nova nasce. Vive fora do workspace, ver userDefaults.ts. */
   private defaults: UserDefaults
@@ -320,7 +325,78 @@ export class Store {
     if (anchor) this.patchTab(tab.id, { anchor })
   }
 
+  /**
+   * A rede embaixo do reducer.
+   *
+   * O `reduce` abaixo é o app inteiro: umas sessenta cláusulas, e um `throw` em
+   * qualquer uma delas subiria por um `ipcMain.on` — que é síncrono e não tem
+   * dono — até o tratador padrão do Node, que ENCERRA o processo principal. Com
+   * ele vão todas as janelas, inclusive a do apresentador, no meio do programa.
+   * É o pior modo de falha que este app tem, justamente porque a premissa dele é
+   * editar com o programa no ar.
+   *
+   * O renderer também não descobriria: o preload despacha por `ipcRenderer.send`,
+   * que é tiro-e-esquece e não tem caminho de volta para o erro.
+   *
+   * Aqui, e não em index.ts, por dois motivos: só daqui de dentro dá para repor
+   * o estado anterior (vários casos atribuem `this.state` em etapas, e um erro no
+   * meio deixaria a metade); e o alarme de fim de roteiro despacha de dentro de um
+   * `setTimeout`, que index.ts nem chega a ver.
+   *
+   * O preço é conhecido e escolhido: a ação não acontece. Isso é melhor do que o
+   * app morrer, e o operador fica sabendo — a faixa do rodapé acende com o × para
+   * dispensar, e a pilha vai inteira para o `problemas.log`.
+   */
   dispatch(action: Action): void {
+    /*
+     * Despacho aninhado não tem rede própria — de propósito.
+     *
+     * Vários casos chamam `this.dispatch` no meio do trabalho (`tab/add` ativa a
+     * aba nova, `project/replace` renomeia e reescreve, o loop reinicia). Se cada
+     * um repusesse o estado, reporia o de DEPOIS do primeiro passo, e o de fora
+     * seguiria em frente achando que deu tudo certo. Quem restaura é o de fora,
+     * que é o único que sabe como as coisas estavam antes do primeiro passo.
+     */
+    if (this.despachando) {
+      this.reduce(action)
+      return
+    }
+
+    const anterior = this.state
+    this.despachando = true
+    try {
+      this.reduce(action)
+    } catch (erro) {
+      this.recuperar(action, anterior, erro)
+    } finally {
+      this.despachando = false
+    }
+  }
+
+  /**
+   * Repõe o estado de antes da ação e conta o que houve.
+   *
+   * O que NÃO volta: um passo de desfazer que já tenha sido gravado antes do
+   * erro continua no arquivo do histórico. É aceito — o passo aponta para um
+   * texto que existiu de verdade, então desfazer segue coerente, e desenrolar
+   * disco por causa de um erro que não deveria acontecer custaria mais do que
+   * vale.
+   */
+  private recuperar(action: Action, anterior: AppState, erro: unknown): void {
+    const detalhe = erro instanceof Error ? (erro.stack ?? erro.message) : String(erro)
+    log(`a ação ${action.type} falhou e foi desfeita — ${detalhe}`)
+    try {
+      // pelo funil de sempre: repor sem avisar deixaria a tela mostrando a
+      // metade que chegou a sair daqui antes do erro
+      this.setState(anterior)
+    } catch {
+      // se nem repor deu, ao menos a memória fica coerente
+      this.state = anterior
+    }
+    reportStorageNotice(traduzir(anterior.language, 'notice.actionFailed', { acao: action.type }))
+  }
+
+  private reduce(action: Action): void {
     switch (action.type) {
       case 'text/set': {
         const tab = this.state.tabs.find((t) => t.id === action.tabId)

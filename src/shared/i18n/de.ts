@@ -277,6 +277,7 @@ export const de: Dicionario = {
   'notice.projectOpenFail': 'Projekt konnte nicht geöffnet werden',
   'notice.importInfo': 'Zum Import',
   'notice.unknownError': 'unbekannter Fehler',
+  'notice.actionFailed': 'Eine Aktion konnte nicht abgeschlossen werden und wurde rückgängig gemacht ({acao}).',
 
   'main.importTitle': 'Skript importieren',
   'main.importFail': 'Import fehlgeschlagen',
