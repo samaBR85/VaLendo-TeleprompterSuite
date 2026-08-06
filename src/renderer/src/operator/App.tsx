@@ -1238,19 +1238,27 @@ function AppConteudo({
       />
 
       {divisorDeFerramentas}
-      <EditorTool
-        ajudaId="editor.chapter"
-        icon="chapter"
-        label={t('editor.chapter')}
-        atalho={hint(keymap, 'insert.chapter')}
-        onClick={() => run('insert.chapter')}
-      />
-      <MenuDeCapitulo
-        rotulo={t('editor.chapterAll')}
-        quantas={linhasIguais}
-        desligado={linhasIguais === 0}
-        onTodos={() => editorRef.current?.capitularIguais()}
-      />
+      {/* O capítulo e a setinha dele são UM controle, e por isso andam colados.
+          Na fileira, todo mundo tem o mesmo respiro entre si — e com esse
+          respiro a setinha ficava exatamente no meio do caminho entre o
+          capítulo e a direção, lendo-se como se fosse da direção. Zerar o vão
+          só aqui dentro resolve sem mexer no ritmo do resto da barra: o par
+          fica junto e continua separado dos vizinhos. */}
+      <span className="flex flex-none items-center">
+        <EditorTool
+          ajudaId="editor.chapter"
+          icon="chapter"
+          label={t('editor.chapter')}
+          atalho={hint(keymap, 'insert.chapter')}
+          onClick={() => run('insert.chapter')}
+        />
+        <MenuDeCapitulo
+          rotulo={t('editor.chapterAll')}
+          quantas={linhasIguais}
+          desligado={linhasIguais === 0}
+          onTodos={() => editorRef.current?.capitularIguais()}
+        />
+      </span>
       <EditorTool
         ajudaId="editor.direction"
         icon="direction"
