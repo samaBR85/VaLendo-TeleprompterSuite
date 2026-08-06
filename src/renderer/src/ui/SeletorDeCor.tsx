@@ -1,6 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import type { AjudaId } from '@shared/ajuda'
 import { useT } from '../i18n'
+import { ajuda } from './ajuda'
 
 /**
  * O seletor de cor do app inteiro.
@@ -58,6 +60,7 @@ export function SeletorDeCor({
   desligado,
   rotulo,
   marca,
+  ajudaId,
   miolo,
   className = 'h-6 w-8'
 }: {
@@ -70,6 +73,8 @@ export function SeletorDeCor({
   desligado?: boolean
   rotulo: string
   marca?: string
+  /** id da Ajuda rápida — o quadro da coluna explica o seletor ao passar o mouse */
+  ajudaId?: AjudaId
   className?: string
   /**
    * A cor vai num quadrado DENTRO do botão, e não no botão inteiro.
@@ -149,6 +154,7 @@ export function SeletorDeCor({
         ref={botao}
         type="button"
         {...(marca ? { [`data-${marca}`]: '' } : {})}
+        {...(ajudaId ? ajuda(ajudaId) : {})}
         title={rotulo}
         aria-label={rotulo}
         aria-expanded={aberto}

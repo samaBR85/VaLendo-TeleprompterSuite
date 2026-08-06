@@ -268,7 +268,11 @@ export const ajudaIt = {
   },
   'editor.color': {
     nome: 'Colore del testo',
-    texto: 'Quattro scorciatoie e qualsiasi colore. Ambra e blu sono esclusi: significano già capitolo e didascalia. Quella punteggiata toglie il segno.'
+    texto: 'Apre la tavolozza: 71 tonalità, più le ultime quattro che hai usato. Vale per ciò che è selezionato nel copione.'
+  },
+  'editor.recentColors': {
+    nome: 'Colori recenti',
+    texto: 'Gli ultimi quattro scelti, a ruota: un colore nuovo occupa la casella seguente e riparte dalla prima. Il punteggiato toglie il colore.'
   },
   'editor.clearFormat': {
     nome: 'Rimuovi formattazione',

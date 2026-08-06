@@ -1412,6 +1412,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
           >
             <SeletorDeCor
               marca="busca-cor"
+              ajudaId="editor.color"
               rotulo={t('editor.color')}
               valor={corDaBusca ?? undefined}
               atalhos={coresRecentes}

@@ -295,7 +295,11 @@ export const ajudaEn = {
   },
   'editor.color': {
     nome: 'Text colour',
-    texto: 'Four shortcuts plus any colour you like. Amber and blue are missing on purpose: they already mean chapter and stage direction. The dotted one removes the mark.'
+    texto: 'Opens the palette: 71 shades, plus the last four you used. Applies to whatever is selected in the script.'
+  },
+  'editor.recentColors': {
+    nome: 'Recent colours',
+    texto: 'The last four you picked, in a wheel: a new colour takes the next slot and starts over at the first. The dotted one removes the colour.'
   },
   'editor.clearFormat': {
     nome: 'Clear formatting',

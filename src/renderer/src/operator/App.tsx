@@ -172,6 +172,7 @@ function CoresRecentes({
   return (
     <div
       data-cores-recentes
+      {...ajuda('editor.recentColors')}
       /*
        * Sem poço, sem moldura: as bolinhas ficam soltas na barra.
        *
@@ -1061,6 +1062,7 @@ function AppConteudo({
       />
       <SeletorDeCor
         marca="conta-gotas"
+        ajudaId="editor.color"
         rotulo={t('editor.color')}
         /* o gatilho devolve a cor de quem está selecionado: sem isto ele
            mostrava o multicores mesmo sobre um trecho já pintado, e não havia

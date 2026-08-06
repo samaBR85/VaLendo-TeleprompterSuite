@@ -268,7 +268,11 @@ export const ajudaPt = {
   },
   'editor.color': {
     nome: 'Cor do texto',
-    texto: 'Quatro atalhos e qualquer cor que você quiser. Âmbar e azul ficaram de fora: já significam capítulo e direção. A pontilhada tira a marca.'
+    texto: 'Abre a paleta: 71 tons, mais as quatro últimas que você usou. Vale para o que estiver selecionado no roteiro.'
+  },
+  'editor.recentColors': {
+    nome: 'Cores recentes',
+    texto: 'As quatro últimas que você escolheu, em roda: uma cor nova ocupa a casa seguinte e recomeça na primeira. A pontilhada tira a cor.'
   },
   'editor.clearFormat': {
     nome: 'Remover formatação',

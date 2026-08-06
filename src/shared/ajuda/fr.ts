@@ -268,7 +268,11 @@ export const ajudaFr = {
   },
   'editor.color': {
     nome: 'Couleur du texte',
-    texto: 'Quatre raccourcis et n’importe quelle couleur. L’ambre et le bleu sont exclus : ils signifient déjà chapitre et indication. La pointillée retire la marque.'
+    texto: 'Ouvre la palette : 71 teintes, plus les quatre dernières utilisées. S’applique à ce qui est sélectionné dans le texte.'
+  },
+  'editor.recentColors': {
+    nome: 'Couleurs récentes',
+    texto: 'Les quatre dernières choisies, en roue : une nouvelle prend la case suivante et repart de la première. Le pointillé retire la couleur.'
   },
   'editor.clearFormat': {
     nome: 'Effacer la mise en forme',

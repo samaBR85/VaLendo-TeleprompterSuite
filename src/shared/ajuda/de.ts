@@ -268,7 +268,11 @@ export const ajudaDe = {
   },
   'editor.color': {
     nome: 'Textfarbe',
-    texto: 'Vier Kurzwahlen und jede beliebige Farbe. Bernstein und Blau fehlen mit Absicht: sie bedeuten schon Kapitel und Regieanweisung. Die gepunktete entfernt die Markierung.'
+    texto: 'Öffnet die Palette: 71 Töne, dazu die letzten vier, die Sie benutzt haben. Gilt für das im Skript Markierte.'
+  },
+  'editor.recentColors': {
+    nome: 'Zuletzt benutzte Farben',
+    texto: 'Die letzten vier, im Kreis: eine neue Farbe belegt den nächsten Platz und beginnt wieder vorn. Der gepunktete entfernt die Farbe.'
   },
   'editor.clearFormat': {
     nome: 'Formatierung entfernen',

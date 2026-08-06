@@ -268,7 +268,11 @@ export const ajudaEs = {
   },
   'editor.color': {
     nome: 'Color del texto',
-    texto: 'Cuatro atajos y el color que quieras. Ámbar y azul quedaron fuera: ya significan capítulo y acotación. La punteada quita la marca.'
+    texto: 'Abre la paleta: 71 tonos, más los cuatro últimos que usaste. Se aplica a lo que esté seleccionado en el guion.'
+  },
+  'editor.recentColors': {
+    nome: 'Colores recientes',
+    texto: 'Los cuatro últimos que elegiste, en rueda: un color nuevo ocupa la casilla siguiente y vuelve a empezar. El punteado quita el color.'
   },
   'editor.clearFormat': {
     nome: 'Quitar formato',
