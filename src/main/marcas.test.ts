@@ -105,3 +105,40 @@ describe('pintar trechos do roteiro', () => {
     expect(cercado()).toEqual(['ação'])
   })
 })
+
+describe('a roda das cores recentes', () => {
+  it('anda ao usar uma cor, sem gastar um passo de desfazer', async () => {
+    /*
+     * "Usei este roxo" é preferência da máquina, não conteúdo do roteiro. Um
+     * Ctrl+Z que devolvesse a roda seria um desfazer que não desfaz nada
+     * visível no texto — e comeria o desfazer de verdade que o operador queria.
+     */
+    const { store } = await comRoteiro()
+    const antes = store.historyInfo().depth
+    store.dispatch({ type: 'marca/corUsada', cor: '#9d5bd2' })
+    expect(store.getState().maquina.coresRecentes).toEqual(['#9d5bd2'])
+    expect(store.historyInfo().depth).toBe(antes)
+  })
+
+  it('a quinta cor recomeça na primeira casa', async () => {
+    const { store } = await comRoteiro()
+    for (const cor of ['#111111', '#222222', '#333333', '#444444', '#555555']) {
+      store.dispatch({ type: 'marca/corUsada', cor })
+    }
+    expect(store.getState().maquina.coresRecentes).toEqual([
+      '#555555',
+      '#222222',
+      '#333333',
+      '#444444'
+    ])
+  })
+
+  it('a roda NÃO viaja no projeto salvo', async () => {
+    // a caixa de tintas é do operador; mandar um .valendo para um colega não
+    // pode levar junto o vermelho que você estava usando ontem
+    const { semMaquina } = await import('@shared/project')
+    const { store } = await comRoteiro()
+    store.dispatch({ type: 'marca/corUsada', cor: '#9d5bd2' })
+    expect(semMaquina(store.getState()).maquina.coresRecentes).toEqual([])
+  })
+})

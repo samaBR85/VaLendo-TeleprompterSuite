@@ -9,7 +9,8 @@ import { PrompterStage } from '../prompter/PrompterStage'
 import { ancoraEmPalavrasReais, anchorFromWordIndex, composeLines, totalWords } from '@shared/anchor'
 import { cartaoNoAr } from '@shared/cards'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
-import { anchorFromCaret, hasFormatting, totalWordCount } from '@shared/text'
+import { corNoPonto, RECENTES_MAX } from '@shared/marcas'
+import { anchorFromCaret, fatiasPorBloco, hasFormatting, totalWordCount } from '@shared/text'
 import type { Tab } from '@shared/types'
 import { LANGS, type Lang } from '@shared/i18n'
 import { ProvedorDeIdioma, useT } from '../i18n'
@@ -142,8 +143,64 @@ function EditorTool({
   )
 }
 
-/** As quatro cores de atalho — tons médios, para se lerem no preto E no papel branco. */
-export const CORES_DE_MARCA = ['#e5484d', '#d6409f', '#9d5bd2', '#12a594']
+/**
+ * A roda das quatro cores usadas por último, colada no seletor.
+ *
+ * Afundada e num poço próprio de propósito: solta na fileira, ela leria como
+ * mais quatro TECLAS de comando, e teclas prometem uma ação. Estas quatro são
+ * a caixa de tintas do seletor ao lado — mesma família, material diferente.
+ *
+ * A casa vazia é branca porque branco é a cor do texto SEM marca: o lugar
+ * mostra o que ainda não tem, em vez de fingir uma sugestão. Mas branco vazio
+ * e branco escolhido de propósito precisam se distinguir, e é o que o
+ * esmaecido faz — a casa vazia também não é clicável.
+ */
+function CoresRecentes({
+  cores,
+  desligado,
+  onCor,
+  onLimpar,
+  rotuloLimpar
+}: {
+  cores: string[]
+  desligado: boolean
+  onCor: (cor: string) => void
+  onLimpar: () => void
+  rotuloLimpar: string
+}): React.JSX.Element {
+  const casas = Array.from({ length: RECENTES_MAX }, (_, i) => cores[i])
+  return (
+    <div
+      data-cores-recentes
+      className="flex flex-none items-center gap-[3px] rounded border border-[var(--color-edge)] bg-[var(--color-ink-0)] px-1 py-[3px] shadow-[inset_0_1px_2px_var(--color-edge)]"
+    >
+      {casas.map((cor, i) => (
+        <button
+          key={i}
+          type="button"
+          {...(cor ? { 'data-cor-recente': cor } : { 'data-cor-recente-vazia': '' })}
+          title={cor ?? ''}
+          aria-label={cor ?? ''}
+          disabled={!cor || desligado}
+          onClick={() => cor && onCor(cor)}
+          className="h-[15px] w-[15px] flex-none rounded-full border border-[var(--color-edge)] transition-transform not-disabled:hover:scale-110 disabled:cursor-default"
+          style={{ background: cor ?? '#fff', opacity: cor ? (desligado ? 0.35 : 1) : 0.2 }}
+        />
+      ))}
+      <button
+        type="button"
+        data-cor-limpar
+        title={rotuloLimpar}
+        aria-label={rotuloLimpar}
+        disabled={desligado}
+        onClick={onLimpar}
+        className="grid h-[15px] w-[15px] flex-none place-items-center rounded-full border border-dashed border-[var(--color-fog-3)] text-[9px] leading-none text-[var(--color-fog-3)] not-disabled:hover:border-[var(--color-fog-1)] not-disabled:hover:text-[var(--color-fog-1)] disabled:opacity-30"
+      >
+        ×
+      </button>
+    </div>
+  )
+}
 
 /**
  * Um "aA" das pontas do slider de fonte, que anda um ponto por clique. O
@@ -507,6 +564,16 @@ function AppConteudo({
      um apagado, porque ensina que o recurso não funciona */
   const [textoSelecionado, setTextoSelecionado] = useState(false)
   /**
+   * A cor da marca onde a seleção COMEÇA — é o que o gatilho mostra de volta.
+   *
+   * Sem isto o seletor abria sempre no multicores, mesmo com um trecho já
+   * pintado selecionado: o operador não tinha como saber, olhando, qual
+   * vermelho tinha usado ali. Vale a cor do primeiro caractere, e não uma
+   * mistura: numa seleção que atravessa duas marcas, "a cor daqui" é a única
+   * resposta que não inventa nada.
+   */
+  const [corSelecionada, setCorSelecionada] = useState<string | undefined>(undefined)
+  /**
    * Há digitação ainda dentro do respiro de 140ms do editor.
    *
    * Serve só para o botão DESFAZER acender nesse intervalo — o `canUndo` vem
@@ -650,6 +717,23 @@ function AppConteudo({
   }, [state, dispatch])
 
   /**
+   * A cor que está pintando o começo da seleção, se houver alguma.
+   *
+   * A faixa vem em caracteres do roteiro INTEIRO; as marcas moram em cada
+   * bloco, contadas do começo dele. `fatiasPorBloco` é a mesma conversão que a
+   * ação de pintar usa — reusá-la é o que garante que o gatilho mostre
+   * exatamente a cor que um clique no mesmo lugar trocaria.
+   */
+  const corDaSelecao = useCallback((): string | undefined => {
+    const faixa = editorRef.current?.selecaoFaixa()
+    const blocos = state?.tabs.find((t) => t.id === state.activeTabId)?.blocks
+    if (!faixa || !blocos) return undefined
+    const primeira = fatiasPorBloco(blocos, faixa.de, faixa.ate)[0]
+    if (!primeira) return undefined
+    return corNoPonto(blocos.find((b) => b.id === primeira.blockId)?.marcas, primeira.de)
+  }, [state])
+
+  /**
    * O CATCH: cada movimento do cursor rearma um `goToCaret` daqui a pouco,
    * em vez de disparar na hora.
    *
@@ -660,10 +744,11 @@ function AppConteudo({
    */
   const onCaretMove = useCallback(() => {
     setTextoSelecionado((editorRef.current?.selecao() ?? '') !== '')
+    setCorSelecionada(corDaSelecao())
     if (!catchAtivo) return
     if (catchTimer.current) clearTimeout(catchTimer.current)
     catchTimer.current = setTimeout(goToCaret, 220)
-  }, [catchAtivo, goToCaret])
+  }, [catchAtivo, goToCaret, corDaSelecao])
 
   useEffect(() => {
     return () => {
@@ -924,6 +1009,12 @@ function AppConteudo({
     if (!faixa) return
     editorRef.current?.flush()
     dispatch({ type: 'marca/aplicar', tabId: tab.id, trechos: [faixa], patch })
+    if (patch.cor) {
+      // a roda anda, e o gatilho já mostra a cor nova sem esperar a volta do
+      // main — a seleção continua onde está, ninguém mexeu no cursor
+      dispatch({ type: 'marca/corUsada', cor: patch.cor })
+      setCorSelecionada(patch.cor)
+    }
   }
 
   const limparSelecao = (): void => {
@@ -931,6 +1022,7 @@ function AppConteudo({
     if (!faixa) return
     editorRef.current?.flush()
     dispatch({ type: 'marca/limpar', tabId: tab.id, trechos: [faixa] })
+    setCorSelecionada(undefined)
   }
 
   const editorTools = (
@@ -962,12 +1054,21 @@ function AppConteudo({
       <SeletorDeCor
         marca="conta-gotas"
         rotulo={t('editor.color')}
-        atalhos={CORES_DE_MARCA}
+        /* o gatilho devolve a cor de quem está selecionado: sem isto ele
+           mostrava o multicores mesmo sobre um trecho já pintado, e não havia
+           como saber, olhando, QUAL vermelho tinha sido usado ali */
+        valor={corSelecionada}
+        desligado={!textoSelecionado}
+        onCor={(cor) => marcarSelecao({ cor })}
+        className="rounded p-1 transition-colors hover:bg-[var(--color-ink-3)] disabled:hover:bg-transparent"
+        miolo="h-[14px] w-[14px] rounded-[3px] border border-[var(--color-edge)]"
+      />
+      <CoresRecentes
+        cores={state.maquina.coresRecentes}
         desligado={!textoSelecionado}
         onCor={(cor) => marcarSelecao({ cor })}
         onLimpar={limparSelecao}
-        className="rounded p-1 transition-colors hover:bg-[var(--color-ink-3)] disabled:hover:bg-transparent"
-        miolo="h-[14px] w-[14px] rounded-[3px] border border-[var(--color-edge)]"
+        rotuloLimpar={t('editor.colorNone')}
       />
 
       {divisorDeFerramentas}

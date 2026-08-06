@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   aplicarMarca,
+  corNoPonto,
   edicaoEntre,
+  guardarRecente,
   limparMarcas,
   marcasDaFatia,
   remapearMarcas,
@@ -203,5 +205,77 @@ describe('recortar para a composição de linhas', () => {
     expect(marcasDaFatia([{ de: 14, ate: 18, negrito: true }], 10, 20)).toEqual([
       { de: 4, ate: 8, negrito: true }
     ])
+  })
+})
+
+describe('a cor que o seletor mostra de volta', () => {
+  it('devolve a cor da marca que cobre o ponto', () => {
+    expect(corNoPonto([ACAO], 3)).toBe('#e5484d')
+  })
+
+  it('fora da marca, nenhuma cor', () => {
+    // no fim EXCLUSIVO: a marca cerca 2..6, então a casa 6 já é de fora
+    expect(corNoPonto([ACAO], 6)).toBeUndefined()
+    expect(corNoPonto([ACAO], 1)).toBeUndefined()
+    expect(corNoPonto(undefined, 3)).toBeUndefined()
+  })
+
+  it('marca só de negrito não devolve cor nenhuma', () => {
+    // senão o gatilho da barra apagaria a cor ao selecionar um trecho negrito
+    expect(corNoPonto([{ de: 2, ate: 6, negrito: true }], 3)).toBeUndefined()
+  })
+
+  it('com duas marcas no mesmo ponto, vale a de cima', () => {
+    expect(corNoPonto([ACAO, { de: 0, ate: 10, cor: '#12a594' }], 3)).toBe('#12a594')
+  })
+})
+
+describe('a roda das quatro cores recentes', () => {
+  const roda = (cores: string[]): { recentes: string[]; proxima: number } =>
+    cores.reduce(
+      (estado, cor) => guardarRecente(estado.recentes, estado.proxima, cor),
+      { recentes: [] as string[], proxima: 0 }
+    )
+
+  it('enche da esquerda para a direita', () => {
+    expect(roda(['#111111', '#222222']).recentes).toEqual(['#111111', '#222222'])
+  })
+
+  it('cheia, a quinta cor recomeça na PRIMEIRA casa', () => {
+    /*
+     * O ponto de não ser uma pilha. Numa pilha, o quinto empurraria os quatro
+     * e as três cores que o operador não tocou trocariam de lugar — a bolinha
+     * que o dedo já sabia onde fica mudaria de casa a cada pincelada.
+     */
+    const estado = roda(['#111111', '#222222', '#333333', '#444444', '#555555'])
+    expect(estado.recentes).toEqual(['#555555', '#222222', '#333333', '#444444'])
+    expect(estado.proxima).toBe(1)
+  })
+
+  it('dá a volta inteira e recomeça de novo', () => {
+    const oito = ['#111111', '#222222', '#333333', '#444444', '#aaaaaa', '#bbbbbb', '#cccccc', '#dddddd']
+    const estado = roda(oito)
+    expect(estado.recentes).toEqual(['#aaaaaa', '#bbbbbb', '#cccccc', '#dddddd'])
+    expect(estado.proxima).toBe(0)
+  })
+
+  it('cor repetida não gasta a vez nem duplica', () => {
+    // repintar com o mesmo vermelho de sempre não pode custar uma das quatro
+    const antes = roda(['#111111', '#222222'])
+    const depois = guardarRecente(antes.recentes, antes.proxima, '#111111')
+    expect(depois).toEqual(antes)
+  })
+
+  it('a mesma cor em caixa diferente conta como repetida', () => {
+    const antes = roda(['#e5484d'])
+    expect(guardarRecente(antes.recentes, antes.proxima, '#E5484D')).toEqual(antes)
+  })
+
+  it('um índice estragado no disco não abre buraco na roda', () => {
+    // ninguém edita o workspace.json à mão, mas quando editar não pode virar
+    // uma lista esparsa — `undefined` no meio quebraria o desenho
+    const estado = guardarRecente(['#111111'], 9, '#222222')
+    expect(estado.recentes).toEqual(['#111111', '#222222'])
+    expect(estado.recentes.every((c) => typeof c === 'string')).toBe(true)
   })
 })

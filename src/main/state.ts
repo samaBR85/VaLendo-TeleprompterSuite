@@ -27,7 +27,7 @@ import { History } from '@shared/history'
 import { traduzir } from '@shared/i18n'
 import { duplicarAba } from '@shared/duplicarAba'
 import { fatiasPorBloco, reconcileBlocks } from '@shared/text'
-import { aplicarMarca, limparMarcas } from '@shared/marcas'
+import { aplicarMarca, guardarRecente, limparMarcas } from '@shared/marcas'
 import type { Anchor, Appearance, AppState, PacingRule, StopwatchClock, Tab, Transport } from '@shared/types'
 import { CRONOMETRO_PARADO, secondsForWords, segundosDoCronometro, wordIndexAt } from '@shared/pacing'
 // a régua da tela e o passo do atalho saem da mesma constante: o degrau que se
@@ -1262,6 +1262,27 @@ export class Store {
           }
         })
         break
+      }
+
+      /*
+       * A roda das quatro cores recentes. NÃO passa por `mutateTab`: é
+       * preferência da máquina, não conteúdo do roteiro, e um Ctrl+Z que
+       * desfizesse "usei este roxo" seria um desfazer que não desfaz nada
+       * visível no texto.
+       */
+      case 'marca/corUsada': {
+        const atual = this.state.maquina
+        const { recentes, proxima } = guardarRecente(
+          atual.coresRecentes,
+          atual.proximaCorRecente,
+          action.cor
+        )
+        if (recentes === atual.coresRecentes && proxima === atual.proximaCorRecente) return
+        this.setState({
+          ...this.state,
+          maquina: { ...atual, coresRecentes: recentes, proximaCorRecente: proxima }
+        })
+        return
       }
 
       /**

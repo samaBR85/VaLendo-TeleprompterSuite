@@ -180,18 +180,6 @@ export function SeletorDeCor({
               }}
               className="z-[100] rounded-lg border border-[var(--color-line)] bg-[var(--color-ink-2)] p-2 shadow-[0_12px_36px_rgba(0,0,0,.7)]"
             >
-              {/* a cor de agora, à esquerda, e o código dela — quem trabalha com
-                  marca de canal precisa poder LER o valor, não só apontar */}
-              <div className="mb-2 flex items-center gap-2">
-                <span
-                  className="h-6 w-6 flex-none rounded border border-[var(--color-edge)]"
-                  style={{ background: valor ?? gradiente }}
-                />
-                <span className="font-mono text-[11px] tracking-wide text-[var(--color-fog-2)] uppercase">
-                  {valor ?? '—'}
-                </span>
-              </div>
-
               {/* sem folga entre os quadrados, e o arredondamento só na moldura:
                   separados, eles liam como retalho em vez de paleta */}
               <div className="overflow-hidden rounded border border-[var(--color-edge)]">
@@ -209,8 +197,13 @@ export function SeletorDeCor({
                 </div>
               </div>
 
-              {atalhos?.length || onLimpar ? (
-                <div className="mt-2 flex items-center gap-2">
+              {/* O rodapé: os atalhos desta tela à esquerda, o código hex à
+                  direita. A amostra grande que morava no TOPO saiu — o próprio
+                  gatilho na barra já mostra a cor de agora, e ver o mesmo
+                  quadrado duas vezes a meio centímetro de distância não
+                  informava nada. O hex fica: quem casa uma marca com a arte de
+                  um canal precisa LER o valor, não só apontar. */}
+              <div className="mt-2 flex items-center gap-2">
                   {atalhos?.map((cor) => (
                     <button
                       key={cor}
@@ -232,13 +225,15 @@ export function SeletorDeCor({
                         onLimpar()
                         setAberto(false)
                       }}
-                      className="ml-auto grid h-[18px] w-[18px] place-items-center rounded-full border border-dashed border-[var(--color-fog-3)] text-[9px] text-[var(--color-fog-3)] hover:border-[var(--color-fog-1)] hover:text-[var(--color-fog-1)]"
+                      className="grid h-[18px] w-[18px] place-items-center rounded-full border border-dashed border-[var(--color-fog-3)] text-[9px] text-[var(--color-fog-3)] hover:border-[var(--color-fog-1)] hover:text-[var(--color-fog-1)]"
                     >
                       ×
                     </button>
                   ) : null}
-                </div>
-              ) : null}
+                <span className="ml-auto font-mono text-[11px] tracking-wide text-[var(--color-fog-2)] uppercase">
+                  {valor ?? '—'}
+                </span>
+              </div>
             </div>,
             document.body
           )

@@ -86,6 +86,11 @@ export const MAQUINA_PADRAO: PreferenciasDaMaquina = {
   editorFontSize: EDITOR_FONT_DEFAULT,
   editorAllCaps: false,
   cardVolume: 1,
+  /* a roda nasce VAZIA, e as quatro casas aparecem em branco na barra. Branco
+     é a cor do texto sem marca — a casa vazia mostra o que aquele lugar ainda
+     não tem, em vez de fingir uma sugestão que o operador nunca escolheu */
+  coresRecentes: [],
+  proximaCorRecente: 0,
   ajudaAberta: true,
   presetsAberto: true,
   apresentadoresAberto: true,

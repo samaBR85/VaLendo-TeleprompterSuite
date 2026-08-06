@@ -224,3 +224,48 @@ export function marcasDaFatia(marcas: Marca[], de: number, ate: number): Marca[]
   }
   return fora
 }
+
+/** A cor da marca que cobre esta posição do bloco, se houver alguma. */
+export function corNoPonto(marcas: Marca[] | undefined, pos: number): string | undefined {
+  if (!marcas) return undefined
+  // de trás para frente: a marca mais recente é a que o operador vê por cima
+  for (let i = marcas.length - 1; i >= 0; i--) {
+    const m = marcas[i]
+    if (m.de <= pos && pos < m.ate && m.cor) return m.cor
+  }
+  return undefined
+}
+
+/** Quantas cores o histórico da barra guarda. */
+export const RECENTES_MAX = 4
+
+/**
+ * O histórico de cores da barra: quatro casas, preenchidas em roda.
+ *
+ * A regra é do operador, e é a de uma paleta de pintor: enche da esquerda
+ * para a direita até as quatro estarem cheias, e daí em diante recomeça na
+ * primeira. Não é uma pilha que empurra tudo para o lado — e a diferença
+ * importa: numa pilha, cada cor nova reordena as outras três, e a bolinha que
+ * o dedo já sabia onde fica muda de lugar. Aqui, as três que você não tocou
+ * ficam exatamente onde estavam.
+ *
+ * Cor que já está na roda não faz nada: nem duplica, nem gasta a vez. Repintar
+ * um trecho com o mesmo vermelho de sempre não pode custar uma das quatro
+ * casas.
+ */
+export function guardarRecente(
+  recentes: string[],
+  proxima: number,
+  cor: string
+): { recentes: string[]; proxima: number } {
+  const limpa = cor.toLowerCase()
+  const lista = recentes.slice(0, RECENTES_MAX).map((c) => c.toLowerCase())
+  if (lista.includes(limpa)) return { recentes: lista, proxima }
+  // a casa da vez, defendida contra um número estragado vindo do disco
+  const casa = Number.isInteger(proxima) ? Math.max(0, proxima) % RECENTES_MAX : 0
+  // sem buracos: a roda só escreve na casa seguinte à última cheia, então
+  // `casa` nunca passa do fim da lista — mas um arquivo editado à mão poderia
+  const destino = Math.min(casa, lista.length)
+  lista[destino] = limpa
+  return { recentes: lista, proxima: (destino + 1) % RECENTES_MAX }
+}

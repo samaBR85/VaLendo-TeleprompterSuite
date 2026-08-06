@@ -565,6 +565,17 @@ export interface PreferenciasDaMaquina {
   editorAllCaps: boolean
   /** volume da prévia dos cartões de vídeo, 0 a 1; a transmissão é sempre muda */
   cardVolume: number
+  /**
+   * As quatro últimas cores de marca usadas, na roda da barra de Edição.
+   *
+   * Mora na máquina, e é decisão: a caixa de tintas é do operador, não do
+   * programa. Mandar um `.valendo` para um colega não pode levar junto o
+   * vermelho que VOCÊ estava usando ontem — e receber um projeto de fora não
+   * pode zerar a sua paleta no meio de um ensaio.
+   */
+  coresRecentes: string[]
+  /** a casa da roda que a próxima cor nova vai ocupar, 0 a 3 */
+  proximaCorRecente: number
   /** a caixa "Ajuda rápida", no rodapé da coluna, está aberta */
   ajudaAberta: boolean
   /**

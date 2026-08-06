@@ -172,6 +172,14 @@ export type Action =
    */
   | { type: 'marca/aplicar'; tabId: string; trechos: { de: number; ate: number }[]; patch: Partial<Marca> }
   | { type: 'marca/limpar'; tabId: string; trechos: { de: number; ate: number }[] }
+  /**
+   * Uma cor acabou de ser usada — entra na roda das quatro recentes.
+   *
+   * Ação própria, e não um `maquina/patch` montado no renderer, porque a lista
+   * e o ponteiro da roda são um par: quem calcula um sem o outro produz um
+   * histórico com buraco. Aqui a regra mora num lugar só.
+   */
+  | { type: 'marca/corUsada'; cor: string }
   /* Presets de aparência: os cinco lugares do rodapé dos Ajustes.
      `preset/guardar` fotografa a aba ativa; `preset/aplicar` veste essa
      fotografia noutra aba, num passo só de histórico — meio desfazer seria
