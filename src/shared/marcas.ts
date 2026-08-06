@@ -269,3 +269,18 @@ export function guardarRecente(
   lista[destino] = limpa
   return { recentes: lista, proxima: (destino + 1) % RECENTES_MAX }
 }
+
+/**
+ * A cor com que um trecho foi pintado — a última, quando há mais de uma.
+ *
+ * É a regra do CAPÍTULO colorido: um capítulo não se pinta por pedaços como
+ * uma fala, ele é um rótulo. Marcar qualquer parte do título tinge o título
+ * inteiro, e é o que o operador espera ao selecionar duas das cinco palavras
+ * de "## INTERVALO COMERCIAL" e escolher vermelho.
+ *
+ * A última ganha, e não a primeira, pela mesma razão que em `pedacosDaLinha`:
+ * pintar de novo por cima é o gesto de trocar de ideia.
+ */
+export function corDaMarca(marcas: Marca[] | undefined): string | undefined {
+  return marcas?.filter((m) => m.cor).at(-1)?.cor
+}

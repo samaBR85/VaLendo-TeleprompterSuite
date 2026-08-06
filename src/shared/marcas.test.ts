@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   aplicarMarca,
+  corDaMarca,
   corNoPonto,
   edicaoEntre,
   guardarRecente,
@@ -277,5 +278,30 @@ describe('a roda das quatro cores recentes', () => {
     const estado = guardarRecente(['#111111'], 9, '#222222')
     expect(estado.recentes).toEqual(['#111111', '#222222'])
     expect(estado.recentes.every((c) => typeof c === 'string')).toBe(true)
+  })
+})
+
+describe('a cor de um trecho inteiro — a regra do capítulo', () => {
+  it('devolve a cor da marca', () => {
+    expect(corDaMarca([ACAO])).toBe('#e5484d')
+  })
+
+  it('sem marca, sem cor', () => {
+    expect(corDaMarca(undefined)).toBeUndefined()
+    expect(corDaMarca([])).toBeUndefined()
+  })
+
+  it('marca só de negrito não tinge nada', () => {
+    // um capítulo em negrito continua com a cor do sistema
+    expect(corDaMarca([{ de: 0, ate: 4, negrito: true }])).toBeUndefined()
+  })
+
+  it('com duas cores, vale a ÚLTIMA', () => {
+    // pintar de novo por cima é o gesto de trocar de ideia
+    expect(corDaMarca([ACAO, { de: 0, ate: 2, cor: '#12a594' }])).toBe('#12a594')
+  })
+
+  it('pula as marcas sem cor ao procurar a última', () => {
+    expect(corDaMarca([ACAO, { de: 0, ate: 2, negrito: true }])).toBe('#e5484d')
   })
 })

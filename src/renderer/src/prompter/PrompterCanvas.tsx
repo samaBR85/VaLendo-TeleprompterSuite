@@ -4,6 +4,7 @@ import { coresDasLinhas, ehDeixa } from '@shared/apresentadores'
 import { canvasBox, stageSize } from '@shared/output'
 import { mascaraDeFoco } from '@shared/focoDaLeitura'
 import { relogioIndependenteReading, stopwatchReading, timerReading, wordIndexAt } from '@shared/pacing'
+import { corDaMarca } from '@shared/marcas'
 import { chapterTitle } from '@shared/text'
 import {
   timerCell,
@@ -776,7 +777,20 @@ export function PrompterCanvas({
                         // altura da linha precisa continuar igual à de uma linha
                         // comum, senão o peso em palavras atribuído a ela (em
                         // anchor.ts) some de proporção e a rolagem trava aqui
-                        { letterSpacing: '0.2em', opacity: 0.6, textTransform: 'uppercase' }
+                        //
+                        // A COR PINTADA GANHA DO ÂMBAR DO SISTEMA. Um capítulo
+                        // não se pinta por pedaços como uma fala — ele é um
+                        // rótulo —, então marcar qualquer parte do título tinge
+                        // o título inteiro. E, quando há cor escolhida, o véu de
+                        // 0.6 sai: o operador pediu AQUELA cor, e mostrá-la a
+                        // 60% seria mostrar outra.
+                        {
+                          letterSpacing: '0.2em',
+                          textTransform: 'uppercase',
+                          ...(corDaMarca(line.marcas)
+                            ? { color: corDaMarca(line.marcas) }
+                            : { opacity: 0.6 })
+                        }
                       : /* a cor de quem fala, quando há alguém: só a FALA muda
                            de cor — a linha do nome é tratada logo abaixo, e
                            capítulo e direção mantêm as suas, que são do sistema */
