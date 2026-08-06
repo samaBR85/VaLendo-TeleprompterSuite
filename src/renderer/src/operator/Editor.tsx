@@ -923,10 +923,15 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
    * que está em jogo e existe UM lugar que age. Marcadas as duas, trocar e
    * pintar acontecem no mesmo clique — o encadeamento que antes era impossível.
    *
-   * Trocar nasce marcada porque é o que quem abre a segunda linha veio fazer;
-   * pintar nasce desmarcada porque ainda não há cor escolhida.
+   * As duas nascem DESMARCADAS. `Ctrl+F` é uma busca antes de ser qualquer
+   * outra coisa: na maior parte das vezes o operador só quer achar a palavra e
+   * ir até ela. Trocar nascia marcada, e isso deixava uma ação que reescreve o
+   * roteiro armada logo acima do APPLY sem ninguém ter pedido — quem abrisse a
+   * barra e batesse o olho no botão aceso podia trocar texto achando que ia só
+   * procurar. Com as duas desmarcadas o APPLY nasce apagado, e acender é um
+   * gesto deliberado.
    */
-  const [trocarLigado, setTrocarLigado] = useState(true)
+  const [trocarLigado, setTrocarLigado] = useState(false)
   const [pintarLigado, setPintarLigado] = useState(false)
   /**
    * SPEECH: pintar todas atropela as falas que já têm cor de apresentador?
@@ -1143,6 +1148,12 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     // ninguém quis, e ela some do campo assim que a pessoa digita
     setBusca(selecionado.includes('\n') ? '' : selecionado)
     setAtual(0)
+    // e o REPLACE volta a nascer desligado a CADA abertura, não só na primeira:
+    // a barra é do editor, que fica montado, então uma troca armada numa busca
+    // de dez minutos atrás ainda estaria armada agora. É a única das duas
+    // caixinhas que reescreve o roteiro — a outra muda cor, que se vê e se
+    // desfaz
+    setTrocarLigado(false)
     // o campo só existe depois do render que o `busca` não-nulo provoca
     setTimeout(() => campoBusca.current?.select(), 0)
   }, [draft])
