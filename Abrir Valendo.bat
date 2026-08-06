@@ -28,7 +28,15 @@ if not exist "out\main\index.js" (
 )
 
 echo Abrindo o Valendo...
-call npx electron .
+
+rem Chama o electron DIRETO, e nao pelo npx.
+rem
+rem Medido nesta maquina: 1,3s pelo npx contra 0,9s direto. Sao 0,4s, nao os
+rem "varios segundos" que eu supus antes de medir - o npx nunca foi o motivo
+rem de o app parecer travado. O ganho e pequeno e real, e some uma peca do
+rem caminho: o npx precisa existir e resolver o pacote; o binario ja esta ali.
+rem sem aspas: o caminho nao tem espacos, e aspas em call so somam risco
+call node_modules\.bin\electron.cmd .
 
 if errorlevel 1 (
     echo.
