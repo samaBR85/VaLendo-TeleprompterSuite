@@ -332,7 +332,7 @@ export const ajudaIt = {
   },
   'editor.split': {
     nome: 'Divisore modifica / trasmissione',
-    texto: 'Trascina per dare più spazio al copione o all’anteprima. Doppio clic lo riporta al punto di partenza.'
+    texto: 'Trascina per dare più spazio al copione o all’anteprima. Doppio clic lo rimette al centro.'
   },
   'panel.goToReading': {
     nome: 'Vai alla lettura',

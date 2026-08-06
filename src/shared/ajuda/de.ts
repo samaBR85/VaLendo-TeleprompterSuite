@@ -332,7 +332,7 @@ export const ajudaDe = {
   },
   'editor.split': {
     nome: 'Trenner Bearbeitung / Sendung',
-    texto: 'Ziehen, um Skript oder Vorschau mehr Platz zu geben. Doppelklick setzt ihn zurück an den Anfang.'
+    texto: 'Ziehen, um Skript oder Vorschau mehr Platz zu geben. Doppelklick zentriert ihn wieder.'
   },
   'panel.goToReading': {
     nome: 'Zur Lesung springen',

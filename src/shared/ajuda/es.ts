@@ -332,7 +332,7 @@ export const ajudaEs = {
   },
   'editor.split': {
     nome: 'Divisoria Edición / Emisión',
-    texto: 'Arrastra para dar más espacio al guion o a la vista previa. Doble clic la devuelve a donde empezó.'
+    texto: 'Arrastra para dar más espacio al guion o a la vista previa. Doble clic la vuelve a centrar.'
   },
   'panel.goToReading': {
     nome: 'Ir a la lectura',

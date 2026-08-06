@@ -332,7 +332,7 @@ export const ajudaPt = {
   },
   'editor.split': {
     nome: 'Divisória edição / transmissão',
-    texto: 'Arraste para dar mais espaço ao roteiro ou à prévia. Duplo clique volta ao ponto de partida.'
+    texto: 'Arraste para dar mais espaço ao roteiro ou à prévia. Duplo clique volta ao meio exato.'
   },
   'panel.goToReading': {
     nome: 'Ir para a leitura',

@@ -359,7 +359,7 @@ export const ajudaEn = {
   },
   'editor.split': {
     nome: 'Editing / Broadcast divider',
-    texto: 'Drag to give more room to the script or to the preview. Double-click puts it back where it started.'
+    texto: 'Drag to give more room to the script or to the preview. Double-click centres it again.'
   },
   'panel.goToReading': {
     nome: 'Go to the reading',

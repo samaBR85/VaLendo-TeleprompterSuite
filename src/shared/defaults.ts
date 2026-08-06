@@ -39,8 +39,16 @@ export const SIDEBAR_WIDTH_MIN = 180
 export const SIDEBAR_WIDTH_DEFAULT = 206
 export const SIDEBAR_WIDTH_MAX = 420
 
-/** a divisória Edição×Transmissão no Split — fração que a Edição ocupa */
-export const EDITION_SPLIT_DEFAULT = 0.46
+/**
+ * A divisória Edição×Transmissão no Split — fração que a Edição ocupa.
+ *
+ * Meio exato, e o número importa porque o duplo clique na divisória volta
+ * para aqui. Era 0.46, e ninguém sabia dizer por quê: dava à Transmissão uma
+ * sobra de 4% que não vinha de nenhuma medida. O efeito era o operador dar o
+ * duplo clique esperando centralizar e ficar com a divisória visivelmente
+ * fora do meio, sem gesto nenhum que a levasse até lá.
+ */
+export const EDITION_SPLIT_DEFAULT = 0.5
 
 /* ------------------------------------------- o conforto desta máquina */
 

@@ -332,7 +332,7 @@ export const ajudaFr = {
   },
   'editor.split': {
     nome: 'Séparateur édition / diffusion',
-    texto: 'Glissez pour donner plus de place au texte ou à l’aperçu. Double-clic le remet à sa position d’origine.'
+    texto: 'Glissez pour donner plus de place au texte ou à l’aperçu. Double-clic le recentre.'
   },
   'panel.goToReading': {
     nome: 'Aller à la lecture',
