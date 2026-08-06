@@ -7,6 +7,7 @@ import type {
   CardOverlayStyle,
   LayoutMode,
   PreferenciasDaMaquina,
+  Marca,
   TransportPosition
 } from './types'
 import type { PerfilDeRede } from './proxy'
@@ -158,6 +159,19 @@ export type Action =
   | { type: 'output/set'; displayId: number | null; enabled: boolean }
   | { type: 'output/viewport'; width: number; height: number }
   | { type: 'keymap/set'; commandId: string; binding: string | null }
+  /*
+   * Cor e formatação sobre trechos do roteiro.
+   *
+   * `trechos` vem em coordenadas do TEXTO INTEIRO — é como o editor enxerga uma
+   * seleção —, e o reducer reparte por bloco. Sempre uma LISTA, mesmo para um
+   * trecho só: assim "pintar esta" e "pintar todas as 30" são a mesma ação, e
+   * as trinta custam UM passo de desfazer em vez de trinta.
+   *
+   * Quem decide QUAIS trechos entram é quem chama — é lá que o SPEECH filtra as
+   * palavras que já têm dono. O reducer só aplica o que mandaram.
+   */
+  | { type: 'marca/aplicar'; tabId: string; trechos: { de: number; ate: number }[]; patch: Partial<Marca> }
+  | { type: 'marca/limpar'; tabId: string; trechos: { de: number; ate: number }[] }
   /* Presets de aparência: os cinco lugares do rodapé dos Ajustes.
      `preset/guardar` fotografa a aba ativa; `preset/aplicar` veste essa
      fotografia noutra aba, num passo só de histórico — meio desfazer seria

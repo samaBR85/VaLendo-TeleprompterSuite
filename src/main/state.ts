@@ -26,7 +26,8 @@ import {
 import { History } from '@shared/history'
 import { traduzir } from '@shared/i18n'
 import { duplicarAba } from '@shared/duplicarAba'
-import { reconcileBlocks } from '@shared/text'
+import { fatiasPorBloco, reconcileBlocks } from '@shared/text'
+import { aplicarMarca, limparMarcas } from '@shared/marcas'
 import type { Anchor, Appearance, AppState, PacingRule, StopwatchClock, Tab, Transport } from '@shared/types'
 import { CRONOMETRO_PARADO, secondsForWords, segundosDoCronometro, wordIndexAt } from '@shared/pacing'
 // a régua da tela e o passo do atalho saem da mesma constante: o degrau que se
@@ -1211,6 +1212,56 @@ export class Store {
         this.dispatch({ type: 'text/set', tabId: target, text: action.text })
         this.dispatch({ type: 'transport/restart' })
         return
+      }
+
+      /**
+       * Pinta e formata trechos do roteiro.
+       *
+       * UM `mutateTab` para a lista inteira, e é o que faz "pintar todas as
+       * trinta" custar um passo de desfazer em vez de trinta. O mesmo motivo do
+       * `preset/aplicar`: meio desfazer é pior que nenhum.
+       *
+       * Os trechos chegam em coordenadas do texto INTEIRO — é como o editor
+       * enxerga uma seleção — e `fatiasPorBloco` reparte por bloco antes de
+       * aplicar, porque a marca mora dentro do bloco.
+       *
+       * De trás para a frente dentro de cada bloco: aplicar uma marca não muda
+       * o texto, mas recorta as marcas vizinhas, e ir do fim para o começo
+       * mantém os índices ainda não visitados valendo.
+       *
+       * Não toca no texto nem na âncora — pintar não move a leitura, e quem
+       * está no ar não sente nada.
+       */
+      case 'marca/aplicar':
+      case 'marca/limpar': {
+        const alvo = this.state.tabs.find((t) => t.id === action.tabId)
+        if (!alvo || action.trechos.length === 0) return
+
+        const fatias = action.trechos.flatMap((t) => fatiasPorBloco(alvo.blocks, t.de, t.ate))
+        if (fatias.length === 0) return
+
+        const limpando = action.type === 'marca/limpar'
+        const rotulo = limpando ? 'marca:limpar' : `marca:${fatias.length}`
+
+        this.mutateTab(action.tabId, rotulo, (draft) => {
+          for (const bloco of draft.blocks) {
+            const minhas = fatias
+              .filter((f) => f.blockId === bloco.id)
+              .sort((a, b) => b.de - a.de)
+            if (minhas.length === 0) continue
+
+            let marcas = bloco.marcas ?? []
+            for (const fatia of minhas) {
+              marcas = limpando
+                ? limparMarcas(marcas, fatia.de, fatia.ate)
+                : aplicarMarca(marcas, fatia.de, fatia.ate, action.patch)
+            }
+            // bloco sem marca nenhuma larga o campo — o .valendo não engorda à toa
+            if (marcas.length > 0) bloco.marcas = marcas
+            else delete bloco.marcas
+          }
+        })
+        break
       }
 
       /**

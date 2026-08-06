@@ -22,6 +22,7 @@ import type { Cartao } from '@shared/types'
 import { useT } from '../i18n'
 import { TelaDoCartao } from '../prompter/PrompterCanvas'
 import { Ficha, SliderConsole } from '../ui/console'
+import { SeletorDeCor } from '../ui/SeletorDeCor'
 import { Icon, type IconName } from '../ui/Icon'
 import { Modal } from '../ui/Modal'
 import { ajuda } from '../ui/ajuda'
@@ -497,9 +498,12 @@ function Linha({
 /**
  * Um seletor de cor.
  *
- * É o `<input type="color">` do sistema de propósito: o seletor do Windows já
- * tem conta-gotas e histórico, e um seletor próprio dentro de um teleprompter
- * seria pior que o que o sistema entrega de graça.
+ * Era o `<input type="color">` do sistema, com o argumento de que o seletor do
+ * Windows vinha pronto e de graça. O argumento não sobreviveu ao uso: aquele
+ * diálogo é modal, tem a cara do sistema no meio de um console preto, e
+ * confirma a cor enquanto se ARRASTA, não ao soltar — então escolher no
+ * gradiente ia trocando a cor da tela a cada pixel do caminho. Agora é o
+ * `SeletorDeCor` do app, igual em todos os pontos.
  */
 function Amostra({
   valor,
@@ -513,16 +517,15 @@ function Amostra({
   onCor: (cor: string) => void
 }): React.JSX.Element {
   return (
-    <input
-      type="color"
-      data-tela-cor={marca}
-      {...ajuda('cards.colours')}
-      aria-label={rotulo}
-      title={rotulo}
-      value={valor}
-      onChange={(event) => onCor(event.target.value)}
-      className="h-[26px] w-[32px] flex-none cursor-pointer rounded border border-[var(--color-line)] bg-transparent p-0"
-    />
+    <div {...ajuda('cards.colours')}>
+      <SeletorDeCor
+        marca={`tela-cor-${marca}`}
+        valor={valor}
+        rotulo={rotulo}
+        onCor={onCor}
+        className="h-[26px] w-[32px]"
+      />
+    </div>
   )
 }
 

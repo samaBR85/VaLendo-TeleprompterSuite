@@ -11,6 +11,7 @@ import {
   type Appearance,
   type Block,
   type Cartao,
+  type Marca,
   type CardOverlayStyle,
   type TimerPosition,
   type Transport,
@@ -56,6 +57,57 @@ function timerPlacement(position: TimerPosition, inset: number): React.CSSProper
  * competir com a marca de leitura pela atenção do operador.
  */
 const MARGIN_GUIDE = '#4D4D4D'
+
+/**
+ * Parte a linha nos pedaços que as marcas pedem.
+ *
+ * A cor MANUAL vence a de quem fala, e é o certo: a cor do apresentador é um
+ * padrão que o app deduziu sozinho, a marca é um ato explícito de quem opera.
+ * Como o `<span>` mora dentro do `<div>` que já leva a cor do dono, basta o
+ * pedaço marcado declarar a sua — o resto da linha continua herdando a do
+ * apresentador sem ninguém precisar repetir nada.
+ *
+ * Negrito, itálico e sublinhado aqui são DE VERDADE: esta é a tela onde o
+ * apresentador lê, e não há nenhum campo de texto transparente atrás para sair
+ * do lugar quando a letra engorda. Quem finge é o editor, e lá o motivo está
+ * escrito.
+ *
+ * A sonda de medição logo abaixo NÃO recebe os pedaços, de propósito: ela mede
+ * a largura natural de cada linha para saber se dobrou, e negrito muda largura.
+ * Medir com negrito e desenhar sem — ou o contrário — daria contagem de fileira
+ * errada, e a rolagem sairia de ritmo. O erro de medida de uma palavra negrito
+ * é pontual; o de ritmo seria contínuo.
+ */
+function pedacosDaLinha(texto: string, marcas: Marca[]): React.ReactNode[] {
+  const ordenadas = [...marcas].sort((a, b) => a.de - b.de)
+  const fora: React.ReactNode[] = []
+  let cursor = 0
+
+  ordenadas.forEach((marca, i) => {
+    const de = Math.max(cursor, marca.de)
+    const ate = Math.min(texto.length, marca.ate)
+    if (ate <= de) return
+    if (de > cursor) fora.push(texto.slice(cursor, de))
+    fora.push(
+      <span
+        key={i}
+        data-marca
+        style={{
+          color: marca.cor,
+          fontWeight: marca.negrito ? 800 : undefined,
+          fontStyle: marca.italico ? 'italic' : undefined,
+          textDecoration: marca.sublinhado ? 'underline' : undefined
+        }}
+      >
+        {texto.slice(de, ate)}
+      </span>
+    )
+    cursor = ate
+  })
+
+  if (cursor < texto.length) fora.push(texto.slice(cursor))
+  return fora
+}
 
 export interface PrompterMetrics {
   /** alguma linha composta não caberia na largura e o navegador dobrou */
@@ -741,7 +793,9 @@ export function PrompterCanvas({
                     ' '
                   : line.kind === 'chapter'
                     ? chapterTitle({ id: line.blockId, kind: 'chapter', text: line.text })
-                    : line.text}
+                    : line.marcas
+                      ? pedacosDaLinha(line.text, line.marcas)
+                      : line.text}
               </div>
             ))}
 

@@ -250,6 +250,22 @@ export const ajudaDe = {
     nome: 'Alle Treffer markieren',
     texto: 'Zeichnet alle Treffer auf einmal, den aktuellen kräftiger. Nützlich vor dem Ersetzen: Sie sehen, was sich ändern wird.'
   },
+  'editor.bold': {
+    nome: 'Fett',
+    texto: 'Echtes Fett auf dem Sprecherbildschirm. In diesem Editor als doppelte Unterstreichung — fette Buchstaben sind breiter, und das unsichtbare Textfeld dahinter verrutschte.'
+  },
+  'editor.italic': {
+    nome: 'Kursiv',
+    texto: 'Echtes Kursiv auf dem Sprecherbildschirm; hier eine Wellenlinie, aus demselben Grund wie bei Fett.'
+  },
+  'editor.underline': {
+    nome: 'Unterstrichen',
+    texto: 'In beiden gleich — Unterstreichen ändert keine Buchstabenbreite.'
+  },
+  'editor.color': {
+    nome: 'Textfarbe',
+    texto: 'Vier Kurzwahlen und jede beliebige Farbe. Bernstein und Blau fehlen mit Absicht: sie bedeuten schon Kapitel und Regieanweisung. Die gepunktete entfernt die Markierung.'
+  },
   'editor.clearFormat': {
     nome: 'Formatierung entfernen',
     texto: 'Macht aus Kapiteln und Regieanweisungen wieder reinen Text. Die Wörter bleiben; Rückgängig bringt die Markierungen zurück.',

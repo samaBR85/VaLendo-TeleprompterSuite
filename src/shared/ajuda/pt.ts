@@ -250,6 +250,22 @@ export const ajudaPt = {
     nome: 'Marcar todas as ocorrências',
     texto: 'Desenha a caixa em todas de uma vez, a atual mais forte que as outras. Útil antes de trocar todas: você vê o que vai mudar.'
   },
+  'editor.bold': {
+    nome: 'Negrito',
+    texto: 'Negrito de verdade na tela do apresentador. Neste editor aparece como traço duplo — letra negrito é mais larga, e o campo de texto invisível de trás sairia do lugar.'
+  },
+  'editor.italic': {
+    nome: 'Itálico',
+    texto: 'Itálico de verdade na tela do apresentador; aqui um traço ondulado, pelo mesmo motivo do negrito.'
+  },
+  'editor.underline': {
+    nome: 'Sublinhado',
+    texto: 'Igual nos dois — sublinhar não muda a largura de letra nenhuma.'
+  },
+  'editor.color': {
+    nome: 'Cor do texto',
+    texto: 'Quatro atalhos e qualquer cor que você quiser. Âmbar e azul ficaram de fora: já significam capítulo e direção. A pontilhada tira a marca.'
+  },
   'editor.clearFormat': {
     nome: 'Remover formatação',
     texto: 'Transforma capítulos e direções de volta em texto simples. As palavras ficam; desfazer traz as marcas de volta.',

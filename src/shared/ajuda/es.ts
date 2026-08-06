@@ -250,6 +250,22 @@ export const ajudaEs = {
     nome: 'Marcar todas las apariciones',
     texto: 'Dibuja la caja en todas a la vez, la actual más fuerte. Útil antes de reemplazar todas: ves lo que va a cambiar.'
   },
+  'editor.bold': {
+    nome: 'Negrita',
+    texto: 'Negrita de verdad en la pantalla del presentador. En este editor sale como doble subrayado — la negrita es más ancha y el campo invisible de atrás se desalinearía.'
+  },
+  'editor.italic': {
+    nome: 'Cursiva',
+    texto: 'Cursiva de verdad en la pantalla del presentador; aquí un subrayado ondulado, por lo mismo que la negrita.'
+  },
+  'editor.underline': {
+    nome: 'Subrayado',
+    texto: 'Igual en ambos — subrayar no cambia el ancho de ninguna letra.'
+  },
+  'editor.color': {
+    nome: 'Color del texto',
+    texto: 'Cuatro atajos y el color que quieras. Ámbar y azul quedaron fuera: ya significan capítulo y acotación. La punteada quita la marca.'
+  },
   'editor.clearFormat': {
     nome: 'Quitar formato',
     texto: 'Vuelve a convertir capítulos y acotaciones en texto plano. Las palabras se quedan; deshacer trae las marcas de vuelta.',

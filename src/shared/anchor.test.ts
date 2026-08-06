@@ -472,3 +472,62 @@ describe('esconder o nome de quem fala tira a linha da régua', () => {
     expect(new Set(pesos).size).toBe(1)
   })
 })
+
+describe('as marcas descem para as linhas compostas', () => {
+  const RULE_MARCA: PacingRule = { minWords: 2, maxWords: 3, uniformSpeed: true, deixas: [] }
+
+  it('marca dentro de uma linha só desce rebaseada nela', () => {
+    const blocos: Block[] = [
+      { id: 'b1', kind: 'speech', text: 'um dois três quatro cinco seis', marcas: [{ de: 0, ate: 2, cor: '#e5484d' }] }
+    ]
+    const linhas = composeLines(blocos, RULE_MARCA)
+    expect(linhas[0].marcas).toEqual([{ de: 0, ate: 2, cor: '#e5484d' }])
+    expect(linhas[1].marcas).toBeUndefined()
+  })
+
+  it('marca que ATRAVESSA a quebra aparece nas duas linhas', () => {
+    /*
+     * A promessa da maquete. Sem o recorte, a segunda metade da palavra pintada
+     * sairia sem cor — ou pior, os índices da primeira linha pintariam o começo
+     * da segunda, e o operador veria a cor numa palavra que ele não escolheu.
+     */
+    const texto = 'um dois três quatro cinco seis'
+    // os índices saem do próprio texto: contá-los à mão foi o que fez este
+    // teste acusar um defeito que não existia, na primeira tentativa
+    const de = texto.indexOf('três')
+    const ate = texto.indexOf('quatro') + 'quatro'.length
+    const blocos: Block[] = [
+      { id: 'b1', kind: 'speech', text: texto, marcas: [{ de, ate, negrito: true }] }
+    ]
+    const linhas = composeLines(blocos, RULE_MARCA)
+    expect(linhas[0].text).toBe('um dois três')
+    expect(linhas[1].text).toBe('quatro cinco seis')
+
+    // o que cada linha pinta, lido do texto DELA
+    const pinta = (i: number): string[] =>
+      (linhas[i].marcas ?? []).map((m) => linhas[i].text.slice(m.de, m.ate))
+    expect(pinta(0)).toEqual(['três'])
+    expect(pinta(1)).toEqual(['quatro'])
+  })
+
+  it('bloco sem marca não põe o campo em linha nenhuma', () => {
+    const blocos: Block[] = [{ id: 'b1', kind: 'speech', text: 'um dois três quatro' }]
+    expect(composeLines(blocos, RULE_MARCA).every((l) => !('marcas' in l))).toBe(true)
+  })
+
+  it('a linha do nome escondido não desloca as marcas das linhas de baixo', () => {
+    /*
+     * A deixa oculta some da composição mas NÃO some do texto, então a conta de
+     * onde cada linha começa tem de continuar contando com ela. Se não
+     * contasse, toda marca abaixo de um nome escondido apareceria deslocada.
+     */
+    const texto = 'HARI\num dois três'
+    const blocos: Block[] = [
+      { id: 'b1', kind: 'speech', text: texto, marcas: [{ de: 5, ate: 7, cor: '#e5484d' }] }
+    ]
+    const regra: PacingRule = { ...RULE_MARCA, deixas: [{ nome: 'HARI', oculto: true }] }
+    const linhas = composeLines(blocos, regra)
+    expect(linhas[0].text).toBe('um dois três')
+    expect((linhas[0].marcas ?? []).map((m) => linhas[0].text.slice(m.de, m.ate))).toEqual(['um'])
+  })
+})

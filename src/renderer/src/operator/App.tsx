@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { AjudaId } from '@shared/ajuda'
+import type { Marca } from '@shared/types'
+import { SeletorDeCor } from '../ui/SeletorDeCor'
 import type { MotivosDeFechar } from '@shared/api'
 import type { InsertKind } from '@shared/insertBlock'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
@@ -139,6 +141,9 @@ function EditorTool({
     </button>
   )
 }
+
+/** As quatro cores de atalho — tons médios, para se lerem no preto E no papel branco. */
+export const CORES_DE_MARCA = ['#e5484d', '#d6409f', '#9d5bd2', '#12a594']
 
 /**
  * Um "aA" das pontas do slider de fonte, que anda um ponto por clique. O
@@ -906,8 +911,79 @@ function AppConteudo({
    * Sem os filetes as sete teclas liam como uma fila só, e o olho tinha de
    * descobrir sozinho que "AA" não tem parentesco com "remover formatação".
    */
+  /**
+   * Pinta ou formata o que está selecionado no editor.
+   *
+   * O `flush()` antes de tudo é obrigatório e não é detalhe: a digitação viaja
+   * para o main com 140ms de respiro, e nessa janela o main ainda tem o texto
+   * ANTERIOR. Pintar por cima dele mediria a faixa num texto que já mudou, e a
+   * marca cairia deslocada — visível na tela do apresentador.
+   */
+  const marcarSelecao = (patch: Partial<Marca>): void => {
+    const faixa = editorRef.current?.selecaoFaixa()
+    if (!faixa) return
+    editorRef.current?.flush()
+    dispatch({ type: 'marca/aplicar', tabId: tab.id, trechos: [faixa], patch })
+  }
+
+  const limparSelecao = (): void => {
+    const faixa = editorRef.current?.selecaoFaixa()
+    if (!faixa) return
+    editorRef.current?.flush()
+    dispatch({ type: 'marca/limpar', tabId: tab.id, trechos: [faixa] })
+  }
+
   const editorTools = (
     <>
+      {/* ORDEM APROVADA: formatação | apresentador | marcação | procurar |
+          desfazer. O primeiro grupo age sobre a SELEÇÃO, o terceiro sobre a
+          ESTRUTURA do roteiro, e o do meio sobre quem DIZ. */}
+      <EditorTool
+        ajudaId="editor.bold"
+        texto="B"
+        label={t('editor.bold')}
+        disabled={!textoSelecionado}
+        onClick={() => marcarSelecao({ negrito: true })}
+      />
+      <EditorTool
+        ajudaId="editor.italic"
+        texto="I"
+        label={t('editor.italic')}
+        disabled={!textoSelecionado}
+        onClick={() => marcarSelecao({ italico: true })}
+      />
+      <EditorTool
+        ajudaId="editor.underline"
+        texto="U"
+        label={t('editor.underline')}
+        disabled={!textoSelecionado}
+        onClick={() => marcarSelecao({ sublinhado: true })}
+      />
+      <SeletorDeCor
+        marca="conta-gotas"
+        rotulo={t('editor.color')}
+        atalhos={CORES_DE_MARCA}
+        desligado={!textoSelecionado}
+        onCor={(cor) => marcarSelecao({ cor })}
+        onLimpar={limparSelecao}
+        className="rounded p-1 transition-colors hover:bg-[var(--color-ink-3)] disabled:hover:bg-transparent"
+        miolo="h-[14px] w-[14px] rounded-[3px] border border-[var(--color-edge)]"
+      />
+
+      {divisorDeFerramentas}
+      {/* Quem fala: transforma o nome SELECIONADO no roteiro em apresentador.
+          Entre filetes — não age sobre o texto nem sobre a vista dele, mas
+          sobre QUEM diz cada trecho. Fica ao lado da formatação porque os dois
+          decidem cor: um à mão, o outro por dono. */}
+      <EditorTool
+        ajudaId="editor.presenter"
+        icon="presenter"
+        label={t('editor.presenter')}
+        disabled={!textoSelecionado}
+        onClick={criarApresentador}
+      />
+
+      {divisorDeFerramentas}
       <EditorTool
         ajudaId="editor.chapter"
         icon="chapter"
@@ -922,9 +998,9 @@ function AppConteudo({
         atalho={hint(keymap, 'insert.direction')}
         onClick={() => run('insert.direction')}
       />
-      {/* volta tudo a texto simples: sem capítulo, sem direção. Apagado
-          quando não há marcação nenhuma para tirar — assim o botão nunca é
-          um clique que não faz nada. As palavras ficam; o Mod+Z devolve */}
+      {/* volta tudo a texto simples: sem capítulo, sem direção, sem marca.
+          Apagado quando não há nada para tirar — assim o botão nunca é um
+          clique que não faz nada. As palavras ficam; o Mod+Z devolve */}
       <EditorTool
         ajudaId="editor.clearFormat"
         icon="clearFormat"
@@ -934,36 +1010,13 @@ function AppConteudo({
         onClick={() => run('edit.clearFormat')}
       />
 
-      {/* Procurar: fica junto de "remover formatação" porque as duas agem sobre
-          o texto INTEIRO, e não sobre o ponto onde o cursor está — as duas de
-          cima inserem no cursor. O Ctrl+F já faz isto; o botão existe para
-          quem não sabe que existe um Ctrl+F. */}
-      <EditorTool
-        ajudaId="editor.find"
-        icon="search"
-        label={t('editor.find')}
-        atalho={hint(keymap, 'edit.find')}
-        onClick={() => run('edit.find')}
-      />
-
       {divisorDeFerramentas}
-      {/* Quem fala: transforma o nome SELECIONADO no roteiro em apresentador.
-          Sozinho entre filetes — é a única ferramenta aqui que não age sobre
-          o texto nem sobre a vista dele, mas sobre QUEM diz cada trecho. */}
-      <EditorTool
-        ajudaId="editor.presenter"
-        icon="presenter"
-        label={t('editor.presenter')}
-        disabled={!textoSelecionado}
-        onClick={criarApresentador}
-      />
-
-      {divisorDeFerramentas}
-      {/* CAIXA ALTA do EDITOR. Tem um irmão nos Ajustes › Texto que faz o
-          mesmo na SAÍDA, e os dois são independentes de propósito: quem
-          digita e quem lê no vidro não precisam da mesma caixa. Ligá-los ao
-          mesmo booleano seria um interruptor com duas alavancas.
-          Pintura nos dois casos — o texto guardado não muda uma letra */}
+      {/* CAIXA ALTA do EDITOR, sozinha entre filetes: ela não formata trecho
+          nenhum nem mexe na estrutura do roteiro — é como VOCÊ vê o texto
+          enquanto digita, e mais nada. Tem um irmão nos Ajustes › Texto que faz
+          o mesmo na SAÍDA, e os dois são independentes de propósito: quem
+          digita e quem lê no vidro não precisam da mesma caixa. Pintura nos
+          dois casos — o texto guardado não muda uma letra */}
       <EditorTool
         ajudaId="editor.allCaps"
         texto="AA"
@@ -972,6 +1025,17 @@ function AppConteudo({
         onClick={() =>
           dispatch({ type: 'maquina/patch', patch: { editorAllCaps: !state.maquina.editorAllCaps } })
         }
+      />
+
+      {divisorDeFerramentas}
+      {/* Procurar sozinho: é o único que não muda nada — só encontra. O Ctrl+F
+          já faz isto; o botão existe para quem não sabe que existe um Ctrl+F */}
+      <EditorTool
+        ajudaId="editor.find"
+        icon="search"
+        label={t('editor.find')}
+        atalho={hint(keymap, 'edit.find')}
+        onClick={() => run('edit.find')}
       />
 
       {divisorDeFerramentas}

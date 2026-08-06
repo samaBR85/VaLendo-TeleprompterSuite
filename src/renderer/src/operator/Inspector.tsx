@@ -19,12 +19,13 @@ import {
 } from '@shared/types'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
 import type { AjudaId } from '@shared/ajuda'
-import { linhasCandidatas, temParNoRoteiro } from '@shared/apresentadores'
+import { CORES_DE_APRESENTADOR, linhasCandidatas, temParNoRoteiro } from '@shared/apresentadores'
 import { larguraDoPainel } from '@shared/i18n'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
 import { Icon } from '../ui/Icon'
 import { Ficha, SliderConsole } from '../ui/console'
+import { SeletorDeCor } from '../ui/SeletorDeCor'
 import type { Presets } from '@shared/presets'
 import { FileiraDePresets, SecaoDoRodape } from './Presets'
 
@@ -70,12 +71,12 @@ function ChipDeApresentador({
         background: orfao ? 'color-mix(in srgb, var(--color-warn) 10%, transparent)' : '#212126'
       }}
     >
-      <input
-        type="color"
-        value={quem.cor}
-        aria-label={t('insp.presenterColor', { nome: quem.nome })}
-        onChange={(event) => onCor(event.target.value)}
-        className="h-5 w-5 flex-none"
+      <SeletorDeCor
+        valor={quem.cor}
+        atalhos={CORES_DE_APRESENTADOR}
+        rotulo={t('insp.presenterColor', { nome: quem.nome })}
+        onCor={onCor}
+        className="h-5 w-5"
       />
       {editando === null ? (
         <span
@@ -614,20 +615,18 @@ export function Inspector({
       <Group label={t('insp.colors')}>
         <div className="flex items-center gap-2 text-[11px]">
           <label className="flex flex-1 items-center gap-1.5" {...ajuda('insp.textColor')}>
-            <input
-              type="color"
-              value={a.textColor}
-              onChange={(event) => patch({ textColor: event.target.value })}
-              className="h-6 w-8"
+            <SeletorDeCor
+              valor={a.textColor}
+              rotulo={t('insp.textColor')}
+              onCor={(textColor) => patch({ textColor })}
             />
             <span className="text-[var(--color-fog-1)]">{t('insp.textColor')}</span>
           </label>
           <label className="flex flex-1 items-center gap-1.5" {...ajuda('insp.bgColor')}>
-            <input
-              type="color"
-              value={a.bgColor}
-              onChange={(event) => patch({ bgColor: event.target.value })}
-              className="h-6 w-8"
+            <SeletorDeCor
+              valor={a.bgColor}
+              rotulo={t('insp.bgColor')}
+              onCor={(bgColor) => patch({ bgColor })}
             />
             <span className="text-[var(--color-fog-1)]">{t('insp.bgColor')}</span>
           </label>
@@ -819,14 +818,14 @@ export function Inspector({
               onClick={() => patch({ timers: { ...a.timers, elapsed: !a.timers.elapsed } })}
             />
           </div>
-          <input
-            type="color"
-            {...ajuda('insp.clockElapsedColor')}
-            aria-label={t('insp.clock.elapsedColor')}
-            value={a.timers.elapsedColor}
-            onChange={(event) => patch({ timers: { ...a.timers, elapsedColor: event.target.value } })}
-            className="h-7 w-7 flex-none"
-          />
+          <div {...ajuda('insp.clockElapsedColor')}>
+            <SeletorDeCor
+              valor={a.timers.elapsedColor}
+              rotulo={t('insp.clock.elapsedColor')}
+              onCor={(cor) => patch({ timers: { ...a.timers, elapsedColor: cor } })}
+              className="h-7 w-7"
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -838,14 +837,14 @@ export function Inspector({
               onClick={() => patch({ timers: { ...a.timers, remaining: !a.timers.remaining } })}
             />
           </div>
-          <input
-            type="color"
-            {...ajuda('insp.clockRemainingColor')}
-            aria-label={t('insp.clock.remainingColor')}
-            value={a.timers.remainingColor}
-            onChange={(event) => patch({ timers: { ...a.timers, remainingColor: event.target.value } })}
-            className="h-7 w-7 flex-none"
-          />
+          <div {...ajuda('insp.clockRemainingColor')}>
+            <SeletorDeCor
+              valor={a.timers.remainingColor}
+              rotulo={t('insp.clock.remainingColor')}
+              onCor={(cor) => patch({ timers: { ...a.timers, remainingColor: cor } })}
+              className="h-7 w-7"
+            />
+          </div>
         </div>
 
         {a.timers.elapsed || a.timers.remaining ? (

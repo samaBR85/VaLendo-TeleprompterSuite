@@ -1,6 +1,9 @@
 import type { Lang } from './i18n/types'
+import type { Marca } from './marcas'
 import type { PerfilDeRede } from './proxy'
 import type { FundoDeTela, RecadoDeTela } from './tela'
+
+export type { Marca }
 
 /** Bloco de texto. `direction` são anotações em [colchetes], que não contam tempo. */
 export type BlockKind = 'speech' | 'direction' | 'chapter'
@@ -9,6 +12,18 @@ export interface Block {
   id: string
   kind: BlockKind
   text: string
+  /**
+   * Cor e formatação sobre trechos deste bloco — ver `shared/marcas.ts`.
+   *
+   * OPCIONAL, e é o que dá compatibilidade de graça: um `.valendo` gravado
+   * antes disto existir simplesmente não traz o campo, e abre sem marca
+   * nenhuma. Nenhuma migração a escrever.
+   *
+   * Os índices são contados dentro do texto DESTE bloco, e não do roteiro
+   * inteiro. É o mesmo motivo da âncora usar `blockId` + deslocamento: assim
+   * mexer num parágrafo não obriga a recalcular os de baixo.
+   */
+  marcas?: Marca[]
 }
 
 /**

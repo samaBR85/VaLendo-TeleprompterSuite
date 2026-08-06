@@ -1,3 +1,4 @@
+import { edicaoEntre, remapearMarcas, type Marca } from './marcas'
 import type { Anchor, Block, BlockKind } from './types'
 
 /**
@@ -118,7 +119,28 @@ function similarity(a: string, b: string): number {
  * ids novos, `remapAnchor` não teria a que se agarrar. Parágrafos intocados
  * mantêm o id por igualdade de texto; o parágrafo sendo digitado mantém o id
  * por similaridade de prefixo/sufixo.
+ *
+ * As MARCAS de cor e formatação viajam por aqui pelo mesmo caminho do id, e é
+ * de propósito: elas são presas ao bloco, então o lugar certo de carregá-las
+ * de um texto para o outro é exatamente onde se decide qual bloco novo é a
+ * continuação de qual bloco velho. Em qualquer outro lugar seria preciso
+ * refazer esta mesma conta de casamento — e as duas divergiriam no primeiro
+ * ajuste.
+ *
+ * Parágrafo intocado leva as marcas como estão; parágrafo editado leva as
+ * marcas remapeadas pela edição que aconteceu DENTRO dele. Parágrafo que
+ * nasceu agora não tem marca — não havia de onde herdar.
+ *
+ * O caso que se perde: juntar dois parágrafos apagando a linha em branco entre
+ * eles. O resultado casa por similaridade com UM dos dois, e as marcas do
+ * outro somem. É aceito — recuperar isso exigiria casar um bloco novo com
+ * dois velhos, e o `Ctrl+Z` devolve.
  */
+/** Bloco sem marca nenhuma não carrega o campo — o `.valendo` não engorda à toa. */
+function comMarcas(marcas: Marca[] | undefined): { marcas?: Marca[] } {
+  return marcas && marcas.length > 0 ? { marcas } : {}
+}
+
 export function reconcileBlocks(previous: Block[], text: string): Block[] {
   const paragraphs = splitParagraphs(text)
   const used = new Set<string>()
@@ -129,7 +151,7 @@ export function reconcileBlocks(previous: Block[], text: string): Block[] {
     const old = previous[i]
     if (old && old.text === p && !used.has(old.id)) {
       used.add(old.id)
-      result[i] = { id: old.id, kind: classify(p), text: p }
+      result[i] = { id: old.id, kind: classify(p), text: p, ...comMarcas(old.marcas) }
     }
   })
 
@@ -139,7 +161,7 @@ export function reconcileBlocks(previous: Block[], text: string): Block[] {
     const old = previous.find((b) => b.text === p && !used.has(b.id))
     if (old) {
       used.add(old.id)
-      result[i] = { id: old.id, kind: classify(p), text: p }
+      result[i] = { id: old.id, kind: classify(p), text: p, ...comMarcas(old.marcas) }
     }
   })
 
@@ -155,7 +177,13 @@ export function reconcileBlocks(previous: Block[], text: string): Block[] {
     }
     if (best) {
       used.add(best.block.id)
-      result[i] = { id: best.block.id, kind: classify(p), text: p }
+      // o parágrafo mudou: as marcas dele mudam junto, pela edição que
+      // aconteceu aqui dentro
+      const edicao = edicaoEntre(best.block.text, p)
+      const marcas = best.block.marcas?.length
+        ? remapearMarcas(best.block.marcas, edicao ? [edicao] : [])
+        : undefined
+      result[i] = { id: best.block.id, kind: classify(p), text: p, ...comMarcas(marcas) }
     }
   })
 
@@ -210,6 +238,46 @@ export function blocksFromText(text: string): Block[] {
  * Capítulo e direção não têm fala para contar — pousa no início da linha.
  * Um cursor no respiro entre dois parágrafos pousa no início do seguinte.
  */
+/** Um pedaço de um bloco, nas coordenadas DELE. */
+export interface FatiaDeBloco {
+  blockId: string
+  de: number
+  ate: number
+}
+
+/**
+ * Reparte um trecho do texto INTEIRO nas fatias de cada bloco que ele cruza.
+ *
+ * O editor trabalha no texto inteiro — a seleção que o operador faz com o mouse
+ * vai de um número a outro do roteiro todo. As marcas, não: elas moram DENTRO
+ * de um bloco, com índices contados a partir dele. Alguém tem de traduzir, e é
+ * esta função.
+ *
+ * Usa a mesma `paragraphSpans` de `anchorFromCaret` de propósito: se um dia a
+ * forma de partir o texto em parágrafos mudar, as duas mudam juntas. Cada uma
+ * com a sua cópia da conta seria a receita para a marca e a âncora
+ * discordarem sobre onde começa o segundo parágrafo.
+ *
+ * O que fica ENTRE dois parágrafos — a linha em branco que os separa — não
+ * pertence a bloco nenhum, e simplesmente não entra em fatia nenhuma.
+ */
+export function fatiasPorBloco(blocks: Block[], de: number, ate: number): FatiaDeBloco[] {
+  if (ate <= de) return []
+  const spans = paragraphSpans(serializeBlocks(blocks))
+  const fora: FatiaDeBloco[] = []
+
+  spans.forEach((span, i) => {
+    const bloco = blocks[i]
+    if (!bloco) return
+    const inicio = Math.max(span.start, de)
+    const fim = Math.min(span.start + span.text.length, ate)
+    if (fim <= inicio) return
+    fora.push({ blockId: bloco.id, de: inicio - span.start, ate: fim - span.start })
+  })
+
+  return fora
+}
+
 export function anchorFromCaret(previousBlocks: Block[], text: string, caret: number): Anchor | null {
   const spans = paragraphSpans(text)
   if (spans.length === 0) return null

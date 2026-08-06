@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { Block, Marca } from './types'
 import {
   anchorFromCaret,
   caretFromAnchor,
@@ -6,6 +7,7 @@ import {
   blocksFromText,
   chapterTitle,
   hasFormatting,
+  fatiasPorBloco,
   reconcileBlocks,
   serializeBlocks,
   stripFormatting,
@@ -250,5 +252,98 @@ describe('remover formatação', () => {
   it('não confunde colchete no meio da frase com direção', () => {
     const meio = 'Ele disse [textualmente] que não vem.'
     expect(stripFormatting(meio)).toBe(meio)
+  })
+})
+
+describe('as marcas atravessam a reconciliação', () => {
+  /** "A ação começa." — a marca cerca "ação", de 2 a 6. */
+  const comMarca = (texto: string): Block[] => [
+    { id: 'b1', kind: 'speech', text: texto, marcas: [{ de: 2, ate: 6, cor: '#e5484d' }] }
+  ]
+  const cercado = (blocos: Block[], i = 0): string[] =>
+    (blocos[i].marcas ?? []).map((m: Marca) => blocos[i].text.slice(m.de, m.ate))
+
+  it('parágrafo intocado leva as marcas como estão', () => {
+    const antes = comMarca('A ação começa.')
+    const depois = reconcileBlocks(antes, 'A ação começa.')
+    expect(depois[0].marcas).toEqual(antes[0].marcas)
+  })
+
+  it('digitar no MESMO parágrafo remapeia a marca, que continua na palavra', () => {
+    // é o caso de toda tecla digitada: o bloco casa por similaridade e a
+    // edição de dentro dele move a marca
+    const depois = reconcileBlocks(comMarca('A ação começa.'), 'A ação começa hoje mesmo.')
+    expect(cercado(depois)).toEqual(['ação'])
+  })
+
+  it('digitar ANTES da marca empurra ela junto', () => {
+    const depois = reconcileBlocks(comMarca('A ação começa.'), 'Olha: A ação começa.')
+    expect(cercado(depois)).toEqual(['ação'])
+  })
+
+  it('inserir um parágrafo ACIMA não mexe nas marcas do de baixo', () => {
+    /*
+     * O caso que o operador mais vai fazer: corrigir alguma coisa lá em cima. As
+     * marcas são presas ao BLOCO, então o de baixo nem fica sabendo — é o mesmo
+     * motivo de a âncora usar blockId em vez de posição no roteiro inteiro.
+     */
+    const depois = reconcileBlocks(comMarca('A ação começa.'), 'Boa noite.\n\nA ação começa.')
+    expect(depois).toHaveLength(2)
+    expect(cercado(depois, 1)).toEqual(['ação'])
+  })
+
+  it('apagar a palavra marcada leva a marca junto', () => {
+    const depois = reconcileBlocks(comMarca('A ação começa.'), 'A  começa.')
+    expect(depois[0].marcas).toBeUndefined()
+  })
+
+  it('parágrafo que nasceu agora não tem marca — não havia de onde herdar', () => {
+    const depois = reconcileBlocks(comMarca('A ação começa.'), 'A ação começa.\n\nParágrafo novo.')
+    expect(depois[1].marcas).toBeUndefined()
+  })
+
+  it('bloco sem marca nenhuma não carrega o campo, para o .valendo não engordar', () => {
+    const depois = reconcileBlocks([{ id: 'b1', kind: 'speech', text: 'sem marca' }], 'sem marca nenhuma')
+    expect('marcas' in depois[0]).toBe(false)
+  })
+})
+
+describe('repartir um trecho do texto inteiro entre os blocos', () => {
+  /*
+   * "Primeiro bloco.\n\nSegundo bloco."
+   *  0123456789...      ^ o segundo começa em 17
+   */
+  const blocos: Block[] = [
+    { id: 'b1', kind: 'speech', text: 'Primeiro bloco.' },
+    { id: 'b2', kind: 'speech', text: 'Segundo bloco.' }
+  ]
+  const inteiro = serializeBlocks(blocos)
+
+  it('trecho dentro de um bloco só devolve uma fatia, rebaseada', () => {
+    // "bloco" do primeiro: posições 9 a 14 do texto inteiro
+    expect(inteiro.slice(9, 14)).toBe('bloco')
+    expect(fatiasPorBloco(blocos, 9, 14)).toEqual([{ blockId: 'b1', de: 9, ate: 14 }])
+  })
+
+  it('trecho que atravessa dois blocos devolve duas fatias', () => {
+    const fatias = fatiasPorBloco(blocos, 9, inteiro.length)
+    expect(fatias).toHaveLength(2)
+    expect(fatias[0]).toEqual({ blockId: 'b1', de: 9, ate: 15 })
+    expect(fatias[1]).toEqual({ blockId: 'b2', de: 0, ate: 14 })
+  })
+
+  it('a linha em branco entre os blocos não pertence a ninguém', () => {
+    // posições 15 e 16 são o separador; pedir só elas não devolve fatia nenhuma
+    expect(inteiro.slice(15, 17)).toBe('\n\n')
+    expect(fatiasPorBloco(blocos, 15, 17)).toEqual([])
+  })
+
+  it('trecho de tamanho zero não devolve nada', () => {
+    expect(fatiasPorBloco(blocos, 9, 9)).toEqual([])
+  })
+
+  it('trecho maior que o texto é aparado, não estoura', () => {
+    const fatias = fatiasPorBloco(blocos, 0, 9999)
+    expect(fatias[1]).toEqual({ blockId: 'b2', de: 0, ate: 14 })
   })
 })

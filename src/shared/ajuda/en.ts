@@ -277,6 +277,22 @@ export const ajudaEn = {
     nome: 'Mark every occurrence',
     texto: 'Draws a box around every match at once, the current one brighter than the rest. Useful before replacing all: you see what is about to change.'
   },
+  'editor.bold': {
+    nome: 'Bold',
+    texto: 'Real bold on the presenter’s screen. In this editor it shows as a double underline instead — bold letters are wider, and the invisible text field behind would drift out of place.'
+  },
+  'editor.italic': {
+    nome: 'Italic',
+    texto: 'Real italic on the presenter’s screen; a wavy underline here, for the same reason as bold.'
+  },
+  'editor.underline': {
+    nome: 'Underline',
+    texto: 'The same in both — an underline does not change how wide a letter is.'
+  },
+  'editor.color': {
+    nome: 'Text colour',
+    texto: 'Four shortcuts plus any colour you like. Amber and blue are missing on purpose: they already mean chapter and stage direction. The dotted one removes the mark.'
+  },
   'editor.clearFormat': {
     nome: 'Clear formatting',
     texto: 'Turns chapters and directions back into plain text. The words stay; undo brings the marks back.',

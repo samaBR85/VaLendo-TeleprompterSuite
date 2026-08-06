@@ -250,6 +250,22 @@ export const ajudaFr = {
     nome: 'Marquer toutes les occurrences',
     texto: 'Encadre toutes les occurrences d’un coup, la courante plus vive. Utile avant de tout remplacer : vous voyez ce qui va changer.'
   },
+  'editor.bold': {
+    nome: 'Gras',
+    texto: 'Vrai gras sur l’écran du présentateur. Dans cet éditeur, un double soulignement — le gras est plus large, et le champ invisible derrière se décalerait.'
+  },
+  'editor.italic': {
+    nome: 'Italique',
+    texto: 'Vrai italique sur l’écran du présentateur ; ici un soulignement ondulé, pour la même raison que le gras.'
+  },
+  'editor.underline': {
+    nome: 'Souligné',
+    texto: 'Pareil dans les deux — souligner ne change la largeur d’aucune lettre.'
+  },
+  'editor.color': {
+    nome: 'Couleur du texte',
+    texto: 'Quatre raccourcis et n’importe quelle couleur. L’ambre et le bleu sont exclus : ils signifient déjà chapitre et indication. La pointillée retire la marque.'
+  },
   'editor.clearFormat': {
     nome: 'Effacer la mise en forme',
     texto: 'Retransforme chapitres et indications en texte brut. Les mots restent ; annuler ramène les marques.',

@@ -1,13 +1,57 @@
 import type { Anchor, Block, BlockKind, PacingRule } from './types'
 import { senseLines } from './senseLines'
 import { chaveDoNome } from './apresentadores'
+import { marcasDaFatia, type Marca } from './marcas'
 import { blockWordCount, words } from './text'
+
+/**
+ * Onde cada linha composta começa e termina DENTRO do texto de origem.
+ *
+ * `senseLines` devolve as linhas já montadas — palavras juntadas por um espaço
+ * —, e o texto que sai pode não ser um recorte literal do que entrou: dois
+ * espaços seguidos no original viram um só. Procurar a linha pronta com um
+ * `indexOf` erraria nesses casos, e o erro apareceria como palavra pintada
+ * fora do lugar.
+ *
+ * Por isso a conta é feita PALAVRA a palavra: cada uma é um recorte literal da
+ * origem, e elas aparecem lá na mesma ordem. O começo da linha é onde cai a
+ * primeira, o fim é onde acaba a última, e o que houver de espaço entre elas
+ * fica dentro da fatia — que é o certo, porque é o que a linha ocupa.
+ */
+function fatiasDasLinhas(origem: string, linhas: string[]): { de: number; ate: number }[] {
+  const fora: { de: number; ate: number }[] = []
+  let cursor = 0
+  for (const linha of linhas) {
+    const palavras = words(linha)
+    let de = -1
+    let ate = cursor
+    for (const palavra of palavras) {
+      const onde = origem.indexOf(palavra, cursor)
+      if (onde === -1) break
+      if (de === -1) de = onde
+      ate = onde + palavra.length
+      cursor = ate
+    }
+    fora.push({ de: de === -1 ? cursor : de, ate })
+  }
+  return fora
+}
 
 /** Linha composta, ainda sem geometria. */
 export interface LineSpec {
   blockId: string
   kind: BlockKind
   text: string
+  /**
+   * Cor e formatação desta LINHA, com os índices contados a partir dela.
+   *
+   * A marca é guardada por bloco, e um bloco vira várias linhas — então uma
+   * palavra pintada em cima de uma quebra precisa aparecer nas duas metades,
+   * cada uma medida da sua própria linha. Recortar aqui, na composição, é o
+   * que garante isso nas TRÊS telas de uma vez: elas desenham todas a partir
+   * desta mesma lista.
+   */
+  marcas?: Marca[]
   /**
    * Peso desta linha na régua de rolagem — quanto ela "custa" para a marca de
    * leitura atravessar. Nunca zero: uma linha de peso zero seria atravessada
@@ -55,6 +99,7 @@ interface LineDraft {
   words: number
   spacer?: boolean
   dono?: string
+  marcas?: Marca[]
 }
 
 /**
@@ -79,6 +124,13 @@ export type MeasuredRows = number[]
  * na tela. É isso que faz o texto subir sempre no mesmo número de pixels por
  * segundo, sem acelerar nem frear sozinho.
  */
+/** As marcas de um pedaço, ou nada — linha sem marca não carrega o campo. */
+function recorte(marcas: Marca[] | undefined, de: number, ate: number): { marcas?: Marca[] } {
+  if (!marcas || marcas.length === 0) return {}
+  const fatia = marcasDaFatia(marcas, de, ate)
+  return fatia.length > 0 ? { marcas: fatia } : {}
+}
+
 export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredRows): LineSpec[] {
   const drafts: LineDraft[] = []
   // as deixas por nome comparável — sem caixa, como em todo o resto
@@ -120,15 +172,32 @@ export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredR
       const escondida = (typed: string): boolean => deixas.get(chaveDoNome(typed))?.oculto === true
       const sobraAlgo = digitadas.some((typed) => !escondida(typed))
 
+      // onde cada linha DIGITADA começa dentro do bloco. Sobe sempre, mesmo
+      // nas escondidas: o `continue` pula o desenho, não a régua
+      let base = 0
       for (const typed of digitadas) {
+        const aqui = base
+        // +1 pela quebra de linha que o `split` comeu
+        base += typed.length + 1
+
         // a deixa manda no turno mesmo quando não vai ser desenhada
         const quem = deixas.get(chaveDoNome(typed))
         if (quem) dono = quem.nome
         if (quem?.oculto && sobraAlgo) continue
 
-        for (const text of senseLines(typed, rule)) {
-          drafts.push({ blockId: block.id, kind: block.kind, text, words: words(text).length, dono })
-        }
+        const compostas = senseLines(typed, rule)
+        const fatias = fatiasDasLinhas(typed, compostas)
+        compostas.forEach((text, i) => {
+          const fatia = fatias[i]
+          drafts.push({
+            blockId: block.id,
+            kind: block.kind,
+            text,
+            words: words(text).length,
+            dono,
+            ...recorte(block.marcas, aqui + fatia.de, aqui + fatia.ate)
+          })
+        })
       }
     } else {
       drafts.push({
@@ -136,7 +205,8 @@ export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredR
         kind: block.kind,
         text: block.text,
         words: words(block.text).length,
-        dono
+        dono,
+        ...recorte(block.marcas, 0, block.text.length)
       })
     }
   }
@@ -164,6 +234,10 @@ export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredR
       blockId: draft.blockId,
       kind: draft.kind,
       text: draft.text,
+      // sem esta linha as marcas morriam aqui, caladas: o LineSpec é montado
+      // campo a campo, e um `...spread` não dispara o aviso de propriedade a
+      // mais do compilador. Quem pegou foi o teste
+      ...(draft.marcas ? { marcas: draft.marcas } : {}),
       wordCount,
       blockWordStart: blockWords,
       wordStart: globalWords,

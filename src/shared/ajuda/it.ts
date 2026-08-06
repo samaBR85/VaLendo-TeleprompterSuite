@@ -250,6 +250,22 @@ export const ajudaIt = {
     nome: 'Segna tutte le occorrenze',
     texto: 'Disegna il riquadro su tutte insieme, quella attuale più forte. Utile prima di sostituire tutte: vedi che cosa cambierà.'
   },
+  'editor.bold': {
+    nome: 'Grassetto',
+    texto: 'Grassetto vero sullo schermo del presentatore. In questo editor appare come doppia sottolineatura — il grassetto è più largo e il campo invisibile dietro si sposterebbe.'
+  },
+  'editor.italic': {
+    nome: 'Corsivo',
+    texto: 'Corsivo vero sullo schermo del presentatore; qui una sottolineatura ondulata, per lo stesso motivo del grassetto.'
+  },
+  'editor.underline': {
+    nome: 'Sottolineato',
+    texto: 'Uguale in entrambi — sottolineare non cambia la larghezza di nessuna lettera.'
+  },
+  'editor.color': {
+    nome: 'Colore del testo',
+    texto: 'Quattro scorciatoie e qualsiasi colore. Ambra e blu sono esclusi: significano già capitolo e didascalia. Quella punteggiata toglie il segno.'
+  },
   'editor.clearFormat': {
     nome: 'Rimuovi formattazione',
     texto: 'Riporta capitoli e indicazioni a testo semplice. Le parole restano; annulla le riporta.',

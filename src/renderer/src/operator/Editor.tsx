@@ -223,6 +223,14 @@ export interface EditorHandle {
   insert: (kind: InsertKind) => void
   /** tira a marcação do roteiro inteiro: sem capítulos, sem direções. */
   removerFormatacao: () => void
+  /**
+   * Onde a seleção começa e termina, no texto inteiro — `null` se nada.
+   *
+   * Irmã de `selecao()`, que devolve o TEXTO. Quem pinta precisa da faixa: a
+   * marca é guardada por posição, não por conteúdo, senão pintar "ação"
+   * pintaria todas as "ação" do roteiro em vez daquela.
+   */
+  selecaoFaixa: () => { de: number; ate: number } | null
   /** abre a busca no editor, semeada com o que estiver selecionado (Ctrl+F). */
   abrirBusca: () => void
   /** o texto atual do rascunho e onde o cursor está nele — para o "Go To". */
@@ -691,6 +699,12 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     setTimeout(() => campoBusca.current?.select(), 0)
   }, [draft])
 
+  const selecaoFaixa = useCallback((): { de: number; ate: number } | null => {
+    const area = areaRef.current
+    if (!area || area.selectionStart === area.selectionEnd) return null
+    return { de: area.selectionStart, ate: area.selectionEnd }
+  }, [])
+
   useImperativeHandle(
     ref,
     () => ({
@@ -699,11 +713,12 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       removerFormatacao,
       caret,
       selecao,
+      selecaoFaixa,
       mostrarAncora,
       abrirBusca,
       limparMarca: () => setMarca(null)
     }),
-    [flush, insert, removerFormatacao, caret, selecao, mostrarAncora, abrirBusca]
+    [flush, insert, removerFormatacao, caret, selecao, selecaoFaixa, mostrarAncora, abrirBusca]
   )
 
   const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
