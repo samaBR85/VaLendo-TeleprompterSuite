@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Action } from '@shared/actions'
 import { FONT_OPTIONS } from '@shared/defaults'
+import { PESOS, degrauDoValor, pesosQueDesenham } from '@shared/pesos'
 import {
   apagarDigitoDoAlvo,
   bufferDoAlvoParaSegundos,
@@ -320,6 +321,110 @@ function Slider({
 }
 
 /**
+ * Os degraus de peso que ESTA fonte desenha, medidos no próprio navegador.
+ *
+ * A régua é `measureText`: se dois pesos produzem a mesma largura, produzem a
+ * mesma face — quem agrupa é `pesosQueDesenham`, que é puro e tem teste. A
+ * medição precisa acontecer aqui porque só a tela sabe quais faces a máquina
+ * tem instaladas, e a resposta muda de computador para computador: o mesmo
+ * projeto, no Mac do cliente, pode ter mais ou menos degraus que aqui.
+ *
+ * A fonte embutida é variável e devolve os seis sempre; as do sistema devolvem
+ * o que a máquina tiver.
+ */
+function usePesosDaFonte(fontFamily: string): number[] {
+  const [degraus, setDegraus] = useState<number[]>(() => [...PESOS])
+
+  useEffect(() => {
+    let vivo = true
+
+    const medir = (): void => {
+      const contexto = document.createElement('canvas').getContext('2d')
+      if (!contexto || !vivo) return
+      // uma frase, e não uma letra: numa palavra só, duas faces diferentes
+      // podem calhar de somar a mesma largura
+      const amostra = 'Boa noite, e bem-vindos ao programa'
+      setDegraus(
+        pesosQueDesenham((peso) => {
+          contexto.font = `${peso} 64px ${fontFamily}`
+          return contexto.measureText(amostra).width
+        })
+      )
+    }
+
+    /*
+     * Esperar a fonte chegar antes de medir.
+     *
+     * A embutida vem de um arquivo, e medir antes de ele carregar mede a
+     * RESERVA do sistema. Foi o que aconteceu na primeira versão disto: o
+     * controle nascia com cinco degraus — os do Segoe UI, que é a reserva —
+     * numa fonte que tem seis. Pedir o carregamento peso a peso é o que
+     * garante que a face medida é a que vai para a tela.
+     */
+    void Promise.all(PESOS.map((peso) => document.fonts.load(`${peso} 64px ${fontFamily}`)))
+      .then(medir)
+      .catch(medir)
+
+    return () => {
+      vivo = false
+    }
+  }, [fontFamily])
+
+  return degraus
+}
+
+/**
+ * O controle de peso: anda pelos degraus reais da fonte, não por uma escala fixa.
+ *
+ * O slider mede em ÍNDICE, não em peso. Com passo fixo de 100 ele oferecia seis
+ * paradas em qualquer fonte, e em Georgia três delas desenhavam a mesma coisa —
+ * o operador arrastava, o número mudava, a tela não. Andando por índice, cada
+ * passo é uma face diferente por construção.
+ *
+ * O peso GRAVADO no roteiro não é reescrito por causa disto. Um projeto antigo
+ * com 500 numa fonte que não tem 500 continua com 500 no arquivo; a bolinha é
+ * que pousa no degrau que desenha o que já está na tela.
+ */
+function PesoDaFonte({
+  valor,
+  degraus,
+  rotulo,
+  avisoDeFaceUnica,
+  onChange
+}: {
+  valor: number
+  degraus: number[]
+  rotulo: string
+  avisoDeFaceUnica: string
+  onChange: (peso: number) => void
+}): React.JSX.Element {
+  const pousado = degrauDoValor(valor, degraus)
+  const indice = Math.max(0, degraus.indexOf(pousado))
+  const umaFaceSo = degraus.length < 2
+
+  return (
+    <label className="block" {...ajuda('insp.weight')} title={umaFaceSo ? avisoDeFaceUnica : undefined}>
+      <div className="mb-1 flex items-baseline justify-between text-[11px]">
+        <span className="text-[var(--color-fog-2)]">{rotulo}</span>
+        <span className="font-mono text-[11px] font-semibold text-[var(--color-accent)]">{pousado}</span>
+      </div>
+      <SliderConsole
+        value={indice}
+        min={0}
+        max={Math.max(0, degraus.length - 1)}
+        step={1}
+        disabled={umaFaceSo}
+        onValue={(i) => onChange(degraus[i] ?? valor)}
+        className="w-full"
+      />
+      {umaFaceSo ? (
+        <span className="mt-1 block text-[10px] leading-tight text-[var(--color-fog-3)]">{avisoDeFaceUnica}</span>
+      ) : null}
+    </label>
+  )
+}
+
+/**
  * Campo de horário digitado como numa calculadora: cada dígito entra pela
  * direita e empurra os que já estavam lá, com os ":" no lugar certo sozinhos.
  * Arrastar um slider para achar "3 minutos e 20" é lento e impreciso demais
@@ -454,6 +559,8 @@ export function Inspector({
 }: Props): React.JSX.Element {
   const { t, lang } = useT()
   const a = tab.appearance
+  /* os degraus de peso desta fonte nesta máquina — ver `usePesosDaFonte` */
+  const pesosDaFonte = usePesosDaFonte(a.fontFamily)
   /* as linhas que PODEM ser deixa, para saber se cada chip ainda tem par no
      roteiro. Recalcula com o texto, que é o que muda o par */
   const candidatas = useMemo(() => linhasCandidatas(tab.blocks), [tab.blocks])
@@ -553,13 +660,11 @@ export function Inspector({
           suffix="px"
           onChange={(fontSize) => patch({ fontSize })}
         />
-        <Slider
-          ajudaId="insp.weight"
-          label={t('insp.weight')}
-          value={a.fontWeight}
-          min={300}
-          max={800}
-          step={100}
+        <PesoDaFonte
+          valor={a.fontWeight}
+          degraus={pesosDaFonte}
+          rotulo={t('insp.weight')}
+          avisoDeFaceUnica={t('insp.weightOneFace')}
           onChange={(fontWeight) => patch({ fontWeight })}
         />
         <Slider

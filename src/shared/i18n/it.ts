@@ -128,6 +128,7 @@ export const it: Dicionario = {
   'insp.wrapping.fix': 'Porta il corpo a {size}px',
 
   'insp.body': 'Corpo',
+  'font.inter': 'Inter',
   'font.system': 'Sistema',
   'font.sans': 'Senza grazie',
   'font.serif': 'Con grazie',
@@ -135,6 +136,7 @@ export const it: Dicionario = {
   'font.condensed': 'Condensata',
   'font.legible': 'Alta leggibilità',
   'insp.weight': 'Spessore',
+  'insp.weightOneFace': 'Questo carattere ha un solo spessore — cambia carattere per variarlo',
   'insp.lineHeight': 'Interlinea',
   'insp.letterSpacing': 'Spaziatura',
   'insp.allCaps': 'Maiuscole in uscita',
@@ -296,6 +298,7 @@ export const it: Dicionario = {
   'credits.dev': 'Sviluppo',
   'credits.devValue': 'samaBR, con Claude Code',
   'credits.license': 'Licenza',
+  'credits.font': 'Carattere',
   'credits.freedom': 'Libero di usare, studiare, modificare e ridistribuire. Chi distribuisce una versione modificata ne consegna il codice, con la stessa licenza.',
   'credits.role.electron': 'finestra, più monitor e integrazione con il sistema',
   'credits.role.react': 'interfaccia dell’operatore e del prompter',

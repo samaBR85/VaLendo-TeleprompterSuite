@@ -1,5 +1,44 @@
 @import 'tailwindcss';
 
+/* =========================================================================
+ * A fonte do prompter, embutida no app.
+ *
+ * As outras opções do menu de fontes são do SISTEMA, e é por isso que o
+ * controle de peso mal funcionava com elas: o Windows instala Segoe UI e
+ * Georgia com duas ou três faces, não com seis. Pedir 500 numa fonte que só
+ * tem Regular e Bold não desenha um peso intermediário — o sistema entrega a
+ * face mais próxima, e duas posições do controle saem idênticas.
+ *
+ * A Inter é VARIÁVEL: um arquivo só, com um eixo de peso contínuo de 100 a
+ * 900. Cada degrau do controle é um desenho diferente porque a fonte
+ * interpola de verdade, e o número que o app mostra é o que o apresentador vê.
+ *
+ * Embutida, e não baixada: o Valendo abre em estúdio com wi-fi ruim ou sem
+ * rede nenhuma, e uma fonte que às vezes chega é uma fonte que às vezes muda
+ * a quebra de linha do roteiro no meio do programa.
+ *
+ * O itálico vem em arquivo separado porque itálico de verdade não é o romano
+ * inclinado — as letras são outras. As marcas do roteiro usam itálico, e uma
+ * inclinação sintética é o tipo de coisa que se lê como borrão no vidro.
+ *
+ * SIL Open Font License 1.1 — o texto está em `fontes/Inter-LICENSE.txt`.
+ * ====================================================================== */
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('./fontes/InterVariable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: block;
+  src: url('./fontes/InterVariable-Italic.woff2') format('woff2');
+}
+
 /*
  * A paleta inteira do app sai daqui.
  *

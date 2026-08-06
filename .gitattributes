@@ -29,3 +29,4 @@ src/main/import/__fixtures__/** -text
 *.pdf binary
 *.mp4 binary
 *.docx binary
+*.woff2 binary

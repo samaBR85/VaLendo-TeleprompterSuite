@@ -4,6 +4,7 @@ import { Wordmark, versionLabel } from '../ui/Wordmark'
 
 const REPOSITORY = 'https://github.com/samaBR85/Valendo-TeleprompterSuite'
 const LICENCA = 'https://www.gnu.org/licenses/gpl-3.0.html'
+const INTER = 'https://github.com/rsms/inter'
 
 const STACK = [
   ['Electron', 'credits.role.electron'],
@@ -110,6 +111,22 @@ export function Credits({ atualizacao, onClose }: Props): React.JSX.Element {
               }}
             >
               GPL-3.0-or-later
+            </a>
+          </div>
+          {/* a fonte do prompter vai EMBUTIDA no app, e a OFL pede que o aviso
+              de direitos viaje com ela; o texto completo está no instalador,
+              em `resources/Inter-LICENSE.txt` */}
+          <div className="flex gap-2 py-0.5">
+            <span className="w-[128px] flex-none text-[var(--color-fog-2)]">{t('credits.font')}</span>
+            <a
+              href={INTER}
+              className="text-[var(--color-link)] hover:underline"
+              onClick={(event) => {
+                event.preventDefault()
+                window.valendo.openExternal(INTER)
+              }}
+            >
+              Inter · SIL OFL 1.1
             </a>
           </div>
           <p className="mt-2 text-[10px] leading-relaxed text-[var(--color-fog-2)]">{t('credits.freedom')}</p>

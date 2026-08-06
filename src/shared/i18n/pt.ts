@@ -141,6 +141,7 @@ export const pt = {
   'insp.wrapping.fix': 'Ajustar corpo para {size}px',
 
   'insp.body': 'Corpo',
+  'font.inter': 'Inter',
   'font.system': 'Sistema',
   'font.sans': 'Sem serifa',
   'font.serif': 'Com serifa',
@@ -148,6 +149,7 @@ export const pt = {
   'font.condensed': 'Condensada',
   'font.legible': 'Legibilidade alta',
   'insp.weight': 'Peso',
+  'insp.weightOneFace': 'Esta fonte tem um peso só — troque a fonte para poder variar',
   'insp.lineHeight': 'Entrelinha',
   'insp.letterSpacing': 'Entre letras',
   'insp.allCaps': 'Caixa alta na saída',
@@ -320,6 +322,7 @@ export const pt = {
   'credits.dev': 'Desenvolvimento',
   'credits.devValue': 'samaBR, com Claude Code',
   'credits.license': 'Licença',
+  'credits.font': 'Fonte',
   'credits.freedom': 'Livre para usar, estudar, modificar e redistribuir. Quem distribuir uma versão modificada entrega o código dela junto, sob a mesma licença.',
   'credits.role.electron': 'janela, múltiplos monitores e integração com o sistema',
   'credits.role.react': 'interface do operador e do prompter',

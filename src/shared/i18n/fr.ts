@@ -128,6 +128,7 @@ export const fr: Dicionario = {
   'insp.wrapping.fix': 'Régler le corps à {size}px',
 
   'insp.body': 'Corps',
+  'font.inter': 'Inter',
   'font.system': 'Système',
   'font.sans': 'Sans serif',
   'font.serif': 'Avec serif',
@@ -135,6 +136,7 @@ export const fr: Dicionario = {
   'font.condensed': 'Condensée',
   'font.legible': 'Haute lisibilité',
   'insp.weight': 'Graisse',
+  'insp.weightOneFace': 'Cette police n’a qu’une graisse — changez de police pour la faire varier',
   'insp.lineHeight': 'Interligne',
   'insp.letterSpacing': 'Interlettrage',
   'insp.allCaps': 'Majuscules sur la sortie',
@@ -296,6 +298,7 @@ export const fr: Dicionario = {
   'credits.dev': 'Développement',
   'credits.devValue': 'samaBR, avec Claude Code',
   'credits.license': 'Licence',
+  'credits.font': 'Police',
   'credits.freedom': 'Libre d’utiliser, d’étudier, de modifier et de redistribuer. Qui distribue une version modifiée en fournit le code, sous la même licence.',
   'credits.role.electron': 'fenêtre, plusieurs écrans et intégration système',
   'credits.role.react': 'interface de l’opérateur et du prompteur',

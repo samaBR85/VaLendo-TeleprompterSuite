@@ -124,7 +124,15 @@ export const DEFAULT_CARD_OVERLAY: { enabled: boolean; style: CardOverlayStyle }
  * projeto e não muda com o idioma; traduzir o nome não mexe em roteiro
  * nenhum.
  */
+/**
+ * A única que o app carrega consigo — e a única em que o controle de peso é
+ * contínuo de verdade. As de baixo são do sistema, e o sistema instala duas ou
+ * três faces por família; ver `pesosQueDesenham` em `shared/pesos.ts`.
+ */
+export const FONTE_EMBUTIDA = '"Inter Variable", system-ui, sans-serif'
+
 export const FONT_OPTIONS: { chave: Chave; value: string }[] = [
+  { chave: 'font.inter', value: FONTE_EMBUTIDA },
   { chave: 'font.system', value: 'system-ui, sans-serif' },
   { chave: 'font.sans', value: '"Segoe UI", "Helvetica Neue", Arial, sans-serif' },
   { chave: 'font.serif', value: 'Georgia, "Times New Roman", serif' },
@@ -134,7 +142,9 @@ export const FONT_OPTIONS: { chave: Chave; value: string }[] = [
 ]
 
 export const DEFAULT_APPEARANCE: Appearance = {
-  fontFamily: FONT_OPTIONS[1].value,
+  // a embutida: é a única em que mudar o peso muda o desenho em todos os
+  // degraus, e num teleprompter o peso é ajuste de legibilidade no vidro
+  fontFamily: FONTE_EMBUTIDA,
   fontSize: 64,
   fontWeight: 500,
   lineHeight: 1.35,

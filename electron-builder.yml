@@ -26,6 +26,18 @@ files:
   - '!*.md'
   - '!Abrir Valendo.bat'
 
+# A licença da fonte embutida, ao lado do app.
+#
+# A SIL Open Font License pede que o aviso de direitos e o texto da licença
+# acompanhem o arquivo da fonte em qualquer redistribuição. O `.woff2` entra
+# pelo bundle do renderer, que carrega binário mas não carrega este `.txt` —
+# ele viria só se algum código o importasse, e importar um texto de licença
+# para dentro do JavaScript seria contrabando. Aqui ele viaja como arquivo,
+# que é como se lê.
+extraResources:
+  - from: src/renderer/src/fontes/Inter-LICENSE.txt
+    to: Inter-LICENSE.txt
+
 win:
   target:
     - target: nsis

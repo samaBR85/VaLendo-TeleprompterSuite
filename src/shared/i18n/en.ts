@@ -128,6 +128,7 @@ export const en: Dicionario = {
   'insp.wrapping.fix': 'Set size to {size}px',
 
   'insp.body': 'Size',
+  'font.inter': 'Inter',
   'font.system': 'System',
   'font.sans': 'Sans-serif',
   'font.serif': 'Serif',
@@ -135,6 +136,7 @@ export const en: Dicionario = {
   'font.condensed': 'Condensed',
   'font.legible': 'High legibility',
   'insp.weight': 'Weight',
+  'insp.weightOneFace': 'This font has a single weight — change the font to vary it',
   'insp.lineHeight': 'Line height',
   'insp.letterSpacing': 'Letter spacing',
   'insp.allCaps': 'Caps on the output',
@@ -295,6 +297,7 @@ export const en: Dicionario = {
   'credits.dev': 'Development',
   'credits.devValue': 'samaBR, with Claude Code',
   'credits.license': 'Licence',
+  'credits.font': 'Font',
   'credits.freedom': 'Free to use, study, modify and redistribute. Anyone distributing a modified version ships its source too, under the same licence.',
   'credits.role.electron': 'window, multiple monitors and system integration',
   'credits.role.react': 'operator and prompter interface',
