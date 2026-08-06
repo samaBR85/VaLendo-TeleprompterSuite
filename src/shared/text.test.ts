@@ -8,6 +8,7 @@ import {
   chapterTitle,
   hasFormatting,
   fatiasPorBloco,
+  marcasNoTexto,
   reconcileBlocks,
   serializeBlocks,
   stripFormatting,
@@ -345,5 +346,44 @@ describe('repartir um trecho do texto inteiro entre os blocos', () => {
   it('trecho maior que o texto é aparado, não estoura', () => {
     const fatias = fatiasPorBloco(blocos, 0, 9999)
     expect(fatias[1]).toEqual({ blockId: 'b2', de: 0, ate: 14 })
+  })
+})
+
+describe('o caminho de volta: as marcas nas coordenadas do texto inteiro', () => {
+  const blocos: Block[] = [
+    { id: 'b1', kind: 'speech', text: 'Primeiro bloco.', marcas: [{ de: 9, ate: 14, cor: '#e5484d' }] },
+    { id: 'b2', kind: 'speech', text: 'Segundo bloco.', marcas: [{ de: 0, ate: 7, negrito: true }] }
+  ]
+  const inteiro = serializeBlocks(blocos)
+
+  it('devolve as marcas dos dois blocos cercando as palavras certas', () => {
+    /*
+     * A prova é contra o TEXTO, não contra números que eu escrevi: fatiar a
+     * string com o que a função devolveu tem de dar a palavra que o operador
+     * pintou. Índices decorados aqui já me enganaram duas vezes.
+     */
+    const marcas = marcasNoTexto(blocos)
+    expect(marcas.map((m) => inteiro.slice(m.de, m.ate))).toEqual(['bloco', 'Segundo'])
+  })
+
+  it('preserva os atributos, e não só as posições', () => {
+    const marcas = marcasNoTexto(blocos)
+    expect(marcas[0].cor).toBe('#e5484d')
+    expect(marcas[1].negrito).toBe(true)
+  })
+
+  it('é o inverso exato de fatiasPorBloco', () => {
+    // as duas traduzem entre os mesmos dois sistemas, em direções opostas —
+    // se um dia discordarem, o editor pinta num lugar e a transmissão noutro
+    for (const marca of marcasNoTexto(blocos)) {
+      const volta = fatiasPorBloco(blocos, marca.de, marca.ate)
+      expect(volta).toHaveLength(1)
+      const bloco = blocos.find((b) => b.id === volta[0].blockId)!
+      expect(bloco.text.slice(volta[0].de, volta[0].ate)).toBe(inteiro.slice(marca.de, marca.ate))
+    }
+  })
+
+  it('bloco sem marca nenhuma não contribui com nada', () => {
+    expect(marcasNoTexto([{ id: 'b1', kind: 'speech', text: 'Nada aqui.' }])).toEqual([])
   })
 })

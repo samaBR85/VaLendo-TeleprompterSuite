@@ -2,7 +2,8 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRe
 import type { Action } from '@shared/actions'
 import { insertBlock, type InsertKind } from '@shared/insertBlock'
 import { coresDasLinhas, ehDeixa, type LinhaPintavel } from '@shared/apresentadores'
-import { blocksFromText, caretFromAnchor, serializeBlocks, stripFormatting } from '@shared/text'
+import { blocksFromText, caretFromAnchor, marcasNoTexto, serializeBlocks, stripFormatting } from '@shared/text'
+import { edicaoEntre, marcasDaFatia, remapearMarcas, type Marca } from '@shared/marcas'
 import { acharTodas, indiceDaProxima, type Ocorrencia } from '@shared/busca'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
@@ -69,6 +70,82 @@ function retanguloDoTexto(pre: HTMLPreElement, posicao: number): MarcaDaLeitura 
     no = caminhante.nextNode() as Text | null
   }
   return null
+}
+
+/**
+ * A marca desenhada no editor — sem encostar na LARGURA de um só glifo.
+ *
+ * Aqui não vale o que vale na transmissão. O editor é uma ilusão: um
+ * `textarea` transparente por cima de um `<pre>` colorido, alinhados
+ * caractere a caractere. Negrito e itálico de verdade mudam a largura das
+ * letras; o `<pre>` passaria a quebrar linha num lugar e o `textarea` noutro,
+ * e o cursor cairia ao lado da letra que se está vendo — num roteiro no ar.
+ *
+ * Então cada atributo vira um sinal que a fonte não sente:
+ *
+ *   negrito     sombra de meio pixel — engorda o traço sem ocupar espaço
+ *   itálico     traço ondulado embaixo
+ *   sublinhado  traço reto embaixo
+ *   cor         a cor mesmo
+ *
+ * A sombra é pintura pura: não entra no cálculo de layout, então o negrito
+ * aqui parece negrito e continua medindo exatamente o mesmo. Itálico é o
+ * único que não tem equivalente honesto — inclinar exigiria `inline-block`, e
+ * isso mudaria a quebra —, então ele vira um traço com cara própria.
+ *
+ * Itálico E sublinhado juntos saem como um traço só, o ondulado: são duas
+ * linhas no mesmo lugar e o CSS só desenha um estilo por vez. É combinação
+ * rara, e as duas continuam aparecendo inteiras na Transmissão, que é onde a
+ * marca vale de verdade. O editor aqui é lembrete, não prova.
+ */
+function pedacosDaLinha(texto: string, marcas: Marca[]): React.ReactNode[] {
+  /* as fronteiras de todas as marcas, em ordem e sem repetir: entre duas
+     fronteiras o estilo é constante, e cada intervalo vira um span */
+  const cortes = [...new Set([0, texto.length, ...marcas.flatMap((m) => [m.de, m.ate])])]
+    .filter((n) => n >= 0 && n <= texto.length)
+    .sort((a, b) => a - b)
+
+  const fora: React.ReactNode[] = []
+  for (let i = 0; i < cortes.length - 1; i++) {
+    const [de, ate] = [cortes[i], cortes[i + 1]]
+    if (ate <= de) continue
+    const pedaco = texto.slice(de, ate)
+    // as que cobrem este intervalo; a última ganha, como na transmissão
+    const cobrem = marcas.filter((m) => m.de <= de && m.ate >= ate)
+    if (cobrem.length === 0) {
+      fora.push(pedaco)
+      continue
+    }
+    const cor = cobrem.filter((m) => m.cor).at(-1)?.cor
+    const negrito = cobrem.some((m) => m.negrito)
+    const italico = cobrem.some((m) => m.italico)
+    const sublinhado = cobrem.some((m) => m.sublinhado)
+    if (!cor && !negrito && !italico && !sublinhado) {
+      fora.push(pedaco)
+      continue
+    }
+    fora.push(
+      <span
+        key={de}
+        data-marca
+        style={{
+          ...(cor ? { color: cor } : {}),
+          ...(negrito ? { textShadow: '0.45px 0 0 currentColor' } : {}),
+          ...(italico || sublinhado
+            ? {
+                textDecorationLine: 'underline',
+                textDecorationStyle: italico ? ('wavy' as const) : ('solid' as const),
+                textUnderlineOffset: '0.18em',
+                textDecorationThickness: italico ? '1px' : '2px'
+              }
+            : {})
+        }}
+      >
+        {pedaco}
+      </span>
+    )
+  }
+  return fora
 }
 
 export interface CaixaDoAchado {
@@ -727,6 +804,22 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     push(event.target.value, 140)
   }
 
+  /**
+   * As marcas do roteiro nas coordenadas do RASCUNHO — o texto de agora, que
+   * pode estar até 140ms à frente do que o main conhece.
+   *
+   * Sem o remapeamento, a marca ficaria parada enquanto se digita antes dela e
+   * só daria um pulo para o lugar certo quando o main respondesse. Com ele,
+   * ela acompanha a letra. É a MESMA conta que o main usa quando o texto chega
+   * de verdade — aqui adiantada, para a tela não mentir nem por um respiro.
+   */
+  const marcasDoRascunho = useMemo(() => {
+    const doTexto = marcasNoTexto(tab.blocks)
+    if (doTexto.length === 0 || draft === incoming) return doTexto
+    const edicao = edicaoEntre(incoming, draft)
+    return edicao ? remapearMarcas(doTexto, [edicao]) : doTexto
+  }, [tab.blocks, incoming, draft])
+
   const highlighted = useMemo(() => {
     const lines = draft.split('\n')
 
@@ -751,6 +844,14 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       return { kind, text: line }
     })
     const deQuemFala = coresDasLinhas(pintaveis, apresentadores)
+
+    /* onde cada linha começa no texto inteiro, para fatiar as marcas dela */
+    let percorrido = 0
+    const inicios = lines.map((line) => {
+      const inicio = percorrido
+      percorrido += line.length + 1
+      return inicio
+    })
 
     return lines.map((line, index) => {
       const trimmed = line.trim()
@@ -783,14 +884,15 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
           deixa
           ? { fontWeight: 700 }
           : undefined
+      const minhas = marcasDaFatia(marcasDoRascunho, inicios[index], inicios[index] + line.length)
       return (
         <span key={index} style={{ color, ...realce }}>
-          {line}
+          {minhas.length > 0 ? pedacosDaLinha(line, minhas) : line}
           {index < lines.length - 1 ? '\n' : ''}
         </span>
       )
     })
-  }, [draft, apresentadores])
+  }, [draft, apresentadores, marcasDoRascunho])
 
   // `scrollbar-gutter: stable` nos dois: sem isso, um roteiro comprido o
   // bastante para precisar de rolagem reserva os 13px da barra só no textarea

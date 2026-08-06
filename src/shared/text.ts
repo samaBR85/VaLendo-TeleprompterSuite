@@ -278,6 +278,30 @@ export function fatiasPorBloco(blocks: Block[], de: number, ate: number): FatiaD
   return fora
 }
 
+/**
+ * O caminho de volta: as marcas de todos os blocos, nas coordenadas do texto
+ * INTEIRO.
+ *
+ * É o que o editor precisa para desenhar. Ele trabalha numa string só — a
+ * mesma que o `textarea` mostra —, então uma marca guardada como "do 2 ao 6 do
+ * terceiro parágrafo" não lhe serve de nada até virar "do 118 ao 122".
+ *
+ * Espelho exato de `fatiasPorBloco`, e pela mesma `paragraphSpans`: as duas
+ * traduzem entre os mesmos dois sistemas de coordenadas, em direções opostas.
+ * Uma conta própria aqui seria a receita para o editor pintar meia palavra ao
+ * lado do que a transmissão pinta.
+ */
+export function marcasNoTexto(blocks: Block[]): Marca[] {
+  const spans = paragraphSpans(serializeBlocks(blocks))
+  const fora: Marca[] = []
+  spans.forEach((span, i) => {
+    for (const marca of blocks[i]?.marcas ?? []) {
+      fora.push({ ...marca, de: span.start + marca.de, ate: span.start + marca.ate })
+    }
+  })
+  return fora
+}
+
 export function anchorFromCaret(previousBlocks: Block[], text: string, caret: number): Anchor | null {
   const spans = paragraphSpans(text)
   if (spans.length === 0) return null
