@@ -9,7 +9,7 @@ import { PrompterStage } from '../prompter/PrompterStage'
 import { ancoraEmPalavrasReais, anchorFromWordIndex, composeLines, totalWords } from '@shared/anchor'
 import { cartaoNoAr } from '@shared/cards'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
-import { corNoPonto, RECENTES_MAX } from '@shared/marcas'
+import { corNoPonto, trechoTodoCom, RECENTES_MAX, type Atributo } from '@shared/marcas'
 import { anchorFromCaret, fatiasPorBloco, hasFormatting, totalWordCount } from '@shared/text'
 import type { Tab } from '@shared/types'
 import { LANGS, type Lang } from '@shared/i18n'
@@ -662,6 +662,12 @@ function AppConteudo({
    * resposta que não inventa nada.
    */
   const [corSelecionada, setCorSelecionada] = useState<string | undefined>(undefined)
+  /** o que o B, o I e o U mostram — ver `formatosDaSelecao` */
+  const [formatosSelecionados, setFormatosSelecionados] = useState<Record<Atributo, boolean>>({
+    negrito: false,
+    italico: false,
+    sublinhado: false
+  })
   /**
    * Quantas linhas o "capitular todas" pegaria agora.
    *
@@ -831,6 +837,33 @@ function AppConteudo({
   }, [state])
 
   /**
+   * O que o B, o I e o U devem mostrar para a seleção de agora.
+   *
+   * Eles nunca acendiam: selecionar de novo uma palavra já negrito mostrava o
+   * botão apagado, e clicar aplicava negrito por cima de negrito. Não havia
+   * gesto nenhum para TIRAR só o negrito — o único caminho era "Remover cor",
+   * que leva o resto junto.
+   *
+   * Vale para a seleção INTEIRA, e atravessando blocos: uma frase selecionada
+   * de ponta a ponta de dois parágrafos só acende se as duas partes tiverem o
+   * atributo. `fatiasPorBloco` é a mesma conversão que a ação de pintar usa —
+   * é isso que garante que o botão fale do mesmo trecho que o clique muda.
+   */
+  const formatosDaSelecao = useCallback((): Record<Atributo, boolean> => {
+    const faixa = editorRef.current?.selecaoFaixa()
+    const blocos = state?.tabs.find((t) => t.id === state.activeTabId)?.blocks
+    const nada = { negrito: false, italico: false, sublinhado: false }
+    if (!faixa || !blocos) return nada
+    const fatias = fatiasPorBloco(blocos, faixa.de, faixa.ate)
+    if (fatias.length === 0) return nada
+    const todas = (atributo: Atributo): boolean =>
+      fatias.every((fatia) =>
+        trechoTodoCom(blocos.find((b) => b.id === fatia.blockId)?.marcas, fatia.de, fatia.ate, atributo)
+      )
+    return { negrito: todas('negrito'), italico: todas('italico'), sublinhado: todas('sublinhado') }
+  }, [state])
+
+  /**
    * O CATCH: cada movimento do cursor rearma um `goToCaret` daqui a pouco,
    * em vez de disparar na hora.
    *
@@ -842,11 +875,26 @@ function AppConteudo({
   const onCaretMove = useCallback(() => {
     setTextoSelecionado((editorRef.current?.selecao() ?? '') !== '')
     setCorSelecionada(corDaSelecao())
+    setFormatosSelecionados(formatosDaSelecao())
     setLinhasIguais(editorRef.current?.quantasIguais() ?? 0)
     if (!catchAtivo) return
     if (catchTimer.current) clearTimeout(catchTimer.current)
     catchTimer.current = setTimeout(goToCaret, 220)
-  }, [catchAtivo, goToCaret, corDaSelecao])
+  }, [catchAtivo, goToCaret, corDaSelecao, formatosDaSelecao])
+
+  /*
+   * O que a barra mostra segue o ESTADO, não só o cursor.
+   *
+   * `onCaretMove` só dispara quando alguém mexe no cursor, e clicar no B não
+   * mexe. Sem isto o botão só acenderia no movimento seguinte: a pessoa
+   * negritava, via o botão continuar apagado, e clicava de novo — desfazendo o
+   * que tinha acabado de fazer. As duas leituras vêm dos blocos, então
+   * recalcular quando os blocos mudam é o que mantém a barra em dia.
+   */
+  useEffect(() => {
+    setCorSelecionada(corDaSelecao())
+    setFormatosSelecionados(formatosDaSelecao())
+  }, [corDaSelecao, formatosDaSelecao])
 
   useEffect(() => {
     return () => {
@@ -1128,26 +1176,32 @@ function AppConteudo({
       {/* ORDEM APROVADA: formatação | apresentador | marcação | procurar |
           desfazer. O primeiro grupo age sobre a SELEÇÃO, o terceiro sobre a
           ESTRUTURA do roteiro, e o do meio sobre quem DIZ. */}
+      {/* acesos quando a seleção INTEIRA já tem o atributo, e o clique inverte:
+          é o que dá um gesto para tirar só o negrito sem levar a cor junto,
+          que o "Remover cor" ao lado não faz */}
       <EditorTool
         ajudaId="editor.bold"
         texto="B"
         label={t('editor.bold')}
         disabled={!textoSelecionado}
-        onClick={() => marcarSelecao({ negrito: true })}
+        acesa={formatosSelecionados.negrito}
+        onClick={() => marcarSelecao({ negrito: !formatosSelecionados.negrito })}
       />
       <EditorTool
         ajudaId="editor.italic"
         texto="I"
         label={t('editor.italic')}
         disabled={!textoSelecionado}
-        onClick={() => marcarSelecao({ italico: true })}
+        acesa={formatosSelecionados.italico}
+        onClick={() => marcarSelecao({ italico: !formatosSelecionados.italico })}
       />
       <EditorTool
         ajudaId="editor.underline"
         texto="U"
         label={t('editor.underline')}
         disabled={!textoSelecionado}
-        onClick={() => marcarSelecao({ sublinhado: true })}
+        acesa={formatosSelecionados.sublinhado}
+        onClick={() => marcarSelecao({ sublinhado: !formatosSelecionados.sublinhado })}
       />
       <SeletorDeCor
         marca="conta-gotas"

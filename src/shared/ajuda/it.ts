@@ -260,15 +260,15 @@ export const ajudaIt = {
   },
   'editor.bold': {
     nome: 'Grassetto',
-    texto: 'Grassetto vero sullo schermo del presentatore. In questo editor appare come doppia sottolineatura — il grassetto è più largo e il campo invisibile dietro si sposterebbe.'
+    texto: 'Grassetto vero sullo schermo del presentatore. Qui il tratto si ispessisce senza allargarsi. Su un tratto già in grassetto il pulsante si accende, e il clic lo toglie.'
   },
   'editor.italic': {
     nome: 'Corsivo',
-    texto: 'Corsivo vero sullo schermo del presentatore; qui una sottolineatura ondulata, per lo stesso motivo del grassetto.'
+    texto: 'Corsivo vero sullo schermo del presentatore; qui un tratto ondulato, per lo stesso motivo del grassetto. Il pulsante si accende su un tratto già in corsivo, e il clic lo toglie.'
   },
   'editor.underline': {
     nome: 'Sottolineato',
-    texto: 'Uguale in entrambi — sottolineare non cambia la larghezza di nessuna lettera.'
+    texto: 'Uguale in entrambi — sottolineare non cambia la larghezza di nessuna lettera. Il pulsante si accende su un tratto già sottolineato, e il clic lo toglie.'
   },
   'editor.color': {
     nome: 'Colore del testo',

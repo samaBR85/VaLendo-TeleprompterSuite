@@ -96,15 +96,23 @@ function retanguloDoTexto(pre: HTMLPreElement, posicao: number): MarcaDaLeitura 
  *
  * Então cada atributo vira um sinal que a fonte não sente:
  *
- *   negrito     sombra de meio pixel — engorda o traço sem ocupar espaço
+ *   negrito     contorno no próprio glifo — engorda o traço sem ocupar espaço
  *   itálico     traço ondulado embaixo
  *   sublinhado  traço reto embaixo
  *   cor         a cor mesmo
  *
- * A sombra é pintura pura: não entra no cálculo de layout, então o negrito
- * aqui parece negrito e continua medindo exatamente o mesmo. Itálico é o
- * único que não tem equivalente honesto — inclinar exigiria `inline-block`, e
- * isso mudaria a quebra —, então ele vira um traço com cara própria.
+ * O negrito era uma sombra de meio pixel deslocada para a direita, e o
+ * operador relatou que quase não se via: ao lado de um ondulado e de um
+ * sublinhado, que gritam, ele passava por texto normal. `-webkit-text-stroke`
+ * é a ferramenta certa e não estava sendo usada — ela desenha um contorno em
+ * volta da letra, o que engrossa o traço INTEIRO em vez de duplicá-lo de um
+ * lado só, e não entra no cálculo de layout: a letra fica gorda e continua
+ * medindo o mesmo. A sombra fica junto, agora nos dois lados, para fechar o
+ * miolo das curvas que só o contorno deixaria fino.
+ *
+ * Itálico é o único que não tem equivalente honesto — inclinar exigiria
+ * `inline-block`, e isso mudaria a quebra —, então ele vira um traço com cara
+ * própria.
  *
  * Itálico E sublinhado juntos saem como um traço só, o ondulado: são duas
  * linhas no mesmo lugar e o CSS só desenha um estilo por vez. É combinação
@@ -143,7 +151,13 @@ function pedacosDaLinha(texto: string, marcas: Marca[]): React.ReactNode[] {
         data-marca
         style={{
           ...(cor ? { color: cor } : {}),
-          ...(negrito ? { textShadow: '0.45px 0 0 currentColor' } : {}),
+          ...(negrito
+            ? {
+                WebkitTextStrokeWidth: '0.55px',
+                WebkitTextStrokeColor: 'currentColor',
+                textShadow: '0.3px 0 0 currentColor, -0.3px 0 0 currentColor'
+              }
+            : {}),
           ...(italico || sublinhado
             ? {
                 textDecorationLine: 'underline',

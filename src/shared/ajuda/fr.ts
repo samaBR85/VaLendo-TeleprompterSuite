@@ -260,15 +260,15 @@ export const ajudaFr = {
   },
   'editor.bold': {
     nome: 'Gras',
-    texto: 'Vrai gras sur l’écran du présentateur. Dans cet éditeur, un double soulignement — le gras est plus large, et le champ invisible derrière se décalerait.'
+    texto: 'Vrai gras sur l’écran du présentateur. Ici le trait s’épaissit sans s’élargir, sinon l’éditeur se décalerait. Sur un passage déjà en gras le bouton s’allume, et le clic l’enlève.'
   },
   'editor.italic': {
     nome: 'Italique',
-    texto: 'Vrai italique sur l’écran du présentateur ; ici un soulignement ondulé, pour la même raison que le gras.'
+    texto: 'Vrai italique sur l’écran du présentateur ; ici un trait ondulé, pour la même raison que le gras. Le bouton s’allume sur un passage déjà en italique, et le clic l’enlève.'
   },
   'editor.underline': {
     nome: 'Souligné',
-    texto: 'Pareil dans les deux — souligner ne change la largeur d’aucune lettre.'
+    texto: 'Pareil dans les deux — souligner ne change la largeur d’aucune lettre. Le bouton s’allume sur un passage déjà souligné, et le clic l’enlève.'
   },
   'editor.color': {
     nome: 'Couleur du texte',

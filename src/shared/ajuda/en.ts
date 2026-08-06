@@ -287,15 +287,15 @@ export const ajudaEn = {
   },
   'editor.bold': {
     nome: 'Bold',
-    texto: 'Real bold on the presenter’s screen. In this editor it shows as a double underline instead — bold letters are wider, and the invisible text field behind would drift out of place.'
+    texto: 'Real bold on the presenter’s screen. Here the strokes thicken without widening, or the editor would drift. Over a stretch already bold the button lights up, and clicking removes it.'
   },
   'editor.italic': {
     nome: 'Italic',
-    texto: 'Real italic on the presenter’s screen; a wavy underline here, for the same reason as bold.'
+    texto: 'Real italic on the presenter’s screen; here a wavy underline, for the same reason as bold. The button lights up over a stretch already italic, and clicking removes it.'
   },
   'editor.underline': {
     nome: 'Underline',
-    texto: 'The same in both — an underline does not change how wide a letter is.'
+    texto: 'The same in both — underlining changes no letter’s width. The button lights up over a stretch already underlined, and clicking removes it.'
   },
   'editor.color': {
     nome: 'Text colour',

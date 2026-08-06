@@ -236,6 +236,40 @@ export function corNoPonto(marcas: Marca[] | undefined, pos: number): string | u
   return undefined
 }
 
+/** Os atributos que o B, o I e o U ligam e desligam. */
+export type Atributo = 'negrito' | 'italico' | 'sublinhado'
+
+/**
+ * O trecho INTEIRO tem este atributo?
+ *
+ * É o que decide se o B da barra acende. A pergunta tem de ser "inteiro" e não
+ * "em algum lugar": com "em algum lugar", selecionar uma frase onde só uma
+ * palavra é negrito acenderia o botão, e o clique seguinte — que a pessoa faria
+ * esperando negritar a frase — tiraria o negrito da palavra. Com "inteiro", o
+ * botão apagado sobre uma seleção mista significa "ainda falta", e clicar
+ * completa; aceso significa "está todo", e clicar tira. É a regra de todo
+ * editor de texto, e é a única em que o próximo clique é previsível.
+ *
+ * Buraco no meio conta como não ter: uma seleção coberta de 0 a 5 e de 8 a 10
+ * não está toda em negrito, ainda que duas marcas digam negrito.
+ */
+export function trechoTodoCom(marcas: Marca[] | undefined, de: number, ate: number, atributo: Atributo): boolean {
+  if (!marcas || ate <= de) return false
+
+  const cobrindo = marcas
+    .filter((m) => m[atributo] && m.ate > de && m.de < ate)
+    .sort((a, b) => a.de - b.de)
+
+  let cobertoAte = de
+  for (const marca of cobrindo) {
+    // um começo depois do ponto já coberto é um pedaço sem o atributo
+    if (marca.de > cobertoAte) return false
+    cobertoAte = Math.max(cobertoAte, marca.ate)
+    if (cobertoAte >= ate) return true
+  }
+  return cobertoAte >= ate
+}
+
 /** Quantas cores o histórico da barra guarda. */
 export const RECENTES_MAX = 4
 

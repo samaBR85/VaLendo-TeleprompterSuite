@@ -8,6 +8,7 @@ import {
   limparMarcas,
   marcasDaFatia,
   remapearMarcas,
+  trechoTodoCom,
   type Marca
 } from './marcas'
 
@@ -303,5 +304,71 @@ describe('a cor de um trecho inteiro — a regra do capítulo', () => {
 
   it('pula as marcas sem cor ao procurar a última', () => {
     expect(corDaMarca([ACAO, { de: 0, ate: 2, negrito: true }])).toBe('#e5484d')
+  })
+})
+
+/**
+ * O que acende o B, o I e o U da barra.
+ *
+ * Eles não acendiam: selecionar de novo um trecho já negrito mostrava o botão
+ * apagado, e clicar aplicava negrito por cima de negrito — não havia gesto para
+ * TIRAR. Agora o botão diz o que a seleção é, e o clique inverte.
+ */
+describe('o trecho inteiro tem o atributo?', () => {
+  it('coberto de ponta a ponta, sim', () => {
+    expect(trechoTodoCom([{ de: 0, ate: 10, negrito: true }], 2, 8, 'negrito')).toBe(true)
+  })
+
+  it('coberto pela metade, não — e é por isso que o clique seguinte completa', () => {
+    expect(trechoTodoCom([{ de: 0, ate: 5, negrito: true }], 0, 10, 'negrito')).toBe(false)
+  })
+
+  it('duas marcas encostadas cobrem como uma só', () => {
+    const marcas = [
+      { de: 0, ate: 5, negrito: true },
+      { de: 5, ate: 10, negrito: true }
+    ]
+    expect(trechoTodoCom(marcas, 0, 10, 'negrito')).toBe(true)
+  })
+
+  it('buraco no meio derruba, ainda que as duas pontas tenham', () => {
+    const marcas = [
+      { de: 0, ate: 4, negrito: true },
+      { de: 6, ate: 10, negrito: true }
+    ]
+    expect(trechoTodoCom(marcas, 0, 10, 'negrito')).toBe(false)
+  })
+
+  it('cada atributo responde por si', () => {
+    const marcas = [{ de: 0, ate: 10, negrito: true, cor: '#e5484d' }]
+    expect(trechoTodoCom(marcas, 0, 10, 'negrito')).toBe(true)
+    expect(trechoTodoCom(marcas, 0, 10, 'italico')).toBe(false)
+    expect(trechoTodoCom(marcas, 0, 10, 'sublinhado')).toBe(false)
+  })
+
+  it('sem marca nenhuma, e sem seleção, não acende', () => {
+    expect(trechoTodoCom(undefined, 0, 10, 'negrito')).toBe(false)
+    expect(trechoTodoCom([], 0, 10, 'negrito')).toBe(false)
+    expect(trechoTodoCom([{ de: 0, ate: 10, negrito: true }], 5, 5, 'negrito')).toBe(false)
+  })
+})
+
+/**
+ * Desligar o atributo é aplicar `false`, e não limpar a marca.
+ *
+ * A diferença importa: "Remover cor" já existe e apaga tudo. O B tem de tirar
+ * SÓ o negrito e deixar a cor onde estava — senão desnegritar uma palavra
+ * vermelha a devolveria branca, e ninguém pediu isso.
+ */
+describe('desligar um atributo pela barra', () => {
+  it('tira o negrito e mantém a cor', () => {
+    const antes = [{ de: 0, ate: 10, negrito: true, cor: '#e5484d' }]
+    const depois = aplicarMarca(antes, 0, 10, { negrito: false })
+    expect(depois).toEqual([{ de: 0, ate: 10, negrito: false, cor: '#e5484d' }])
+    expect(trechoTodoCom(depois, 0, 10, 'negrito')).toBe(false)
+  })
+
+  it('sem cor embaixo, a marca simplesmente deixa de existir', () => {
+    expect(aplicarMarca([{ de: 0, ate: 10, negrito: true }], 0, 10, { negrito: false })).toEqual([])
   })
 })

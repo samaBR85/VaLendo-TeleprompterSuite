@@ -260,15 +260,15 @@ export const ajudaEs = {
   },
   'editor.bold': {
     nome: 'Negrita',
-    texto: 'Negrita de verdad en la pantalla del presentador. En este editor sale como doble subrayado — la negrita es más ancha y el campo invisible de atrás se desalinearía.'
+    texto: 'Negrita real en la pantalla del presentador. Aquí el trazo engorda sin ensanchar, o el editor se desalinearía. Sobre un tramo ya en negrita el botón se enciende, y pulsarlo lo quita.'
   },
   'editor.italic': {
     nome: 'Cursiva',
-    texto: 'Cursiva de verdad en la pantalla del presentador; aquí un subrayado ondulado, por lo mismo que la negrita.'
+    texto: 'Cursiva real en la pantalla del presentador; aquí un trazo ondulado, por lo mismo que la negrita. El botón se enciende sobre un tramo ya en cursiva, y pulsarlo lo quita.'
   },
   'editor.underline': {
     nome: 'Subrayado',
-    texto: 'Igual en ambos — subrayar no cambia el ancho de ninguna letra.'
+    texto: 'Igual en los dos — subrayar no cambia el ancho de ninguna letra. El botón se enciende sobre un tramo ya subrayado, y pulsarlo lo quita.'
   },
   'editor.color': {
     nome: 'Color del texto',

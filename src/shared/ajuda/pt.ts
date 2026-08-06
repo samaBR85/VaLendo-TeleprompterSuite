@@ -260,15 +260,15 @@ export const ajudaPt = {
   },
   'editor.bold': {
     nome: 'Negrito',
-    texto: 'Negrito de verdade na tela do apresentador. Neste editor aparece como traço duplo — letra negrito é mais larga, e o campo de texto invisível de trás sairia do lugar.'
+    texto: 'Negrito de verdade na tela do apresentador. Aqui a letra engrossa sem alargar, senão o editor desalinharia. Sobre um trecho já negrito o botão acende, e o clique tira.'
   },
   'editor.italic': {
     nome: 'Itálico',
-    texto: 'Itálico de verdade na tela do apresentador; aqui um traço ondulado, pelo mesmo motivo do negrito.'
+    texto: 'Itálico de verdade na tela do apresentador; aqui um traço ondulado, pelo mesmo motivo do negrito. O botão acende sobre um trecho já em itálico, e o clique tira.'
   },
   'editor.underline': {
     nome: 'Sublinhado',
-    texto: 'Igual nos dois — sublinhar não muda a largura de letra nenhuma.'
+    texto: 'Igual nos dois — sublinhar não muda a largura de letra nenhuma. O botão acende sobre um trecho já sublinhado, e o clique tira.'
   },
   'editor.color': {
     nome: 'Cor do texto',

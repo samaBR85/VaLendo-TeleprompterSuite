@@ -260,15 +260,15 @@ export const ajudaDe = {
   },
   'editor.bold': {
     nome: 'Fett',
-    texto: 'Echtes Fett auf dem Sprecherbildschirm. In diesem Editor als doppelte Unterstreichung — fette Buchstaben sind breiter, und das unsichtbare Textfeld dahinter verrutschte.'
+    texto: 'Echtes Fett auf dem Bildschirm der sprechenden Person. Hier werden die Striche dicker, ohne breiter zu werden. Über einem bereits fetten Abschnitt leuchtet die Taste, ein Klick nimmt sie weg.'
   },
   'editor.italic': {
     nome: 'Kursiv',
-    texto: 'Echtes Kursiv auf dem Sprecherbildschirm; hier eine Wellenlinie, aus demselben Grund wie bei Fett.'
+    texto: 'Echte Kursive auf dem Bildschirm der sprechenden Person; hier eine Wellenlinie, aus demselben Grund wie beim Fett. Über einem bereits kursiven Abschnitt leuchtet die Taste, und ein Klick nimmt sie weg.'
   },
   'editor.underline': {
     nome: 'Unterstrichen',
-    texto: 'In beiden gleich — Unterstreichen ändert keine Buchstabenbreite.'
+    texto: 'In beiden gleich — Unterstreichen ändert die Breite keines Buchstabens. Über einem bereits unterstrichenen Abschnitt leuchtet die Taste, und ein Klick nimmt sie weg.'
   },
   'editor.color': {
     nome: 'Textfarbe',
