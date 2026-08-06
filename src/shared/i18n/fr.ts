@@ -231,7 +231,7 @@ export const fr: Dicionario = {
   'deck.words': 'Mots',
   'deck.duration': 'Durée',
   'deck.status': 'État',
-  'deck.noChapter': 'Sans chapitre',
+  'deck.opening': 'Ouverture',
   'deck.done': 'fait',
   'deck.onAir': 'à l’antenne',
   'deck.next': 'à suivre',

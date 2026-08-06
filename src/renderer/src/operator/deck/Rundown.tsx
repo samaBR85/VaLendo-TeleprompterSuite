@@ -71,7 +71,7 @@ export function Rundown({ segments, currentIndex, ppm, onSeek }: Props): React.J
               >
                 <span className="font-mono text-[11px] text-[var(--color-fog-2)]">{index + 1}</span>
                 <span className="truncate text-[13px] text-[var(--color-fog-0)]">
-                  {segment.title || t('deck.noChapter')}
+                  {segment.title || t('deck.opening')}
                 </span>
                 <span className="font-mono text-[11px] text-[var(--color-fog-2)] text-right">
                   {segment.spokenWords}

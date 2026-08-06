@@ -323,9 +323,17 @@ export function Sidebar({
                   }`}
                   style={index === atual ? { color: '#f6d38a' } : undefined}
                 >
-                  {/* `||` e não `??`: o segmento sem capítulo traz título VAZIO,
-                      não `undefined`, e o `??` deixava a linha em branco */}
-                  {segment.title || t('deck.noChapter')}
+                  {/* `||` e não `??`: o trecho antes do primeiro `##` traz
+                      título VAZIO, não `undefined`, e o `??` deixava a linha em
+                      branco.
+
+                      Ele se chamava "Sem capítulo", e o operador leu isso como
+                      um capítulo fantasma que o app criava sozinho antes dos
+                      dele. Não é: é o começo do roteiro, texto de verdade que
+                      precisa de uma linha na coluna para poder ser clicado.
+                      "Abertura" diz o que aquilo é, em vez de dizer o que
+                      aquilo não tem. */}
+                  {segment.title || t('deck.opening')}
                 </span>
                 <span
                   className="flex-none font-mono text-[10px]"
