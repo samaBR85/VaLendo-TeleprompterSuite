@@ -270,6 +270,26 @@ export const ajudaFr = {
     nome: 'Couleur du texte',
     texto: 'Ouvre la palette : 71 teintes, plus les quatre dernières utilisées. S’applique à ce qui est sélectionné dans le texte.'
   },
+  'editor.findStep': {
+    nome: 'Occurrence précédente / suivante',
+    texto: 'Parcourt les occurrences sans toucher à la position de lecture : le présentateur ne voit pas l’écran sauter.'
+  },
+  'editor.replaceToFind': {
+    nome: 'Envoyer vers la recherche',
+    texto: 'Coupe le texte de Remplacer et en fait le terme cherché. Après un remplacement, c’est ainsi qu’on retrouve le nouveau mot sans le retaper.'
+  },
+  'editor.apply': {
+    nome: 'Appliquer',
+    texto: 'Fait tout ce qui est coché au-dessus, en une fois : remplacer, peindre, ou les deux. À gauche cette occurrence, à droite toutes.'
+  },
+  'editor.findClose': {
+    nome: 'Fermer la recherche',
+    texto: 'Laisse le curseur sur l’occurrence regardée, pour continuer à écrire là même. Échap fait pareil.'
+  },
+  'editor.paintWith': {
+    nome: 'Peindre les occurrences',
+    texto: 'Coché, appliquer colore aussi ce qui a été trouvé. Avec Remplacer, la couleur va sur le NOUVEAU mot, pas sur celui qui a disparu.'
+  },
   'editor.recentColors': {
     nome: 'Couleurs récentes',
     texto: 'Les quatre dernières choisies, en roue : une nouvelle prend la case suivante et repart de la première. Le pointillé retire la couleur.'

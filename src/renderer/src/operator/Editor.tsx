@@ -262,19 +262,24 @@ const LARGURA_DO_CAMPO: React.CSSProperties = {
  */
 function Passo({
   marca,
+  ajudaId,
   ligado,
   rotulo,
   onToggle,
   children
 }: {
   marca: string
+  ajudaId: AjudaId
   ligado: boolean
   rotulo: string
   onToggle: () => void
   children: React.ReactNode
 }): React.JSX.Element {
+  /* a ajuda vai na LINHA, não na caixinha: a explicação vale para o passo
+     inteiro — o que ele faz, o campo dele e os controles ao lado. Quem tem
+     explicação própria (o seletor de cor) sobrescreve por estar mais perto */
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1.5" {...ajuda(ajudaId)}>
       <button
         type="button"
         {...{ [`data-${marca}`]: '' }}
@@ -316,6 +321,7 @@ function Passo({
  */
 function TeclaDeAplicar({
   marca,
+  ajudaId,
   rotulo,
   desligado,
   destaque,
@@ -327,6 +333,7 @@ function TeclaDeAplicar({
   rotulo: string
   desligado?: boolean
   destaque?: boolean
+  ajudaId: AjudaId
   /**
    * A cor que a barra vai pintar, quando há uma.
    *
@@ -343,6 +350,7 @@ function TeclaDeAplicar({
     <button
       type="button"
       {...{ [`data-busca-${marca}`]: '' }}
+      {...ajuda(ajudaId)}
       title={rotulo}
       aria-label={rotulo}
       disabled={desligado}
@@ -420,12 +428,14 @@ function Interruptor({
 /** As teclinhas que AGEM na barra de busca: andar, trocar, pintar. */
 function BotaoDeBusca({
   marca,
+  ajudaId,
   rotulo,
   desligado,
   onClick,
   children
 }: {
   marca: string
+  ajudaId?: AjudaId
   rotulo: string
   desligado?: boolean
   onClick: () => void
@@ -435,6 +445,7 @@ function BotaoDeBusca({
     <button
       type="button"
       {...{ [`data-busca-${marca}`]: '' }}
+      {...(ajudaId ? ajuda(ajudaId) : {})}
       title={rotulo}
       aria-label={rotulo}
       disabled={desligado}
@@ -1264,6 +1275,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
           <button
             type="button"
             data-busca-fechar
+            {...ajuda('editor.findClose')}
             title={t('app.close')}
             aria-label={t('app.close')}
             onMouseDown={(e) => e.preventDefault()}
@@ -1316,6 +1328,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
             </span>
             <BotaoDeBusca
               marca="anterior"
+              ajudaId="editor.findStep"
               rotulo={t('editor.findPrev')}
               desligado={ocorrencias.length === 0}
               onClick={() => andar(true)}
@@ -1324,6 +1337,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
             </BotaoDeBusca>
             <BotaoDeBusca
               marca="proxima"
+              ajudaId="editor.findStep"
               rotulo={t('editor.findNext')}
               desligado={ocorrencias.length === 0}
               onClick={() => andar(false)}
@@ -1347,6 +1361,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
           {/* ── MUDE ESTAS COISAS ── */}
           <Passo
             marca="usar-troca"
+            ajudaId="editor.replace"
             ligado={trocarLigado}
             rotulo={t('editor.replace')}
             onToggle={() => setTrocarLigado((v) => !v)}
@@ -1386,6 +1401,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
             <button
               type="button"
               data-troca-sobe
+              {...ajuda('editor.replaceToFind')}
               title={t('editor.replaceToFind')}
               aria-label={t('editor.replaceToFind')}
               disabled={!trocarLigado || troca === ''}
@@ -1404,6 +1420,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
 
           <Passo
             marca="usar-cor"
+            ajudaId="editor.paintWith"
             ligado={pintarLigado}
             /* rótulo PRÓPRIO, curto: `editor.color` é o do cabeçalho ("cor do
                texto selecionado") e quebrava em três linhas aqui dentro */
@@ -1481,6 +1498,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
           <div className="flex items-center gap-1">
             <TeclaDeAplicar
               marca="aplicar"
+              ajudaId="editor.apply"
               rotulo={t('editor.applyOne')}
               desligado={!podeAplicar}
               destaque
@@ -1495,6 +1513,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
             </TeclaDeAplicar>
             <TeclaDeAplicar
               marca="aplicar-todas"
+              ajudaId="editor.apply"
               rotulo={t('editor.applyAll', { n: ocorrencias.length })}
               desligado={!podeAplicar}
               onClick={() => aplicar(true)}

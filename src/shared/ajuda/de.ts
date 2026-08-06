@@ -270,6 +270,26 @@ export const ajudaDe = {
     nome: 'Textfarbe',
     texto: 'Öffnet die Palette: 71 Töne, dazu die letzten vier, die Sie benutzt haben. Gilt für das im Skript Markierte.'
   },
+  'editor.findStep': {
+    nome: 'Vorheriger / nächster Treffer',
+    texto: 'Springt zwischen Treffern, ohne die Leseposition anzurühren — der Sprecher sieht den Bildschirm nicht springen.'
+  },
+  'editor.replaceToFind': {
+    nome: 'Nach oben in die Suche',
+    texto: 'Schneidet den Ersetzen-Text aus und macht ihn zum Suchbegriff. Nach einem Austausch findet man so das neue Wort, ohne es neu zu tippen.'
+  },
+  'editor.apply': {
+    nome: 'Anwenden',
+    texto: 'Führt alles Angehakte in einem Schritt aus: ersetzen, färben oder beides. Links wirkt auf diesen Treffer, rechts auf alle.'
+  },
+  'editor.findClose': {
+    nome: 'Suche schließen',
+    texto: 'Lässt den Cursor beim betrachteten Treffer stehen, damit man dort weiterschreiben kann. Esc macht dasselbe.'
+  },
+  'editor.paintWith': {
+    nome: 'Treffer einfärben',
+    texto: 'Angehakt färbt das Anwenden auch das Gefundene. Zusammen mit Ersetzen landet die Farbe auf dem NEUEN Wort, nicht auf dem alten.'
+  },
   'editor.recentColors': {
     nome: 'Zuletzt benutzte Farben',
     texto: 'Die letzten vier, im Kreis: eine neue Farbe belegt den nächsten Platz und beginnt wieder vorn. Der gepunktete entfernt die Farbe.'

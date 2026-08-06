@@ -297,6 +297,26 @@ export const ajudaEn = {
     nome: 'Text colour',
     texto: 'Opens the palette: 71 shades, plus the last four you used. Applies to whatever is selected in the script.'
   },
+  'editor.findStep': {
+    nome: 'Previous / next match',
+    texto: 'Walks between matches without touching the reading position — the presenter never sees the screen jump while you look for something.'
+  },
+  'editor.replaceToFind': {
+    nome: 'Move up to Find',
+    texto: 'Cuts what is in Replace and makes it the search term. After swapping a word, this is how you find the new one without typing it again.'
+  },
+  'editor.apply': {
+    nome: 'Apply',
+    texto: 'Does everything ticked above, in one step: replace, paint, or both at once. Left button acts on this match, right one on all of them.'
+  },
+  'editor.findClose': {
+    nome: 'Close the search',
+    texto: 'Leaves the cursor on the match you were looking at, so you can carry on typing right there. Esc does the same.'
+  },
+  'editor.paintWith': {
+    nome: 'Paint the matches',
+    texto: 'Ticked, applying also colours what was found. Together with Replace, the colour lands on the NEW word — not on the one that is gone.'
+  },
   'editor.recentColors': {
     nome: 'Recent colours',
     texto: 'The last four you picked, in a wheel: a new colour takes the next slot and starts over at the first. The dotted one removes the colour.'

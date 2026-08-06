@@ -270,6 +270,26 @@ export const ajudaEs = {
     nome: 'Color del texto',
     texto: 'Abre la paleta: 71 tonos, más los cuatro últimos que usaste. Se aplica a lo que esté seleccionado en el guion.'
   },
+  'editor.findStep': {
+    nome: 'Aparición anterior / siguiente',
+    texto: 'Recorre las apariciones sin tocar la posición de lectura: el presentador no ve saltar la pantalla mientras buscas.'
+  },
+  'editor.replaceToFind': {
+    nome: 'Llevar a la búsqueda',
+    texto: 'Corta lo que hay en Reemplazar y lo vuelve el término buscado. Tras cambiar una palabra, así encuentras la nueva sin volver a escribirla.'
+  },
+  'editor.apply': {
+    nome: 'Aplicar',
+    texto: 'Hace todo lo marcado arriba, en un solo paso: reemplazar, pintar o ambas. El de la izquierda actúa en esta aparición, el de la derecha en todas.'
+  },
+  'editor.findClose': {
+    nome: 'Cerrar la búsqueda',
+    texto: 'Deja el cursor en la aparición donde estabas, para seguir escribiendo ahí mismo. Esc hace lo mismo.'
+  },
+  'editor.paintWith': {
+    nome: 'Pintar las apariciones',
+    texto: 'Marcado, aplicar también pinta lo encontrado. Junto con Reemplazar, el color cae en la palabra NUEVA, no en la que ya no existe.'
+  },
   'editor.recentColors': {
     nome: 'Colores recientes',
     texto: 'Los cuatro últimos que elegiste, en rueda: un color nuevo ocupa la casilla siguiente y vuelve a empezar. El punteado quita el color.'

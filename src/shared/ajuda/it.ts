@@ -270,6 +270,26 @@ export const ajudaIt = {
     nome: 'Colore del testo',
     texto: 'Apre la tavolozza: 71 tonalità, più le ultime quattro che hai usato. Vale per ciò che è selezionato nel copione.'
   },
+  'editor.findStep': {
+    nome: 'Occorrenza precedente / successiva',
+    texto: 'Scorre le occorrenze senza toccare la posizione di lettura: il presentatore non vede saltare lo schermo.'
+  },
+  'editor.replaceToFind': {
+    nome: 'Porta nella ricerca',
+    texto: 'Taglia il testo di Sostituisci e lo rende il termine cercato. Dopo una sostituzione, così si trova la parola nuova senza riscriverla.'
+  },
+  'editor.apply': {
+    nome: 'Applica',
+    texto: 'Fa tutto ciò che è spuntato sopra, in un passo solo: sostituire, colorare o entrambi. A sinistra questa occorrenza, a destra tutte.'
+  },
+  'editor.findClose': {
+    nome: 'Chiudi la ricerca',
+    texto: 'Lascia il cursore sull’occorrenza che stavi guardando, per continuare a scrivere lì. Esc fa lo stesso.'
+  },
+  'editor.paintWith': {
+    nome: 'Colorare le occorrenze',
+    texto: 'Spuntato, applicare colora anche ciò che è stato trovato. Con Sostituisci, il colore va sulla parola NUOVA, non su quella sparita.'
+  },
   'editor.recentColors': {
     nome: 'Colori recenti',
     texto: 'Gli ultimi quattro scelti, a ruota: un colore nuovo occupa la casella seguente e riparte dalla prima. Il punteggiato toglie il colore.'

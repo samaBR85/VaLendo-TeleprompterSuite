@@ -270,6 +270,26 @@ export const ajudaPt = {
     nome: 'Cor do texto',
     texto: 'Abre a paleta: 71 tons, mais as quatro últimas que você usou. Vale para o que estiver selecionado no roteiro.'
   },
+  'editor.findStep': {
+    nome: 'Achado anterior / próximo',
+    texto: 'Anda entre os achados sem tocar na posição de leitura — o apresentador não vê a tela saltar enquanto você procura.'
+  },
+  'editor.replaceToFind': {
+    nome: 'Levar para a busca',
+    texto: 'Recorta o que está em Trocar e faz dele o termo procurado. Depois de trocar uma palavra, é assim que se acha a nova sem redigitá-la.'
+  },
+  'editor.apply': {
+    nome: 'Aplicar',
+    texto: 'Faz tudo o que está marcado acima, num passo só: trocar, pintar, ou as duas coisas. O da esquerda age neste achado, o da direita em todos.'
+  },
+  'editor.findClose': {
+    nome: 'Fechar a busca',
+    texto: 'Deixa o cursor no achado em que você estava, para continuar digitando ali mesmo. O Esc faz o mesmo.'
+  },
+  'editor.paintWith': {
+    nome: 'Pintar os achados',
+    texto: 'Marcado, aplicar também pinta o que foi achado. Junto com Trocar, a cor cai na palavra NOVA — não na que deixou de existir.'
+  },
   'editor.recentColors': {
     nome: 'Cores recentes',
     texto: 'As quatro últimas que você escolheu, em roda: uma cor nova ocupa a casa seguinte e recomeça na primeira. A pontilhada tira a cor.'
