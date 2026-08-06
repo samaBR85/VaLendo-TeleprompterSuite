@@ -24,8 +24,7 @@ export type Action =
   | { type: 'appearance/invert'; tabId: string }
   | { type: 'appearance/preset'; tabId: string; presetId: string }
   | { type: 'transport/toggle' }
-  /** `rebobinar: false` pausa exatamente onde parou, sem os 2 palavras de cortesia — usado pelo auto-pausa no fim do roteiro */
-  | { type: 'transport/pause'; rebobinar?: boolean }
+  | { type: 'transport/pause' }
   /** `peloLoop: true` é o loop reiniciando sozinho — o relógio do modo Livre não zera, só a rolagem */
   | { type: 'transport/restart'; peloLoop?: boolean }
   | { type: 'transport/seekWords'; delta: number }

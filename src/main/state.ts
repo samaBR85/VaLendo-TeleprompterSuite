@@ -55,9 +55,6 @@ import {
   type Presets
 } from '@shared/presets'
 
-/** Palavras devolvidas ao pausar, para o apresentador reentrar sem tropeço. */
-const REWIND_ON_PAUSE = 2
-
 type Listener = (state: AppState, history: HistoryInfo) => void
 
 /** A aparência já é a regra de composição e de ritmo — não há o que traduzir. */
@@ -278,11 +275,7 @@ export class Store {
     const atraso = transport.loop ? transport.loopDelaySeconds * 1000 : 0
     this.loopTimer = setTimeout(
       () =>
-        this.dispatch(
-          transport.loop
-            ? { type: 'transport/restart', peloLoop: true }
-            : { type: 'transport/pause', rebobinar: false }
-        ),
+        this.dispatch(transport.loop ? { type: 'transport/restart', peloLoop: true } : { type: 'transport/pause' }),
       ms + atraso
     )
   }
@@ -494,10 +487,26 @@ export class Store {
         break
       }
 
+      /*
+       * Pausar para EXATAMENTE onde o texto estava, e o play continua dali.
+       *
+       * Até aqui a pausa devolvia duas palavras, de cortesia, para o
+       * apresentador reentrar sem ter perdido o fio. Na tela isso não se lia
+       * como cortesia: o texto andava para trás sozinho na hora do pause. E
+       * com a velocidade uniforme ligada — o padrão — a unidade não é uma
+       * palavra falada e sim uma da régua, então duas delas podiam valer perto
+       * de meia linha, o que fazia a frase sob a marca de leitura trocar.
+       *
+       * Quem pausa está olhando para uma palavra e é nela que o dedo está.
+       * Reentrar de onde parou é o apresentador quem faz, com a mão no
+       * transporte, não o app adivinhando.
+       */
       case 'transport/toggle': {
         const transport = this.state.transport
         if (transport.playing) {
-          const stopped = Math.max(0, this.currentWordIndex() - REWIND_ON_PAUSE)
+          // lido ANTES de `playing` virar false: parado, `currentWordIndex()`
+          // devolve `wordsAtStart`, e a posição do instante da pausa se perde
+          const stopped = this.currentWordIndex()
           this.state = {
             ...this.state,
             transport: {
@@ -529,15 +538,7 @@ export class Store {
       case 'transport/pause': {
         if (!this.state.transport.playing) break
         const transport = this.state.transport
-        // rebobinar 2 palavras é uma cortesia para quem pausou de propósito,
-        // reentrar sem ter perdido o fio. O auto-pausa no fim do roteiro
-        // (`scheduleLoop`) passa `rebobinar: false`: ali não sobra texto para
-        // reentrar, e o pulo de posição só fazia a marca de leitura empurrar
-        // a última linha pra cima na hora que devia ficar parada
-        const stopped =
-          action.rebobinar === false
-            ? this.currentWordIndex()
-            : Math.max(0, this.currentWordIndex() - REWIND_ON_PAUSE)
+        const stopped = this.currentWordIndex()
         this.state = {
           ...this.state,
           transport: {
