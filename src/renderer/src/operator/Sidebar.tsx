@@ -5,7 +5,6 @@ import { CARD_DRAG_MIME, ESTILOS_DE_OVERLAY } from '@shared/cards'
 import { formatBinding, parseBinding } from '@shared/commands'
 import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { buildRundown, segmentIndexAt } from '@shared/rundown'
-import { CHAPTER_MARK } from '@shared/text'
 import type {
   Cartao,
   CardOverlayStyle,
@@ -236,6 +235,21 @@ export function Sidebar({
     [tab.blocks, tab.appearance.minWords, tab.appearance.maxWords, tab.appearance.uniformSpeed, rows]
   )
   const segments = useMemo(() => buildRundown(tab.blocks, lines, tab.markers), [tab.blocks, lines, tab.markers])
+  /**
+   * O número de cada capítulo na lista — o que distingue dois com o mesmo nome.
+   *
+   * Num roteiro de programa, títulos repetidos são a regra, não a exceção:
+   * "VERSIONAMENTO PGM" aparece quatro vezes e a coluna trunca todos no mesmo
+   * ponto. Sem número, os quatro botões são visualmente o mesmo botão.
+   *
+   * Conta só os capítulos DE VERDADE. O trecho antes do primeiro `##` também
+   * é um segmento, mas não tem título — numerá-lo faria o "01" da tela deixar
+   * de corresponder ao primeiro `##` do roteiro.
+   */
+  const numeros = useMemo(() => {
+    let n = 0
+    return segments.map((s) => (s.title ? String((n += 1)).padStart(2, '0') : null))
+  }, [segments])
   const atual = segmentIndexAt(segments, wordIndexAt(transport, now))
 
   /** Arrasta a borda direita: mesmo molde da divisória da gaveta de cards. */
@@ -291,13 +305,27 @@ export function Sidebar({
                     : { borderLeft: '3px solid color-mix(in srgb, var(--color-warn) 35%, transparent)' }
                 }
               >
+                {/* o número no lugar do `##`, e não ao lado dele: o `##` é
+                    igual em todas as linhas, então não distingue nada — e
+                    ocupava justamente a largura que faz o título ser cortado
+                    numa coluna de 206px. Mono e de largura fixa para os
+                    números ficarem alinhados em coluna. */}
+                <span
+                  data-chapter-numero
+                  className="flex-none font-mono text-[10px] tabular-nums"
+                  style={{ color: index === atual ? '#8a7648' : '#5f5f68' }}
+                >
+                  {numeros[index] ?? '--'}
+                </span>
                 <span
                   className={`min-w-0 flex-1 truncate ${
                     index === atual ? 'font-semibold' : 'font-medium text-[#a0a0a8]'
                   }`}
                   style={index === atual ? { color: '#f6d38a' } : undefined}
                 >
-                  {segment.title ? `${CHAPTER_MARK} ${segment.title}` : t('deck.noChapter')}
+                  {/* `||` e não `??`: o segmento sem capítulo traz título VAZIO,
+                      não `undefined`, e o `??` deixava a linha em branco */}
+                  {segment.title || t('deck.noChapter')}
                 </span>
                 <span
                   className="flex-none font-mono text-[10px]"
