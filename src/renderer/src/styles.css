@@ -345,6 +345,9 @@
     );
     border-bottom: 1px solid var(--color-edge);
     border-top: 2px solid var(--k-cor, transparent);
+    /* mede a si mesmo para as regras logo abaixo — ver `@container` */
+    container-type: inline-size;
+    container-name: cabecalho;
   }
 
   .k-cabecalho-titulo {
@@ -643,5 +646,85 @@
       transform: translateY(-100%);
       opacity: 0;
     }
+  }
+}
+
+/*
+ * FORA DE @layer, e é obrigatório.
+ *
+ * Estas regras escondem elementos que carregam classes utilitárias do Tailwind
+ * (`flex`, no caso do grupo de cores). Dentro de `@layer components` elas
+ * simplesmente não pegavam: a camada `utilities` vem depois, e ordem de camada
+ * ganha de especificidade — `display: flex` de um utilitário derrota
+ * `display: none` de uma regra dez vezes mais específica. Solto, o bloco entra
+ * na camada implícita final e ganha de todas.
+ *
+ * É a MESMA armadilha documentada no topo deste arquivo, e ela me pegou de
+ * novo: as bolinhas sumiam uma a uma (essas não têm classe de display), mas o
+ * grupo inteiro nunca sumia, e o cabeçalho seguia estourando 7px.
+ */
+/*
+ * Quem cede quando o painel de Edição encolhe: as bolinhas de cor, uma a uma.
+ *
+ * A ordem de importância decide, e foi o operador quem a definiu: as teclas
+ * e a contagem são o trabalho, as quatro cores recentes são atalho — perder
+ * a mais antiga custa um clique a mais no seletor, que continua ali do lado.
+ * Antes quem cedia era o texto, que virava duas linhas espremidas numa faixa
+ * de 28px enquanto as bolinhas seguiam inteiras.
+ *
+ * OS NÚMEROS SÃO MEDIDOS, e a medição mudou o desenho. O cabeçalho cheio
+ * pede 594px; o painel tem 553 no tamanho padrão. Ou seja: ele nunca coube,
+ * e antes isso aparecia como o texto quebrando. Cada bolinha vale 18px (15
+ * de corpo, 3 de respiro), a roda inteira 91, a contagem 76.
+ *
+ * Os limites são 20px menores que a largura visível, e não é engano: um
+ * `container-type: inline-size` mede a caixa de CONTEÚDO, sem o respiro de
+ * 10px de cada lado. Na primeira tentativa escrevi as medidas de fora e duas
+ * bolinhas sumiram já no tamanho padrão, sem motivo.
+ *
+ * `display: none` e não `visibility`: a bolinha precisa DEVOLVER a largura,
+ * não só sumir. E some da última para a primeira — a mais recente é a que
+ * tem mais chance de ser a próxima.
+ */
+@container cabecalho (max-width: 573px) {
+  [data-cores-recentes] > button:nth-child(4) {
+    display: none;
+  }
+}
+@container cabecalho (max-width: 555px) {
+  [data-cores-recentes] > button:nth-child(3) {
+    display: none;
+  }
+}
+@container cabecalho (max-width: 537px) {
+  [data-cores-recentes] > button:nth-child(2) {
+    display: none;
+  }
+}
+@container cabecalho (max-width: 519px) {
+  [data-cores-recentes] > button:nth-child(1) {
+    display: none;
+  }
+}
+/* no fim vai o x pontilhado tambem, e com ele o grupo inteiro */
+@container cabecalho (max-width: 501px) {
+  [data-cores-recentes] {
+    display: none;
+  }
+}
+
+/*
+ * Depois das cores, quem sai e a contagem — INTEIRA, nao espremida.
+ *
+ * Sumir de vez e melhor que virar duas linhas cortadas ao meio, que foi o
+ * que o operador viu e apontou. E ela volta sozinha assim que o painel
+ * couber de novo.
+ *
+ * Abaixo de 407px nem as teclas cabem, e ai nao ha mais o que ceder sem
+ * tirar comando do operador. E o piso, e ele ja existia antes disto.
+ */
+@container cabecalho (max-width: 472px) {
+  [data-cabecalho-detalhe] {
+    display: none;
   }
 }

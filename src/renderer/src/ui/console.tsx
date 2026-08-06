@@ -147,7 +147,20 @@ export function CabecalhoDePainel({
       <span className={tique ? 'text-[11px] font-semibold text-[var(--color-fog-05)]' : 'k-cabecalho-titulo'}>
         {titulo}
       </span>
-      {detalhe ? <span className="text-[10px] text-[var(--color-fog-3)]">{detalhe}</span> : null}
+      {/* `flex-none` e sem quebra: o detalhe era o que cedia quando o painel
+          apertava, porque as teclas ao lado são todas `flex-none` e ele não.
+          O resultado era "83 palavras · 1:54" virando duas linhas espremidas
+          enquanto as bolinhas de cor seguiam inteiras — o oposto da ordem de
+          importância. Quem cede agora são as bolinhas, uma a uma (ver
+          `k-cabecalho` no styles.css). */}
+      {detalhe ? (
+        <span
+          data-cabecalho-detalhe
+          className="flex-none text-[10px] whitespace-nowrap text-[var(--color-fog-3)]"
+        >
+          {detalhe}
+        </span>
+      ) : null}
       {children}
       {acao ? <span className="ml-auto flex items-center gap-1">{acao}</span> : null}
     </div>
