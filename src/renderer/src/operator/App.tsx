@@ -27,7 +27,7 @@ import { CardsDrawer } from './CardsDrawer'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
 import { Deck } from './deck/Deck'
-import { EDITOR_FONT_MAX, EDITOR_FONT_MIN } from '@shared/defaults'
+import { EDITION_SPLIT_DEFAULT, EDITOR_FONT_MAX, EDITOR_FONT_MIN } from '@shared/defaults'
 import { Editor, type EditorHandle } from './Editor'
 import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
@@ -1280,8 +1280,16 @@ function AppConteudo({
     window.addEventListener('mouseup', onUp)
   }
 
-  /** Duplo clique na divisória: devolve o meio exato, sem precisar arrastar de olho. */
-  const resetSplit = (): void => dispatch({ type: 'layout/split', ratio: 0.7 })
+  /**
+   * Duplo clique na divisória: devolve o PADRÃO, sem precisar arrastar de olho.
+   *
+   * E o padrão é a constante, nunca um número escrito aqui. Estava `0.7`
+   * cravado enquanto `EDITION_SPLIT_DEFAULT` já valia `0.46` — os dois
+   * nasceram iguais e um mudou sozinho. É o pior tipo de defeito de interface:
+   * o gesto de "voltar ao normal" levava a um lugar que nunca foi o normal, e
+   * o operador ficava sem caminho de volta.
+   */
+  const resetSplit = (): void => dispatch({ type: 'layout/split', ratio: EDITION_SPLIT_DEFAULT })
 
   return (
     <div className="relative flex h-full flex-col bg-[var(--color-ink-0)]">
