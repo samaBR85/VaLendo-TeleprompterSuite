@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PLACEHOLDERS, insertBlock } from './insertBlock'
+import { PLACEHOLDERS, capitularLinhasIguais, contarLinhasIguais, insertBlock } from './insertBlock'
 import { blocksFromText } from './text'
 
 /** O que importa de verdade: o bloco inserido é reconhecido como tal. */
@@ -82,5 +82,88 @@ describe('insertBlock — conteúdo e seleção', () => {
     expect(() => insertBlock('abc', -5, 999, 'chapter')).not.toThrow()
     const result = insertBlock('abc', 999, 999, 'direction')
     expect(result.text).toContain('[direção de cena]')
+  })
+})
+
+describe('capitular TODAS as linhas iguais à seleção', () => {
+  /**
+   * A prova é sempre a mesma: classificar o resultado em blocos e conferir
+   * quais viraram `chapter`. Contar `##` no texto não valeria — dois `##` no
+   * meio de um parágrafo não são dois capítulos, são fala com sujeira.
+   */
+  const capitulos = (texto: string): string[] =>
+    blocksFromText(texto)
+      .filter((b) => b.kind === 'chapter')
+      .map((b) => b.text)
+
+  it('pega as três ocorrências, e só as que estão sozinhas na linha', () => {
+    const texto = [
+      'BLOCO 1',
+      '',
+      'A fala fala de BLOCO 1 sem ser um título.',
+      '',
+      'BLOCO 1',
+      '',
+      'Outra fala.',
+      '',
+      'BLOCO 1'
+    ].join('\n')
+    expect(capitulos(capitularLinhasIguais(texto, 'BLOCO 1'))).toEqual([
+      '## BLOCO 1',
+      '## BLOCO 1',
+      '## BLOCO 1'
+    ])
+    // a linha do meio segue sendo fala, com a palavra dentro
+    expect(capitularLinhasIguais(texto, 'BLOCO 1')).toContain('A fala fala de BLOCO 1 sem ser um título.')
+  })
+
+  it('abre parágrafo quando a linha estava colada na de baixo', () => {
+    /*
+     * O caso que faria a marcação vazar para a tela do apresentador: sem a
+     * linha em branco, `## HARI` continua dentro do mesmo parágrafo da fala e
+     * o classificador o lê como fala.
+     */
+    const texto = 'HARI\nE agora vai começar.\n\nHARI\nSegunda fala.'
+    const fora = capitularLinhasIguais(texto, 'HARI')
+    expect(capitulos(fora)).toEqual(['## HARI', '## HARI'])
+    expect(fora).toBe('## HARI\n\nE agora vai começar.\n\n## HARI\n\nSegunda fala.')
+  })
+
+  it('não duplica linha em branco onde ela já existe', () => {
+    const texto = 'ABERTURA\n\nFala.'
+    expect(capitularLinhasIguais(texto, 'ABERTURA')).toBe('## ABERTURA\n\nFala.')
+  })
+
+  it('rodar duas vezes dá o mesmo resultado', () => {
+    // a linha já capitulada tem texto "## X", que não é igual a "X" — ela nem
+    // volta a ser candidata
+    const texto = 'BLOCO 1\n\nFala.\n\nBLOCO 1'
+    const uma = capitularLinhasIguais(texto, 'BLOCO 1')
+    expect(capitularLinhasIguais(uma, 'BLOCO 1')).toBe(uma)
+  })
+
+  it('seleção de mais de uma linha não faz nada', () => {
+    // arrastar demais é comum; inventar marcação em cima disso, não
+    const texto = 'BLOCO 1\n\nFala.'
+    expect(capitularLinhasIguais(texto, 'BLOCO 1\n\nFala.')).toBe(texto)
+  })
+
+  it('seleção vazia ou só de espaços não faz nada', () => {
+    const texto = 'BLOCO 1\n\nFala.'
+    expect(capitularLinhasIguais(texto, '   ')).toBe(texto)
+    expect(capitularLinhasIguais(texto, '')).toBe(texto)
+  })
+
+  it('a contagem bate com o que vai ser marcado', () => {
+    // é o número que o menu mostra ANTES de agir — se ele mentir, o operador
+    // aprova uma coisa e acontece outra
+    const texto = 'X\n\nfala com X dentro\n\nX\n\nX'
+    expect(contarLinhasIguais(texto, 'X')).toBe(3)
+    expect(capitulos(capitularLinhasIguais(texto, 'X'))).toHaveLength(3)
+  })
+
+  it('espaços em volta da seleção não atrapalham', () => {
+    const texto = 'BLOCO 1\n\nFala.'
+    expect(capitularLinhasIguais(texto, '  BLOCO 1  ')).toBe('## BLOCO 1\n\nFala.')
   })
 })

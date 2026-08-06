@@ -93,6 +93,86 @@ function MetaDaEdicao({ tab, rows, ppm }: { tab: Tab; rows: number[]; ppm: numbe
  * Ferramenta que age sobre o texto mora no cabeçalho do editor, e não na barra
  * de comando: lá em cima fica o que se usa com a transmissão correndo.
  */
+/**
+ * O menu preso ao botão de capítulo: por ora, um item só — TODOS.
+ *
+ * Seta separada, e não um clique longo nem um botão direito: o clique curto no
+ * H precisa continuar fazendo exatamente o que sempre fez, sem hesitação. Quem
+ * quer a varredura pede por ela.
+ *
+ * O item mostra QUANTAS linhas vai pegar antes de agir. Uma varredura que
+ * remarca o roteiro inteiro sem dizer o tamanho do estrago é o tipo de botão
+ * que se aperta uma vez e nunca mais.
+ */
+function MenuDeCapitulo({
+  quantas,
+  desligado,
+  rotulo,
+  onTodos
+}: {
+  quantas: number
+  desligado: boolean
+  rotulo: string
+  onTodos: () => void
+}): React.JSX.Element {
+  const [aberto, setAberto] = useState(false)
+  const caixa = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!aberto) return
+    const fechar = (e: MouseEvent): void => {
+      if (!caixa.current?.contains(e.target as Node)) setAberto(false)
+    }
+    const escapar = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setAberto(false)
+    }
+    window.addEventListener('mousedown', fechar, true)
+    window.addEventListener('keydown', escapar)
+    return () => {
+      window.removeEventListener('mousedown', fechar, true)
+      window.removeEventListener('keydown', escapar)
+    }
+  }, [aberto])
+
+  return (
+    <div ref={caixa} className="relative flex-none">
+      <button
+        type="button"
+        data-capitulo-menu
+        {...ajuda('editor.chapterAll')}
+        title={rotulo}
+        aria-label={rotulo}
+        aria-expanded={aberto}
+        disabled={desligado}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => setAberto((v) => !v)}
+        className="grid h-[18px] w-[11px] place-items-center rounded text-[8px] leading-none text-[var(--color-fog-3)] not-disabled:hover:bg-[var(--color-ink-3)] not-disabled:hover:text-[var(--color-fog-0)] disabled:opacity-25"
+      >
+        ▾
+      </button>
+      {aberto ? (
+        <div className="absolute top-full left-0 z-50 mt-1 rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1 shadow-[0_8px_24px_rgba(0,0,0,.6)]">
+          <button
+            type="button"
+            data-capitulo-todos
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              onTodos()
+              setAberto(false)
+            }}
+            className="flex w-full items-center gap-2 rounded px-2 py-1 text-[9px] font-bold tracking-[0.08em] whitespace-nowrap text-[var(--color-fog-1)] uppercase hover:bg-[var(--color-ink-4)] hover:text-[var(--color-fog-0)]"
+          >
+            ALL
+            <span className="font-mono text-[10px] text-[var(--color-fog-3)] tabular-nums">
+              {quantas}
+            </span>
+          </button>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 function EditorTool({
   icon,
   texto,
@@ -583,6 +663,14 @@ function AppConteudo({
    */
   const [corSelecionada, setCorSelecionada] = useState<string | undefined>(undefined)
   /**
+   * Quantas linhas o "capitular todas" pegaria agora.
+   *
+   * Fica no estado e não é calculado na hora de abrir o menu porque é ele que
+   * apaga a setinha quando não há nada a fazer — e um controle que só se
+   * descobre inútil depois de aberto é um controle que ensina a não abrir.
+   */
+  const [linhasIguais, setLinhasIguais] = useState(0)
+  /**
    * Há digitação ainda dentro do respiro de 140ms do editor.
    *
    * Serve só para o botão DESFAZER acender nesse intervalo — o `canUndo` vem
@@ -754,6 +842,7 @@ function AppConteudo({
   const onCaretMove = useCallback(() => {
     setTextoSelecionado((editorRef.current?.selecao() ?? '') !== '')
     setCorSelecionada(corDaSelecao())
+    setLinhasIguais(editorRef.current?.quantasIguais() ?? 0)
     if (!catchAtivo) return
     if (catchTimer.current) clearTimeout(catchTimer.current)
     catchTimer.current = setTimeout(goToCaret, 220)
@@ -1101,6 +1190,12 @@ function AppConteudo({
         label={t('editor.chapter')}
         atalho={hint(keymap, 'insert.chapter')}
         onClick={() => run('insert.chapter')}
+      />
+      <MenuDeCapitulo
+        rotulo={t('editor.chapterAll')}
+        quantas={linhasIguais}
+        desligado={linhasIguais === 0}
+        onTodos={() => editorRef.current?.capitularIguais()}
       />
       <EditorTool
         ajudaId="editor.direction"

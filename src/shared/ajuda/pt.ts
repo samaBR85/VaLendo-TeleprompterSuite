@@ -232,6 +232,10 @@ export const ajudaPt = {
     texto: 'Transforma a linha atual em capítulo — vira ## no texto. Capítulos aparecem na coluna esquerda, na linha de progresso e no rundown.',
     comando: 'insert.chapter'
   },
+  'editor.chapterAll': {
+    nome: 'Capitular todas as iguais',
+    texto: 'Vira capítulo toda linha cujo texto INTEIRO é igual ao selecionado, num passo de desfazer só. Palavra no meio de uma fala nunca entra — só a linha onde ela está sozinha.'
+  },
   'editor.direction': {
     nome: 'Direção',
     texto: 'Marca a linha como direção de cena — vira [colchetes] no texto. Uma instrução ao apresentador, nunca contada como palavra falada.',

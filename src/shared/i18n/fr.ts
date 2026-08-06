@@ -38,6 +38,7 @@ export const fr: Dicionario = {
   'panel.livePreview': 'Aperçu en direct',
 
   'editor.chapter': 'Chapitre',
+  'editor.chapterAll': 'Marquer toutes les lignes identiques',
   'editor.direction': 'Indication',
   'editor.goTo': 'Aller à',
   'editor.undo': 'Annuler',

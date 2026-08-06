@@ -48,6 +48,7 @@ export const pt = {
 
   /* ----------------------------------------------------------------- editor */
   'editor.chapter': 'Capítulo',
+  'editor.chapterAll': 'Capitular todas as linhas iguais',
   'editor.direction': 'Direção de cena',
   'editor.goTo': 'Ir Para',
   'editor.undo': 'Desfazer',

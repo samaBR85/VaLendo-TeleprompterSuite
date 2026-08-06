@@ -232,6 +232,10 @@ export const ajudaIt = {
     texto: 'Trasforma la riga attuale in un capitolo — diventa ## nel testo. I capitoli appaiono nella colonna a sinistra, sulla linea di avanzamento e nella scaletta.',
     comando: 'insert.chapter'
   },
+  'editor.chapterAll': {
+    nome: 'Tutte le righe uguali',
+    texto: 'Rende capitolo ogni riga il cui testo INTERO è uguale alla selezione, in un solo passo. Una parola dentro una frase non entra mai.'
+  },
   'editor.direction': {
     nome: 'Indicazione',
     texto: 'Segna la riga come indicazione — diventa [parentesi] nel testo. Un’istruzione per il presentatore, mai contata come parole dette.',

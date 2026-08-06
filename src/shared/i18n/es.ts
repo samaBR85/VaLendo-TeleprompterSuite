@@ -38,6 +38,7 @@ export const es: Dicionario = {
   'panel.livePreview': 'Vista previa en vivo',
 
   'editor.chapter': 'Capítulo',
+  'editor.chapterAll': 'Convertir en capítulo todas las líneas iguales',
   'editor.direction': 'Acotación',
   'editor.goTo': 'Ir a',
   'editor.undo': 'Deshacer',

@@ -38,6 +38,7 @@ export const it: Dicionario = {
   'panel.livePreview': 'Anteprima dal vivo',
 
   'editor.chapter': 'Capitolo',
+  'editor.chapterAll': 'Segna come capitolo tutte le righe uguali',
   'editor.direction': 'Indicazione',
   'editor.goTo': 'Vai A',
   'editor.undo': 'Annulla',

@@ -232,6 +232,10 @@ export const ajudaDe = {
     texto: 'Macht die aktuelle Zeile zu einem Kapitel — sie wird zu ## im Text. Kapitel erscheinen links, auf der Fortschrittslinie und im Ablaufplan.',
     comando: 'insert.chapter'
   },
+  'editor.chapterAll': {
+    nome: 'Alle gleichen Zeilen',
+    texto: 'Macht jede Zeile, deren GANZER Text der Auswahl entspricht, zum Kapitel — in einem Schritt. Ein Wort mitten im Satz wird nie erfasst.'
+  },
   'editor.direction': {
     nome: 'Regieanweisung',
     texto: 'Markiert die Zeile als Regieanweisung — sie wird zu [Klammern] im Text. Eine Anweisung an den Sprecher, nie als gesprochen gezählt.',

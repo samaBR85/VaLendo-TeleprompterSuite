@@ -232,6 +232,10 @@ export const ajudaEs = {
     texto: 'Convierte la línea actual en capítulo — se vuelve ## en el texto. Los capítulos aparecen en la columna izquierda, en la línea de progreso y en la Mesa.',
     comando: 'insert.chapter'
   },
+  'editor.chapterAll': {
+    nome: 'Capitular todas las iguales',
+    texto: 'Convierte en capítulo cada línea cuyo texto ENTERO sea igual al seleccionado, en un solo paso. Una palabra dentro de una frase nunca entra.'
+  },
   'editor.direction': {
     nome: 'Acotación',
     texto: 'Marca la línea como acotación — se vuelve [corchetes] en el texto. Una instrucción para el presentador, nunca contada como palabra hablada.',

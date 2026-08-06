@@ -259,6 +259,10 @@ export const ajudaEn = {
     texto: 'Turns the current line into a chapter — it becomes ## in the text. Chapters show up in the left column, on the progress line and in the rundown.',
     comando: 'insert.chapter'
   },
+  'editor.chapterAll': {
+    nome: 'Mark every identical line',
+    texto: 'Turns every line whose whole text matches the selection into a chapter, in one undo step. A word inside a sentence is never touched — only lines where it stands alone.'
+  },
   'editor.direction': {
     nome: 'Direction',
     texto: 'Marks the line as a direction — it becomes [brackets] in the text. An instruction to the presenter, never counted as spoken words.',

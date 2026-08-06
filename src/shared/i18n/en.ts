@@ -38,6 +38,7 @@ export const en: Dicionario = {
   'panel.livePreview': 'Live preview',
 
   'editor.chapter': 'Chapter',
+  'editor.chapterAll': 'Mark every identical line as chapter',
   'editor.direction': 'Stage direction',
   'editor.goTo': 'Go To',
   'editor.undo': 'Undo',

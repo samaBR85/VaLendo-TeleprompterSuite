@@ -1,7 +1,12 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import type { Action } from '@shared/actions'
 import type { AjudaId } from '@shared/ajuda'
-import { insertBlock, type InsertKind } from '@shared/insertBlock'
+import {
+  capitularLinhasIguais,
+  contarLinhasIguais,
+  insertBlock,
+  type InsertKind
+} from '@shared/insertBlock'
 import { coresDasLinhas, ehDeixa, type LinhaPintavel } from '@shared/apresentadores'
 import { blocksFromText, caretFromAnchor, marcasNoTexto, serializeBlocks, stripFormatting } from '@shared/text'
 import { edicaoEntre, marcasDaFatia, remapearMarcas, type Marca } from '@shared/marcas'
@@ -503,6 +508,14 @@ export interface EditorHandle {
   flush: () => void
   /** insere capítulo ou direção no cursor, já com o miolo selecionado. */
   insert: (kind: InsertKind) => void
+  /**
+   * Capitula TODA linha cujo texto inteiro é igual ao selecionado, e devolve
+   * quantas foram. Zero quando não havia nenhuma — o menu já não deixa chegar
+   * aqui, mas a garantia é barata.
+   */
+  capitularIguais: () => number
+  /** quantas linhas o "todos" pegaria agora — o número que o menu mostra */
+  quantasIguais: () => number
   /** tira a marcação do roteiro inteiro: sem capítulos, sem direções. */
   removerFormatacao: () => void
   /**
@@ -723,6 +736,48 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     },
     [preservarRolagem, tab.id, dispatch]
   )
+
+  /**
+   * Capitula TODA linha igual ao que está selecionado.
+   *
+   * Substitui o texto INTEIRO de uma vez, como o `insert` e o trocar-todas: é
+   * o que faz a varredura caber num passo de desfazer só. Em várias edições, o
+   * Ctrl+Z desfaria um capítulo por vez, e um roteiro com trinta blocos viraria
+   * trinta desfazeres.
+   *
+   * A seleção some depois, de propósito: ela apontava para uma posição do texto
+   * ANTIGO, e as linhas em branco acrescentadas empurraram tudo. Mantê-la seria
+   * pintar de azul um trecho que não é mais o que a pessoa escolheu. O cursor
+   * fica onde a primeira linha marcada terminou.
+   */
+  const capitularIguais = useCallback((): number => {
+    const area = areaRef.current
+    if (!area) return 0
+    const termo = area.value.slice(area.selectionStart, area.selectionEnd)
+    const quantas = contarLinhasIguais(area.value, termo)
+    if (quantas === 0) return 0
+
+    const repor = preservarRolagem()
+    const texto = capitularLinhasIguais(area.value, termo)
+    setDraft(texto)
+    push(texto, 0)
+
+    const alvo = texto.indexOf(`${'#'.repeat(2)} ${termo.trim()}`)
+    const fim = alvo < 0 ? area.selectionStart : alvo + 3 + termo.trim().length
+    requestAnimationFrame(() => {
+      area.focus({ preventScroll: true })
+      area.setSelectionRange(fim, fim)
+      repor()
+    })
+    return quantas
+  }, [preservarRolagem, tab.id, dispatch])
+
+  /** Quantas linhas o "todos" pegaria agora — o menu mostra antes de agir. */
+  const quantasIguais = useCallback((): number => {
+    const area = areaRef.current
+    if (!area) return 0
+    return contarLinhasIguais(area.value, area.value.slice(area.selectionStart, area.selectionEnd))
+  }, [])
 
   /**
    * Age sobre o RASCUNHO, não sobre os blocos do main.
@@ -1103,6 +1158,8 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     () => ({
       flush,
       insert,
+      capitularIguais,
+      quantasIguais,
       removerFormatacao,
       caret,
       selecao,
@@ -1111,7 +1168,18 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       abrirBusca,
       limparMarca: () => setMarca(null)
     }),
-    [flush, insert, removerFormatacao, caret, selecao, selecaoFaixa, mostrarAncora, abrirBusca]
+    [
+      flush,
+      insert,
+      capitularIguais,
+      quantasIguais,
+      removerFormatacao,
+      caret,
+      selecao,
+      selecaoFaixa,
+      mostrarAncora,
+      abrirBusca
+    ]
   )
 
   const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {

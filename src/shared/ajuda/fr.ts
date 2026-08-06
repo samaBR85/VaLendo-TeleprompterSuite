@@ -232,6 +232,10 @@ export const ajudaFr = {
     texto: 'Transforme la ligne actuelle en chapitre — elle devient ## dans le texte. Apparaît dans la colonne de gauche, la ligne de progression et le conducteur.',
     comando: 'insert.chapter'
   },
+  'editor.chapterAll': {
+    nome: 'Toutes les lignes identiques',
+    texto: 'Transforme en chapitre chaque ligne dont le texte ENTIER est identique à la sélection, en une seule fois. Un mot au milieu d’une phrase n’entre jamais.'
+  },
   'editor.direction': {
     nome: 'Indication',
     texto: 'Marque la ligne comme indication — elle devient [entre crochets]. Une instruction au présentateur, jamais comptée comme parole.',
