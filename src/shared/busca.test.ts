@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { achadosParaPintar, acharTodas, dobrar, indiceDaProxima } from './busca'
+import { achadosParaPintar, acharTodas, dobrar, faixasDepoisDeTrocar, indiceDaProxima , type Ocorrencia } from './busca'
 
 describe('a dobra de caixa e acento', () => {
   it('não muda o tamanho da string — é disto que dependem todos os índices', () => {
@@ -152,5 +152,61 @@ describe('quais achados um "pintar todas" deve pular', () => {
 
   it('lista vazia continua vazia', () => {
     expect(achadosParaPintar([], TEXTO, DONOS, false)).toEqual([])
+  })
+})
+
+describe('onde cada troca cai no texto novo', () => {
+  /*
+   * A prova é sempre contra o TEXTO: troca de verdade, e depois fatia o
+   * resultado com o que a função devolveu. Se as duas contas discordarem, a
+   * cor cairia ao lado da palavra — que é o estrago que isto existe para
+   * impedir.
+   */
+  const trocarTudo = (texto: string, achados: Ocorrencia[], novo: string): string => {
+    let fora = texto
+    for (let i = achados.length - 1; i >= 0; i--) {
+      fora = fora.slice(0, achados[i].inicio) + novo + fora.slice(achados[i].fim)
+    }
+    return fora
+  }
+
+  it('palavra mais LONGA: as seguintes andam para a frente', () => {
+    const texto = 'o gato e o gato e o gato'
+    const achados = acharTodas(texto, 'gato')
+    const depois = trocarTudo(texto, achados, 'cachorro')
+    const faixas = faixasDepoisDeTrocar(achados, 'cachorro'.length)
+    expect(faixas.map((f) => depois.slice(f.inicio, f.fim))).toEqual([
+      'cachorro',
+      'cachorro',
+      'cachorro'
+    ])
+  })
+
+  it('palavra mais CURTA: as seguintes andam para trás', () => {
+    const texto = 'o cachorro e o cachorro'
+    const achados = acharTodas(texto, 'cachorro')
+    const depois = trocarTudo(texto, achados, 'boi')
+    const faixas = faixasDepoisDeTrocar(achados, 'boi'.length)
+    expect(faixas.map((f) => depois.slice(f.inicio, f.fim))).toEqual(['boi', 'boi'])
+  })
+
+  it('mesmo tamanho: nada anda', () => {
+    const texto = 'o gato e o gato'
+    const achados = acharTodas(texto, 'gato')
+    expect(faixasDepoisDeTrocar(achados, 4)).toEqual(achados)
+  })
+
+  it('trocar por NADA devolve faixas vazias', () => {
+    // não há o que pintar quando a palavra foi apagada
+    const achados = acharTodas('o gato e o gato', 'gato')
+    for (const f of faixasDepoisDeTrocar(achados, 0)) expect(f.fim).toBe(f.inicio)
+  })
+
+  it('um achado só sai onde já estava', () => {
+    const texto = 'só um gato aqui'
+    const achados = acharTodas(texto, 'gato')
+    const depois = trocarTudo(texto, achados, 'peixe')
+    const [f] = faixasDepoisDeTrocar(achados, 5)
+    expect(depois.slice(f.inicio, f.fim)).toBe('peixe')
   })
 })

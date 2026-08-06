@@ -4,8 +4,14 @@ import type { AjudaId } from '@shared/ajuda'
 import { insertBlock, type InsertKind } from '@shared/insertBlock'
 import { coresDasLinhas, ehDeixa, type LinhaPintavel } from '@shared/apresentadores'
 import { blocksFromText, caretFromAnchor, marcasNoTexto, serializeBlocks, stripFormatting } from '@shared/text'
-import { edicaoEntre, marcasDaFatia, RECENTES_MAX, remapearMarcas, type Marca } from '@shared/marcas'
-import { achadosParaPintar, acharTodas, indiceDaProxima, type Ocorrencia } from '@shared/busca'
+import { edicaoEntre, marcasDaFatia, remapearMarcas, type Marca } from '@shared/marcas'
+import {
+  achadosParaPintar,
+  acharTodas,
+  faixasDepoisDeTrocar,
+  indiceDaProxima,
+  type Ocorrencia
+} from '@shared/busca'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
 import { SeletorDeCor } from '../ui/SeletorDeCor'
@@ -227,6 +233,118 @@ function caixasDeTrechos(pre: HTMLPreElement, trechos: Ocorrencia[]): (CaixaDoAc
   return fora
 }
 
+/** A pele das duas caixas de texto da barra. */
+const CAMPO =
+  'h-[23px] rounded border border-[var(--color-edge)] bg-[var(--color-ink-0)] px-1.5 font-mono text-[11.5px] text-[var(--color-fog-0)] outline-none'
+
+/**
+ * Quinze caracteres, e a conta é literal.
+ *
+ * `ch` é a largura do algarismo zero da fonte do próprio elemento — e como o
+ * campo é monoespaçado, quinze `ch` são quinze caracteres, não uma estimativa.
+ * A fonte mono também é a do editor: o que se digita aqui é texto de roteiro,
+ * e vê-lo na mesma letra ajuda a reconhecê-lo.
+ */
+const LARGURA_DO_CAMPO: React.CSSProperties = {
+  /* os 14px são o que o `box-sizing: border-box` come: 6px de respiro de cada
+     lado mais 1px de borda. Sem eles cabiam 13 caracteres, não 15 — e a
+     diferença só apareceu porque o script mediu em vez de acreditar */
+  width: 'calc(15ch + 14px)'
+}
+
+/**
+ * Uma etapa da barra: a caixinha que a liga, o rótulo, e o que ela controla.
+ *
+ * A caixinha é o que resolve a confusão do desenho antigo. Lá havia três
+ * linhas de teclas parecidas e nenhuma dizia sobre o que agia; aqui o operador
+ * MARCA o que quer que aconteça, lê em português o que é, e há um botão só que
+ * faz. Desmarcar não apaga o que estava digitado — só esmaece.
+ */
+function Passo({
+  marca,
+  ligado,
+  rotulo,
+  onToggle,
+  children
+}: {
+  marca: string
+  ligado: boolean
+  rotulo: string
+  onToggle: () => void
+  children: React.ReactNode
+}): React.JSX.Element {
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        type="button"
+        {...{ [`data-${marca}`]: '' }}
+        role="switch"
+        aria-checked={ligado}
+        aria-label={rotulo}
+        title={rotulo}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={onToggle}
+        className={`grid h-[13px] w-[13px] flex-none place-items-center rounded-[3px] border text-[9px] leading-none ${
+          ligado
+            ? 'border-[var(--color-go)] bg-[var(--color-go)] text-[#06210f]'
+            : 'border-[var(--color-fog-3)] text-transparent hover:border-[var(--color-fog-1)]'
+        }`}
+      >
+        ✓
+      </button>
+      <span
+        className={`w-[62px] flex-none text-[9px] leading-tight tracking-[0.08em] uppercase ${
+          ligado ? 'text-[var(--color-fog-1)]' : 'text-[var(--color-fog-3)]'
+        }`}
+      >
+        {rotulo}
+      </span>
+      {children}
+    </div>
+  )
+}
+
+/**
+ * O botão que AGE — e é o único da barra.
+ *
+ * Em relevo, e o par não é "duas ações": é a mesma ação, aqui ou em todas. O
+ * destaque verde marca o gesto mais comum, que é o daqui.
+ */
+function TeclaDeAplicar({
+  marca,
+  rotulo,
+  desligado,
+  destaque,
+  onClick,
+  children
+}: {
+  marca: string
+  rotulo: string
+  desligado?: boolean
+  destaque?: boolean
+  onClick: () => void
+  children: React.ReactNode
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      {...{ [`data-busca-${marca}`]: '' }}
+      title={rotulo}
+      aria-label={rotulo}
+      disabled={desligado}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onClick}
+      className={`h-[23px] flex-1 rounded border px-2 text-[9px] font-bold tracking-[0.08em] uppercase disabled:opacity-30 ${
+        destaque
+          ? 'border-[color-mix(in_srgb,var(--color-go)_28%,#000)] bg-[linear-gradient(color-mix(in_srgb,var(--color-go)_26%,#232327),color-mix(in_srgb,var(--color-go)_12%,#1c1c1f))] text-[color-mix(in_srgb,var(--color-go)_70%,white)]'
+          : 'border-[var(--color-edge)] bg-[linear-gradient(#2a2a2f,#1c1c1f)] text-[var(--color-fog-1)]'
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
+
 /**
  * Um interruptor da barra de busca — ALL e SPEECH.
  *
@@ -241,14 +359,18 @@ function Interruptor({
   ajudaId,
   rotulo,
   aceso,
+  desligado,
   onClick,
+  className = 'w-full',
   children
 }: {
   marca: string
   ajudaId: AjudaId
   rotulo: string
   aceso: boolean
+  desligado?: boolean
   onClick: () => void
+  className?: string
   children: React.ReactNode
 }): React.JSX.Element {
   return (
@@ -258,9 +380,10 @@ function Interruptor({
       {...ajuda(ajudaId)}
       title={rotulo}
       aria-pressed={aceso}
+      disabled={desligado}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className={`h-6 w-full rounded text-[8px] font-bold tracking-[0.06em] ${
+      className={`h-[23px] flex-none rounded text-[8px] font-bold tracking-[0.06em] disabled:opacity-30 ${className} ${
         aceso
           ? 'bg-[var(--color-warn)] text-[#201a06]'
           : 'border border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
@@ -699,10 +822,23 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
   /** FIND ALL: as caixas de TODAS as ocorrências, medidas de uma vez */
   const [todas, setTodas] = useState(false)
   /**
-   * A cor escolhida na terceira linha da barra — `null` é a bolinha pontilhada,
-   * que TIRA a marca em vez de trocá-la, e `undefined` é "ainda não escolhi".
+   * A cor escolhida na barra — `null` é a bolinha pontilhada, que TIRA a marca
+   * em vez de trocá-la, e `undefined` é "ainda não escolhi".
    */
   const [corDaBusca, setCorDaBusca] = useState<string | null | undefined>(undefined)
+  /**
+   * As duas caixinhas: o que o botão de aplicar vai fazer.
+   *
+   * São o coração do desenho novo. Antes havia três linhas com seis teclas
+   * parecidas, e nenhuma dizia sobre o que agia; agora as caixinhas dizem o
+   * que está em jogo e existe UM lugar que age. Marcadas as duas, trocar e
+   * pintar acontecem no mesmo clique — o encadeamento que antes era impossível.
+   *
+   * Trocar nasce marcada porque é o que quem abre a segunda linha veio fazer;
+   * pintar nasce desmarcada porque ainda não há cor escolhida.
+   */
+  const [trocarLigado, setTrocarLigado] = useState(true)
+  const [pintarLigado, setPintarLigado] = useState(false)
   /**
    * SPEECH: pintar todas atropela as falas que já têm cor de apresentador?
    *
@@ -790,11 +926,65 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
    * são trinta trocas e um único passo de desfazer, que é o que a mão espera
    * de um comando chamado "todas".
    */
-  const trocar = (todasAsVezes: boolean): void => {
+  /**
+   * O que o botão de aplicar vai fazer, dado o que está marcado e preenchido.
+   *
+   * Existe para o botão poder ficar APAGADO quando não faria nada. Um botão
+   * que aceita o clique e não muda coisa alguma é pior que um apagado: ensina
+   * que o recurso não funciona.
+   */
+  /** o botão só acende quando o clique for mudar alguma coisa */
+  const podeAplicar =
+    ocorrencias.length > 0 && (trocarLigado || (pintarLigado && corDaBusca !== undefined))
+
+  const oQueVaiFazer = (): { troca: boolean; pinta: boolean } => ({
+    troca: trocarLigado,
+    pinta: pintarLigado && corDaBusca !== undefined
+  })
+
+  /**
+   * O botão único: troca, pinta, ou faz as duas coisas no mesmo passo.
+   *
+   * As duas juntas eram o buraco do desenho antigo. Lá a cor pintava *o que a
+   * busca acha* — e depois de trocar "agora" por "depois", a busca continuava
+   * procurando "agora", achava zero, e a linha da cor ficava inerte. O
+   * encadeamento mais natural que existe (achar, trocar, pintar o que entrou)
+   * era justamente o impossível.
+   *
+   * Aqui a troca acontece primeiro e `faixasDepoisDeTrocar` diz onde cada
+   * palavra nova caiu. A cor vai para LÁ, sem a busca precisar procurar de
+   * novo — ela nem acharia.
+   */
+  const aplicar = (todasAsVezes: boolean): void => {
     const area = areaRef.current
+    const { troca: vaiTrocar, pinta: vaiPintar } = oQueVaiFazer()
     if (!area || busca === null || busca === '' || ocorrencias.length === 0) return
+    if (!vaiTrocar && !vaiPintar) return
+
     const alvos = todasAsVezes ? ocorrencias : ocorrencias[atual] ? [ocorrencias[atual]] : []
     if (alvos.length === 0) return
+
+    /*
+     * Quem vai ser pintado é decidido no texto de AGORA, antes de qualquer
+     * troca. O SPEECH pergunta "esta ocorrência está numa fala com dono?", e a
+     * resposta é sobre onde ela está hoje — não sobre onde a palavra nova vai
+     * cair. E vale só para o "todas": pintar UM achado é um pedido explícito,
+     * naquele lugar, não uma varredura que possa atropelar o sistema de cores
+     * dos apresentadores sem o operador ver.
+     */
+    const pintaveis = !vaiPintar
+      ? []
+      : todasAsVezes
+        ? achadosParaPintar(alvos, draft, donosDasLinhas, sobrescrever)
+        : alvos
+
+    if (!vaiTrocar) {
+      if (pintaveis.length === 0) return
+      // sem troca, o texto não mudou: as faixas são as de agora
+      flush()
+      marcar(pintaveis.map((a) => ({ de: a.inicio, ate: a.fim })))
+      return
+    }
 
     const repor = preservarRolagem()
     let texto = draft
@@ -802,9 +992,26 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       texto = texto.slice(0, alvos[i].inicio) + troca + texto.slice(alvos[i].fim)
     }
     setDraft(texto)
+    /*
+     * `push` com zero de espera ainda passa por um `setTimeout`, e um dispatch
+     * logo em seguida chegaria ao main ANTES do texto novo — a marca cairia
+     * medida contra o texto velho. O `flush()` manda na hora, e é o que garante
+     * a ordem: primeiro o texto, depois a cor.
+     */
     push(texto, 0)
+    flush()
 
-    // o cursor fica DEPOIS do que acabou de entrar: assim o próximo "trocar"
+    if (pintaveis.length > 0) {
+      const caiuEm = faixasDepoisDeTrocar(alvos, troca.length)
+      const trechos = alvos
+        .map((a, i) => ({ a, faixa: caiuEm[i] }))
+        .filter(({ a }) => pintaveis.includes(a))
+        .map(({ faixa }) => ({ de: faixa.inicio, ate: faixa.fim }))
+        .filter((t) => t.ate > t.de)
+      if (trechos.length > 0) marcar(trechos)
+    }
+
+    // o cursor fica DEPOIS do que acabou de entrar: assim o próximo "aplicar"
     // pega a ocorrência seguinte, e não fica batendo na mesma
     const depois = alvos[0].inicio + troca.length
     requestAnimationFrame(() => {
@@ -814,37 +1021,16 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
   }
 
   /**
-   * Pinta (ou despinta) o achado atual, ou todos eles.
+   * Manda a cor escolhida para os trechos, numa chamada só.
    *
-   * Mesma gramática da linha de trocar, de propósito: escolhe-se à esquerda, e
-   * as duas teclas da direita dizem se é ESTE ou TODOS. `cor` a `null` é a
-   * bolinha pontilhada — tirar a marca em vez de trocá-la.
-   *
-   * O `flush()` antes é obrigatório: a digitação viaja para o main com 140ms de
-   * respiro, e nessa janela ele ainda tem o texto ANTERIOR. Pintar por cima
-   * dele mediria a faixa num texto que já mudou, e a marca cairia deslocada —
-   * visível na tela do apresentador.
-   *
-   * Uma chamada só, com a lista inteira: em várias, o Ctrl+Z despintaria
-   * metade — e "metade do jeito antigo" é pior que qualquer um dos dois.
+   * Uma, e não várias: em várias, o Ctrl+Z despintaria metade — e "metade do
+   * jeito antigo" é pior que qualquer um dos dois inteiros.
    */
-  const pintarAchados = (cor: string | null, todasAsVezes: boolean): void => {
-    if (busca === null || busca === '' || ocorrencias.length === 0) return
-    const escolhidos = todasAsVezes ? ocorrencias : ocorrencias[atual] ? [ocorrencias[atual]] : []
-    /* o SPEECH só vale para o "todas": pintar UM achado é um pedido explícito,
-       naquele lugar, e não uma varredura que possa atropelar o sistema de
-       cores dos apresentadores sem o operador ver */
-    const alvos = todasAsVezes
-      ? achadosParaPintar(escolhidos, draft, donosDasLinhas, sobrescrever)
-      : escolhidos
-    if (alvos.length === 0) return
-
-    flush()
-    const trechos = alvos.map((a) => ({ de: a.inicio, ate: a.fim }))
-    if (cor === null) dispatch({ type: 'marca/limpar', tabId: tab.id, trechos })
-    else {
-      dispatch({ type: 'marca/aplicar', tabId: tab.id, trechos, patch: { cor } })
-      dispatch({ type: 'marca/corUsada', cor })
+  const marcar = (trechos: { de: number; ate: number }[]): void => {
+    if (corDaBusca === null) dispatch({ type: 'marca/limpar', tabId: tab.id, trechos })
+    else if (corDaBusca !== undefined) {
+      dispatch({ type: 'marca/aplicar', tabId: tab.id, trechos, patch: { cor: corDaBusca } })
+      dispatch({ type: 'marca/corUsada', cor: corDaBusca })
     }
   }
 
@@ -1037,18 +1223,21 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
         <div
           data-busca
           /*
-           * Três linhas numa GRADE de quatro colunas, e não três fileiras
-           * soltas: o que manda a coluna é a função, não a largura do que
-           * calhou de estar ali. Coluna 1 = o que se escolhe (o termo, o que
-           * repor, a cor); coluna 2 = o interruptor daquela linha; colunas 3 e
-           * 4 = as duas teclas que AGEM, sempre no mesmo lugar. Assim
-           * "anterior/próxima", "trocar/trocar todas" e "pintar/pintar todas"
-           * caem exatamente sob o mesmo dedo.
+           * A barra é uma FRASE montada de cima para baixo: procure isto →
+           * mude estas coisas → aplique. Três blocos, e um lugar só que age.
+           *
+           * O desenho anterior tinha três linhas com seis teclas parecidas, e
+           * nenhuma dizia sobre o que agia — pior, a linha da cor pintava *o
+           * que a busca acha*, então depois de trocar ela ficava inerte: a
+           * busca continuava procurando o termo antigo, que já não existia. O
+           * encadeamento mais natural que existe era justamente o impossível.
+           *
+           * Aqui as duas caixinhas dizem o que está em jogo, e o botão faz
+           * tudo o que está marcado de uma vez.
            */
-          className="absolute top-2 right-4 z-20 grid grid-cols-[144px_52px_24px_24px] items-center gap-1 rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1 pt-5 shadow-[0_6px_20px_rgba(0,0,0,.5)]"
+          className="absolute top-2 right-4 z-20 flex w-max flex-col gap-1 rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1 pt-4.5 shadow-[0_6px_20px_rgba(0,0,0,.5)]"
         >
-          {/* o × solto no canto, fora da grade: fechar não é irmão de nenhuma
-              das três ações, e ocupar uma célula da grade o faria parecer que é */}
+          {/* o × solto no canto: fechar não é irmão de nenhum dos passos */}
           <button
             type="button"
             data-busca-fechar
@@ -1056,157 +1245,143 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
             aria-label={t('app.close')}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => fecharBusca(false)}
-            className="absolute top-1 right-1 grid h-4 w-4 place-items-center rounded text-[11px] leading-none text-[var(--color-fog-3)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+            className="absolute top-0.5 right-0.5 grid h-4 w-4 place-items-center rounded text-[11px] leading-none text-[var(--color-fog-3)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
           >
             ×
           </button>
-          <input
-            ref={campoBusca}
-            data-busca-campo
-            {...ajuda('editor.find')}
-            value={busca}
-            placeholder={t('editor.findPlaceholder')}
-            aria-label={t('editor.find')}
-            onChange={(e) => setBusca(e.currentTarget.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                andar(e.shiftKey)
-              }
-              if (e.key === 'Escape') {
-                e.preventDefault()
-                fecharBusca(true)
-              }
-              // as setas andam entre achados sem tirar a mão do campo
-              if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                e.preventDefault()
-                andar(e.key === 'ArrowUp')
-              }
-            }}
-            className="h-6 w-full rounded border border-[var(--color-edge)] bg-[var(--color-ink-0)] px-2 text-[11.5px] text-[var(--color-fog-0)] outline-none"
-          />
-          {/* a contagem é o que diz se vale continuar apertando — e "0" precisa
-              gritar, senão a pessoa fica batendo Enter num termo que não existe */}
-          <span
-            data-busca-contagem
-            className={`text-center font-mono text-[10px] tabular-nums ${
-              busca !== '' && ocorrencias.length === 0
-                ? 'text-[var(--color-live)]'
-                : 'text-[var(--color-fog-2)]'
-            }`}
-          >
-            {ocorrencias.length === 0 ? '0' : `${atual + 1}/${ocorrencias.length}`}
-          </span>
-          <BotaoDeBusca
-            marca="anterior"
-            rotulo={t('editor.findPrev')}
-            desligado={ocorrencias.length === 0}
-            onClick={() => andar(true)}
-          >
-            ↑
-          </BotaoDeBusca>
-          <BotaoDeBusca
-            marca="proxima"
-            rotulo={t('editor.findNext')}
-            desligado={ocorrencias.length === 0}
-            onClick={() => andar(false)}
-          >
-            ↓
-          </BotaoDeBusca>
 
-          {/* a segunda linha: trocar. Sempre visível, e não escondida atrás de
-              mais um botão — quem abre a busca para trocar não quer descobrir
-              onde fica o trocar */}
-          <input
-            data-troca-campo
-            {...ajuda('editor.replace')}
-            value={troca}
-            placeholder={t('editor.replacePlaceholder')}
-            aria-label={t('editor.replace')}
-            onChange={(e) => setTroca(e.currentTarget.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                trocar(e.shiftKey)
-              }
-              if (e.key === 'Escape') {
-                e.preventDefault()
-                fecharBusca(true)
-              }
-            }}
-            className="h-6 w-full rounded border border-[var(--color-edge)] bg-[var(--color-ink-0)] px-2 text-[11.5px] text-[var(--color-fog-0)] outline-none"
-          />
-          {/* FIND ALL na coluna dos interruptores, junto do trocar: os dois
-              falam de "todas as ocorrências", e vê-los alinhados é o que
-              explica o "trocar todas" sem ninguém ler nada */}
-          <Interruptor
-            marca="find-all"
-            ajudaId="editor.findAll"
-            rotulo={t('editor.findAll')}
-            aceso={todas}
-            onClick={() => setTodas((v) => !v)}
-          >
-            ALL
-          </Interruptor>
-          <BotaoDeBusca
-            marca="trocar"
-            rotulo={t('editor.replaceOne')}
-            desligado={ocorrencias.length === 0}
-            onClick={() => trocar(false)}
-          >
-            ↹
-          </BotaoDeBusca>
-          <BotaoDeBusca
-            marca="trocar-todas"
-            rotulo={t('editor.replaceAll', { n: ocorrencias.length })}
-            desligado={ocorrencias.length === 0}
-            onClick={() => trocar(true)}
-          >
-            ⇊
-          </BotaoDeBusca>
-
-          {/* a terceira linha: a COR. Mesma gramática das duas de cima —
-              escolhe-se à esquerda, e as duas teclas da direita dizem se é
-              este achado ou todos. A roda de quatro é a MESMA do cabeçalho:
-              uma caixa de tintas só no app inteiro, e não um segundo conjunto
-              de cores fixas que ninguém escolheu. */}
+          {/* ── PROCURE ISTO ── o ALL mora aqui porque qualifica a BUSCA:
+              "marque toda ocorrência". Ele nunca teve nada a ver com trocar. */}
           <div className="flex items-center gap-1">
+            <input
+              ref={campoBusca}
+              data-busca-campo
+              {...ajuda('editor.find')}
+              value={busca}
+              placeholder={t('editor.findPlaceholder')}
+              aria-label={t('editor.find')}
+              onChange={(e) => setBusca(e.currentTarget.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  andar(e.shiftKey)
+                }
+                if (e.key === 'Escape') {
+                  e.preventDefault()
+                  fecharBusca(true)
+                }
+                // as setas andam entre achados sem tirar a mão do campo
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                  e.preventDefault()
+                  andar(e.key === 'ArrowUp')
+                }
+              }}
+              className={CAMPO}
+              style={LARGURA_DO_CAMPO}
+            />
+            {/* a contagem diz se vale continuar apertando — e "0" precisa
+                gritar, senão a pessoa fica batendo Enter num termo que não existe */}
+            <span
+              data-busca-contagem
+              className={`w-8 flex-none text-center font-mono text-[10px] tabular-nums ${
+                busca !== '' && ocorrencias.length === 0
+                  ? 'text-[var(--color-live)]'
+                  : 'text-[var(--color-fog-2)]'
+              }`}
+            >
+              {ocorrencias.length === 0 ? '0' : `${atual + 1}/${ocorrencias.length}`}
+            </span>
+            <BotaoDeBusca
+              marca="anterior"
+              rotulo={t('editor.findPrev')}
+              desligado={ocorrencias.length === 0}
+              onClick={() => andar(true)}
+            >
+              ↑
+            </BotaoDeBusca>
+            <BotaoDeBusca
+              marca="proxima"
+              rotulo={t('editor.findNext')}
+              desligado={ocorrencias.length === 0}
+              onClick={() => andar(false)}
+            >
+              ↓
+            </BotaoDeBusca>
+            <Interruptor
+              marca="find-all"
+              ajudaId="editor.findAll"
+              rotulo={t('editor.findAll')}
+              aceso={todas}
+              onClick={() => setTodas((v) => !v)}
+              className="w-9"
+            >
+              ALL
+            </Interruptor>
+          </div>
+
+          <div className="h-px bg-[var(--color-line)]" />
+
+          {/* ── MUDE ESTAS COISAS ── */}
+          <Passo
+            marca="usar-troca"
+            ligado={trocarLigado}
+            rotulo={t('editor.replace')}
+            onToggle={() => setTrocarLigado((v) => !v)}
+          >
+            <input
+              data-troca-campo
+              {...ajuda('editor.replace')}
+              value={troca}
+              placeholder={t('editor.replacePlaceholder')}
+              aria-label={t('editor.replace')}
+              disabled={!trocarLigado}
+              onChange={(e) => setTroca(e.currentTarget.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  aplicar(e.shiftKey)
+                }
+                if (e.key === 'Escape') {
+                  e.preventDefault()
+                  fecharBusca(true)
+                }
+              }}
+              className={`${CAMPO} min-w-0 flex-1 disabled:opacity-35`}
+            />
+          </Passo>
+
+          <Passo
+            marca="usar-cor"
+            ligado={pintarLigado}
+            /* rótulo PRÓPRIO, curto: `editor.color` é o do cabeçalho ("cor do
+               texto selecionado") e quebrava em três linhas aqui dentro */
+            rotulo={t('editor.paintWith')}
+            onToggle={() => setPintarLigado((v) => !v)}
+          >
+            {/* a roda de quatro cores NÃO se repete aqui: ela já mora dentro do
+                seletor, e uma segunda cópia custava 60px de largura para não
+                dizer nada de novo. Ficam o gatilho e a pontilhada. */}
             <SeletorDeCor
               marca="busca-cor"
               rotulo={t('editor.color')}
               valor={corDaBusca ?? undefined}
-              onCor={(cor) => setCorDaBusca(cor)}
+              atalhos={coresRecentes}
+              desligado={!pintarLigado}
+              onCor={(cor) => {
+                setCorDaBusca(cor)
+                setPintarLigado(true)
+              }}
               className="h-5 w-5 flex-none"
             />
-            {Array.from({ length: RECENTES_MAX }, (_, i) => coresRecentes[i]).map((cor, i) => (
-              <button
-                key={i}
-                type="button"
-                {...(cor ? { 'data-busca-cor-recente': cor } : {})}
-                title={cor ?? ''}
-                aria-label={cor ?? ''}
-                disabled={!cor}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => cor && setCorDaBusca(cor)}
-                className={`h-[15px] w-[15px] flex-none rounded-full border transition-transform not-disabled:hover:scale-110 ${
-                  cor && corDaBusca === cor
-                    ? 'border-[var(--color-fog-0)]'
-                    : 'border-[var(--color-edge)]'
-                }`}
-                style={{ background: cor ?? '#fff', opacity: cor ? 1 : 0.7 }}
-              />
-            ))}
-            {/* a pontilhada não escolhe cor: escolhe TIRAR a marca. Fica na
-                mesma fileira porque é a mesma pergunta — "com o que pinto?" —
-                e "com nada" é uma resposta legítima */}
             <button
               type="button"
               data-busca-cor-limpar
               title={t('editor.colorNone')}
               aria-label={t('editor.colorNone')}
+              disabled={!pintarLigado}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => setCorDaBusca(null)}
-              className={`ml-auto grid h-[15px] w-[15px] flex-none place-items-center rounded-full border border-dashed text-[9px] leading-none ${
+              className={`grid h-[17px] w-[17px] flex-none place-items-center rounded-full border border-dashed text-[9px] leading-none disabled:opacity-30 ${
                 corDaBusca === null
                   ? 'border-[var(--color-fog-0)] text-[var(--color-fog-0)]'
                   : 'border-[var(--color-fog-3)] text-[var(--color-fog-3)] hover:border-[var(--color-fog-1)] hover:text-[var(--color-fog-1)]'
@@ -1214,32 +1389,42 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
             >
               ×
             </button>
+            <span className="flex-1" />
+            <Interruptor
+              marca="sobrescrever"
+              ajudaId="editor.overwrite"
+              rotulo={t('editor.overwrite')}
+              aceso={sobrescrever}
+              desligado={!pintarLigado}
+              onClick={() => setSobrescrever((v) => !v)}
+              className="w-[52px]"
+            >
+              SPEECH
+            </Interruptor>
+          </Passo>
+
+          <div className="h-px bg-[var(--color-line)]" />
+
+          {/* ── APLIQUE ── um lugar só que age, e ele diz em quantos vai agir */}
+          <div className="flex items-center gap-1">
+            <TeclaDeAplicar
+              marca="aplicar"
+              rotulo={t('editor.applyOne')}
+              desligado={!podeAplicar}
+              destaque
+              onClick={() => aplicar(false)}
+            >
+              {t('editor.applyOne')}
+            </TeclaDeAplicar>
+            <TeclaDeAplicar
+              marca="aplicar-todas"
+              rotulo={t('editor.applyAll', { n: ocorrencias.length })}
+              desligado={!podeAplicar}
+              onClick={() => aplicar(true)}
+            >
+              {t('editor.applyAllShort', { n: ocorrencias.length })}
+            </TeclaDeAplicar>
           </div>
-          <Interruptor
-            marca="sobrescrever"
-            ajudaId="editor.overwrite"
-            rotulo={t('editor.overwrite')}
-            aceso={sobrescrever}
-            onClick={() => setSobrescrever((v) => !v)}
-          >
-            SPEECH
-          </Interruptor>
-          <BotaoDeBusca
-            marca="pintar"
-            rotulo={t('editor.paintOne')}
-            desligado={ocorrencias.length === 0 || corDaBusca === undefined}
-            onClick={() => pintarAchados(corDaBusca ?? null, false)}
-          >
-            ↹
-          </BotaoDeBusca>
-          <BotaoDeBusca
-            marca="pintar-todas"
-            rotulo={t('editor.paintAll', { n: ocorrencias.length })}
-            desligado={ocorrencias.length === 0 || corDaBusca === undefined}
-            onClick={() => pintarAchados(corDaBusca ?? null, true)}
-          >
-            ⇊
-          </BotaoDeBusca>
         </div>
       ) : null}
       <pre

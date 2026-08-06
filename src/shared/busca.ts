@@ -118,3 +118,24 @@ export function achadosParaPintar(
     return !donosDasLinhas[linha]
   })
 }
+
+/**
+ * Onde cada achado vai PARAR depois de todos serem trocados.
+ *
+ * É o que permite pintar o texto que acabou de entrar — o encadeamento que
+ * faltava: achar, trocar, e a cor cair na palavra nova, sem a busca precisar
+ * procurá-la de novo (ela nem acharia: o termo procurado não existe mais).
+ *
+ * A conta é a soma dos desvios de quem veio ANTES. Cada troca encurta ou
+ * alonga o texto em `novo - (fim - inicio)`, e tudo o que vem depois anda
+ * junto. Os achados chegam em ordem e sem se sobrepor — `acharTodas` garante
+ * as duas coisas —, então uma passagem resolve.
+ */
+export function faixasDepoisDeTrocar(achados: Ocorrencia[], tamanhoNovo: number): Ocorrencia[] {
+  let desvio = 0
+  return achados.map((a) => {
+    const inicio = a.inicio + desvio
+    desvio += tamanhoNovo - (a.fim - a.inicio)
+    return { inicio, fim: inicio + tamanhoNovo }
+  })
+}
