@@ -789,15 +789,39 @@ if (!app.requestSingleInstanceLock()) {
 
   void app.whenReady().then(bootstrap)
 
+  // rede de segurança do macOS: se o app chegar a ficar vivo sem janela
+  // nenhuma, clicar no ícone do Dock traz a interface de volta em vez de
+  // deixar o operador com um app que existe e não aparece
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) abrirOperador()
   })
 
-  app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
-  })
+  /*
+   * Fechar a última janela encerra o app — no macOS também.
+   *
+   * A convenção do macOS é a oposta, e era ela que este `!== 'darwin'`
+   * respeitava: um app de documentos continua vivo no Dock depois que a última
+   * janela fecha, porque abrir outro documento faz sentido sem reiniciar nada.
+   * O Valendo não é isso. É um instrumento de uma janela só: fechada ela, não
+   * sobrou nada para fazer. O que o operador via era o app sumir da tela e
+   * continuar ocupando o Dock, sem interface, só saindo pelo menu → Quit.
+   */
+  app.on('window-all-closed', () => app.quit())
 
-  app.on('before-quit', () => {
+  /*
+   * O desmonte espera a pergunta ser respondida.
+   *
+   * Isto morava em `before-quit`, que acontece ANTES de o app começar a fechar
+   * as janelas — e quem pergunta "fechar sem salvar?" / "encerrar a
+   * transmissão?" é o `close` da janela do operador. Na ordem antiga, o Cmd+Q
+   * do macOS derrubava a transmissão e parava a rede primeiro e só então
+   * perguntava se podia: responder "cancelar" devolvia um app inteiro, com
+   * tudo já desligado por baixo.
+   *
+   * `will-quit` só chega quando todas as janelas fecharam e ninguém barrou o
+   * encerramento — ou seja, quando a resposta já foi sim.
+   */
+  app.on('will-quit', () => {
     closeIdentifyWindows()
     closeBroadcastWindow()
     stopWebview()
