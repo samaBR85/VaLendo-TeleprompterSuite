@@ -6,6 +6,18 @@ import { PrompterCanvas, VideoCartao } from '../prompter/PrompterCanvas'
 
 const PADRAO = { width: 1_920, height: 1_080 }
 
+/**
+ * Silêncio que apaga a página, em milissegundos.
+ *
+ * O servidor manda uma batida de dois em dois segundos, então três batidas
+ * perdidas é sinal firme de que não há mais ninguém do outro lado. Não é o
+ * caminho normal — fechar o Valendo manda um "fim" explícito e apaga na hora.
+ * Este prazo cobre o resto: o app morto à força, o cabo puxado, a máquina que
+ * dormiu. Curto o bastante para ninguém ficar olhando um programa que acabou,
+ * longo o bastante para um engasgo de wi-fi não piscar preto no meio da leitura.
+ */
+const SILENCIO_ATE_APAGAR = 6_000
+
 /** Bandeiras no fim do endereço: `#video`, `#diag`, ou `#video-diag`. */
 function bandeiras(): Set<string> {
   return new Set(window.location.hash.replace('#', '').split(/[^a-z]+/i).filter(Boolean))
@@ -252,6 +264,36 @@ function AvisoDeQueda({ texto }: { texto: string }): React.JSX.Element {
 }
 
 /**
+ * Fora do ar: preto, mudo, nada tocando.
+ *
+ * Diferente do aviso vermelho, que é uma faixa POR CIMA do conteúdo enquanto
+ * ainda há esperança de a conexão voltar. Aqui não há: nada é desenhado, então
+ * nenhum vídeo fica montado para continuar tocando e nenhum texto rola pelo
+ * relógio. O rótulo é discreto e existe só para a pessoa não achar que o
+ * aparelho dela quebrou.
+ */
+function TelaApagada({ texto }: { texto: string }): React.JSX.Element {
+  return (
+    <div
+      data-web-apagado
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: '#000',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#3f3f46',
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: 14
+      }}
+    >
+      {texto}
+    </div>
+  )
+}
+
+/**
  * A mesma leitura, para quem está na gravação.
  *
  * Desenha com o mesmo `PrompterCanvas` da transmissão, no viewport real da
@@ -291,9 +333,33 @@ export function Webview(): React.JSX.Element {
    * outro ponto do roteiro.
    */
   const desvio = useRef<number | null>(null)
+  /**
+   * Não há mais nada do outro lado — apaga tudo.
+   *
+   * Separado de [ligado], que é "a conexão caiu agora" e ainda mantém o
+   * conteúdo no ar debaixo da faixa vermelha. Este é o passo seguinte: o
+   * Valendo acabou, e continuar mostrando o último quadro seria mentir para
+   * quem está assistindo.
+   */
+  const [foraDoAr, setForaDoAr] = useState(false)
+  const relogioDaQueda = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const fonte = new EventSource('/estado')
+
+    // cada quadro (ou batida) adia a hora de apagar; parar de chegar é o que
+    // deixa o prazo vencer
+    const adiarQueda = (): void => {
+      if (relogioDaQueda.current) clearTimeout(relogioDaQueda.current)
+      relogioDaQueda.current = setTimeout(() => setForaDoAr(true), SILENCIO_ATE_APAGAR)
+    }
+
+    // o recado explícito do `stopWebview`: não espera prazo nenhum
+    fonte.addEventListener('fim', () => {
+      if (relogioDaQueda.current) clearTimeout(relogioDaQueda.current)
+      setLigado(false)
+      setForaDoAr(true)
+    })
 
     fonte.onmessage = (evento) => {
       const recebido = JSON.parse(evento.data) as WebviewFrame
@@ -319,6 +385,9 @@ export function Webview(): React.JSX.Element {
 
       setQuadro(recebido)
       setLigado(true)
+      // voltou a chegar quadro: o Valendo reabriu, e a página volta sozinha
+      setForaDoAr(false)
+      adiarQueda()
     }
     fonte.onerror = () => setLigado(false)
 
@@ -327,6 +396,7 @@ export function Webview(): React.JSX.Element {
     window.addEventListener('resize', aoRedimensionar)
 
     return () => {
+      if (relogioDaQueda.current) clearTimeout(relogioDaQueda.current)
       fonte.close()
       window.removeEventListener('resize', aoRedimensionar)
     }
@@ -336,6 +406,16 @@ export function Webview(): React.JSX.Element {
   // página cai no idioma do próprio aparelho de quem abriu — depois disso
   // vale o que o operador escolheu
   const idioma = quadro?.language ?? idiomaDoSistema(navigator.language)
+
+  /*
+   * Fora do ar sai ANTES de tudo, inclusive do atalho de vídeo e do modo de
+   * diagnóstico.
+   *
+   * Apagar tem que apagar de verdade: se qualquer caminho abaixo ainda
+   * desenhasse, o `<video>` continuaria montado e o som continuaria saindo do
+   * aparelho de quem assiste. Não desenhar é o que desliga.
+   */
+  if (foraDoAr) return <TelaApagada texto={traduzir(idioma, 'web.offline')} />
 
   if (!quadro) {
     return (

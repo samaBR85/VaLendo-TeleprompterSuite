@@ -203,7 +203,28 @@ export function stopWebview(): void {
     clearInterval(batida)
     batida = null
   }
-  for (const cliente of clientes) cliente.end()
+
+  /*
+   * Um "acabou" explícito antes de cortar.
+   *
+   * Cortar a conexão calada não apaga nada do outro lado: o navegador de quem
+   * assiste fica com o último quadro na mão e continua sozinho, porque a
+   * rolagem é derivada do relógio e o vídeo em loop se repete no próprio
+   * tocador. Fechar o Valendo deixava um vídeo rodando para sempre e um texto
+   * empacado no fim, com cara de programa no ar.
+   *
+   * Também não adianta contar com o `close` da conexão: o EventSource tenta
+   * reconectar sozinho e, para a página, uma queda de wi-fi e um app fechado
+   * são o mesmo evento. Este recado diz qual dos dois é.
+   */
+  for (const cliente of clientes) {
+    try {
+      cliente.write('event: fim\ndata: {}\n\n')
+    } catch {
+      // conexão já morta do outro lado: o `end` abaixo resolve o resto
+    }
+    cliente.end()
+  }
   clientes.clear()
   ultimoQuadro = null
 
