@@ -89,3 +89,32 @@ export function indiceDaProxima(
   }
   return 0
 }
+
+/**
+ * Quais achados um "pintar todas" deve deixar em paz.
+ *
+ * O interruptor SPEECH do operador: por padrão, pintar todas as ocorrências
+ * NÃO encosta nas que caem numa fala já colorida por um apresentador. É o
+ * padrão certo porque a cor do apresentador é um sistema — quem lê a tela
+ * associou aquela cor àquela pessoa —, e uma pintura em massa que atropela
+ * isso desmancha o sistema inteiro num clique, sem aviso.
+ *
+ * Ligado, pinta por cima também. A marca manual sempre ganha da cor do dono na
+ * hora de desenhar; o que este interruptor decide é se ela chega a existir.
+ *
+ * `donosDasLinhas` vem de `coresDasLinhas` — uma cor (ou `null`) por linha do
+ * texto, na ordem. A linha de um achado sai de contar as quebras antes dele.
+ */
+export function achadosParaPintar(
+  achados: Ocorrencia[],
+  texto: string,
+  donosDasLinhas: (string | null)[],
+  sobrescrever: boolean
+): Ocorrencia[] {
+  if (sobrescrever) return achados
+  return achados.filter((a) => {
+    let linha = 0
+    for (let i = 0; i < a.inicio && i < texto.length; i++) if (texto[i] === '\n') linha += 1
+    return !donosDasLinhas[linha]
+  })
+}

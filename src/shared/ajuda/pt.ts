@@ -250,6 +250,10 @@ export const ajudaPt = {
     nome: 'Marcar todas as ocorrências',
     texto: 'Desenha a caixa em todas de uma vez, a atual mais forte que as outras. Útil antes de trocar todas: você vê o que vai mudar.'
   },
+  'editor.overwrite': {
+    nome: 'Pintar por cima das falas do apresentador',
+    texto: 'Desligado, pintar todas pula as linhas que já têm a cor de um apresentador — essa cor é um sistema em que quem lê confia. Ligado, pinta essas também.'
+  },
   'editor.bold': {
     nome: 'Negrito',
     texto: 'Negrito de verdade na tela do apresentador. Neste editor aparece como traço duplo — letra negrito é mais larga, e o campo de texto invisível de trás sairia do lugar.'

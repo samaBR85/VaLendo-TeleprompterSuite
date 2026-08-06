@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { acharTodas, dobrar, indiceDaProxima } from './busca'
+import { achadosParaPintar, acharTodas, dobrar, indiceDaProxima } from './busca'
 
 describe('a dobra de caixa e acento', () => {
   it('não muda o tamanho da string — é disto que dependem todos os índices', () => {
@@ -119,5 +119,38 @@ describe('qual é a próxima', () => {
   it('sem ocorrência nenhuma, devolve -1', () => {
     expect(indiceDaProxima([], 0)).toBe(-1)
     expect(indiceDaProxima([], 0, true)).toBe(-1)
+  })
+})
+
+describe('quais achados um "pintar todas" deve pular', () => {
+  /*
+   *   linha 0  HARI            (dono: vermelho)
+   *   linha 1  fala do Hari    (dono: vermelho)
+   *   linha 2  (vazia)
+   *   linha 3  narração        (sem dono)
+   */
+  const TEXTO = 'HARI\nfala do Hari\n\nnarração sem dono'
+  const DONOS = ['#e5484d', '#e5484d', null, null]
+  const achados = acharTodas(TEXTO, 'a')
+
+  it('por padrão, pula os que caem numa fala de apresentador', () => {
+    const pintar = achadosParaPintar(achados, TEXTO, DONOS, false)
+    expect(pintar.length).toBeGreaterThan(0)
+    expect(pintar.length).toBeLessThan(achados.length)
+    // todos os que sobraram estão na última linha, a sem dono
+    for (const a of pintar) expect(a.inicio).toBeGreaterThan(TEXTO.indexOf('narração'))
+  })
+
+  it('com SOBRESCREVER ligado, pinta todos', () => {
+    expect(achadosParaPintar(achados, TEXTO, DONOS, true)).toEqual(achados)
+  })
+
+  it('sem apresentador nenhum, o interruptor não muda nada', () => {
+    const sem = [null, null, null, null]
+    expect(achadosParaPintar(achados, TEXTO, sem, false)).toEqual(achados)
+  })
+
+  it('lista vazia continua vazia', () => {
+    expect(achadosParaPintar([], TEXTO, DONOS, false)).toEqual([])
   })
 })

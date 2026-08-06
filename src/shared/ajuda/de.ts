@@ -250,6 +250,10 @@ export const ajudaDe = {
     nome: 'Alle Treffer markieren',
     texto: 'Zeichnet alle Treffer auf einmal, den aktuellen kräftiger. Nützlich vor dem Ersetzen: Sie sehen, was sich ändern wird.'
   },
+  'editor.overwrite': {
+    nome: 'Über Sprecherzeilen malen',
+    texto: 'Aus überspringt "alle einfärben" die Zeilen, die schon eine Sprecherfarbe tragen — diese Farbe ist ein System, auf das der Leser baut. An färbt es auch sie.'
+  },
   'editor.bold': {
     nome: 'Fett',
     texto: 'Echtes Fett auf dem Sprecherbildschirm. In diesem Editor als doppelte Unterstreichung — fette Buchstaben sind breiter, und das unsichtbare Textfeld dahinter verrutschte.'

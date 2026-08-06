@@ -184,7 +184,7 @@ function CoresRecentes({
           disabled={!cor || desligado}
           onClick={() => cor && onCor(cor)}
           className="h-[15px] w-[15px] flex-none rounded-full border border-[var(--color-edge)] transition-transform not-disabled:hover:scale-110 disabled:cursor-default"
-          style={{ background: cor ?? '#fff', opacity: cor ? (desligado ? 0.35 : 1) : 0.2 }}
+          style={{ background: cor ?? '#fff', opacity: cor ? (desligado ? 0.35 : 1) : 0.7 }}
         />
       ))}
       <button
@@ -1273,7 +1273,7 @@ function AppConteudo({
   }
 
   /** Duplo clique na divisória: devolve o meio exato, sem precisar arrastar de olho. */
-  const resetSplit = (): void => dispatch({ type: 'layout/split', ratio: 0.5 })
+  const resetSplit = (): void => dispatch({ type: 'layout/split', ratio: 0.7 })
 
   return (
     <div className="relative flex h-full flex-col bg-[var(--color-ink-0)]">
@@ -1557,6 +1557,7 @@ function AppConteudo({
                   ref={editorRef}
                   tab={tab}
                   apresentadores={tab.apresentadores}
+                  coresRecentes={state.maquina.coresRecentes}
                   fontSize={editorFontSize}
                   allCaps={state.maquina.editorAllCaps}
                   dispatch={dispatch}

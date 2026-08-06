@@ -250,6 +250,10 @@ export const ajudaFr = {
     nome: 'Marquer toutes les occurrences',
     texto: 'Encadre toutes les occurrences d’un coup, la courante plus vive. Utile avant de tout remplacer : vous voyez ce qui va changer.'
   },
+  'editor.overwrite': {
+    nome: 'Peindre par-dessus les répliques',
+    texto: "Désactivé, peindre toutes saute les lignes qui portent déjà la couleur d'un présentateur — cette couleur est un repère pour qui lit. Activé, il les peint aussi."
+  },
   'editor.bold': {
     nome: 'Gras',
     texto: 'Vrai gras sur l’écran du présentateur. Dans cet éditeur, un double soulignement — le gras est plus large, et le champ invisible derrière se décalerait.'

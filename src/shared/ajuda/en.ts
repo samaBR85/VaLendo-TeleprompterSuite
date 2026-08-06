@@ -277,6 +277,10 @@ export const ajudaEn = {
     nome: 'Mark every occurrence',
     texto: 'Draws a box around every match at once, the current one brighter than the rest. Useful before replacing all: you see what is about to change.'
   },
+  'editor.overwrite': {
+    nome: 'Paint over presenter lines',
+    texto: 'Off, painting every match skips lines that already carry a presenter’s colour — that colour is a system your reader relies on. On, it paints them too.'
+  },
   'editor.bold': {
     nome: 'Bold',
     texto: 'Real bold on the presenter’s screen. In this editor it shows as a double underline instead — bold letters are wider, and the invisible text field behind would drift out of place.'

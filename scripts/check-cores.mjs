@@ -61,6 +61,18 @@ const TEXTO = 'Alfa bravo charlie.\n\nDelta echo foxtrot.'
 
 /* semeia pela AÇÃO, não pelo textarea: escrever no `value` depende do
    rastreador interno do React e já falhou em silêncio noutros scripts */
+/*
+ * A tela de boas-vindas primeiro.
+ *
+ * Num perfil novo ela cobre tudo com um véu escuro. Os cliques programáticos
+ * atravessam o véu e o script passava mesmo assim — mas toda COR medida (ou
+ * fotografada) saía escurecida, e eu perdi uma rodada achando que era o app.
+ */
+if (await ev(`!!document.querySelector('[data-welcome]')`)) {
+  await ev(`document.querySelector('[data-welcome-acao="demo"]').click()`)
+  await espera(900)
+}
+
 await ev(`
   window.valendo.getState().then((s) =>
     window.valendo.dispatch({ type: 'text/set', tabId: s.state.activeTabId, text: ${JSON.stringify(TEXTO)} })

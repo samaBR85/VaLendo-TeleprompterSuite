@@ -250,6 +250,10 @@ export const ajudaEs = {
     nome: 'Marcar todas las apariciones',
     texto: 'Dibuja la caja en todas a la vez, la actual más fuerte. Útil antes de reemplazar todas: ves lo que va a cambiar.'
   },
+  'editor.overwrite': {
+    nome: 'Pintar encima de las frases del presentador',
+    texto: 'Apagado, pintar todas salta las líneas que ya tienen el color de un presentador: ese color es un sistema en el que confía quien lee. Encendido, las pinta también.'
+  },
   'editor.bold': {
     nome: 'Negrita',
     texto: 'Negrita de verdad en la pantalla del presentador. En este editor sale como doble subrayado — la negrita es más ancha y el campo invisible de atrás se desalinearía.'

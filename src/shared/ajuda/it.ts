@@ -250,6 +250,10 @@ export const ajudaIt = {
     nome: 'Segna tutte le occorrenze',
     texto: 'Disegna il riquadro su tutte insieme, quella attuale più forte. Utile prima di sostituire tutte: vedi che cosa cambierà.'
   },
+  'editor.overwrite': {
+    nome: 'Colorare sopra le battute',
+    texto: 'Spento, colorare tutte salta le righe che hanno già il colore di un presentatore: quel colore è un sistema su cui chi legge conta. Acceso, colora anche quelle.'
+  },
   'editor.bold': {
     nome: 'Grassetto',
     texto: 'Grassetto vero sullo schermo del presentatore. In questo editor appare come doppia sottolineatura — il grassetto è più largo e il campo invisibile dietro si sposterebbe.'
