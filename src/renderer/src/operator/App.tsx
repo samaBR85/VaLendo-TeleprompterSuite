@@ -172,7 +172,15 @@ function CoresRecentes({
   return (
     <div
       data-cores-recentes
-      className="flex flex-none items-center gap-[3px] rounded border border-[var(--color-edge)] bg-[var(--color-ink-0)] px-1 py-[3px] shadow-[inset_0_1px_2px_var(--color-edge)]"
+      /*
+       * Sem poço, sem moldura: as bolinhas ficam soltas na barra.
+       *
+       * Afundadas num retângulo escuro elas viravam um objeto a mais numa
+       * fileira que já tem muitos, e o fundo do poço encostava no aro preto de
+       * cada bolinha e o apagava. Soltas, o aro aparece — e é ele que impede
+       * um amarelo claro de emendar com o cinza do cabeçalho.
+       */
+      className="flex flex-none items-center gap-[3px] pl-1"
     >
       {casas.map((cor, i) => (
         <button
