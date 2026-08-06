@@ -284,16 +284,20 @@ function Passo({
         title={rotulo}
         onMouseDown={(e) => e.preventDefault()}
         onClick={onToggle}
+        /* NEUTRA de propósito, e o ✓ em branco. Uma caixinha verde ao lado de
+           uma bolinha de cor escolhida pelo operador viravam duas cores
+           disputando o olho na mesma linha — e só uma delas significa alguma
+           coisa sobre o roteiro */
         className={`grid h-[13px] w-[13px] flex-none place-items-center rounded-[3px] border text-[9px] leading-none ${
           ligado
-            ? 'border-[var(--color-go)] bg-[var(--color-go)] text-[#06210f]'
+            ? 'border-[var(--color-fog-1)] bg-[var(--color-ink-4)] text-[var(--color-fog-0)]'
             : 'border-[var(--color-fog-3)] text-transparent hover:border-[var(--color-fog-1)]'
         }`}
       >
         ✓
       </button>
       <span
-        className={`w-[62px] flex-none text-[9px] leading-tight tracking-[0.08em] uppercase ${
+        className={`w-[52px] flex-none text-[9px] leading-tight tracking-[0.08em] uppercase ${
           ligado ? 'text-[var(--color-fog-1)]' : 'text-[var(--color-fog-3)]'
         }`}
       >
@@ -315,6 +319,7 @@ function TeclaDeAplicar({
   rotulo,
   desligado,
   destaque,
+  cor,
   onClick,
   children
 }: {
@@ -322,9 +327,18 @@ function TeclaDeAplicar({
   rotulo: string
   desligado?: boolean
   destaque?: boolean
+  /**
+   * A cor que a barra vai pintar, quando há uma.
+   *
+   * O botão veste a cor escolhida: antes de clicar, ele já mostra o que vai
+   * sair. É a mesma ideia da tecla de play, que é verde porque o que ela faz
+   * é verde — e aqui a cor não é decoração, é o resultado.
+   */
+  cor?: string
   onClick: () => void
   children: React.ReactNode
 }): React.JSX.Element {
+  const tom = cor ?? (destaque ? 'var(--color-go)' : null)
   return (
     <button
       type="button"
@@ -334,11 +348,20 @@ function TeclaDeAplicar({
       disabled={desligado}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className={`h-[23px] flex-1 rounded border px-2 text-[9px] font-bold tracking-[0.08em] uppercase disabled:opacity-30 ${
-        destaque
-          ? 'border-[color-mix(in_srgb,var(--color-go)_28%,#000)] bg-[linear-gradient(color-mix(in_srgb,var(--color-go)_26%,#232327),color-mix(in_srgb,var(--color-go)_12%,#1c1c1f))] text-[color-mix(in_srgb,var(--color-go)_70%,white)]'
-          : 'border-[var(--color-edge)] bg-[linear-gradient(#2a2a2f,#1c1c1f)] text-[var(--color-fog-1)]'
-      }`}
+      className="h-[23px] flex-1 rounded border px-2 text-[9px] font-bold tracking-[0.08em] uppercase disabled:opacity-30"
+      style={
+        tom
+          ? {
+              borderColor: `color-mix(in srgb, ${tom} 28%, #000)`,
+              background: `linear-gradient(color-mix(in srgb, ${tom} 26%, #232327), color-mix(in srgb, ${tom} 12%, #1c1c1f))`,
+              color: `color-mix(in srgb, ${tom} 70%, white)`
+            }
+          : {
+              borderColor: 'var(--color-edge)',
+              background: 'linear-gradient(#2a2a2f,#1c1c1f)',
+              color: 'var(--color-fog-1)'
+            }
+      }
     >
       {children}
     </button>
@@ -1358,9 +1381,6 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
             rotulo={t('editor.paintWith')}
             onToggle={() => setPintarLigado((v) => !v)}
           >
-            {/* a roda de quatro cores NÃO se repete aqui: ela já mora dentro do
-                seletor, e uma segunda cópia custava 60px de largura para não
-                dizer nada de novo. Ficam o gatilho e a pontilhada. */}
             <SeletorDeCor
               marca="busca-cor"
               rotulo={t('editor.color')}
@@ -1373,6 +1393,28 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
               }}
               className="h-5 w-5 flex-none"
             />
+            {/* TRÊS das quatro recentes, e não as quatro: aqui elas são atalho
+                para o gesto de agora, não a caixa de tintas inteira — essa fica
+                no cabeçalho e dentro do próprio seletor. Três cabem sem empurrar
+                o SPEECH para fora, e a quarta é sempre a mais antiga. */}
+            {coresRecentes.slice(0, 3).map((cor) => (
+              <button
+                key={cor}
+                type="button"
+                data-busca-cor-recente={cor}
+                title={cor}
+                aria-label={cor}
+                disabled={!pintarLigado}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setCorDaBusca(cor)}
+                className={`h-[15px] w-[15px] flex-none rounded-full border transition-transform not-disabled:hover:scale-110 disabled:opacity-30 ${
+                  corDaBusca === cor
+                    ? 'border-[var(--color-fog-0)]'
+                    : 'border-[var(--color-edge)]'
+                }`}
+                style={{ background: cor }}
+              />
+            ))}
             <button
               type="button"
               data-busca-cor-limpar
@@ -1412,6 +1454,11 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
               rotulo={t('editor.applyOne')}
               desligado={!podeAplicar}
               destaque
+              /* o botão veste a cor que vai sair — antes de clicar, já se vê o
+                 resultado. Só quando pintar está marcado E há cor escolhida:
+                 a pontilhada TIRA a cor, e um botão vestido de nada não
+                 existe */
+              cor={pintarLigado && corDaBusca ? corDaBusca : undefined}
               onClick={() => aplicar(false)}
             >
               {t('editor.applyOne')}
