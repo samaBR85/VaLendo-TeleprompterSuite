@@ -146,7 +146,18 @@ export function composeLines(blocks: Block[], rule: PacingRule, rows?: MeasuredR
     // do apresentador. Fica presa ao bloco anterior para que saltar para um
     // capítulo ou marcador caia no texto, não no branco acima dele
     if (previous) {
-      drafts.push({ blockId: previous.id, kind: previous.kind, text: '', words: 0, spacer: true, dono })
+      /*
+       * TANTOS espaçadores quanto o operador pulou. Ele digita três linhas em
+       * branco para afastar um assunto do outro, e até aqui as três viravam
+       * uma só na tela do apresentador — o afastamento existia no editor e
+       * sumia justo onde ele importa.
+       *
+       * `respiros` ausente é uma linha, que é o caso de sempre e de todo
+       * `.valendo` gravado antes disto.
+       */
+      for (let i = 0; i < (previous.respiros ?? 1); i += 1) {
+        drafts.push({ blockId: previous.id, kind: previous.kind, text: '', words: 0, spacer: true, dono })
+      }
     }
     previous = block
 

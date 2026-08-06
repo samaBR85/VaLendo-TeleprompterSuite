@@ -71,6 +71,8 @@ interface ParagraphSpan {
   text: string
   /** onde este parágrafo começa no texto normalizado — usado por `anchorFromCaret` */
   start: number
+  /** linhas em branco entre este parágrafo e o seguinte; 1 é o respiro normal */
+  respiros: number
 }
 
 /**
@@ -84,8 +86,15 @@ interface ParagraphSpan {
 function paragraphSpans(text: string): ParagraphSpan[] {
   const spans: ParagraphSpan[] = []
   let offset = 0
+  /*
+   * O `split` guarda o separador (grupo de captura) e por isso os separadores
+   * chegam intercalados com os parágrafos — dá para MEDIR o respiro sem uma
+   * segunda varredura. Um separador de N quebras são N-1 linhas em branco:
+   * `\n\n` é uma linha vazia entre dois parágrafos, que é o respiro normal.
+   */
   for (const chunk of text.replace(/\r\n?/g, '\n').split(/(\n{2,})/)) {
-    if (chunk.trim().length > 0) spans.push({ text: chunk, start: offset })
+    if (chunk.trim().length > 0) spans.push({ text: chunk, start: offset, respiros: 1 })
+    else if (chunk.length > 1 && spans.length > 0) spans[spans.length - 1].respiros = chunk.length - 1
     offset += chunk.length
   }
   return spans
@@ -93,6 +102,11 @@ function paragraphSpans(text: string): ParagraphSpan[] {
 
 function splitParagraphs(text: string): string[] {
   return paragraphSpans(text).map((span) => span.text)
+}
+
+/** O respiro só é gravado quando é MAIOR que o normal — o `.valendo` não engorda à toa. */
+function comRespiros(respiros: number): { respiros?: number } {
+  return respiros > 1 ? { respiros } : {}
 }
 
 function similarity(a: string, b: string): number {
@@ -142,7 +156,11 @@ function comMarcas(marcas: Marca[] | undefined): { marcas?: Marca[] } {
 }
 
 export function reconcileBlocks(previous: Block[], text: string): Block[] {
-  const paragraphs = splitParagraphs(text)
+  const spans = paragraphSpans(text)
+  const paragraphs = spans.map((s) => s.text)
+  /* o respiro vem do TEXTO, nunca do bloco antigo: é diagramação de agora, e
+     quem acabou de apagar duas linhas em branco espera que elas sumam */
+  const respiro = (i: number): { respiros?: number } => comRespiros(spans[i]?.respiros ?? 1)
   const used = new Set<string>()
   const result: (Block | null)[] = paragraphs.map(() => null)
 
@@ -151,7 +169,7 @@ export function reconcileBlocks(previous: Block[], text: string): Block[] {
     const old = previous[i]
     if (old && old.text === p && !used.has(old.id)) {
       used.add(old.id)
-      result[i] = { id: old.id, kind: classify(p), text: p, ...comMarcas(old.marcas) }
+      result[i] = { id: old.id, kind: classify(p), text: p, ...comMarcas(old.marcas), ...respiro(i) }
     }
   })
 
@@ -161,7 +179,7 @@ export function reconcileBlocks(previous: Block[], text: string): Block[] {
     const old = previous.find((b) => b.text === p && !used.has(b.id))
     if (old) {
       used.add(old.id)
-      result[i] = { id: old.id, kind: classify(p), text: p, ...comMarcas(old.marcas) }
+      result[i] = { id: old.id, kind: classify(p), text: p, ...comMarcas(old.marcas), ...respiro(i) }
     }
   })
 
@@ -183,15 +201,25 @@ export function reconcileBlocks(previous: Block[], text: string): Block[] {
       const marcas = best.block.marcas?.length
         ? remapearMarcas(best.block.marcas, edicao ? [edicao] : [])
         : undefined
-      result[i] = { id: best.block.id, kind: classify(p), text: p, ...comMarcas(marcas) }
+      result[i] = { id: best.block.id, kind: classify(p), text: p, ...comMarcas(marcas), ...respiro(i) }
     }
   })
 
-  return paragraphs.map((p, i) => result[i] ?? { id: newId(), kind: classify(p), text: p })
+  return paragraphs.map((p, i) => result[i] ?? { id: newId(), kind: classify(p), text: p, ...respiro(i) })
 }
 
+/**
+ * Blocos de volta a texto, RESPEITANDO o respiro de cada um.
+ *
+ * O separador entre dois blocos é `respiros + 1` quebras de linha: uma linha
+ * em branco — o caso de sempre — são duas quebras. Sem isto a ida e volta
+ * achatava três linhas em branco numa só, e o editor apagaria a diagramação do
+ * operador na cara dele toda vez que o texto passasse por aqui.
+ */
 export function serializeBlocks(blocks: Block[]): string {
-  return blocks.map((b) => b.text).join('\n\n')
+  return blocks
+    .map((b, i) => (i === 0 ? b.text : '\n'.repeat((blocks[i - 1].respiros ?? 1) + 1) + b.text))
+    .join('')
 }
 
 /**

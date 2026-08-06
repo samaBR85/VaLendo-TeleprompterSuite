@@ -387,3 +387,52 @@ describe('o caminho de volta: as marcas nas coordenadas do texto inteiro', () =>
     expect(marcasNoTexto([{ id: 'b1', kind: 'speech', text: 'Nada aqui.' }])).toEqual([])
   })
 })
+
+describe('o respiro: quantas linhas em branco o operador pulou', () => {
+  it('uma linha em branco é o normal, e não vira campo', () => {
+    // o `.valendo` não engorda com o caso de sempre
+    const blocos = blocksFromText('Um.\n\nDois.')
+    expect(blocos.every((b) => !('respiros' in b))).toBe(true)
+  })
+
+  it('três linhas em branco viram respiro 3', () => {
+    const blocos = blocksFromText('Um.\n\n\n\nDois.')
+    expect(blocos[0].respiros).toBe(3)
+    // o último não separa de ninguém
+    expect(blocos[1].respiros).toBeUndefined()
+  })
+
+  it('IDA E VOLTA: o texto sai igual ao que entrou', () => {
+    /*
+     * O teste que sustenta tudo. O editor compara o texto digitado com o que
+     * a serialização devolve; se os dois divergirem, o app briga com quem
+     * digita — apaga as linhas em branco na cara do operador.
+     */
+    for (const texto of [
+      'Um.\n\nDois.',
+      'Um.\n\n\n\nDois.',
+      'Um.\n\n\n\n\n\n\nDois.',
+      'Um.\n\n\n\nDois.\n\nTres.\n\n\n\n\nQuatro.',
+      '## Capitulo\n\n\n\nFala.',
+      'Linha um\nlinha dois do mesmo bloco.\n\n\n\nOutro.'
+    ]) {
+      expect(serializeBlocks(blocksFromText(texto))).toBe(texto)
+    }
+  })
+
+  it('apagar as linhas em branco a mais faz o respiro voltar ao normal', () => {
+    // o respiro vem do TEXTO de agora, nunca do bloco antigo
+    const antes = blocksFromText('Um.\n\n\n\nDois.')
+    expect(antes[0].respiros).toBe(3)
+    const depois = reconcileBlocks(antes, 'Um.\n\nDois.')
+    expect(depois[0].respiros).toBeUndefined()
+    expect(depois[0].id).toBe(antes[0].id)
+  })
+
+  it('e o id sobrevive a mexer só no respiro', () => {
+    // mudar o espaçamento não pode matar a âncora de leitura
+    const antes = blocksFromText('Um.\n\nDois.')
+    const depois = reconcileBlocks(antes, 'Um.\n\n\n\nDois.')
+    expect(depois.map((b) => b.id)).toEqual(antes.map((b) => b.id))
+  })
+})

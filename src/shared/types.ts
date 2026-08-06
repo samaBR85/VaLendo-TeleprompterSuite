@@ -24,6 +24,19 @@ export interface Block {
    * mexer num parágrafo não obriga a recalcular os de baixo.
    */
   marcas?: Marca[]
+  /**
+   * Quantas linhas em BRANCO separam este bloco do próximo.
+   *
+   * Ausente quer dizer uma — o respiro normal entre dois parágrafos. Guardado
+   * só quando o operador abriu mais que isso, e é diagramação de verdade: ele
+   * pula três linhas para afastar um assunto do outro, e esse afastamento
+   * precisa chegar à tela do apresentador. Até aqui o modelo engolia tudo e
+   * devolvia sempre uma.
+   *
+   * OPCIONAL pelo mesmo motivo de `marcas`: um `.valendo` gravado antes disto
+   * não traz o campo e abre com o respiro de sempre. Nenhuma migração.
+   */
+  respiros?: number
 }
 
 /**
