@@ -260,6 +260,29 @@ ok(
   JSON.stringify(curtas)
 )
 
+console.log('\n— a seta que SOBE: leva o REPLACE para o FIND —')
+/*
+ * A continuação do encadeamento. Trocado "sirene" por "BUZINA", a pergunta
+ * seguinte quase sempre é "e onde está o BUZINA?" — para conferir, pintar ou
+ * trocar de novo. A seta leva a palavra para cima em vez de obrigar a
+ * redigitá-la dois campos acima.
+ */
+await semear('Uma frase com sirene aqui.')
+await abrirBusca('sirene')
+await caixinha('usar-troca', true)
+await escrever('[data-troca-campo]', 'BUZINA')
+ok('a seta está acesa', (await ev(`!document.querySelector('[data-troca-sobe]').disabled`)) === true)
+await ev(`document.querySelector('[data-troca-sobe]').click()`)
+await espera(500)
+const subiu = await ev(`document.querySelector('[data-busca-campo]').value`)
+ok('o termo de busca virou a palavra que estava no REPLACE', subiu === 'BUZINA', String(subiu))
+const sobrou = await ev(`document.querySelector('[data-troca-campo]').value`)
+ok('e o REPLACE ficou vazio — foi recorte, não cópia', sobrou === '', JSON.stringify(sobrou))
+ok(
+  'com o campo vazio, a seta apaga',
+  (await ev(`document.querySelector('[data-troca-sobe]').disabled`)) === true
+)
+
 console.log(`\n${falhas === 0 ? 'tudo certo' : `${falhas} falha(s)`}`)
 socket.close()
 process.exit(falhas === 0 ? 0 : 1)

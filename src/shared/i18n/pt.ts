@@ -72,6 +72,7 @@ export const pt = {
   'editor.overwrite': 'Pintar por cima das falas com cor de apresentador',
   'editor.paintOne': 'Pintar este achado',
   'editor.paintAll': 'Pintar as {n}',
+  'editor.replaceToFind': 'Levar para a busca',
   'editor.paintWith': 'Pintar',
   'editor.applyOne': 'Aplicar 1',
   'editor.applyAll': 'Aplicar em todas as {n}',

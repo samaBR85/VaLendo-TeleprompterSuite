@@ -62,6 +62,7 @@ export const de: Dicionario = {
   'editor.overwrite': 'Auch Zeilen mit Sprecherfarbe einfärben',
   'editor.paintOne': 'Diesen Treffer einfärben',
   'editor.paintAll': 'Alle {n} einfärben',
+  'editor.replaceToFind': 'Nach oben in die Suche',
   'editor.paintWith': 'Färben',
   'editor.applyOne': '1 anwenden',
   'editor.applyAll': 'Auf alle {n} anwenden',

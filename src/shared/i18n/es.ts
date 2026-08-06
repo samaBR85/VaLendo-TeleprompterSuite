@@ -62,6 +62,7 @@ export const es: Dicionario = {
   'editor.overwrite': 'Pintar encima de las frases con color de presentador',
   'editor.paintOne': 'Pintar esta aparición',
   'editor.paintAll': 'Pintar las {n}',
+  'editor.replaceToFind': 'Llevar a la búsqueda',
   'editor.paintWith': 'Pintar',
   'editor.applyOne': 'Aplicar 1',
   'editor.applyAll': 'Aplicar en las {n}',

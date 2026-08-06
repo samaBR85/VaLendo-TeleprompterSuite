@@ -62,6 +62,7 @@ export const en: Dicionario = {
   'editor.overwrite': 'Paint over lines already coloured by a presenter',
   'editor.paintOne': 'Paint this match',
   'editor.paintAll': 'Paint all {n}',
+  'editor.replaceToFind': 'Move up to Find',
   'editor.paintWith': 'Paint',
   'editor.applyOne': 'Apply 1',
   'editor.applyAll': 'Apply to all {n}',

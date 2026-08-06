@@ -1371,6 +1371,35 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
               }}
               className={`${CAMPO} min-w-0 flex-1 disabled:opacity-35`}
             />
+            {/*
+              A seta que SOBE: leva o que está aqui para o campo de busca, e
+              esvazia este.
+
+              É a continuação do encadeamento. Trocado "agora" por "depois", a
+              pergunta seguinte quase sempre é "e onde está o 'depois'?" — para
+              conferir, pintar, ou trocar de novo. Sem ela é redigitar a palavra
+              que se acabou de escrever, dois campos acima.
+
+              Chapada e pequena de propósito: não é irmã das setas de navegar
+              lá de cima, que andam entre achados. Esta move TEXTO.
+            */}
+            <button
+              type="button"
+              data-troca-sobe
+              title={t('editor.replaceToFind')}
+              aria-label={t('editor.replaceToFind')}
+              disabled={!trocarLigado || troca === ''}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                setBusca(troca)
+                setTroca('')
+                setAtual(0)
+                campoBusca.current?.focus()
+              }}
+              className="grid h-[19px] w-[19px] flex-none place-items-center rounded border border-[var(--color-edge)] text-[11px] leading-none text-[var(--color-fog-2)] not-disabled:hover:bg-[var(--color-ink-3)] not-disabled:hover:text-[var(--color-fog-0)] disabled:opacity-25"
+            >
+              ↑
+            </button>
           </Passo>
 
           <Passo

@@ -62,6 +62,7 @@ export const it: Dicionario = {
   'editor.overwrite': 'Colorare anche le battute con il colore di un presentatore',
   'editor.paintOne': 'Colora questa occorrenza',
   'editor.paintAll': 'Colora tutte le {n}',
+  'editor.replaceToFind': 'Porta nella ricerca',
   'editor.paintWith': 'Colora',
   'editor.applyOne': 'Applica 1',
   'editor.applyAll': 'Applica a tutte le {n}',

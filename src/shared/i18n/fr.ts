@@ -62,6 +62,7 @@ export const fr: Dicionario = {
   'editor.overwrite': 'Peindre aussi les répliques déjà colorées par un présentateur',
   'editor.paintOne': 'Peindre cette occurrence',
   'editor.paintAll': 'Peindre les {n}',
+  'editor.replaceToFind': 'Envoyer vers la recherche',
   'editor.paintWith': 'Peindre',
   'editor.applyOne': 'Appliquer 1',
   'editor.applyAll': 'Appliquer aux {n}',
