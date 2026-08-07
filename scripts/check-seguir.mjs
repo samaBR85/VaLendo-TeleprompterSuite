@@ -86,7 +86,20 @@ await espera(600)
 const parado = await ev(topoDaMarca)
 conferir('ligado, a marca aparece', parado !== null, `topo ${parado}px`)
 
-// põe a leitura para correr bem rápido, para o teste não levar um minuto
+/*
+ * A leitura corre no MÁXIMO, e é isto que faltava.
+ *
+ * O comentário aqui sempre disse "põe a leitura para correr bem rápido", mas o
+ * código só apertava o play — a linha que levantava o ritmo se perdeu em
+ * alguma edição. No ritmo padrão (148 ppm), três segundos não tiram a leitura
+ * da PRIMEIRA linha, e a faixa marca a linha, não a palavra: ela ficava parada
+ * com toda a razão, e o teste acusava um defeito que não existe. Medido: a
+ * mesma faixa que não sai do lugar em 3s anda de 137px para 211px em 10s.
+ *
+ * Falso vermelho é pior que teste nenhum — ensina a ignorar a lista inteira.
+ */
+await ev(`window.valendo.dispatch({ type: 'transport/ppm', ppm: 400 })`)
+await espera(300)
 await ev(`document.querySelector('[data-grupo="transporte"] button:nth-child(3)').click()`)
 await espera(3_000)
 const correndo = await ev(topoDaMarca)
