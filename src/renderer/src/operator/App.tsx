@@ -19,7 +19,8 @@ import { ProvedorDeIdioma, useT } from '../i18n'
 import { activeTabOf, useAppState } from '../state/useAppState'
 import { Icon, type IconName } from '../ui/Icon'
 import { ajuda, useEscutarAjuda } from '../ui/ajuda'
-import { CabecalhoDePainel, SliderConsole, Tecla } from '../ui/console'
+import { SliderConsole, Tecla } from '../ui/console'
+import { PanelHeader } from '../ui/PanelHeader'
 import { Wordmark, versionLabel } from '../ui/Wordmark'
 import { UI_SCALE_MAX, UI_SCALE_MIN, UI_SCALE_STEP, applyUiScale, clampUiScale, loadUiScale } from '../ui/uiScale'
 import { CloseConfirm } from './CloseConfirm'
@@ -52,27 +53,6 @@ interface Notice {
   title: string
   lines: string[]
   tone: 'ok' | 'warn'
-}
-
-/**
- * Cabeçalho de painel com a moldura do console: filete colorido no topo,
- * gradiente tingido, título na cor da seção. A cor é a assinatura — âmbar é
- * Edição, vermelho é Saída — e o `ponto` é o olhinho de estado da Saída.
- */
-export function PanelHeader({
-  label,
-  detail,
-  cor,
-  ponto,
-  action
-}: {
-  label: string
-  detail?: React.ReactNode
-  cor?: string
-  ponto?: boolean
-  action?: React.ReactNode
-}): React.JSX.Element {
-  return <CabecalhoDePainel cor={cor} ponto={ponto} titulo={label} detalhe={detail} acao={action} />
 }
 
 /**

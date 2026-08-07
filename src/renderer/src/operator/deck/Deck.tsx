@@ -7,7 +7,7 @@ import type { Cartao, CardOverlayStyle, Tab, Transport } from '@shared/types'
 import type { PrompterMetrics, Viewport } from '../../prompter/PrompterCanvas'
 import { PrompterStage } from '../../prompter/PrompterStage'
 import { useT } from '../../i18n'
-import { PanelHeader } from '../App'
+import { PanelHeader } from '../../ui/PanelHeader'
 import { Rundown } from './Rundown'
 import { Timeline } from './Timeline'
 
