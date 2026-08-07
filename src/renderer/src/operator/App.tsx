@@ -669,6 +669,17 @@ function AppConteudo({
     sublinhado: false
   })
   /**
+   * O que o capítulo e a direção mostram.
+   *
+   * Vem do editor, e não daqui, porque a resposta depende do RASCUNHO — o texto
+   * na tela pode estar 140ms à frente dos blocos do main, e o botão tem de
+   * falar do que o operador está vendo.
+   */
+  const [blocosSelecionados, setBlocosSelecionados] = useState<Record<InsertKind, boolean>>({
+    chapter: false,
+    direction: false
+  })
+  /**
    * Quantas linhas o "capitular todas" pegaria agora.
    *
    * Fica no estado e não é calculado na hora de abrir o menu porque é ele que
@@ -876,6 +887,7 @@ function AppConteudo({
     setTextoSelecionado((editorRef.current?.selecao() ?? '') !== '')
     setCorSelecionada(corDaSelecao())
     setFormatosSelecionados(formatosDaSelecao())
+    setBlocosSelecionados(editorRef.current?.blocosDaSelecao() ?? { chapter: false, direction: false })
     setLinhasIguais(editorRef.current?.quantasIguais() ?? 0)
     if (!catchAtivo) return
     if (catchTimer.current) clearTimeout(catchTimer.current)
@@ -894,6 +906,7 @@ function AppConteudo({
   useEffect(() => {
     setCorSelecionada(corDaSelecao())
     setFormatosSelecionados(formatosDaSelecao())
+    setBlocosSelecionados(editorRef.current?.blocosDaSelecao() ?? { chapter: false, direction: false })
   }, [corDaSelecao, formatosDaSelecao])
 
   useEffect(() => {
@@ -1250,6 +1263,7 @@ function AppConteudo({
           icon="chapter"
           label={t('editor.chapter')}
           atalho={hint(keymap, 'insert.chapter')}
+          acesa={blocosSelecionados.chapter}
           onClick={() => run('insert.chapter')}
         />
         <MenuDeCapitulo
@@ -1264,6 +1278,7 @@ function AppConteudo({
         icon="direction"
         label={t('editor.direction')}
         atalho={hint(keymap, 'insert.direction')}
+        acesa={blocosSelecionados.direction}
         onClick={() => run('insert.direction')}
       />
       {/* volta tudo a texto simples: sem capítulo, sem direção, sem marca.

@@ -531,6 +531,15 @@ export interface EditorHandle {
   capitularIguais: () => number
   /** quantas linhas o "todos" pegaria agora — o número que o menu mostra */
   quantasIguais: () => number
+  /**
+   * Sobre que tipo de bloco a seleção está — o que ACENDE o capítulo e a direção.
+   *
+   * A resposta sai da mesma função que decide o clique, e não de uma segunda
+   * regra parecida: aceso quer dizer exatamente "apertar agora desfaz". Duas
+   * leituras diferentes acabariam discordando um dia, e aí o botão aceso faria
+   * o contrário do que promete.
+   */
+  blocosDaSelecao: () => Record<InsertKind, boolean>
   /** tira a marcação do roteiro inteiro: sem capítulos, sem direções. */
   removerFormatacao: () => void
   /**
@@ -751,9 +760,13 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
         area.focus({ preventScroll: true })
         area.setSelectionRange(result.selectionStart, result.selectionEnd)
         repor()
+        // quem mexeu no cursor foi este código, então é ele quem avisa: sem
+        // isto a barra só se atualizaria no próximo gesto do operador, e o
+        // botão que acabou de agir continuaria mostrando o estado de antes
+        onCaretMove?.()
       })
     },
-    [preservarRolagem, tab.id, dispatch]
+    [preservarRolagem, tab.id, dispatch, onCaretMove]
   )
 
   /**
@@ -796,6 +809,20 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
     const area = areaRef.current
     if (!area) return 0
     return contarLinhasIguais(area.value, area.value.slice(area.selectionStart, area.selectionEnd))
+  }, [])
+
+  /**
+   * Sobre que bloco a seleção está — ver a declaração em `EditorHandle`.
+   *
+   * Lê do RASCUNHO, e não dos blocos do main: o que está na tela pode estar
+   * 140ms à frente, e o botão tem de falar do texto que o operador está vendo.
+   */
+  const blocosDaSelecao = useCallback((): Record<InsertKind, boolean> => {
+    const area = areaRef.current
+    if (!area) return { chapter: false, direction: false }
+    const sobre = (kind: InsertKind): boolean =>
+      tirarBloco(area.value, area.selectionStart, area.selectionEnd, kind) !== null
+    return { chapter: sobre('chapter'), direction: sobre('direction') }
   }, [])
 
   /**
@@ -1190,6 +1217,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       insert,
       capitularIguais,
       quantasIguais,
+      blocosDaSelecao,
       removerFormatacao,
       caret,
       selecao,
@@ -1203,6 +1231,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       insert,
       capitularIguais,
       quantasIguais,
+      blocosDaSelecao,
       removerFormatacao,
       caret,
       selecao,
