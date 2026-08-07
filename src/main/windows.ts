@@ -2,6 +2,7 @@ import { BrowserWindow, Menu, powerSaveBlocker, screen } from 'electron'
 import { join } from 'node:path'
 import { CHANNELS } from '@shared/actions'
 import { findDisplay } from './displays'
+import { log } from './storage'
 
 const isMac = process.platform === 'darwin'
 const preload = join(__dirname, '../preload/index.js')
@@ -130,7 +131,36 @@ export function createOperatorWindow(
     webPreferences: { preload, sandbox: false, zoomFactor }
   })
 
-  operatorWindow.on('ready-to-show', () => operatorWindow?.show())
+  /*
+   * A janela APARECE, mesmo que o `ready-to-show` não venha.
+   *
+   * Ela nasce com `show: false` e espera o primeiro quadro, que é o que evita
+   * o flash branco na abertura. O preço disso é que, se o quadro não chega, a
+   * janela nunca aparece — e o app fica vivo, invisível, segurando o terminal
+   * que o abriu. Foi exatamente o que o operador relatou duas vezes: "abre o
+   * terminal e não carrega o app", sem janela em monitor nenhum.
+   *
+   * `ready-to-show` não é uma promessa: um tropeço do processo de GPU no
+   * arranque, e ele simplesmente não dispara. A falha é intermitente — aqui
+   * ela não reproduz sob demanda —, e é por isso que a saída não pode depender
+   * de descobrir a causa: quatro segundos sem primeiro quadro e a janela abre
+   * assim mesmo. No caminho normal, que leva um ou dois segundos, este relógio
+   * nunca chega a vencer.
+   *
+   * Pior caso vira um instante de janela vazia na cor de fundo, em vez de um
+   * app que não existe na tela. E a linha no `problemas.log` é o que torna a
+   * próxima ocorrência diagnosticável em vez de misteriosa.
+   */
+  let apareceu = false
+  const mostrar = (motivo: 'quadro' | 'prazo') => (): void => {
+    if (apareceu || !operatorWindow || operatorWindow.isDestroyed()) return
+    apareceu = true
+    if (motivo === 'prazo') log('A janela abriu pelo prazo: o `ready-to-show` não chegou em 4s.')
+    operatorWindow.show()
+  }
+  operatorWindow.on('ready-to-show', mostrar('quadro'))
+  const salvaVidas = setTimeout(mostrar('prazo'), 4_000)
+  operatorWindow.on('closed', () => clearTimeout(salvaVidas))
 
   // captura posição/tamanho enquanto o operador ajusta a janela — debounced,
   // no mesmo ritmo do autosave, para não disparar um dispatch por pixel
