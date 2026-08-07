@@ -787,6 +787,20 @@ export function Inspector({
       {aba === 'leitura' ? (
         <>
       <Group>
+        {/* A MARGEM vem primeiro, e a posição depois.
+            A posição desliza o texto dentro da folga que a margem abriu: com
+            margem zero não há folga, e arrastar a posição não faz nada. Na
+            ordem inversa, o operador mexia no controle de cima e via a tela
+            parada — e um controle que não responde ensina que não funciona. */}
+        <Slider
+          ajudaId="insp.margin"
+          label={t('insp.margin')}
+          value={a.marginPct}
+          min={0}
+          max={35}
+          suffix="%"
+          onChange={(marginPct) => patch({ marginPct })}
+        />
         {/* ímã: arrastar perto do centro gruda em 50% exato — é o ponto que
             já era o comportamento de sempre, antes deste slider existir, e
             errar por 1-2% dele não abre diferença visível nenhuma */}
@@ -798,15 +812,6 @@ export function Inspector({
           max={100}
           suffix="%"
           onChange={(value) => patch({ positionPct: Math.abs(value - 50) <= 4 ? 50 : value })}
-        />
-        <Slider
-          ajudaId="insp.margin"
-          label={t('insp.margin')}
-          value={a.marginPct}
-          min={0}
-          max={35}
-          suffix="%"
-          onChange={(marginPct) => patch({ marginPct })}
         />
         {/*
           As duas faixas vão de 1 a 16 inteiras, sem uma restringir a outra —
@@ -835,6 +840,10 @@ export function Inspector({
           max={16}
           onChange={(maxWords) => patch(maxWords < a.minWords ? { maxWords, minWords: maxWords } : { maxWords })}
         />
+        {/* ímã em 50%, como o da posição: o meio da tela é a escolha que a
+            maioria dos apresentadores acaba querendo, e acertá-lo no olho custa
+            um vai e vem de 49 e 51. Aqui a faixa vai de 10 a 70, então o meio
+            do CURSO não é 50 — o ímã é no número, que é o que o operador lê */}
         <Slider
           ajudaId="insp.readingMark"
           label={t('insp.readingMark')}
@@ -842,7 +851,7 @@ export function Inspector({
           min={10}
           max={70}
           suffix="%"
-          onChange={(value) => patch({ readingLinePct: value / 100 })}
+          onChange={(value) => patch({ readingLinePct: (Math.abs(value - 50) <= 4 ? 50 : value) / 100 })}
         />
         {/* na prévia a linha aparece sempre; isto decide só a transmissão */}
         {/* rótulo curto porque o painel tem 214px: "Mostrar a linha na
