@@ -232,7 +232,7 @@ export const it: Dicionario = {
   'deck.words': 'Parole',
   'deck.duration': 'Durata',
   'deck.status': 'Stato',
-  'deck.opening': 'Apertura',
+  'deck.start': 'Inizio',
   'deck.done': 'fatto',
   'deck.onAir': 'in onda',
   'deck.next': 'a seguire',

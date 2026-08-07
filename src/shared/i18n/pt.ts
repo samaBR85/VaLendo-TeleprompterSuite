@@ -251,7 +251,7 @@ export const pt = {
   'deck.words': 'Palavras',
   'deck.duration': 'Duração',
   'deck.status': 'Status',
-  'deck.opening': 'Abertura',
+  'deck.start': 'Início',
   'deck.done': 'feito',
   'deck.onAir': 'no ar',
   'deck.next': 'a seguir',

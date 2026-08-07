@@ -78,7 +78,7 @@ export function Timeline({ segments, totalRuler, currentRuler, currentIndex, ppm
               type="button"
               data-segment
               onClick={() => onSeek(segment.blockId)}
-              title={`${segment.title || t('deck.opening')} · ${formatClock(secondsForWords(segment.rulerSpan, ppm))}`}
+              title={`${segment.title || t('deck.start')} · ${formatClock(secondsForWords(segment.rulerSpan, ppm))}`}
               className="relative flex flex-none flex-col justify-center overflow-hidden border-r border-black/30 px-2.5 text-left last:border-r-0"
               style={{
                 width: pct(segment.rulerSpan, totalRuler),
@@ -87,7 +87,7 @@ export function Timeline({ segments, totalRuler, currentRuler, currentIndex, ppm
               }}
             >
               <span className="truncate text-[12px] font-medium text-white/95">
-                {segment.title || t('deck.opening')}
+                {segment.title || t('deck.start')}
               </span>
               <span className="font-mono text-[10px] text-white/70">
                 {formatClock(secondsForWords(segment.rulerSpan, ppm))}

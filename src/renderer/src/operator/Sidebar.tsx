@@ -333,7 +333,7 @@ export function Sidebar({
                       precisa de uma linha na coluna para poder ser clicado.
                       "Abertura" diz o que aquilo é, em vez de dizer o que
                       aquilo não tem. */}
-                  {segment.title || t('deck.opening')}
+                  {segment.title || t('deck.start')}
                 </span>
                 <span
                   className="flex-none font-mono text-[10px]"
