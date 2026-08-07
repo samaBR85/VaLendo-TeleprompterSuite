@@ -629,6 +629,14 @@ export const ajudaPt = {
     nome: 'Cor do apresentador',
     texto: 'A cor das falas desta pessoa, no roteiro e no vidro. Segure para experimentar, solte para confirmar — soltar fora desiste.'
   },
+  'color.short': {
+    nome: 'Mais cores',
+    texto: 'Troca a grade completa pelas oito escolhidas para se distinguirem umas das outras no vidro. A grade continua a um clique.'
+  },
+  'color.contrast': {
+    nome: 'Contraste',
+    texto: 'Apaga as cores que nao alcancam 7:1 no fundo de agora. Apagadas, nao proibidas — da para escolher assim mesmo.'
+  },
   'insp.presenterRename': {
     nome: 'Renomear apresentador',
     texto: 'Duplo clique para renomear. Reescreve o nome no roteiro também — só as deixas, nunca uma menção dentro de uma fala. Um desfazer devolve os dois.'

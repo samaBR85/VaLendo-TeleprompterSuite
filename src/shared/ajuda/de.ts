@@ -629,6 +629,14 @@ export const ajudaDe = {
     nome: 'Farbe der sprechenden Person',
     texto: 'Die Farbe der Zeilen dieser Person, im Skript und auf dem Glas. Halten zum Ausprobieren, Loslassen bestätigt; daneben verwirft.'
   },
+  'color.short': {
+    nome: 'Mehr Farben',
+    texto: 'Tauscht das volle Raster gegen acht Farben, die sich auf dem Glas voneinander abheben. Das Raster ist einen Klick entfernt.'
+  },
+  'color.contrast': {
+    nome: 'Kontrast',
+    texto: 'Blendet Farben ab, die 7:1 auf dem aktuellen Hintergrund verfehlen. Abgeblendet, nicht gesperrt.'
+  },
   'insp.presenterRename': {
     nome: 'Sprecher umbenennen',
     texto: 'Doppelklick zum Umbenennen. Ändert den Namen auch im Skript — nur die Sprecherzeilen, nie eine Erwähnung in einer Rede. Rückgängig stellt beides wieder her.'

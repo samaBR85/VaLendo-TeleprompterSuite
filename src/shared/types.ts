@@ -586,6 +586,12 @@ export interface PreferenciasDaMaquina {
    * no `.valendo` — o da SAÍDA é que é decisão do programa.
    */
   editorAllCaps: boolean
+  /* as duas chaves do seletor de cor: qual paleta ele abre e se ele apaga o
+     que nao se le no fundo. Conforto desta maquina, como o resto daqui — nao
+     viaja no `.valendo`, senao mandar o projeto a um colega mudaria a caixa
+     de tintas dele */
+  paletaCurta: boolean
+  filtroDeContraste: boolean
   /** volume da prévia dos cartões de vídeo, 0 a 1; a transmissão é sempre muda */
   cardVolume: number
   /**

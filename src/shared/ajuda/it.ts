@@ -629,6 +629,14 @@ export const ajudaIt = {
     nome: 'Colore del presentatore',
     texto: 'Il colore delle battute di questa persona, nel copione e sul vetro. Tieni premuto per provare, rilascia per confermare.'
   },
+  'color.short': {
+    nome: 'Piu colori',
+    texto: 'Sostituisce la griglia completa con otto colori scelti per distinguersi tra loro sul vetro. La griglia torna con un clic.'
+  },
+  'color.contrast': {
+    nome: 'Contrasto',
+    texto: 'Attenua i colori che non arrivano a 7:1 sullo sfondo attuale. Attenuati, non vietati.'
+  },
   'insp.presenterRename': {
     nome: 'Rinomina presentatore',
     texto: 'Doppio clic per rinominare. Riscrive il nome anche nel copione — solo le righe di attacco, mai una menzione dentro un discorso. Un annulla riporta entrambi.'

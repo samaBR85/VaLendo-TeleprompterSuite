@@ -629,6 +629,14 @@ export const ajudaEs = {
     nome: 'Color del presentador',
     texto: 'El color de las frases de esta persona, en el guión y en el cristal. Mantén para probar, suelta para confirmar; fuera, cancela.'
   },
+  'color.short': {
+    nome: 'Mas colores',
+    texto: 'Cambia la cuadricula completa por ocho colores elegidos para distinguirse entre si en el cristal. La cuadricula vuelve con un clic.'
+  },
+  'color.contrast': {
+    nome: 'Contraste',
+    texto: 'Apaga los colores que no llegan a 7:1 sobre el fondo actual. Apagados, no prohibidos.'
+  },
   'insp.presenterRename': {
     nome: 'Renombrar presentador',
     texto: 'Doble clic para renombrar. También reescribe el nombre en el guion — solo las líneas de pie, nunca una mención dentro de un discurso. Un deshacer devuelve ambos.'

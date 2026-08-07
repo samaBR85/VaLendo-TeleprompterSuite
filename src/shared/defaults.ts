@@ -105,6 +105,12 @@ export const MAQUINA_PADRAO: PreferenciasDaMaquina = {
   editorFontSize: EDITOR_FONT_DEFAULT,
   editorFontFamily: EDITOR_FONTE_PADRAO,
   editorAllCaps: false,
+  /* a grade completa na abertura: e a que o operador ja conhece, e trocar o
+     que ele ve ao abrir seria mudar o gesto dele sem pedir. As oito ficam a
+     um clique. O filtro nasce LIGADO porque ele so apaga o que de fato nao se
+     le — desligado por padrao, ninguem descobriria que ele existe */
+  paletaCurta: false,
+  filtroDeContraste: true,
   cardVolume: 1,
   /* a roda nasce VAZIA, e as quatro casas aparecem em branco na barra. Branco
      é a cor do texto sem marca — a casa vazia mostra o que aquele lugar ainda

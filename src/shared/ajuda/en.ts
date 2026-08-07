@@ -656,6 +656,14 @@ export const ajudaEn = {
     nome: 'Presenter colour',
     texto: 'The colour this person’s lines take, in the script and on the glass. Hold to try, release to keep — release outside to give up.'
   },
+  'color.short': {
+    nome: 'More colours',
+    texto: 'Swaps the full grid for eight colours picked to stay apart from each other on the glass. The grid is one click away.'
+  },
+  'color.contrast': {
+    nome: 'Contrast',
+    texto: 'Dims the colours that miss 7:1 against the current background. Dimmed, not blocked — you can still pick one.'
+  },
   'insp.presenterRename': {
     nome: 'Rename presenter',
     texto: 'Double-click to rename. It rewrites the name in the script too — only the cue lines, never a mention inside a speech. One undo puts both back.'

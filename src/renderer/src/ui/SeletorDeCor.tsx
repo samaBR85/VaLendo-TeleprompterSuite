@@ -1,8 +1,10 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { AjudaId } from '@shared/ajuda'
+import { PALETA_CURTA, legivelNo } from '@shared/paleta'
 import { useT } from '../i18n'
 import { ajuda } from './ajuda'
+import { useOpcoesDeCor } from './opcoesDeCor'
 
 /**
  * O seletor de cor do app inteiro.
@@ -222,6 +224,20 @@ export function SeletorDeCor({
     ? { pressionar, arrastar: arrastarSobre, soltar: soltarSobre }
     : undefined
 
+  const opcoes = useOpcoesDeCor()
+
+  /*
+   * O que fica apagado, e por que apagado em vez de proibido.
+   *
+   * A cor que não alcança 7:1 no fundo de agora continua clicável: o app avisa,
+   * não manda. Há motivo legítimo para escolher uma cor fraca — casar com a
+   * arte de um canal, marcar uma anotação que não é para ser lida de longe — e
+   * um seletor que bloqueia obriga a desligar o aviso inteiro para atender ao
+   * caso raro.
+   */
+  const apagado = (cor: string): string =>
+    opcoes.contraste && !legivelNo(cor, opcoes.fundo) ? '0.22' : '1'
+
   const gradiente = 'conic-gradient(#e5484d,#f0b429,#46d17f,#12a594,#6aa8ff,#9d5bd2,#d6409f,#e5484d)'
 
   return (
@@ -264,20 +280,53 @@ export function SeletorDeCor({
             >
               {/* sem folga entre os quadrados, e o arredondamento só na moldura:
                   separados, eles liam como retalho em vez de paleta */}
-              <div className="overflow-hidden rounded border border-[var(--color-edge)]">
-                <div className="grid grid-cols-11">
-                  {CINZAS.map((l) => (
-                    <Quadrado key={`c${l}`} cor={hsl(0, 0, l)} valor={valor} onCor={escolher} previa={previa} />
+              {opcoes.curta ? (
+                /* quatro por fileira, e maiores: são oito, e cada uma é uma
+                   escolha de verdade — espremê-las no tamanho da grade
+                   desperdiçaria o espaço que sobrou */
+                <div className="grid grid-cols-4 gap-1.5">
+                  {PALETA_CURTA.map((cor) => (
+                    <Quadrado
+                      key={cor}
+                      cor={cor}
+                      valor={valor}
+                      onCor={escolher}
+                      previa={previa}
+                      opacidade={apagado(cor)}
+                      alto
+                    />
                   ))}
                 </div>
-                <div className="grid grid-cols-12">
-                  {LUMINOSIDADES.map((l) =>
-                    MATIZES.map((h) => (
-                      <Quadrado key={`${h}-${l}`} cor={hsl(h, 82, l)} valor={valor} onCor={escolher} previa={previa} />
-                    ))
-                  )}
+              ) : (
+                <div className="overflow-hidden rounded border border-[var(--color-edge)]">
+                  <div className="grid grid-cols-11">
+                    {CINZAS.map((l) => (
+                      <Quadrado
+                        key={`c${l}`}
+                        cor={hsl(0, 0, l)}
+                        valor={valor}
+                        onCor={escolher}
+                        previa={previa}
+                        opacidade={apagado(hsl(0, 0, l))}
+                      />
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-12">
+                    {LUMINOSIDADES.map((l) =>
+                      MATIZES.map((h) => (
+                        <Quadrado
+                          key={`${h}-${l}`}
+                          cor={hsl(h, 82, l)}
+                          valor={valor}
+                          onCor={escolher}
+                          previa={previa}
+                          opacidade={apagado(hsl(h, 82, l))}
+                        />
+                      ))
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* O rodapé: os atalhos desta tela à esquerda, o código hex à
                   direita. A amostra grande que morava no TOPO saiu — o próprio
@@ -315,6 +364,49 @@ export function SeletorDeCor({
                 <span className="ml-auto font-mono text-[11px] tracking-wide text-[var(--color-fog-2)] uppercase">
                   {valor ?? '—'}
                 </span>
+              </div>
+
+              {/*
+                A segunda fileira do rodapé: as duas chaves da paleta.
+
+                Aqui e não no topo porque as duas são AJUSTE do seletor, não
+                escolha de cor — quem abriu o painel veio pegar uma cor, e o
+                que decide como a paleta se comporta fica onde já moram os
+                atalhos e o código hexadecimal.
+              */}
+              <div className="mt-2 flex items-center gap-1.5 border-t border-[var(--color-edge)] pt-2">
+                <button
+                  type="button"
+                  data-paleta-curta
+                  {...ajuda('color.short')}
+                  aria-pressed={opcoes.curta}
+                  onClick={() => opcoes.onCurta(!opcoes.curta)}
+                  className={`rounded-[5px] border px-2 py-1 text-[10px] tracking-[0.04em] ${
+                    opcoes.curta
+                      ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/15 text-[var(--color-accent-soft)]'
+                      : 'border-[var(--color-edge)] text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]'
+                  }`}
+                >
+                  {t('color.short')}
+                </button>
+                <button
+                  type="button"
+                  data-filtro-contraste
+                  {...ajuda('color.contrast')}
+                  aria-pressed={opcoes.contraste}
+                  onClick={() => opcoes.onContraste(!opcoes.contraste)}
+                  className={`ml-auto flex items-center gap-1.5 rounded-[5px] border px-2 py-1 text-[10px] tracking-[0.04em] ${
+                    opcoes.contraste
+                      ? 'border-[var(--color-go)] bg-[var(--color-go)]/12 text-[var(--color-go)]'
+                      : 'border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+                  }`}
+                >
+                  <span
+                    className="h-2.5 w-2.5 flex-none rounded-full border border-[var(--color-edge)]"
+                    style={{ background: opcoes.fundo }}
+                  />
+                  {t('color.contrast')}
+                </button>
               </div>
             </div>,
             document.body
@@ -360,12 +452,18 @@ function Quadrado({
   cor,
   valor,
   onCor,
-  previa
+  previa,
+  opacidade = '1',
+  alto
 }: {
   cor: string
   valor?: string
   onCor: (cor: string) => void
   previa?: Parameters<typeof gestosDoQuadrado>[2]
+  /** apagado quando o filtro de contraste reprova a cor no fundo de agora */
+  opacidade?: string
+  /** na paleta curta os quadrados são maiores: são oito, e há espaço */
+  alto?: boolean
 }): React.JSX.Element {
   const atual = valor?.toLowerCase() === cor.toLowerCase()
   return (
@@ -376,10 +474,10 @@ function Quadrado({
       {...gestosDoQuadrado(cor, onCor, previa)}
       /* o realce é para DENTRO (`inset`): uma borda para fora empurraria os
          vizinhos e a grade inteira tremeria ao passar o mouse */
-      className={`aspect-square w-full ${
+      className={`w-full ${alto ? 'h-7 rounded-[5px]' : 'aspect-square'} ${
         atual ? 'outline outline-2 -outline-offset-2 outline-white' : 'hover:outline hover:outline-1 hover:-outline-offset-1 hover:outline-white/70'
       }`}
-      style={{ background: cor }}
+      style={{ background: cor, opacity: opacidade }}
     />
   )
 }

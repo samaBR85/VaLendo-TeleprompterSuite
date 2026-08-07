@@ -629,6 +629,14 @@ export const ajudaFr = {
     nome: 'Couleur du présentateur',
     texto: 'La couleur des répliques de cette personne, dans le script et sur la vitre. Maintenez pour essayer, relâchez pour confirmer.'
   },
+  'color.short': {
+    nome: 'Plus de couleurs',
+    texto: 'Remplace la grille complete par huit couleurs choisies pour se distinguer entre elles sur la vitre. La grille revient en un clic.'
+  },
+  'color.contrast': {
+    nome: 'Contraste',
+    texto: 'Attenue les couleurs qui n atteignent pas 7:1 sur le fond actuel. Attenuees, pas interdites.'
+  },
   'insp.presenterRename': {
     nome: 'Renommer le présentateur',
     texto: 'Double-clic pour renommer. Réécrit aussi le nom dans le texte — seulement les lignes de repère, jamais une réplique. Un annuler restaure les deux.'

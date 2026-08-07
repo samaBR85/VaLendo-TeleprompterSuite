@@ -62,6 +62,8 @@ export const en: Dicionario = {
   'editor.color': 'Colour the selected text',
   'editor.colorPick': 'Pick any colour',
   'editor.colorNone': 'Remove color',
+  'color.short': 'More colours',
+  'color.contrast': 'Contrast',
   'editor.overwrite': 'Paint over lines already coloured by a presenter',
   'editor.paintOne': 'Paint this match',
   'editor.paintAll': 'Paint all {n}',

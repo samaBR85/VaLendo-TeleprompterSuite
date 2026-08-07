@@ -62,6 +62,8 @@ export const de: Dicionario = {
   'editor.color': 'Farbe des markierten Textes',
   'editor.colorPick': 'Beliebige Farbe wählen',
   'editor.colorNone': 'Farbe entfernen',
+  'color.short': 'Mehr Farben',
+  'color.contrast': 'Kontrast',
   'editor.overwrite': 'Auch Zeilen mit Sprecherfarbe einfärben',
   'editor.paintOne': 'Diesen Treffer einfärben',
   'editor.paintAll': 'Alle {n} einfärben',

@@ -72,6 +72,8 @@ export const pt = {
   'editor.color': 'Cor do texto selecionado',
   'editor.colorPick': 'Escolher qualquer cor',
   'editor.colorNone': 'Tirar a cor',
+  'color.short': 'Mais cores',
+  'color.contrast': 'Contraste',
   'editor.overwrite': 'Pintar por cima das falas com cor de apresentador',
   'editor.paintOne': 'Pintar este achado',
   'editor.paintAll': 'Pintar as {n}',

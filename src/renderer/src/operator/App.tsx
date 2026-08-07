@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { AjudaId } from '@shared/ajuda'
 import type { Marca } from '@shared/types'
 import { SeletorDeCor } from '../ui/SeletorDeCor'
+import { ProvedorDeOpcoesDeCor } from '../ui/opcoesDeCor'
 import { SeletorDeFonte } from '../ui/SeletorDeFonte'
 import type { MotivosDeFechar } from '@shared/api'
 import type { InsertKind } from '@shared/insertBlock'
@@ -1233,6 +1234,35 @@ function AppConteudo({
 
   const { run, keymap } = useCommands(state, rows, dispatch, ui)
 
+  /*
+   * As opcoes do seletor de cor, uma vez para a janela inteira.
+   *
+   * O seletor aparece em seis lugares — texto, fundo, os dois relogios, cada
+   * apresentador, o conta-gotas —, e todos precisam das mesmas duas chaves e
+   * do mesmo fundo contra o qual medir. Passar isso por props atravessaria
+   * componentes que nao tem nada a ver com paleta.
+   *
+   * O FUNDO e o da saida, e nao o do painel: o que decide se uma cor se le e a
+   * tela do apresentador, nao o cinza em volta do quadradinho.
+   *
+   * Fica ACIMA do `return` de carregamento, e com guardas no estado. Ele nasceu
+   * logo antes do JSX final, depois desse return, e o React quebrou a janela
+   * inteira: um hook que so roda em alguns renders muda a contagem entre eles,
+   * e o erro #310 e exatamente isso. Hook nao mora depois de saida antecipada.
+   */
+  const opcoesDeCor = useMemo(
+    () => ({
+      curta: state?.maquina.paletaCurta ?? false,
+      contraste: state?.maquina.filtroDeContraste ?? true,
+      fundo: state?.tabs.find((t) => t.id === state.activeTabId)?.appearance.bgColor ?? '#000000',
+      onCurta: (paletaCurta: boolean) => dispatch({ type: 'maquina/patch', patch: { paletaCurta } }),
+      onContraste: (filtroDeContraste: boolean) =>
+        dispatch({ type: 'maquina/patch', patch: { filtroDeContraste } })
+    }),
+    [state, dispatch]
+  )
+
+
   if (!state) {
     return <div className="flex h-full items-center justify-center text-[var(--color-fog-2)]">{t('app.loading')}</div>
   }
@@ -1626,6 +1656,7 @@ function AppConteudo({
   const resetSplit = (): void => dispatch({ type: 'layout/split', ratio: EDITION_SPLIT_DEFAULT })
 
   return (
+    <ProvedorDeOpcoesDeCor value={opcoesDeCor}>
     <div className="relative flex h-full flex-col bg-[var(--color-ink-0)]">
       {/* a linha do wordmark: identidade à esquerda, controles do app à
           direita. Quem diz se o programa está no ar é o Transmitir, no poço
@@ -2325,5 +2356,6 @@ function AppConteudo({
         />
       ) : null}
     </div>
+    </ProvedorDeOpcoesDeCor>
   )
 }

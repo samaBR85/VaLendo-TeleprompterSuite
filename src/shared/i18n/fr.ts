@@ -62,6 +62,8 @@ export const fr: Dicionario = {
   'editor.color': 'Couleur du texte sélectionné',
   'editor.colorPick': 'Choisir une couleur',
   'editor.colorNone': 'Retirer la couleur',
+  'color.short': 'Plus de couleurs',
+  'color.contrast': 'Contraste',
   'editor.overwrite': 'Peindre aussi les répliques déjà colorées par un présentateur',
   'editor.paintOne': 'Peindre cette occurrence',
   'editor.paintAll': 'Peindre les {n}',

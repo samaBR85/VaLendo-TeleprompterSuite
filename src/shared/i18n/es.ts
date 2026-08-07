@@ -62,6 +62,8 @@ export const es: Dicionario = {
   'editor.color': 'Color del texto seleccionado',
   'editor.colorPick': 'Elegir cualquier color',
   'editor.colorNone': 'Quitar el color',
+  'color.short': 'Más colores',
+  'color.contrast': 'Contraste',
   'editor.overwrite': 'Pintar encima de las frases con color de presentador',
   'editor.paintOne': 'Pintar esta aparición',
   'editor.paintAll': 'Pintar las {n}',
