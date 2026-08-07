@@ -534,6 +534,109 @@ export function TeclaDeSomDaRede({
 }
 
 /**
+ * Para onde o programa vai — a lista dos monitores conectados.
+ *
+ * Era um `<select>` do sistema, e a lista que ele abria não era desenhada por
+ * este app: quem a desenha é o Windows. Vinha de canto vivo, com o azul de
+ * seleção do sistema, no meio de uma mesa onde todo menu tem canto arredondado
+ * e a paleta do console. Nenhum CSS alcança aquela caixa — a única saída é não
+ * usar o `<select>`.
+ *
+ * O que se perde ao trocar: a lista deixa de poder passar por cima da borda da
+ * JANELA, porque agora ela é um elemento da página. Com três ou quatro
+ * monitores isso não chega perto de acontecer, e a coerência visual da mesa
+ * vale mais que um caso que não existe nesta barra.
+ *
+ * Fechado, o controle mantém a largura FIXA de antes — cabe "Monitor 3 ·
+ * horizontal" e corta o resto. A resolução é o que menos se lê de relance, e
+ * era ela que fazia a caixa esticar por meia barra quando o monitor tinha nome
+ * comprido. Largura fixa também é o que mantém honesta a medida que decide se a
+ * barra do topo cabe numa linha: um seletor que muda de tamanho com o nome do
+ * monitor faria a mesma janela caber ou não conforme o estúdio. Aberta, cada
+ * linha aparece inteira.
+ */
+function SeletorDeMonitor({
+  displays,
+  escolhido,
+  rotuloVazio,
+  rotuloPrincipal,
+  largura,
+  onEscolher
+}: {
+  displays: DisplayInfo[]
+  escolhido: number | null
+  rotuloVazio: string
+  rotuloPrincipal: string
+  largura: string
+  onEscolher: (displayId: number | null) => void
+}): React.JSX.Element {
+  const [aberto, setAberto] = useState(false)
+
+  useEffect(() => {
+    if (!aberto) return
+    const escapar = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setAberto(false)
+    }
+    window.addEventListener('keydown', escapar)
+    return () => window.removeEventListener('keydown', escapar)
+  }, [aberto])
+
+  const nomeDe = (display: DisplayInfo): string =>
+    `${display.label}${display.primary ? ` · ${rotuloPrincipal}` : ''}`
+  const atual = displays.find((d) => d.id === escolhido)
+
+  return (
+    <div className="relative flex-none">
+      <button
+        type="button"
+        data-monitor-menu
+        {...ajuda('output.monitor')}
+        title={atual ? nomeDe(atual) : rotuloVazio}
+        aria-label={rotuloVazio}
+        aria-expanded={aberto}
+        onClick={() => setAberto((v) => !v)}
+        className={`flex items-center gap-1 rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] text-left text-[var(--color-fog-2)] hover:text-[var(--color-fog-1)] ${largura}`}
+      >
+        <span className="min-w-0 flex-1 truncate">{atual ? nomeDe(atual) : rotuloVazio}</span>
+        <Icon name="down" size={10} className="flex-none opacity-70" />
+      </button>
+      {aberto ? (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setAberto(false)} />
+          <div className="absolute top-full left-0 z-50 mt-1 min-w-max rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] py-1 shadow-lg">
+            {[null, ...displays.map((d) => d.id)].map((id) => {
+              const display = displays.find((d) => d.id === id)
+              return (
+                <button
+                  key={id ?? 'nenhum'}
+                  type="button"
+                  data-monitor-item={id ?? ''}
+                  /* a mesma ajuda do gatilho: a varredura do `check-ajuda`
+                     cobra explicação de todo elemento clicável, e estes são
+                     irmãos do botão, não filhos — não herdariam a dele */
+                  {...ajuda('output.monitor')}
+                  className={`block w-full px-3 py-1.5 text-left text-[11px] whitespace-nowrap hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] ${
+                    id === escolhido
+                      ? 'bg-[var(--color-ink-3)] font-semibold text-[var(--color-fog-0)]'
+                      : 'text-[var(--color-fog-1)]'
+                  }`}
+                  onClick={() => {
+                    setAberto(false)
+                    onEscolher(id)
+                  }}
+                >
+                  {display ? nomeDe(display) : rotuloVazio}
+                </button>
+              )
+            })}
+          </div>
+        </>
+      ) : null}
+    </div>
+  )
+}
+
+/**
  * O poço SAÍDA: monitor + Transmitir, no material do console.
  *
  * Mora num componente porque muda de casa com o layout: com o transporte no
@@ -633,43 +736,16 @@ export function PocoDeSaida({
         ) : null}
       </div>
 
-      <select
-        value={output.displayId ?? ''}
-        {...ajuda('output.monitor')}
-        title={t('toolbar.pickMonitor')}
-        onChange={(event) => {
-          const value = event.target.value
-          dispatch({
-            type: 'output/set',
-            displayId: value === '' ? null : Number(value),
-            enabled: value !== '' && output.enabled
-          })
-        }}
-        /*
-         * Largura FECHADA, e não natural com um teto.
-         *
-         * Cabe "Monitor 3 · horizontal" e corta o resto — a resolução é o que
-         * menos se lê de relance, e era ela que fazia a caixa esticar por meia
-         * barra quando o monitor tinha nome comprido. Aberto, o dropdown
-         * mostra cada linha inteira; parado, o nome e a orientação bastam para
-         * saber para onde o programa vai.
-         *
-         * Fechada também é o que mantém honesta a medida que decide se a barra
-         * do topo cabe numa linha: um seletor que muda de tamanho com o nome
-         * do monitor faria a mesma janela caber ou não conforme o estúdio.
-         */
-        className={`flex-none truncate rounded-[5px] border border-[var(--color-edge)] bg-[#1e1e21] text-[var(--color-fog-2)] ${
-          grande ? 'h-8 w-[196px] px-2.5 text-[12px]' : compacto ? 'h-6 w-[116px] px-2 text-[10px]' : 'h-6 w-[150px] px-2 text-[10px]'
-        }`}
-      >
-        <option value="">{t('toolbar.pickMonitor')}</option>
-        {displays.map((display) => (
-          <option key={display.id} value={display.id}>
-            {display.label}
-            {display.primary ? ` · ${t('toolbar.primary')}` : ''}
-          </option>
-        ))}
-      </select>
+      <SeletorDeMonitor
+        displays={displays}
+        escolhido={output.displayId}
+        rotuloVazio={t('toolbar.pickMonitor')}
+        rotuloPrincipal={t('toolbar.primary')}
+        largura={grande ? 'h-8 w-[196px] px-2.5 text-[12px]' : compacto ? 'h-6 w-[116px] px-2 text-[10px]' : 'h-6 w-[150px] px-2 text-[10px]'}
+        onEscolher={(displayId) =>
+          dispatch({ type: 'output/set', displayId, enabled: displayId !== null && output.enabled })
+        }
+      />
 
       <button
         type="button"
