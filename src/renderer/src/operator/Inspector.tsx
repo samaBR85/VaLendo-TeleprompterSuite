@@ -565,11 +565,19 @@ function Toggle({
  * `letterSpacing` entra sem conta nenhuma porque o valor da saída já é em `em`
  * — proporcional ao corpo por construção, aqui e no palco.
  *
+ * O ALINHAMENTO entra também. Ele tinha ficado de fora junto com entrelinha e
+ * margem, e não devia: os outros dois precisam de várias linhas para
+ * acontecer, mas alinhar precisa só de LARGURA — e a tira ocupa a fileira
+ * inteira do painel. Escolher Centro e ver o nome continuar encostado na
+ * esquerda era a amostra desmentindo o controle logo abaixo dela.
+ *
+ * Entrelinha continua fora, e agora por um motivo que se pode dizer inteiro:
+ * com uma linha só não há entre o que medir. Ela aparece em tamanho real, com
+ * o roteiro de verdade, no painel de Transmissão ao lado.
+ *
  * Fica no painel e não dentro do menu: um menu aberto tapa os sliders, e uma
  * amostra que só existisse com ele aberto nunca veria o arrasto que precisa
- * refletir. Entrelinha, alinhamento e margem ficam de fora porque numa linha
- * não têm onde acontecer — e já aparecem em tamanho real, com o roteiro de
- * verdade, no painel de Transmissão ao lado.
+ * refletir.
  *
  * O ESPELHO não entra: `mirrorX` nasce ligado, mas já não vale para a prévia
  * nem para a página da rede, e um nome de fonte ao contrário não se lê.
@@ -593,7 +601,8 @@ function AmostraDaSaida({
         fontFamily: familia,
         fontWeight: a.fontWeight,
         letterSpacing: `${a.letterSpacing}em`,
-        textTransform: a.allCaps ? 'uppercase' : 'none'
+        textTransform: a.allCaps ? 'uppercase' : 'none',
+        textAlign: a.align
       }}
     >
       {nome}

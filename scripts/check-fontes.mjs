@@ -274,6 +274,27 @@ const fraco = await ev(
 conferir('e volta quando o controle volta', fraco === '500 none', fraco)
 
 /*
+ * O alinhamento também é da amostra.
+ *
+ * Foi o segundo ajuste de parágrafo que ficou de fora por engano: entrelinha e
+ * margem precisam de várias linhas para acontecer, mas alinhar precisa só de
+ * largura — e a tira ocupa a fileira inteira. Escolher Centro e ver o nome
+ * encostado na esquerda era a amostra desmentindo o controle logo abaixo dela.
+ */
+const alinhamentos = []
+for (const align of ['center', 'right', 'left']) {
+  await acao({ type: 'appearance/patch', tabId: aba, patch: { align } })
+  alinhamentos.push(
+    `${align}→${await ev(`getComputedStyle(document.querySelector('[data-fonte-amostra]')).textAlign`)}`
+  )
+}
+conferir(
+  'a amostra segue o alinhamento da saída',
+  alinhamentos.join(' ') === 'center→center right→right left→left',
+  alinhamentos.join(' ')
+)
+
+/*
  * Passar o mouse pré-visualiza e NÃO grava.
  *
  * É a razão de a prévia existir: comparar as sete sem se comprometer. Se o
