@@ -625,6 +625,10 @@ export const ajudaIt = {
     nome: 'Nascondi tutti i nomi',
     texto: 'Toglie tutti i nomi dei presentatori dall’uscita in una volta, e blocca gli interruttori singoli finché comanda lui. L’editor li mantiene sempre.'
   },
+  'insp.presenterColor': {
+    nome: 'Colore del presentatore',
+    texto: 'Il colore delle battute di questa persona, nel copione e sul vetro. Tieni premuto per provare, rilascia per confermare.'
+  },
   'insp.presenterRename': {
     nome: 'Rinomina presentatore',
     texto: 'Doppio clic per rinominare. Riscrive il nome anche nel copione — solo le righe di attacco, mai una menzione dentro un discorso. Un annulla riporta entrambi.'

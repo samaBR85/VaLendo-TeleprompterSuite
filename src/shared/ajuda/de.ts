@@ -625,6 +625,10 @@ export const ajudaDe = {
     nome: 'Alle Namen verbergen',
     texto: 'Nimmt alle Sprechernamen auf einmal von der Ausgabe und sperrt die einzelnen Schalter, solange sie aktiv ist. Der Editor behält sie immer.'
   },
+  'insp.presenterColor': {
+    nome: 'Farbe der sprechenden Person',
+    texto: 'Die Farbe der Zeilen dieser Person, im Skript und auf dem Glas. Halten zum Ausprobieren, Loslassen bestätigt; daneben verwirft.'
+  },
   'insp.presenterRename': {
     nome: 'Sprecher umbenennen',
     texto: 'Doppelklick zum Umbenennen. Ändert den Namen auch im Skript — nur die Sprecherzeilen, nie eine Erwähnung in einer Rede. Rückgängig stellt beides wieder her.'

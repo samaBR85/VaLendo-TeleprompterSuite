@@ -625,6 +625,10 @@ export const ajudaFr = {
     nome: 'Masquer tous les noms',
     texto: 'Retire tous les noms de présentateurs de la sortie d’un coup, et verrouille les interrupteurs individuels. L’éditeur les garde toujours.'
   },
+  'insp.presenterColor': {
+    nome: 'Couleur du présentateur',
+    texto: 'La couleur des répliques de cette personne, dans le script et sur la vitre. Maintenez pour essayer, relâchez pour confirmer.'
+  },
   'insp.presenterRename': {
     nome: 'Renommer le présentateur',
     texto: 'Double-clic pour renommer. Réécrit aussi le nom dans le texte — seulement les lignes de repère, jamais une réplique. Un annuler restaure les deux.'

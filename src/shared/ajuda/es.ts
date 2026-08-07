@@ -625,6 +625,10 @@ export const ajudaEs = {
     nome: 'Ocultar todos los nombres',
     texto: 'Quita todos los nombres de presentador de la salida a la vez, y bloquea los interruptores individuales mientras manda. El editor siempre los conserva.'
   },
+  'insp.presenterColor': {
+    nome: 'Color del presentador',
+    texto: 'El color de las frases de esta persona, en el guión y en el cristal. Mantén para probar, suelta para confirmar; fuera, cancela.'
+  },
   'insp.presenterRename': {
     nome: 'Renombrar presentador',
     texto: 'Doble clic para renombrar. También reescribe el nombre en el guion — solo las líneas de pie, nunca una mención dentro de un discurso. Un deshacer devuelve ambos.'

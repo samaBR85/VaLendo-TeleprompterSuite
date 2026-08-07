@@ -44,6 +44,7 @@ function ChipDeApresentador({
   orfao,
   global,
   onCor,
+  onPrever,
   onOcultar,
   onRenomear,
   onRelink,
@@ -54,6 +55,9 @@ function ChipDeApresentador({
   /** o GLOBAL está mandando: este interruptor mostra o forçado e trava */
   global: boolean
   onCor: (cor: string) => void
+  /* a prévia da cor do apresentador tinge as falas dele no editor e no vidro
+     enquanto o botão está pressionado — ver `onPrever` em `SeletorDeCor` */
+  onPrever: (cor: string | undefined) => void
   onOcultar: () => void
   onRenomear: (nome: string) => void
   onRelink?: () => void
@@ -76,8 +80,10 @@ function ChipDeApresentador({
       <SeletorDeCor
         valor={quem.cor}
         atalhos={CORES_DE_APRESENTADOR}
+        ajudaId="insp.presenterColor"
         rotulo={t('insp.presenterColor', { nome: quem.nome })}
         onCor={onCor}
+        onPrever={onPrever}
         className="h-5 w-5"
       />
       {editando === null ? (
@@ -801,6 +807,7 @@ export function Inspector({
               valor={a.textColor}
               rotulo={t('insp.textColor')}
               onCor={(textColor) => patch({ textColor })}
+              onPrever={(textColor) => textColor && patch({ textColor })}
             />
             <span className="text-[var(--color-fog-1)]">{t('insp.textColor')}</span>
           </label>
@@ -809,6 +816,7 @@ export function Inspector({
               valor={a.bgColor}
               rotulo={t('insp.bgColor')}
               onCor={(bgColor) => patch({ bgColor })}
+              onPrever={(bgColor) => bgColor && patch({ bgColor })}
             />
             <span className="text-[var(--color-fog-1)]">{t('insp.bgColor')}</span>
           </label>
@@ -1020,6 +1028,7 @@ export function Inspector({
               valor={a.timers.elapsedColor}
               rotulo={t('insp.clock.elapsedColor')}
               onCor={(cor) => patch({ timers: { ...a.timers, elapsedColor: cor } })}
+              onPrever={(cor) => cor && patch({ timers: { ...a.timers, elapsedColor: cor } })}
               className="h-7 w-7"
             />
           </div>
@@ -1039,6 +1048,7 @@ export function Inspector({
               valor={a.timers.remainingColor}
               rotulo={t('insp.clock.remainingColor')}
               onCor={(cor) => patch({ timers: { ...a.timers, remainingColor: cor } })}
+              onPrever={(cor) => cor && patch({ timers: { ...a.timers, remainingColor: cor } })}
               className="h-7 w-7"
             />
           </div>
@@ -1208,6 +1218,12 @@ export function Inspector({
                  acusa, senão a cor sumiria sem explicação */
               orfao={!temParNoRoteiro(candidatas, quem)}
               onCor={(cor) => dispatch({ type: 'presenter/color', tabId: tab.id, presenterId: quem.id, cor })}
+              /* o histórico funde passos seguidos do mesmo rótulo, e o rótulo
+                 aqui é fixo por apresentador: arrastar pela paleta inteira vira
+                 UM passo de desfazer, não setenta */
+              onPrever={(cor) =>
+                cor && dispatch({ type: 'presenter/color', tabId: tab.id, presenterId: quem.id, cor })
+              }
               global={a.ocultarApresentadores}
               onRenomear={(nome) =>
                 dispatch({ type: 'presenter/rewrite', tabId: tab.id, presenterId: quem.id, nome })

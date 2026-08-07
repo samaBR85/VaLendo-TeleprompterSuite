@@ -56,6 +56,7 @@ export function SeletorDeCor({
   valor,
   atalhos,
   onCor,
+  onPrever,
   onLimpar,
   desligado,
   rotulo,
@@ -68,6 +69,18 @@ export function SeletorDeCor({
   /** cores de acesso rápido desta tela — apresentadores têm as suas, marcas as delas */
   atalhos?: string[]
   onCor: (cor: string) => void
+  /**
+   * Aplica a cor PROVISORIAMENTE, enquanto o botão está pressionado.
+   *
+   * Sem isto o seletor é o de sempre: clicou, escolheu. Com isto ele ganha o
+   * que faltava — DESISTIR. Pressionar aplica na hora, arrastar pela paleta
+   * troca ao vivo, soltar confirma, e soltar fora da paleta devolve a cor que
+   * estava antes da pressão.
+   *
+   * Recebe `undefined` quando o que se está devolvendo é "sem cor" — o estado
+   * de um trecho que nunca foi pintado.
+   */
+  onPrever?: (cor: string | undefined) => void
   /** quando existe, aparece a bolinha pontilhada que TIRA a cor em vez de trocá-la */
   onLimpar?: () => void
   desligado?: boolean
@@ -146,6 +159,69 @@ export function SeletorDeCor({
     setAberto(false)
   }
 
+  /*
+   * A pressão: a cor que estava antes dela, guardada para a desistência.
+   *
+   * Num `ref` e não num `useState` porque ela é lida dentro de escutas do
+   * `window` — um estado daria o valor do render em que a escuta foi criada, e
+   * a desistência devolveria uma cor velha. E a marca de "estou pressionando" é
+   * o próprio objeto ser não-nulo: `anterior` pode legitimamente ser
+   * `undefined` (trecho sem cor), então ele não serve de bandeira.
+   */
+  const pressao = useRef<{ anterior: string | undefined } | null>(null)
+
+  const pressionar = (cor: string): void => {
+    if (!onPrever) return
+    pressao.current = { anterior: valor }
+    onPrever(cor)
+  }
+  const arrastarSobre = (cor: string): void => {
+    if (onPrever && pressao.current) onPrever(cor)
+  }
+  const soltarSobre = (cor: string): void => {
+    if (!pressao.current) return
+    pressao.current = null
+    escolher(cor)
+  }
+
+  /*
+   * Soltou fora de qualquer quadrado: desiste e devolve.
+   *
+   * Na fase de CAPTURA, e conferindo se o alvo é um quadrado: soltar em cima de
+   * um deles é confirmação, e quem confirma é o próprio quadrado. Sem essa
+   * conferência esta escuta corria antes dele e desfazia a escolha no instante
+   * em que ela era feita.
+   */
+  useLayoutEffect(() => {
+    if (!aberto || !onPrever) return
+    const desistir = (evento: PointerEvent): void => {
+      if (!pressao.current) return
+      if ((evento.target as HTMLElement | null)?.closest('[data-cor]')) return
+      onPrever(pressao.current.anterior)
+      pressao.current = null
+    }
+    window.addEventListener('pointerup', desistir, true)
+    window.addEventListener('pointercancel', desistir, true)
+    return () => {
+      window.removeEventListener('pointerup', desistir, true)
+      window.removeEventListener('pointercancel', desistir, true)
+    }
+  }, [aberto, onPrever])
+
+  /* fechar o painel com uma pressão em curso (Escape, clique fora) também
+     devolve: o painel some, e a cor provisória não pode ficar */
+  useLayoutEffect(() => {
+    if (aberto || !pressao.current) return
+    onPrever?.(pressao.current.anterior)
+    pressao.current = null
+  }, [aberto, onPrever])
+
+  /* empacotado uma vez: os quadrados da grade e os atalhos do rodapé recebem
+     o mesmo trio, e `undefined` quando o ponto de uso não pediu prévia */
+  const previa = onPrever
+    ? { pressionar, arrastar: arrastarSobre, soltar: soltarSobre }
+    : undefined
+
   const gradiente = 'conic-gradient(#e5484d,#f0b429,#46d17f,#12a594,#6aa8ff,#9d5bd2,#d6409f,#e5484d)'
 
   return (
@@ -191,13 +267,13 @@ export function SeletorDeCor({
               <div className="overflow-hidden rounded border border-[var(--color-edge)]">
                 <div className="grid grid-cols-11">
                   {CINZAS.map((l) => (
-                    <Quadrado key={`c${l}`} cor={hsl(0, 0, l)} valor={valor} onCor={escolher} />
+                    <Quadrado key={`c${l}`} cor={hsl(0, 0, l)} valor={valor} onCor={escolher} previa={previa} />
                   ))}
                 </div>
                 <div className="grid grid-cols-12">
                   {LUMINOSIDADES.map((l) =>
                     MATIZES.map((h) => (
-                      <Quadrado key={`${h}-${l}`} cor={hsl(h, 82, l)} valor={valor} onCor={escolher} />
+                      <Quadrado key={`${h}-${l}`} cor={hsl(h, 82, l)} valor={valor} onCor={escolher} previa={previa} />
                     ))
                   )}
                 </div>
@@ -216,7 +292,7 @@ export function SeletorDeCor({
                       type="button"
                       data-cor={cor}
                       aria-label={cor}
-                      onClick={() => escolher(cor)}
+                      {...gestosDoQuadrado(cor, escolher, previa)}
                       className="h-[18px] w-[18px] rounded-full border border-[var(--color-edge)] transition-transform hover:scale-110"
                       style={{ background: cor }}
                     />
@@ -248,14 +324,48 @@ export function SeletorDeCor({
   )
 }
 
+/**
+ * Os gestos de um quadrado da paleta, com e sem prévia.
+ *
+ * Sem prévia é o de sempre: um `onClick`. Com prévia, quem confirma é o
+ * `pointerup`, e não o clique — arrastar de um quadrado até outro faz o
+ * navegador disparar o `click` no PAI dos dois, e a escolha se perderia
+ * justamente no gesto que este recurso existe para permitir.
+ *
+ * O `onClick` fica assim mesmo, para o teclado: um botão acionado por Enter ou
+ * espaço dispara clique sem ponteiro nenhum, e `detail === 0` é como se
+ * reconhece esse caso — é o discriminador padrão, não um truque.
+ */
+function gestosDoQuadrado(
+  cor: string,
+  onCor: (cor: string) => void,
+  previa?: {
+    pressionar: (cor: string) => void
+    arrastar: (cor: string) => void
+    soltar: (cor: string) => void
+  }
+): React.ComponentProps<'button'> {
+  if (!previa) return { onClick: () => onCor(cor) }
+  return {
+    onPointerDown: () => previa.pressionar(cor),
+    onPointerEnter: () => previa.arrastar(cor),
+    onPointerUp: () => previa.soltar(cor),
+    onClick: (evento) => {
+      if (evento.detail === 0) onCor(cor)
+    }
+  }
+}
+
 function Quadrado({
   cor,
   valor,
-  onCor
+  onCor,
+  previa
 }: {
   cor: string
   valor?: string
   onCor: (cor: string) => void
+  previa?: Parameters<typeof gestosDoQuadrado>[2]
 }): React.JSX.Element {
   const atual = valor?.toLowerCase() === cor.toLowerCase()
   return (
@@ -263,7 +373,7 @@ function Quadrado({
       type="button"
       data-cor={cor}
       aria-label={cor}
-      onClick={() => onCor(cor)}
+      {...gestosDoQuadrado(cor, onCor, previa)}
       /* o realce é para DENTRO (`inset`): uma borda para fora empurraria os
          vizinhos e a grade inteira tremeria ao passar o mouse */
       className={`aspect-square w-full ${

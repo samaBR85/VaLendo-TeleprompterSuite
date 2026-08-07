@@ -652,6 +652,10 @@ export const ajudaEn = {
     nome: 'Hide every name',
     texto: 'Takes every presenter name off the output at once, and locks the individual switches while it rules. The editor always keeps them.'
   },
+  'insp.presenterColor': {
+    nome: 'Presenter colour',
+    texto: 'The colour this person’s lines take, in the script and on the glass. Hold to try, release to keep — release outside to give up.'
+  },
   'insp.presenterRename': {
     nome: 'Rename presenter',
     texto: 'Double-click to rename. It rewrites the name in the script too — only the cue lines, never a mention inside a speech. One undo puts both back.'

@@ -625,6 +625,10 @@ export const ajudaPt = {
     nome: 'Esconder todos os nomes',
     texto: 'Tira todo nome de apresentador da saída de uma vez, e trava os switches individuais enquanto vigora. O editor sempre os mantém.'
   },
+  'insp.presenterColor': {
+    nome: 'Cor do apresentador',
+    texto: 'A cor das falas desta pessoa, no roteiro e no vidro. Segure para experimentar, solte para confirmar — soltar fora desiste.'
+  },
   'insp.presenterRename': {
     nome: 'Renomear apresentador',
     texto: 'Duplo clique para renomear. Reescreve o nome no roteiro também — só as deixas, nunca uma menção dentro de uma fala. Um desfazer devolve os dois.'

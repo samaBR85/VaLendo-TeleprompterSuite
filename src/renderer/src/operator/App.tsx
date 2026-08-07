@@ -1276,12 +1276,20 @@ function AppConteudo({
    * ANTERIOR. Pintar por cima dele mediria a faixa num texto que já mudou, e a
    * marca cairia deslocada — visível na tela do apresentador.
    */
-  const marcarSelecao = (patch: Partial<Marca>): void => {
+  const marcarSelecao = (patch: Partial<Marca>, provisorio = false): void => {
     const faixa = editorRef.current?.selecaoFaixa()
     if (!faixa) return
     editorRef.current?.flush()
     dispatch({ type: 'marca/aplicar', tabId: tab.id, trechos: [faixa], patch })
-    if (patch.cor) {
+    /*
+     * A roda de cores recentes NÃO anda com prévia.
+     *
+     * Ela guarda quatro casas, e arrastar o dedo pela paleta passa por setenta
+     * e uma cores: sem esta guarda, um gesto de experimentar apagaria a caixa
+     * de tintas que o operador montou ao longo do programa. Recente é o que se
+     * ESCOLHEU, não o que se olhou.
+     */
+    if (patch.cor && !provisorio) {
       // a roda anda, e o gatilho já mostra a cor nova sem esperar a volta do
       // main — a seleção continua onde está, ninguém mexeu no cursor
       dispatch({ type: 'marca/corUsada', cor: patch.cor })
@@ -1410,6 +1418,18 @@ function AppConteudo({
         valor={corSelecionada}
         desligado={!textoSelecionado}
         onCor={(cor) => marcarSelecao({ cor })}
+        /*
+         * A prévia pinta o trecho DE VERDADE, e é o que se quer ver: a palavra
+         * na cor, no tamanho e no fundo em que ela vai ao ar.
+         *
+         * `{ cor: undefined }` é "tirar a cor", e a chave PRECISA viajar: quem
+         * a lê do outro lado confere `'cor' in patch`, justamente porque o
+         * espalhamento não distingue ausente de indefinido (ver `fundir` em
+         * `shared/marcas.ts`). É assim que desistir devolve um trecho que nunca
+         * teve cor sem levar junto o negrito que ele tinha — o que `marca/limpar`
+         * levaria.
+         */
+        onPrever={(cor) => marcarSelecao({ cor }, true)}
         className="rounded p-1 transition-colors hover:bg-[var(--color-ink-3)] disabled:hover:bg-transparent"
         miolo="h-[14px] w-[14px] rounded-[3px] border border-[var(--color-edge)]"
       />
