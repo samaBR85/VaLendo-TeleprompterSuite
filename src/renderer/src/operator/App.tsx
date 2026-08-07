@@ -173,6 +173,91 @@ function MenuDeCapitulo({
   )
 }
 
+/**
+ * O "remover formatação", agora com duas caras.
+ *
+ * COM seleção, ele age na hora e só no trecho: tira capítulo, direção, cor,
+ * negrito, itálico e sublinhado do que estiver apontado. Virou o agregador dos
+ * botões à direita dele — um lugar para desfazer tudo, em vez de caçar qual
+ * botão pôs o quê.
+ *
+ * SEM seleção, ele não age: abre um menu com "limpar tudo". Varrer o roteiro
+ * inteiro é o gesto mais destrutivo desta barra, e num roteiro no ar um clique
+ * sem confirmação é caro demais — mesmo com o desfazer atrás. O menu é o
+ * segundo clique que faltava, e é deliberado que ele apareça só quando não há
+ * seleção: quem apontou um trecho já disse o que quer.
+ */
+function MenuDeLimpeza({
+  rotulo,
+  rotuloTudo,
+  atalho,
+  temSelecao,
+  desligado,
+  onTrecho,
+  onTudo
+}: {
+  rotulo: string
+  rotuloTudo: string
+  atalho?: string
+  temSelecao: boolean
+  desligado: boolean
+  onTrecho: () => void
+  onTudo: () => void
+}): React.JSX.Element {
+  const [aberto, setAberto] = useState(false)
+  const caixa = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!aberto) return
+    const fechar = (e: MouseEvent): void => {
+      if (!caixa.current?.contains(e.target as Node)) setAberto(false)
+    }
+    const escapar = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setAberto(false)
+    }
+    window.addEventListener('mousedown', fechar, true)
+    window.addEventListener('keydown', escapar)
+    return () => {
+      window.removeEventListener('mousedown', fechar, true)
+      window.removeEventListener('keydown', escapar)
+    }
+  }, [aberto])
+
+  // uma seleção nova enquanto o menu está aberto tira o sentido dele
+  useEffect(() => {
+    if (temSelecao) setAberto(false)
+  }, [temSelecao])
+
+  return (
+    <div ref={caixa} className="relative flex-none">
+      <EditorTool
+        ajudaId="editor.clearFormat"
+        icon="clearFormat"
+        label={rotulo}
+        atalho={atalho}
+        disabled={desligado}
+        onClick={() => (temSelecao ? onTrecho() : setAberto((v) => !v))}
+      />
+      {aberto ? (
+        <div className="absolute top-full left-0 z-50 mt-1 rounded border border-[var(--color-line)] bg-[var(--color-ink-2)] p-1 shadow-[0_8px_24px_rgba(0,0,0,.6)]">
+          <button
+            type="button"
+            data-limpar-tudo
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              onTudo()
+              setAberto(false)
+            }}
+            className="w-full rounded px-2 py-1 text-[9px] font-bold tracking-[0.08em] whitespace-nowrap text-[var(--color-fog-1)] uppercase hover:bg-[var(--color-ink-4)] hover:text-[var(--color-fog-0)]"
+          >
+            {rotuloTudo}
+          </button>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 function EditorTool({
   icon,
   texto,
@@ -679,6 +764,8 @@ function AppConteudo({
     chapter: false,
     direction: false
   })
+  /** há cor ou ênfase no trecho apontado — junto com os blocos, é o que acende o Tx */
+  const [temMarcaSelecionada, setTemMarcaSelecionada] = useState(false)
   /**
    * Quantas linhas o "capitular todas" pegaria agora.
    *
@@ -883,16 +970,34 @@ function AppConteudo({
    * uma rajada de teclas só dispara UM salto, depois que os dedos param —
    * o mesmo respiro que o próprio texto já usa antes de mandar para o main.
    */
+  /**
+   * Há alguma marca — cor, negrito, itálico, sublinhado — no trecho apontado?
+   *
+   * Basta UMA, e nem precisa cobrir a seleção inteira: aqui a pergunta não é
+   * "está todo negrito?" como no B, e sim "tem o que limpar?". Um pedacinho
+   * pintado no meio da frase já dá trabalho ao Tx, e o botão tem de acender.
+   */
+  const marcaNaSelecao = useCallback((): boolean => {
+    const faixa = editorRef.current?.selecaoFaixa()
+    const blocos = state?.tabs.find((t) => t.id === state.activeTabId)?.blocks
+    if (!faixa || !blocos) return false
+    return fatiasPorBloco(blocos, faixa.de, faixa.ate).some((fatia) => {
+      const marcas = blocos.find((b) => b.id === fatia.blockId)?.marcas ?? []
+      return marcas.some((m) => m.ate > fatia.de && m.de < fatia.ate)
+    })
+  }, [state])
+
   const onCaretMove = useCallback(() => {
     setTextoSelecionado((editorRef.current?.selecao() ?? '') !== '')
     setCorSelecionada(corDaSelecao())
     setFormatosSelecionados(formatosDaSelecao())
     setBlocosSelecionados(editorRef.current?.blocosDaSelecao() ?? { chapter: false, direction: false })
+    setTemMarcaSelecionada(marcaNaSelecao())
     setLinhasIguais(editorRef.current?.quantasIguais() ?? 0)
     if (!catchAtivo) return
     if (catchTimer.current) clearTimeout(catchTimer.current)
     catchTimer.current = setTimeout(goToCaret, 220)
-  }, [catchAtivo, goToCaret, corDaSelecao, formatosDaSelecao])
+  }, [catchAtivo, goToCaret, corDaSelecao, formatosDaSelecao, marcaNaSelecao])
 
   /*
    * O que a barra mostra segue o ESTADO, não só o cursor.
@@ -907,7 +1012,8 @@ function AppConteudo({
     setCorSelecionada(corDaSelecao())
     setFormatosSelecionados(formatosDaSelecao())
     setBlocosSelecionados(editorRef.current?.blocosDaSelecao() ?? { chapter: false, direction: false })
-  }, [corDaSelecao, formatosDaSelecao])
+    setTemMarcaSelecionada(marcaNaSelecao())
+  }, [corDaSelecao, formatosDaSelecao, marcaNaSelecao])
 
   useEffect(() => {
     return () => {
@@ -1176,6 +1282,22 @@ function AppConteudo({
     }
   }
 
+  /**
+   * O Tx com trecho apontado: tira TUDO daquele trecho.
+   *
+   * As marcas primeiro, nas coordenadas de agora, e o texto depois — tirar o
+   * `## ` encurta a linha e empurra tudo o que vem atrás, então limpar as
+   * marcas por último as procuraria em posições que já mudaram.
+   */
+  const limparFormatacaoDaSelecao = (): void => {
+    const faixa = editorRef.current?.selecaoFaixa()
+    if (!faixa) return
+    editorRef.current?.flush()
+    dispatch({ type: 'marca/limpar', tabId: tab.id, trechos: [faixa] })
+    setCorSelecionada(undefined)
+    editorRef.current?.limparBlocosDaSelecao()
+  }
+
   const limparSelecao = (): void => {
     const faixa = editorRef.current?.selecaoFaixa()
     if (!faixa) return
@@ -1186,9 +1308,64 @@ function AppConteudo({
 
   const editorTools = (
     <>
-      {/* ORDEM APROVADA: formatação | apresentador | marcação | procurar |
-          desfazer. O primeiro grupo age sobre a SELEÇÃO, o terceiro sobre a
-          ESTRUTURA do roteiro, e o do meio sobre quem DIZ. */}
+      {/* ORDEM APROVADA PELO OPERADOR: estrutura | formatação do trecho |
+          apresentador | vista | procurar | desfazer.
+
+          A estrutura vem primeiro porque é o que se faz ANTES de escrever —
+          abrir o capítulo, marcar a direção. A formatação do trecho vem
+          depois, porque é o que se faz em cima do que já está escrito. O
+          "remover formatação" fecha o primeiro grupo e abre o segundo de
+          propósito: ele agora limpa os dois lados, e a posição diz isso sem
+          uma palavra. */}
+      {/* O capítulo e a setinha dele são UM controle, e por isso andam colados.
+          Na fileira, todo mundo tem o mesmo respiro entre si — e com esse
+          respiro a setinha ficava exatamente no meio do caminho entre o
+          capítulo e a direção, lendo-se como se fosse da direção. Zerar o vão
+          só aqui dentro resolve sem mexer no ritmo do resto da barra: o par
+          fica junto e continua separado dos vizinhos. */}
+      <span className="flex flex-none items-center">
+        <EditorTool
+          ajudaId="editor.chapter"
+          icon="chapter"
+          label={t('editor.chapter')}
+          atalho={hint(keymap, 'insert.chapter')}
+          acesa={blocosSelecionados.chapter}
+          onClick={() => run('insert.chapter')}
+        />
+        <MenuDeCapitulo
+          rotulo={t('editor.chapterAll')}
+          quantas={linhasIguais}
+          desligado={linhasIguais === 0}
+          onTodos={() => editorRef.current?.capitularIguais()}
+        />
+      </span>
+      <EditorTool
+        ajudaId="editor.direction"
+        icon="direction"
+        label={t('editor.direction')}
+        atalho={hint(keymap, 'insert.direction')}
+        acesa={blocosSelecionados.direction}
+        onClick={() => run('insert.direction')}
+      />
+      {/* volta ao texto simples: sem capítulo, sem direção, sem marca. Com
+          trecho apontado age nele e só nele; sem trecho, pede confirmação num
+          menu antes de varrer o roteiro. Apagado quando não há nada para tirar
+          — assim o botão nunca é um clique que não faz nada. As palavras
+          ficam; o Mod+Z devolve */}
+      <MenuDeLimpeza
+        rotulo={t('editor.clearFormat')}
+        rotuloTudo={t('editor.clearAll')}
+        atalho={hint(keymap, 'edit.clearFormat')}
+        temSelecao={textoSelecionado}
+        desligado={
+          textoSelecionado
+            ? !(blocosSelecionados.chapter || blocosSelecionados.direction || temMarcaSelecionada)
+            : !hasFormatting(tab.blocks)
+        }
+        onTrecho={limparFormatacaoDaSelecao}
+        onTudo={() => run('edit.clearFormat')}
+      />
+
       {/* acesos quando a seleção INTEIRA já tem o atributo, e o clique inverte:
           é o que dá um gesto para tirar só o negrito sem levar a cor junto,
           que o "Remover cor" ao lado não faz */}
@@ -1240,57 +1417,13 @@ function AppConteudo({
       {divisorDeFerramentas}
       {/* Quem fala: transforma o nome SELECIONADO no roteiro em apresentador.
           Entre filetes — não age sobre o texto nem sobre a vista dele, mas
-          sobre QUEM diz cada trecho. Fica ao lado da formatação porque os dois
-          decidem cor: um à mão, o outro por dono. */}
+          sobre QUEM diz cada trecho. */}
       <EditorTool
         ajudaId="editor.presenter"
         icon="presenter"
         label={t('editor.presenter')}
         disabled={!textoSelecionado}
         onClick={criarApresentador}
-      />
-
-      {divisorDeFerramentas}
-      {/* O capítulo e a setinha dele são UM controle, e por isso andam colados.
-          Na fileira, todo mundo tem o mesmo respiro entre si — e com esse
-          respiro a setinha ficava exatamente no meio do caminho entre o
-          capítulo e a direção, lendo-se como se fosse da direção. Zerar o vão
-          só aqui dentro resolve sem mexer no ritmo do resto da barra: o par
-          fica junto e continua separado dos vizinhos. */}
-      <span className="flex flex-none items-center">
-        <EditorTool
-          ajudaId="editor.chapter"
-          icon="chapter"
-          label={t('editor.chapter')}
-          atalho={hint(keymap, 'insert.chapter')}
-          acesa={blocosSelecionados.chapter}
-          onClick={() => run('insert.chapter')}
-        />
-        <MenuDeCapitulo
-          rotulo={t('editor.chapterAll')}
-          quantas={linhasIguais}
-          desligado={linhasIguais === 0}
-          onTodos={() => editorRef.current?.capitularIguais()}
-        />
-      </span>
-      <EditorTool
-        ajudaId="editor.direction"
-        icon="direction"
-        label={t('editor.direction')}
-        atalho={hint(keymap, 'insert.direction')}
-        acesa={blocosSelecionados.direction}
-        onClick={() => run('insert.direction')}
-      />
-      {/* volta tudo a texto simples: sem capítulo, sem direção, sem marca.
-          Apagado quando não há nada para tirar — assim o botão nunca é um
-          clique que não faz nada. As palavras ficam; o Mod+Z devolve */}
-      <EditorTool
-        ajudaId="editor.clearFormat"
-        icon="clearFormat"
-        label={t('editor.clearFormat')}
-        atalho={hint(keymap, 'edit.clearFormat')}
-        disabled={!hasFormatting(tab.blocks)}
-        onClick={() => run('edit.clearFormat')}
       />
 
       {divisorDeFerramentas}

@@ -300,7 +300,7 @@ export const ajudaPt = {
   },
   'editor.clearFormat': {
     nome: 'Remover formatação',
-    texto: 'Transforma capítulos e direções de volta em texto simples. As palavras ficam; desfazer traz as marcas de volta.',
+    texto: 'Com um trecho selecionado, tira dele capítulo, direção, cor e ênfase. Sem seleção, abre o menu para limpar o roteiro inteiro. As palavras ficam; desfazer traz tudo de volta.',
     comando: 'edit.clearFormat'
   },
   'editor.presenter': {

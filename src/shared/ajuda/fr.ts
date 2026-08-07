@@ -300,7 +300,7 @@ export const ajudaFr = {
   },
   'editor.clearFormat': {
     nome: 'Effacer la mise en forme',
-    texto: 'Retransforme chapitres et indications en texte brut. Les mots restent ; annuler ramène les marques.',
+    texto: 'Avec un passage sélectionné, enlève chapitre, indication, couleur et emphase. Sans sélection, ouvre le menu pour nettoyer tout le texte. Les mots restent ; annuler ramène tout.',
     comando: 'edit.clearFormat'
   },
   'editor.presenter': {

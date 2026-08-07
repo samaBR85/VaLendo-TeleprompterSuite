@@ -5,6 +5,7 @@ import {
   capitularLinhasIguais,
   contarLinhasIguais,
   insertBlock,
+  limparBlocosNoTrecho,
   tirarBloco,
   type InsertKind
 } from '@shared/insertBlock'
@@ -543,6 +544,15 @@ export interface EditorHandle {
   /** tira a marcação do roteiro inteiro: sem capítulos, sem direções. */
   removerFormatacao: () => void
   /**
+   * Tira `##` e `[ ]` só dos parágrafos que a seleção encosta.
+   *
+   * A metade de texto do "remover formatação" com trecho escolhido; a outra
+   * metade — apagar as marcas de cor e ênfase — é do App, que é quem despacha.
+   * Devolve se mudou alguma coisa, para o chamador não gastar um passo de
+   * desfazer à toa.
+   */
+  limparBlocosDaSelecao: () => boolean
+  /**
    * Onde a seleção começa e termina, no texto inteiro — `null` se nada.
    *
    * Irmã de `selecao()`, que devolve o TEXTO. Quem pinta precisa da faixa: a
@@ -851,6 +861,26 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       repor()
     })
   }, [draft, preservarRolagem, tab.id, dispatch])
+
+  /** Ver a declaração em `EditorHandle`. */
+  const limparBlocosDaSelecao = useCallback((): boolean => {
+    const area = areaRef.current
+    if (!area) return false
+    const result = limparBlocosNoTrecho(area.value, area.selectionStart, area.selectionEnd)
+    if (!result) return false
+
+    const repor = preservarRolagem()
+    setDraft(result.text)
+    push(result.text, 0)
+
+    requestAnimationFrame(() => {
+      area.focus({ preventScroll: true })
+      area.setSelectionRange(result.selectionStart, result.selectionEnd)
+      repor()
+      onCaretMove?.()
+    })
+    return true
+  }, [preservarRolagem, tab.id, dispatch, onCaretMove])
 
   const caret = useCallback(
     () => ({ text: draft, position: areaRef.current?.selectionStart ?? 0 }),
@@ -1219,6 +1249,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       quantasIguais,
       blocosDaSelecao,
       removerFormatacao,
+      limparBlocosDaSelecao,
       caret,
       selecao,
       selecaoFaixa,
@@ -1233,6 +1264,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       quantasIguais,
       blocosDaSelecao,
       removerFormatacao,
+      limparBlocosDaSelecao,
       caret,
       selecao,
       selecaoFaixa,

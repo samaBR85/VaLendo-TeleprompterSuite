@@ -69,6 +69,7 @@ export const fr: Dicionario = {
   'editor.applyAll': 'Appliquer aux {n}',
   'editor.applyAllShort': 'Les {n}',
   'editor.clearFormat': 'Effacer la mise en forme',
+  'editor.clearAll': 'TOUT EFFACER',
   'editor.allCaps': 'Majuscules',
   'editor.redo': 'Rétablir',
   'editor.placeholder':

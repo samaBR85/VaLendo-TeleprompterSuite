@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PLACEHOLDERS, capitularLinhasIguais, contarLinhasIguais, insertBlock, tirarBloco, tirarCapitulo, tirarDirecao } from './insertBlock'
+import { PLACEHOLDERS, capitularLinhasIguais, contarLinhasIguais, insertBlock, limparBlocosNoTrecho, tirarBloco, tirarCapitulo, tirarDirecao } from './insertBlock'
 import { blocksFromText } from './text'
 
 /** O que importa de verdade: o bloco inserido é reconhecido como tal. */
@@ -281,5 +281,50 @@ describe('desfazer a direção', () => {
     // e não confunde um com o outro
     expect(tirarBloco('## (BEAT)', 4, 4, 'direction')).toBeNull()
     expect(tirarBloco('[entra o VT]', 4, 4, 'chapter')).toBeNull()
+  })
+})
+
+/**
+ * O "remover formatação" com trecho escolhido.
+ *
+ * O de sempre varre o roteiro inteiro num clique. Este limpa só o que a
+ * seleção encosta — e, ao contrário do desfazer de um botão só, aceita uma
+ * seleção que mistura título, direção e fala.
+ */
+describe('limpar os blocos do trecho', () => {
+  it('tira o capítulo', () => {
+    expect(limparBlocosNoTrecho('## (BEAT)', 0, 9)?.text).toBe('(BEAT)')
+  })
+
+  it('tira a direção', () => {
+    expect(limparBlocosNoTrecho('[entra o VT]', 0, 12)?.text).toBe('entra o VT')
+  })
+
+  it('numa seleção misturada, limpa cada parágrafo pelo que ele é', () => {
+    const texto = '## BLOCO 1\n\n[entra o VT]\n\nE agora The Bear.'
+    expect(limparBlocosNoTrecho(texto, 0, texto.length)?.text).toBe(
+      'BLOCO 1\n\nentra o VT\n\nE agora The Bear.'
+    )
+  })
+
+  it('não encosta em quem está fora da seleção', () => {
+    const texto = '## UM\n\n## DOIS\n\n## TRES'
+    // seleção só no do meio
+    expect(limparBlocosNoTrecho(texto, 8, 12)?.text).toBe('## UM\n\nDOIS\n\n## TRES')
+  })
+
+  it('as linhas em branco passam intactas, uma a uma', () => {
+    // desde a 1.5.0 elas pesam na régua: colapsá-las mudaria a duração estimada
+    const texto = '## UM\n\n\n\n[dois]'
+    expect(limparBlocosNoTrecho(texto, 0, texto.length)?.text).toBe('UM\n\n\n\ndois')
+  })
+
+  it('sobre fala pura devolve null — não gasta um passo de desfazer à toa', () => {
+    expect(limparBlocosNoTrecho('E agora The Bear.', 0, 10)).toBeNull()
+  })
+
+  it('a direção de várias linhas sai inteira', () => {
+    const texto = '[entra o VT\ne sobe o som]'
+    expect(limparBlocosNoTrecho(texto, 2, 2)?.text).toBe('entra o VT\ne sobe o som')
   })
 })

@@ -161,6 +161,69 @@ export function tirarDirecao(value: string, selectionStart: number, selectionEnd
   }
 }
 
+/**
+ * Tira capítulo e direção SÓ dos parágrafos que a seleção encosta.
+ *
+ * É o "remover formatação" com trecho escolhido. O de sempre varre o roteiro
+ * inteiro num clique — poderoso e sem volta a não ser pelo desfazer, o que num
+ * roteiro no ar é muito para um botão pequeno. Com seleção, o estrago fica do
+ * tamanho do que a pessoa apontou.
+ *
+ * Diferente do `tirarCapitulo`, que é tudo ou nada: aqui a seleção pode
+ * misturar título, direção e fala, e cada parágrafo é tratado pelo que ele é.
+ * "Limpar" não precisa que a seleção seja homogênea — limpar é limpar o que
+ * houver.
+ *
+ * As linhas em branco passam intactas, uma a uma. Elas são o espaçamento que o
+ * operador escreveu, e desde a 1.5.0 pesam na régua de leitura: colapsá-las
+ * aqui mudaria a duração estimada do roteiro sem ninguém ter pedido.
+ *
+ * `null` quando não havia `##` nem `[ ]` no caminho — quem chama usa isso para
+ * não gastar um passo de desfazer à toa.
+ */
+export function limparBlocosNoTrecho(
+  value: string,
+  selectionStart: number,
+  selectionEnd: number
+): InsertResult | null {
+  const start = Math.max(0, Math.min(selectionStart, value.length))
+  const end = Math.max(start, Math.min(selectionEnd, value.length))
+  const [inicio, fim] = limitesDoParagrafo(value, start, end)
+
+  const bruto = value.slice(inicio, fim)
+  const saida: string[] = []
+  let paragrafo: string[] = []
+
+  const despejar = (): void => {
+    if (paragrafo.length === 0) return
+    const junto = paragrafo.join('\n')
+    const t = junto.trim()
+    if (/^\[[\s\S]*\]$/.test(t)) saida.push(t.slice(1, -1).trim())
+    else if (ehLinhaDeCapitulo(t)) saida.push(semMarcaDeCapitulo(junto))
+    else saida.push(junto)
+    paragrafo = []
+  }
+
+  for (const linha of bruto.split('\n')) {
+    if (linha.trim() === '') {
+      despejar()
+      saida.push(linha)
+    } else {
+      paragrafo.push(linha)
+    }
+  }
+  despejar()
+
+  const limpo = saida.join('\n')
+  if (limpo === bruto) return null
+
+  return {
+    text: value.slice(0, inicio) + limpo + value.slice(fim),
+    selectionStart: inicio,
+    selectionEnd: inicio + limpo.length
+  }
+}
+
 /** Sobre um bloco do mesmo tipo, o botão desfaz. `null` quando não há o que desfazer. */
 export function tirarBloco(
   value: string,

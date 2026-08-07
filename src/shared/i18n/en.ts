@@ -69,6 +69,7 @@ export const en: Dicionario = {
   'editor.applyAll': 'Apply to all {n}',
   'editor.applyAllShort': 'All {n}',
   'editor.clearFormat': 'Clear formatting',
+  'editor.clearAll': 'CLEAR ALL',
   'editor.allCaps': 'All caps',
   'editor.redo': 'Redo',
   'editor.placeholder':

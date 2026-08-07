@@ -300,7 +300,7 @@ export const ajudaIt = {
   },
   'editor.clearFormat': {
     nome: 'Rimuovi formattazione',
-    texto: 'Riporta capitoli e indicazioni a testo semplice. Le parole restano; annulla le riporta.',
+    texto: 'Con un tratto selezionato, toglie capitolo, indicazione, colore ed enfasi. Senza selezione, apre il menu per pulire tutto il copione. Le parole restano; annulla riporta tutto.',
     comando: 'edit.clearFormat'
   },
   'editor.presenter': {

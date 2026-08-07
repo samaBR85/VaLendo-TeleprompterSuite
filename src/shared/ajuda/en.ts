@@ -327,7 +327,7 @@ export const ajudaEn = {
   },
   'editor.clearFormat': {
     nome: 'Clear formatting',
-    texto: 'Turns chapters and directions back into plain text. The words stay; undo brings the marks back.',
+    texto: 'With a stretch selected, strips chapter, direction, colour and emphasis from it. With nothing selected, opens the menu to clear the whole script. The words stay; undo brings it all back.',
     comando: 'edit.clearFormat'
   },
   'editor.presenter': {

@@ -79,6 +79,7 @@ export const pt = {
   'editor.applyAll': 'Aplicar em todas as {n}',
   'editor.applyAllShort': 'Nas {n}',
   'editor.clearFormat': 'Remover formatação',
+  'editor.clearAll': 'LIMPAR TUDO',
   'editor.allCaps': 'Caixa alta',
   'editor.redo': 'Refazer',
   'editor.placeholder':

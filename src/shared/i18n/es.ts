@@ -69,6 +69,7 @@ export const es: Dicionario = {
   'editor.applyAll': 'Aplicar en las {n}',
   'editor.applyAllShort': 'Las {n}',
   'editor.clearFormat': 'Quitar formato',
+  'editor.clearAll': 'LIMPIAR TODO',
   'editor.allCaps': 'Mayúsculas',
   'editor.redo': 'Rehacer',
   'editor.placeholder':

@@ -300,7 +300,7 @@ export const ajudaEs = {
   },
   'editor.clearFormat': {
     nome: 'Quitar formato',
-    texto: 'Vuelve a convertir capítulos y acotaciones en texto plano. Las palabras se quedan; deshacer trae las marcas de vuelta.',
+    texto: 'Con un tramo seleccionado, le quita capítulo, dirección, color y énfasis. Sin selección, abre el menú para limpiar todo el guion. Las palabras quedan; deshacer lo devuelve todo.',
     comando: 'edit.clearFormat'
   },
   'editor.presenter': {

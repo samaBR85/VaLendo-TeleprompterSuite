@@ -300,7 +300,7 @@ export const ajudaDe = {
   },
   'editor.clearFormat': {
     nome: 'Formatierung entfernen',
-    texto: 'Macht aus Kapiteln und Regieanweisungen wieder reinen Text. Die Wörter bleiben; Rückgängig bringt die Markierungen zurück.',
+    texto: 'Mit markiertem Abschnitt entfernt es dort Kapitel, Regie, Farbe und Betonung. Ohne Markierung öffnet es das Menü für das ganze Skript. Die Wörter bleiben; Rückgängig holt alles zurück.',
     comando: 'edit.clearFormat'
   },
   'editor.presenter': {
