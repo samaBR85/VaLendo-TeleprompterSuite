@@ -6,6 +6,9 @@ import {
   FONTE_EMBUTIDA,
   fonteDoEditorValida
 } from './defaults'
+// o português é a fonte da verdade do tipo `Chave`, e nomes de fonte saem
+// iguais nos seis idiomas — conferir a ordem num deles confere em todos
+import { pt } from './i18n/pt'
 
 /**
  * As duas listas de fonte, e a peneira entre elas.
@@ -28,10 +31,27 @@ describe('a lista da saída não se mexe', () => {
 })
 
 describe('a lista do editor', () => {
-  it('abre pela fonte que o app usa por padrão', () => {
-    // quem nunca mexeu no menu tem de encontrar a própria fonte no topo, e não
-    // caçá-la no meio de dez
-    expect(FONTES_DO_EDITOR[0].value).toBe(EDITOR_FONTE_PADRAO)
+  it('está em ordem alfabética', () => {
+    /*
+     * A ordem é escrita à mão no array, então é aqui que ela se defende.
+     *
+     * Sem esta conferência, a próxima fonte embutida entra no fim da lista —
+     * que é onde a mão põe — e a ordem se perde sem ninguém notar até alguém
+     * abrir o menu.
+     *
+     * Compara sem sensibilidade a maiúsculas, que é como o olho lê: por isso
+     * "iA Writer Quattro" vem antes de "IBM Plex Sans" (`ia` < `ib`), e não
+     * depois, como uma comparação byte a byte devolveria.
+     */
+    const nomes = FONTES_DO_EDITOR.map((f) => pt[f.chave])
+    const ordenados = [...nomes].sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }))
+    expect(nomes).toEqual(ordenados)
+  })
+
+  it('tem a fonte padrão do app entre as suas', () => {
+    // ela deixou de ser a primeira quando a lista virou alfabética; o que não
+    // pode é ela sumir do menu — o editor abriria numa fonte que não está lá
+    expect(FONTES_DO_EDITOR.some((f) => f.value === EDITOR_FONTE_PADRAO)).toBe(true)
   })
 
   it('não repete família nenhuma', () => {

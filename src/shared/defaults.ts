@@ -163,9 +163,19 @@ export const FONT_OPTIONS: { chave: Chave; value: string }[] = [
  * nomeia FONTES, porque todas as dez viajam dentro do app e desenham igual no
  * Windows e no Mac. Ver os `@font-face` em `styles.css`.
  *
- * Agrupadas por natureza, e não por gosto: primeiro as de largura fixa (a
- * padrão está entre elas), depois as proporcionais, depois as serifadas. Quem
- * abre o menu está escolhendo um tipo de leitura antes de escolher um desenho.
+ * Em ordem ALFABÉTICA, e não agrupadas por natureza. Ficaram um tempo juntas
+ * por família — mono, proporcionais, serifadas —, mas dez itens é o ponto em
+ * que essa ordem deixa de ajudar: quem já sabe o nome da fonte que quer perde
+ * mais tempo descobrindo em qual grupo ela mora do que percorrendo a lista
+ * inteira. Alfabética não precisa ser aprendida.
+ *
+ * A ordem é fixa no código, e não calculada na tela, porque nome de fonte não
+ * se traduz — a lista sai igual nos seis idiomas. `fontes.test.ts` cobra que
+ * ela continue ordenada: é a única coisa que impede uma fonte nova de entrar
+ * no fim por descuido.
+ *
+ * Repare que a iA Writer Quattro vem ANTES da IBM Plex Sans: ignorando
+ * maiúsculas, `ia` vem antes de `ib`.
  *
  * Cada pilha tem reserva do sistema depois da embutida. Não deveria ser
  * preciso — o arquivo vem junto —, mas se um dia um build sair sem a fonte, a
@@ -173,16 +183,16 @@ export const FONT_OPTIONS: { chave: Chave; value: string }[] = [
  * navegador no meio de um roteiro.
  */
 export const FONTES_DO_EDITOR: { chave: Chave; value: string }[] = [
-  { chave: 'font.cascadia', value: EDITOR_FONTE_PADRAO },
-  { chave: 'font.jetbrains', value: '"JetBrains Mono", ui-monospace, monospace' },
-  { chave: 'font.quattro', value: '"iA Writer Quattro", ui-monospace, monospace' },
-  { chave: 'font.inter', value: FONTE_EMBUTIDA },
+  { chave: 'font.alegreya', value: 'Alegreya, Georgia, serif' },
   { chave: 'font.atkinson', value: '"Atkinson Hyperlegible Next", system-ui, sans-serif' },
-  { chave: 'font.lexend', value: 'Lexend, system-ui, sans-serif' },
+  { chave: 'font.cascadia', value: EDITOR_FONTE_PADRAO },
+  { chave: 'font.quattro', value: '"iA Writer Quattro", ui-monospace, monospace' },
   { chave: 'font.plex', value: '"IBM Plex Sans", system-ui, sans-serif' },
+  { chave: 'font.inter', value: FONTE_EMBUTIDA },
+  { chave: 'font.jetbrains', value: '"JetBrains Mono", ui-monospace, monospace' },
+  { chave: 'font.lexend', value: 'Lexend, system-ui, sans-serif' },
   { chave: 'font.literata', value: 'Literata, Georgia, serif' },
-  { chave: 'font.newsreader', value: 'Newsreader, Georgia, serif' },
-  { chave: 'font.alegreya', value: 'Alegreya, Georgia, serif' }
+  { chave: 'font.newsreader', value: 'Newsreader, Georgia, serif' }
 ]
 
 /**
