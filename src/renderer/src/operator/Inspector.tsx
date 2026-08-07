@@ -840,16 +840,22 @@ export function Inspector({
           max={16}
           onChange={(maxWords) => patch(maxWords < a.minWords ? { maxWords, minWords: maxWords } : { maxWords })}
         />
-        {/* ímã em 50%, como o da posição: o meio da tela é a escolha que a
-            maioria dos apresentadores acaba querendo, e acertá-lo no olho custa
-            um vai e vem de 49 e 51. Aqui a faixa vai de 10 a 70, então o meio
-            do CURSO não é 50 — o ímã é no número, que é o que o operador lê */}
+        {/* A faixa vai de 10 a 90 para que 50% seja o meio do TRILHO e o meio
+            da TELA ao mesmo tempo. Ia até 70, e nessa escala o meio do curso
+            caía em 40%: a bolinha no centro do controle mostrava a marca fora
+            do centro do vidro, e as duas coisas que deveriam concordar não
+            concordavam.
+
+            O ímã de 50%, como o da posição, gruda a até quatro pontos do
+            centro. Acertar 50 no olho custava um vai e vem de 49 e 51 que não
+            muda nada no vidro. O 90 é o extremo honesto de quem quer ver quase
+            só o que já passou — pouco usado, mas de quem escolher */}
         <Slider
           ajudaId="insp.readingMark"
           label={t('insp.readingMark')}
           value={a.readingLinePct * 100}
           min={10}
-          max={70}
+          max={90}
           suffix="%"
           onChange={(value) => patch({ readingLinePct: (Math.abs(value - 50) <= 4 ? 50 : value) / 100 })}
         />
