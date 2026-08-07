@@ -101,7 +101,21 @@ export function Digito({ valor, rotulo, cor, tamanho = 26, className = '' }: Dig
       >
         {valor}
       </div>
-      <div className="k-microcaps mt-1 text-[var(--color-lcd-label)]">{rotulo}</div>
+      {/*
+        `leading-none` no rótulo, e é o que centraliza o mostrador de verdade.
+
+        A caixa do conjunto já era centrada — o flex faz isso —, mas a TINTA
+        não: algarismo não tem descendente, então a quinta parte de baixo da
+        caixa do número é sempre vazia, enquanto o rótulo trazia meio-leading
+        sobrando embaixo. Somadas, essas duas folgas ficavam quase todas do
+        mesmo lado, e o conjunto lia como se estivesse subido — 1,5px num
+        mostrador de 38px, que é pouco de medir e muito de ver.
+
+        Com a caixa do rótulo colada na sua própria letra, a folga que sobra
+        embaixo (o descendente do rótulo) fica do tamanho da que sobra em cima
+        (o vão acima do algarismo), e centrar a caixa passa a centrar a tinta.
+      */}
+      <div className="k-microcaps mt-1 leading-none text-[var(--color-lcd-label)]">{rotulo}</div>
     </div>
   )
 }

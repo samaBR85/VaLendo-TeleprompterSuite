@@ -919,10 +919,13 @@ function LinhaDeProgresso({
 function AlvoDeDuracao({
   segundos,
   ruler,
+  compacto,
   dispatch
 }: {
   segundos: number
   ruler: number
+  /** o mostrador tem 38px em vez de 52px: o número acompanha */
+  compacto: boolean
   dispatch: (action: Action) => void
 }): React.JSX.Element {
   const { t } = useT()
@@ -951,7 +954,12 @@ function AlvoDeDuracao({
           // faz "desistir" desistir de verdade em vez de aplicar na saída
           if (event.key === 'Escape') setDigitando(null)
         }}
-        className="k-microcaps w-full rounded-[3px] border border-[color-mix(in_srgb,var(--color-go)_45%,#000)] bg-[#0e1310] text-center tracking-[0.1em] text-[#dff5e7] outline-none"
+        /* o campo cresce junto com o número que ele substitui: digitar num
+           corpo menor que o mostrado faria o valor pular de tamanho no
+           instante do clique */
+        className={`k-microcaps w-full rounded-[3px] border border-[color-mix(in_srgb,var(--color-go)_45%,#000)] bg-[#0e1310] text-center leading-none tracking-[0.1em] text-[#dff5e7] outline-none ${
+          compacto ? 'text-[12px]' : 'text-[14px]'
+        }`}
       />
     )
   }
@@ -963,7 +971,22 @@ function AlvoDeDuracao({
       {...ajuda('status.target')}
       title={t('status.target')}
       onClick={() => setDigitando(formatClock(segundos))}
-      className="k-microcaps flex items-baseline justify-center gap-[3px] tracking-[0.06em] text-[var(--color-lcd-caption)] hover:text-[var(--color-lcd-label)]"
+      /*
+        12px em vez de 8px, e colado na régua.
+
+        Ele nasceu com o corpo dos rótulos de grupo (`k-microcaps`, 8px) porque
+        herdou a casa das pontas da escala — "60 … 500", que eram legenda. Mas
+        o alvo não é legenda: é um NÚMERO que se lê de relance para saber se o
+        roteiro cabe no tempo, e que se clica para mudar o ritmo. Em 8px, com o
+        vão de 4px separando-o das barras, ele lia como rodapé do mostrador em
+        vez de par da régua.
+
+        Continua menor que o PPM ao lado, e é de propósito: o PPM é o valor que
+        o operador ajusta o tempo todo, o alvo é a consequência dele.
+      */
+      className={`k-microcaps flex items-baseline justify-center gap-[3px] leading-none tracking-[0.06em] text-[var(--color-lcd-caption)] hover:text-[var(--color-lcd-label)] ${
+        compacto ? 'text-[12px]' : 'text-[14px]'
+      }`}
     >
       {/*
         Só o número, sem a palavra ao lado — e isso foi medido, não escolhido.
@@ -1277,12 +1300,15 @@ export function BarraDeTransporte({
       <div
         {...ajuda('transport.speed')}
         title={`${t('lcd.speed')} — ${PPM_MIN} … ${PPM_MAX}`}
+        /* o vão entre a régua e o alvo era de 4px com o alvo em 8px, e os dois
+           liam como coisas separadas. Com o número maior e o vão apertado, a
+           régua e o tempo que ela produz viram um par — que é o que são */
         className={`flex flex-col justify-center border-r border-[var(--color-lcd-line)] ${
-          compacto ? 'w-[74px] gap-1 px-2' : 'w-[93px] gap-1.5 px-2.5'
+          compacto ? 'w-[74px] gap-[3px] px-2' : 'w-[93px] gap-1 px-2.5'
         }`}
       >
         <SpeedRuler ppm={transport.ppm} onChange={(ppm) => dispatch({ type: 'transport/ppm', ppm })} />
-        <AlvoDeDuracao segundos={total} ruler={ruler} dispatch={dispatch} />
+        <AlvoDeDuracao segundos={total} ruler={ruler} compacto={compacto} dispatch={dispatch} />
       </div>
       <Digito
         valor={String(transport.ppm)}
