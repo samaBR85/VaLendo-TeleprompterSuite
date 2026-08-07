@@ -592,6 +592,8 @@ export interface PreferenciasDaMaquina {
      de tintas dele */
   paletaCurta: boolean
   filtroDeContraste: boolean
+  /* a grade em tom pastel. Nao alcanca a paleta curta: ver `GRADE_PASTEL` */
+  paletaPastel: boolean
   /** volume da prévia dos cartões de vídeo, 0 a 1; a transmissão é sempre muda */
   cardVolume: number
   /**

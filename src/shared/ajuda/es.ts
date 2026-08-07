@@ -630,8 +630,12 @@ export const ajudaEs = {
     texto: 'El color de las frases de esta persona, en el guión y en el cristal. Mantén para probar, suelta para confirmar; fuera, cancela.'
   },
   'color.short': {
-    nome: 'Mas colores',
-    texto: 'Cambia la cuadricula completa por ocho colores elegidos para distinguirse entre si en el cristal. La cuadricula vuelve con un clic.'
+    nome: 'Synergy',
+    texto: 'Cambia la cuadricula completa por ocho colores elegidos por busqueda para distinguirse entre si en el cristal. La cuadricula vuelve con un clic.'
+  },
+  'color.tone': {
+    nome: 'Tono de la cuadricula',
+    texto: 'SAT es la cuadricula llena; PAS es la misma en pastel. No alcanza a Synergy: desaturar las ocho destruiria su separacion.'
   },
   'color.contrast': {
     nome: 'Contraste',

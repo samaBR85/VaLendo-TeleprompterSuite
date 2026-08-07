@@ -630,8 +630,12 @@ export const ajudaPt = {
     texto: 'A cor das falas desta pessoa, no roteiro e no vidro. Segure para experimentar, solte para confirmar — soltar fora desiste.'
   },
   'color.short': {
-    nome: 'Mais cores',
-    texto: 'Troca a grade completa pelas oito escolhidas para se distinguirem umas das outras no vidro. A grade continua a um clique.'
+    nome: 'Synergy',
+    texto: 'Troca a grade completa por oito cores escolhidas por busca para se distinguirem umas das outras no vidro. A grade volta com um clique.'
+  },
+  'color.tone': {
+    nome: 'Tom da grade',
+    texto: 'SAT e a grade cheia; PAS e a mesma em tom pastel. Nao alcanca o Synergy: dessaturar as oito destruiria a separacao que as define.'
   },
   'color.contrast': {
     nome: 'Contraste',

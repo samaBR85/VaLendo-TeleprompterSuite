@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   CONFLITO_MINIMO,
+  GRADE_PASTEL,
+  GRADE_SATURADA,
   CONTRASTE_MINIMO,
   PALETA_CURTA,
   conflita,
@@ -96,6 +98,48 @@ describe('a paleta curta', () => {
   it('avisa, pelo filtro, que nao serve num fundo claro', () => {
     const sobrevivem = PALETA_CURTA.filter((cor) => legivelNo(cor, '#FFFFFF'))
     expect(sobrevivem).toEqual([])
+  })
+})
+
+describe('os dois tons da grade', () => {
+  it('pastel e menos saturado e mais claro', () => {
+    expect(GRADE_PASTEL.saturacao).toBeLessThan(GRADE_SATURADA.saturacao)
+    const media = (v: readonly number[]): number => v.reduce((a, b) => a + b, 0) / v.length
+    expect(media(GRADE_PASTEL.luminosidades)).toBeGreaterThan(media(GRADE_SATURADA.luminosidades))
+  })
+
+  it('e os dois tem cinco degraus, para a grade nao mudar de altura', () => {
+    expect(GRADE_PASTEL.luminosidades).toHaveLength(5)
+    expect(GRADE_SATURADA.luminosidades).toHaveLength(GRADE_PASTEL.luminosidades.length)
+  })
+
+  /*
+   * O tom nao alcanca as oito, e este teste e a guarda dessa fronteira.
+   *
+   * Dessaturadas, o pior par das oito cai de 27,4 para 11,8 — abaixo do limiar
+   * de conflito. Elas passariam a acender aviso umas contra as outras, e a
+   * paleta cujo nome e "estas nunca se confundem" comecaria a dizer que se
+   * confundem. Se um dia alguem ligar o pastel nelas, e aqui que descobre.
+   */
+  it('nenhuma das oito nasce do perfil pastel', () => {
+    const hsl = (h: number, s: number, l: number): string => {
+      const a = (s * Math.min(l, 100 - l)) / 100
+      const canal = (n: number): string => {
+        const k = (n + h / 30) % 12
+        const v = l - a * Math.max(-1, Math.min(k - 3, Math.min(9 - k, 1)))
+        return Math.round((255 * v) / 100)
+          .toString(16)
+          .padStart(2, '0')
+      }
+      return `#${canal(0)}${canal(8)}${canal(4)}`
+    }
+    const pastel = new Set<string>()
+    for (let h = 0; h < 360; h += 30) {
+      for (const l of GRADE_PASTEL.luminosidades) pastel.add(hsl(h, GRADE_PASTEL.saturacao, l))
+    }
+    for (const cor of PALETA_CURTA) {
+      expect(pastel.has(cor.toLowerCase()), cor).toBe(false)
+    }
   })
 })
 

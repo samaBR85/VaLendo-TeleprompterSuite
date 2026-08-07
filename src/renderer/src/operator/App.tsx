@@ -1254,6 +1254,7 @@ function AppConteudo({
     () => ({
       curta: state?.maquina.paletaCurta ?? false,
       contraste: state?.maquina.filtroDeContraste ?? true,
+      pastel: state?.maquina.paletaPastel ?? false,
       fundo: state?.tabs.find((t) => t.id === state.activeTabId)?.appearance.bgColor ?? '#000000',
       emUso: (() => {
         const atual = state?.tabs.find((t) => t.id === state.activeTabId)
@@ -1269,7 +1270,8 @@ function AppConteudo({
       })(),
       onCurta: (paletaCurta: boolean) => dispatch({ type: 'maquina/patch', patch: { paletaCurta } }),
       onContraste: (filtroDeContraste: boolean) =>
-        dispatch({ type: 'maquina/patch', patch: { filtroDeContraste } })
+        dispatch({ type: 'maquina/patch', patch: { filtroDeContraste } }),
+      onPastel: (paletaPastel: boolean) => dispatch({ type: 'maquina/patch', patch: { paletaPastel } })
     }),
     [state, dispatch]
   )

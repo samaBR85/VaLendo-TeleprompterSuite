@@ -630,8 +630,12 @@ export const ajudaDe = {
     texto: 'Die Farbe der Zeilen dieser Person, im Skript und auf dem Glas. Halten zum Ausprobieren, Loslassen bestätigt; daneben verwirft.'
   },
   'color.short': {
-    nome: 'Mehr Farben',
-    texto: 'Tauscht das volle Raster gegen acht Farben, die sich auf dem Glas voneinander abheben. Das Raster ist einen Klick entfernt.'
+    nome: 'Synergy',
+    texto: 'Tauscht das volle Raster gegen acht per Suche gewaehlte Farben, die sich auf dem Glas voneinander abheben. Das Raster kehrt mit einem Klick zurueck.'
+  },
+  'color.tone': {
+    nome: 'Rasterton',
+    texto: 'SAT ist das volle Raster; PAS dasselbe in Pastell. Gilt nicht fuer Synergy: Entsaettigen wuerde die Trennung der acht zerstoeren.'
   },
   'color.contrast': {
     nome: 'Kontrast',

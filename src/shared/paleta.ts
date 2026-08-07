@@ -41,6 +41,24 @@ export const PALETA_CURTA = [
 ] as const
 
 /**
+ * Os dois perfis da GRADE completa — e só dela.
+ *
+ * Pastel é menos saturação e mais claridade. Serve para quem escolhe um tom
+ * para casar com a arte de um canal, ou para uma marcação que não deve gritar.
+ *
+ * NÃO vale para a paleta curta, e isso foi medido antes de decidir: as oito
+ * são o resultado de uma busca que maximiza o quanto elas se separam, e
+ * saturação é justamente o que cria essa separação. Dessaturadas, o pior par
+ * delas cai de 27,4 para 11,8 — abaixo do limiar de conflito, que é 20. As
+ * oito passariam a acender aviso umas contra as outras, e a paleta cujo nome é
+ * "estas nunca se confundem" começaria a dizer que se confundem. Testado de
+ * saturação 50 a 35; a 35 o pior par é 8,9. Não é calibragem, é o que
+ * dessaturar faz.
+ */
+export const GRADE_SATURADA = { saturacao: 82, luminosidades: [30, 44, 57, 70, 83] } as const
+export const GRADE_PASTEL = { saturacao: 42, luminosidades: [62, 70, 78, 85, 91] } as const
+
+/**
  * Luminância relativa, como a WCAG define.
  *
  * Não é o brilho ingênuo (média dos canais): o olho enxerga o verde muito mais

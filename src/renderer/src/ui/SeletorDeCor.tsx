@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { AjudaId } from '@shared/ajuda'
-import { PALETA_CURTA, conflita, legivelNo } from '@shared/paleta'
+import { GRADE_PASTEL, GRADE_SATURADA, PALETA_CURTA, conflita, legivelNo } from '@shared/paleta'
 import { useT } from '../i18n'
 import { ajuda } from './ajuda'
 import { useOpcoesDeCor } from './opcoesDeCor'
@@ -24,15 +24,6 @@ import { useOpcoesDeCor } from './opcoesDeCor'
 
 /** 12 matizes, do vermelho de volta ao vermelho. */
 const MATIZES = Array.from({ length: 12 }, (_, i) => i * 30)
-
-/**
- * Cinco luminosidades, da mais escura à mais clara.
- *
- * Nem 0% nem 100%: os dois extremos devolvem preto e branco em QUALQUER
- * matiz, e doze quadrados idênticos numa fileira não escolhem nada. Preto e
- * branco moram na fileira de cinzas, onde aparecem uma vez só.
- */
-const LUMINOSIDADES = [30, 44, 57, 70, 83]
 
 /** Onze cinzas, do preto ao branco. */
 const CINZAS = Array.from({ length: 11 }, (_, i) => i * 10)
@@ -247,6 +238,10 @@ export function SeletorDeCor({
    * A propria cor de agora nunca conflita consigo mesma: sem tirar `valor` da
    * lista, reabrir o seletor mostraria a escolha em curso como um erro.
    */
+  /* pastel vale só para a GRADE: as oito nascem de uma busca por separação, e
+     dessaturar é justamente o que destrói essa separação — ver `GRADE_PASTEL` */
+  const perfil = opcoes.pastel ? GRADE_PASTEL : GRADE_SATURADA
+
   const jaNaTela = opcoes.emUso.filter((c) => c.toLowerCase() !== valor?.toLowerCase())
   const apagado = (cor: string): string => {
     if (opcoes.contraste && !legivelNo(cor, opcoes.fundo)) return '0.22'
@@ -328,15 +323,15 @@ export function SeletorDeCor({
                     ))}
                   </div>
                   <div className="grid grid-cols-12">
-                    {LUMINOSIDADES.map((l) =>
+                    {perfil.luminosidades.map((l) =>
                       MATIZES.map((h) => (
                         <Quadrado
                           key={`${h}-${l}`}
-                          cor={hsl(h, 82, l)}
+                          cor={hsl(h, perfil.saturacao, l)}
                           valor={valor}
                           onCor={escolher}
                           previa={previa}
-                          opacidade={apagado(hsl(h, 82, l))}
+                          opacidade={apagado(hsl(h, perfil.saturacao, l))}
                         />
                       ))
                     )}
@@ -405,13 +400,45 @@ export function SeletorDeCor({
                 >
                   {t('color.short')}
                 </button>
+                {/*
+                  SAT · PAS, e apagado quando o Synergy manda.
+                  Ali ele não teria efeito nenhum, e um controle que não
+                  responde ensina que não funciona.
+                */}
+                <span
+                  data-tom-da-grade
+                  {...ajuda('color.tone')}
+                  className={`flex overflow-hidden rounded-[5px] border border-[var(--color-edge)] ${
+                    opcoes.curta ? 'pointer-events-none opacity-35' : ''
+                  }`}
+                >
+                  {([false, true] as const).map((pastel) => (
+                    <button
+                      key={String(pastel)}
+                      type="button"
+                      data-tom={pastel ? 'pastel' : 'saturado'}
+                      {...ajuda('color.tone')}
+                      aria-pressed={opcoes.pastel === pastel}
+                      onClick={() => opcoes.onPastel(pastel)}
+                      className={`px-2 py-1 text-[10px] tracking-[0.04em] ${
+                        pastel ? 'border-l border-[var(--color-edge)]' : ''
+                      } ${
+                        opcoes.pastel === pastel
+                          ? 'bg-[var(--color-accent)] text-[#1c1020]'
+                          : 'text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'
+                      }`}
+                    >
+                      {pastel ? t('color.pastel') : t('color.saturated')}
+                    </button>
+                  ))}
+                </span>
                 <button
                   type="button"
                   data-filtro-contraste
                   {...ajuda('color.contrast')}
                   aria-pressed={opcoes.contraste}
                   onClick={() => opcoes.onContraste(!opcoes.contraste)}
-                  className={`ml-auto flex items-center gap-1.5 rounded-[5px] border px-2 py-1 text-[10px] tracking-[0.04em] ${
+                  className={`ml-auto flex items-center gap-1.5 rounded-[5px] border px-1.5 py-1 text-[10px] tracking-[0.04em] ${
                     opcoes.contraste
                       ? 'border-[var(--color-go)] bg-[var(--color-go)]/12 text-[var(--color-go)]'
                       : 'border-[var(--color-edge)] text-[var(--color-fog-3)] hover:text-[var(--color-fog-1)]'

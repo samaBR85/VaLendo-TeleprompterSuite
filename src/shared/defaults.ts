@@ -111,6 +111,7 @@ export const MAQUINA_PADRAO: PreferenciasDaMaquina = {
      le — desligado por padrao, ninguem descobriria que ele existe */
   paletaCurta: false,
   filtroDeContraste: true,
+  paletaPastel: false,
   cardVolume: 1,
   /* a roda nasce VAZIA, e as quatro casas aparecem em branco na barra. Branco
      é a cor do texto sem marca — a casa vazia mostra o que aquele lugar ainda

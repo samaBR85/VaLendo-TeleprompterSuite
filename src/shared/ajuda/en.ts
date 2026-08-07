@@ -657,8 +657,12 @@ export const ajudaEn = {
     texto: 'The colour this person’s lines take, in the script and on the glass. Hold to try, release to keep — release outside to give up.'
   },
   'color.short': {
-    nome: 'More colours',
-    texto: 'Swaps the full grid for eight colours picked to stay apart from each other on the glass. The grid is one click away.'
+    nome: 'Synergy',
+    texto: 'Swaps the full grid for eight colours picked by search to stay apart from each other on the glass. The grid returns with one click.'
+  },
+  'color.tone': {
+    nome: 'Grid tone',
+    texto: 'SAT is the full grid; PAS is the same in pastel. It does not reach Synergy: desaturating the eight would destroy the separation that defines them.'
   },
   'color.contrast': {
     nome: 'Contrast',

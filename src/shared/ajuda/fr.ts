@@ -630,8 +630,12 @@ export const ajudaFr = {
     texto: 'La couleur des répliques de cette personne, dans le script et sur la vitre. Maintenez pour essayer, relâchez pour confirmer.'
   },
   'color.short': {
-    nome: 'Plus de couleurs',
-    texto: 'Remplace la grille complete par huit couleurs choisies pour se distinguer entre elles sur la vitre. La grille revient en un clic.'
+    nome: 'Synergy',
+    texto: 'Remplace la grille complete par huit couleurs choisies par recherche pour se distinguer entre elles sur la vitre. La grille revient en un clic.'
+  },
+  'color.tone': {
+    nome: 'Ton de la grille',
+    texto: 'SAT est la grille pleine; PAS la meme en pastel. Ne touche pas Synergy: desaturer les huit detruirait leur separation.'
   },
   'color.contrast': {
     nome: 'Contraste',

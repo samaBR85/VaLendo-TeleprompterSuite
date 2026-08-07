@@ -18,6 +18,8 @@ export interface OpcoesDeCor {
   curta: boolean
   /** apagar o que não se lê no fundo de agora */
   contraste: boolean
+  /** a GRADE em tom pastel — a paleta curta nunca muda de tom */
+  pastel: boolean
   /** contra o que medir: o fundo da saída, ou o do cartão de tela */
   fundo: string
   /**
@@ -30,15 +32,18 @@ export interface OpcoesDeCor {
   emUso: readonly string[]
   onCurta: (v: boolean) => void
   onContraste: (v: boolean) => void
+  onPastel: (v: boolean) => void
 }
 
 const PADRAO: OpcoesDeCor = {
   curta: false,
   contraste: true,
+  pastel: false,
   fundo: '#000000',
   emUso: [],
   onCurta: () => {},
-  onContraste: () => {}
+  onContraste: () => {},
+  onPastel: () => {}
 }
 
 const Contexto = createContext<OpcoesDeCor>(PADRAO)

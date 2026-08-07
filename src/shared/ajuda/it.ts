@@ -630,8 +630,12 @@ export const ajudaIt = {
     texto: 'Il colore delle battute di questa persona, nel copione e sul vetro. Tieni premuto per provare, rilascia per confermare.'
   },
   'color.short': {
-    nome: 'Piu colori',
-    texto: 'Sostituisce la griglia completa con otto colori scelti per distinguersi tra loro sul vetro. La griglia torna con un clic.'
+    nome: 'Synergy',
+    texto: 'Sostituisce la griglia completa con otto colori scelti per ricerca per distinguersi tra loro sul vetro. La griglia torna con un clic.'
+  },
+  'color.tone': {
+    nome: 'Tono della griglia',
+    texto: 'SAT e la griglia piena; PAS la stessa in pastello. Non tocca Synergy: desaturare le otto distruggerebbe la loro separazione.'
   },
   'color.contrast': {
     nome: 'Contrasto',
