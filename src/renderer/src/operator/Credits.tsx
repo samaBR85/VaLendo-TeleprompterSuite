@@ -4,7 +4,27 @@ import { Wordmark, versionLabel } from '../ui/Wordmark'
 
 const REPOSITORY = 'https://github.com/samaBR85/Valendo-TeleprompterSuite'
 const LICENCA = 'https://www.gnu.org/licenses/gpl-3.0.html'
-const INTER = 'https://github.com/rsms/inter'
+const OFL = 'https://openfontlicense.org'
+
+/**
+ * As dez famílias que viajam dentro do app, na ordem em que foram embutidas.
+ *
+ * Fica no `title` do link e não na tela: quem abre os créditos quer saber sob
+ * que licença as fontes vêm, e só depois quais são. Os arquivos originais e
+ * os textos de licença estão em `src/renderer/src/fontes/`.
+ */
+const FAMILIAS = [
+  'Inter',
+  'Cascadia Mono',
+  'JetBrains Mono',
+  'iA Writer Quattro',
+  'Atkinson Hyperlegible Next',
+  'Lexend',
+  'IBM Plex Sans',
+  'Literata',
+  'Newsreader',
+  'Alegreya'
+].join(' · ')
 
 const STACK = [
   ['Electron', 'credits.role.electron'],
@@ -113,20 +133,28 @@ export function Credits({ atualizacao, onClose }: Props): React.JSX.Element {
               GPL-3.0-or-later
             </a>
           </div>
-          {/* a fonte do prompter vai EMBUTIDA no app, e a OFL pede que o aviso
-              de direitos viaje com ela; o texto completo está no instalador,
-              em `resources/Inter-LICENSE.txt` */}
+          {/*
+            As dez fontes vão EMBUTIDAS no app, e a OFL pede que o aviso de
+            direitos viaje com elas — é essa condição, cumprida, que permite
+            embutir fonte livre num programa vendido. Os textos completos estão
+            no instalador, em `resources/licencas/`, um por família.
+
+            Uma linha só, e os nomes no `title`: eram dez linhas na primeira
+            versão disto, e a lista de fontes passava a ser metade da janela de
+            créditos — que é sobre o app, não sobre a tipografia dele.
+          */}
           <div className="flex gap-2 py-0.5">
-            <span className="w-[128px] flex-none text-[var(--color-fog-2)]">{t('credits.font')}</span>
+            <span className="w-[128px] flex-none text-[var(--color-fog-2)]">{t('credits.fonts')}</span>
             <a
-              href={INTER}
+              href={OFL}
+              title={FAMILIAS}
               className="text-[var(--color-link)] hover:underline"
               onClick={(event) => {
                 event.preventDefault()
-                window.valendo.openExternal(INTER)
+                window.valendo.openExternal(OFL)
               }}
             >
-              Inter · SIL OFL 1.1
+              {t('credits.fontsValue')}
             </a>
           </div>
           <p className="mt-2 text-[10px] leading-relaxed text-[var(--color-fog-2)]">{t('credits.freedom')}</p>

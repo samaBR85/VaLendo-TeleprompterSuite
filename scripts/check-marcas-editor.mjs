@@ -156,6 +156,31 @@ const sombra = await ev(`getComputedStyle(document.querySelector('[data-sem-roda
 ok('o negrito virou sombra, não peso de fonte', sombra !== 'none', sombra)
 const peso = await ev(`getComputedStyle(document.querySelector('[data-sem-roda] pre [data-marca]')).fontWeight`)
 ok('e o peso da fonte NÃO mudou', peso === '400' || peso === 'normal', peso)
+
+/*
+ * NENHUM pedaço do <pre> tem peso de fonte — nem os que não são marca.
+ *
+ * A conferência acima olhava só os `[data-marca]`, e por isso nunca alcançou a
+ * linha da DEIXA: o nome de quem fala era desenhado com `fontWeight: 700`
+ * direto no `<span>` da linha, sem ser marca nenhuma. Não incomodava enquanto a
+ * fonte do editor era monoespaçada — Consolas desenha o negrito com o mesmo
+ * avanço do regular. Com as fontes proporcionais que o menu agora oferece, esse
+ * peso alarga os glifos SÓ nesta camada, e o cursor do `textarea` por baixo
+ * passa a cair à esquerda da letra que se está vendo.
+ *
+ * Varrer o `<pre>` inteiro é o que teria pego aquilo, e é o que impede que
+ * volte pela porta de trás de um `<span>` novo qualquer.
+ */
+const pesados = await ev(`
+  [...document.querySelectorAll('[data-sem-roda] pre *')]
+    .map((e) => getComputedStyle(e).fontWeight)
+    .filter((p) => p !== '400' && p !== 'normal')
+`)
+ok(
+  'e nenhum pedaço do <pre> usa peso de fonte, nem fora das marcas',
+  pesados.length === 0,
+  pesados.length ? `pesos encontrados: ${[...new Set(pesados)].join(', ')}` : 'todos em 400'
+)
 const depoisNegrito = JSON.parse(await caixaDe(SENTINELA))
 ok(
   'a sentinela não se moveu um pixel',

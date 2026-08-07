@@ -19,6 +19,9 @@ import {
   indiceDaProxima,
   type Ocorrencia
 } from '@shared/busca'
+// a MESMA constante que o menu do rodapé oferece como padrão: era uma cópia
+// literal da pilha aqui, e duas cópias de uma pilha de fontes divergem calado
+import { EDITOR_FONTE_PADRAO } from '@shared/defaults'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
 import { SeletorDeCor } from '../ui/SeletorDeCor'
@@ -28,12 +31,29 @@ const TYPE_SETTINGS: React.CSSProperties = {
   margin: 0,
   border: 'none',
   padding: '14px 16px',
-  fontFamily: '"Cascadia Mono", "SF Mono", Consolas, monospace',
+  fontFamily: EDITOR_FONTE_PADRAO,
   lineHeight: 1.75,
   letterSpacing: 0,
   whiteSpace: 'pre-wrap',
   overflowWrap: 'break-word',
-  tabSize: 2
+  tabSize: 2,
+  /*
+   * Sem ligaduras, nas duas camadas.
+   *
+   * A proteção aqui era o NOME da fonte padrão — `Cascadia Mono` é a variante
+   * sem ligaduras, ao contrário da `Cascadia Code`. Isso deixou de bastar
+   * quando a família virou escolha: Literata, Newsreader e Alegreya ligam
+   * `fi`/`ffi` de fábrica, e "final", "difícil" e "eficiente" aparecem em
+   * qualquer roteiro.
+   *
+   * O estrago não é desalinhar as camadas — as duas ligariam igual. É que
+   * `retanguloDoTexto` mede um `Range` de UM caractere, e dentro de uma
+   * ligadura o navegador devolve o retângulo do cluster inteiro: a faixa do
+   * SEGUIR e as caixas do FIND ALL nasceriam largas demais, cobrindo letras
+   * que não são a medida. Kerning fica ligado — ele aproxima glifos, não os
+   * funde num só.
+   */
+  fontVariantLigatures: 'none'
 }
 
 /**
@@ -1111,16 +1131,19 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
   /*
    * As caixas do FIND ALL.
    *
-   * Refeitas quando a lista muda, quando o interruptor liga, e quando o corpo
-   * da fonte muda — os três casos em que o texto se recompõe por baixo. A
-   * ROLAGEM não entra: as caixas vêm em coordenadas do conteúdo, e quem traz
-   * para a tela é o `- rolagem` do desenho.
+   * Refeitas quando a lista muda, quando o interruptor liga, e quando a LETRA
+   * muda — corpo ou família, os casos em que o texto se recompõe por baixo. A
+   * família entrou quando ela virou escolha: sem ela, trocar de fonte com o ALL
+   * ligado deixava as caixas âmbar medidas contra a fonte anterior até a
+   * próxima tecla no campo de busca. A ROLAGEM não entra: as caixas vêm em
+   * coordenadas do conteúdo, e quem traz para a tela é o `- rolagem` do
+   * desenho.
    */
   useEffect(() => {
     const pre = preRef.current
     if (!todas || busca === null || !pre) return setCaixas([])
     setCaixas(caixasDeTrechos(pre, ocorrencias))
-  }, [todas, busca, ocorrencias, fontSize])
+  }, [todas, busca, ocorrencias, fontSize, fontFamily])
 
   /**
    * Trocar uma ocorrência, ou todas.
@@ -1405,10 +1428,29 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
        */
       const realce = isDirection
         ? { background: 'color-mix(in srgb, var(--color-link) 9%, transparent)' }
-        : /* o nome de quem fala vem em negrito: é a deixa, e precisa se
-             distinguir da fala que ela abre — as duas estão na mesma cor */
+        : /*
+           * O nome de quem fala vem em negrito: é a deixa, e precisa se
+           * distinguir da fala que ela abre — as duas estão na mesma cor.
+           *
+           * Negrito PINTADO, não pesado. Aqui havia `fontWeight: 700`, e era a
+           * única linha do arquivo que furava a regra de não mudar a largura de
+           * avanço. Não incomodava enquanto a fonte do editor era
+           * monoespaçada — Cascadia Mono e Consolas desenham o negrito com o
+           * mesmo avanço do regular. Quando a família virou escolha e entraram
+           * proporcionais, o peso 700 passou a alargar os glifos SÓ no `<pre>`,
+           * e o cursor do `textarea` por baixo caía à esquerda da letra que se
+           * está vendo, na linha do nome.
+           *
+           * A receita é a mesma do negrito das marcas, logo acima em
+           * `pedacosDaLinha`: contorno e sombra pintam sem entrar na conta do
+           * layout.
+           */
           deixa
-          ? { fontWeight: 700 }
+          ? {
+              WebkitTextStrokeWidth: '0.55px',
+              WebkitTextStrokeColor: 'currentColor',
+              textShadow: '0.3px 0 0 currentColor, -0.3px 0 0 currentColor'
+            }
           : undefined
       const minhas = marcasDaFatia(marcasDoRascunho, inicios[index], inicios[index] + line.length)
       return (
@@ -1434,10 +1476,12 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
    * verdade seria destrutivo: não há como saber depois quais letras eram
    * maiúsculas antes.
    *
-   * Vai nas DUAS camadas com o mesmo valor. Aqui isso é seguro porque a fonte
-   * do editor é monoespaçada: maiúscula e minúscula ocupam a mesma largura,
-   * então a quebra de linha do `<pre>` e a do `textarea` continuam caindo no
-   * mesmo lugar — que é a única coisa que mantém o cursor sob a letra certa.
+   * Vai nas DUAS camadas com o mesmo valor, e é isso que o torna seguro —
+   * não o fato de a fonte ser monoespaçada, como este comentário dizia antes
+   * de a família virar escolha. Numa proporcional a maiúscula é mais larga que
+   * a minúscula, mas as duas camadas transformam o mesmo texto com a mesma
+   * regra e a mesma fonte, então quebram a linha no mesmo lugar — que é a
+   * única coisa que mantém o cursor sob a letra certa.
    */
   const caixaAlta: React.CSSProperties = allCaps ? { textTransform: 'uppercase' } : {}
 

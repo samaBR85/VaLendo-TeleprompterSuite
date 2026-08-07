@@ -209,3 +209,5 @@ In plain words: you may use, study, modify and redistribute Valendo freely, incl
 That is the intent of the project: it was born to stay free. The GPL does not stop anyone from charging, but it does stop anyone from closing the source and turning this into a proprietary product.
 
 The installer redistributes a **GPL build of ffmpeg 6.1.1**; the corresponding source and build flags are listed in [Building from Source](https://github.com/samaBR85/Valendo-TeleprompterSuite/wiki/Building-from-Source#redistributed-ffmpeg).
+
+It also embeds **ten typefaces**, each under the [SIL Open Font License 1.1](https://openfontlicense.org): Inter, Cascadia Mono, JetBrains Mono, iA Writer Quattro, Atkinson Hyperlegible Next, Lexend, IBM Plex Sans, Literata, Newsreader and Alegreya. The files are the originals as published, not web-optimised subsets — the OFL treats stripping glyphs as modification, and a modified version may not keep a reserved font name. Every licence text ships beside the app, in `resources/licencas/`.

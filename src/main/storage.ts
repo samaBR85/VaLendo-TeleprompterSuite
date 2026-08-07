@@ -12,7 +12,7 @@ import { join } from 'node:path'
 import type { StorageHealth } from '@shared/api'
 import type { HistoryStep } from '@shared/history'
 import { parseHistoryLines } from '@shared/history'
-import { MAQUINA_PADRAO, createInitialState } from '@shared/defaults'
+import { MAQUINA_PADRAO, createInitialState, fonteDoEditorValida } from '@shared/defaults'
 import { idiomaDoSistema } from '@shared/i18n'
 import { CRONOMETRO_PARADO } from '@shared/pacing'
 import { VIDEO_PARADO } from '@shared/video'
@@ -192,7 +192,11 @@ export function loadState(defaults: UserDefaults, locale = 'en'): AppState {
     state.maquina = {
       ...MAQUINA_PADRAO,
       ...saved.maquina,
-      window: saved.maquina?.window ?? janelaAntiga
+      window: saved.maquina?.window ?? janelaAntiga,
+      /* a fonte de digitar veio de uma lista que era compartilhada com a saída:
+         quem escolheu "Com serifa" ou "Condensada" tem gravada uma pilha que
+         não existe mais no menu da Edição, e a peneira devolve a padrão */
+      editorFontFamily: fonteDoEditorValida(saved.maquina?.editorFontFamily)
     }
     delete (state as { window?: unknown }).window
 

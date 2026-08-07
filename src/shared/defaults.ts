@@ -153,6 +153,56 @@ export const FONT_OPTIONS: { chave: Chave; value: string }[] = [
   { chave: 'font.legible', value: '"Atkinson Hyperlegible", "Verdana", sans-serif' }
 ]
 
+/**
+ * As fontes de DIGITAR — outra lista, e é de propósito.
+ *
+ * Era a mesma da saída, e as duas respondem a perguntas diferentes: uma é o
+ * que é confortável de digitar por horas na tela do operador, a outra é o que
+ * se lê a três metros num vidro semiespelhado. A de cima descreve CATEGORIAS
+ * ("Com serifa"), porque a saída aceita o que a máquina tiver instalado; esta
+ * nomeia FONTES, porque todas as dez viajam dentro do app e desenham igual no
+ * Windows e no Mac. Ver os `@font-face` em `styles.css`.
+ *
+ * Agrupadas por natureza, e não por gosto: primeiro as de largura fixa (a
+ * padrão está entre elas), depois as proporcionais, depois as serifadas. Quem
+ * abre o menu está escolhendo um tipo de leitura antes de escolher um desenho.
+ *
+ * Cada pilha tem reserva do sistema depois da embutida. Não deveria ser
+ * preciso — o arquivo vem junto —, mas se um dia um build sair sem a fonte, a
+ * reserva mantém o editor legível em vez de entregar a fonte padrão do
+ * navegador no meio de um roteiro.
+ */
+export const FONTES_DO_EDITOR: { chave: Chave; value: string }[] = [
+  { chave: 'font.cascadia', value: EDITOR_FONTE_PADRAO },
+  { chave: 'font.jetbrains', value: '"JetBrains Mono", ui-monospace, monospace' },
+  { chave: 'font.quattro', value: '"iA Writer Quattro", ui-monospace, monospace' },
+  { chave: 'font.inter', value: FONTE_EMBUTIDA },
+  { chave: 'font.atkinson', value: '"Atkinson Hyperlegible Next", system-ui, sans-serif' },
+  { chave: 'font.lexend', value: 'Lexend, system-ui, sans-serif' },
+  { chave: 'font.plex', value: '"IBM Plex Sans", system-ui, sans-serif' },
+  { chave: 'font.literata', value: 'Literata, Georgia, serif' },
+  { chave: 'font.newsreader', value: 'Newsreader, Georgia, serif' },
+  { chave: 'font.alegreya', value: 'Alegreya, Georgia, serif' }
+]
+
+/**
+ * A fonte de digitar guardada ainda existe na lista?
+ *
+ * Quem tinha escolhido "Com serifa" ou "Condensada" no editor tem a pilha do
+ * Georgia ou do Arial Narrow gravada no `workspace.json` — valores que saíram
+ * quando as duas listas se separaram. Sem esta peneira o menu mostraria o
+ * rótulo da padrão enquanto o editor continuaria desenhando em Georgia: o
+ * controle dizendo uma coisa e a tela mostrando outra, que é pior do que
+ * perder a escolha.
+ *
+ * Mora aqui, e não em `semMaquina`/`project.ts`, porque é decisão de LEITURA:
+ * o caminho do projeto tem de continuar carregando e devolvendo o que
+ * encontrou, sem opinião.
+ */
+export function fonteDoEditorValida(valor: string | undefined): string {
+  return FONTES_DO_EDITOR.some((f) => f.value === valor) ? (valor as string) : EDITOR_FONTE_PADRAO
+}
+
 export const DEFAULT_APPEARANCE: Appearance = {
   // a embutida: é a única em que mudar o peso muda o desenho em todos os
   // degraus, e num teleprompter o peso é ajuste de legibilidade no vidro

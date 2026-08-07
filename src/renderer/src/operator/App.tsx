@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { AjudaId } from '@shared/ajuda'
 import type { Marca } from '@shared/types'
 import { SeletorDeCor } from '../ui/SeletorDeCor'
+import { SeletorDeFonte } from '../ui/SeletorDeFonte'
 import type { MotivosDeFechar } from '@shared/api'
 import type { InsertKind } from '@shared/insertBlock'
 import type { PrompterMetrics } from '../prompter/PrompterCanvas'
@@ -12,7 +13,7 @@ import { formatClock, secondsForWords, wordIndexAt } from '@shared/pacing'
 import { corNoPonto, trechoTodoCom, RECENTES_MAX, type Atributo } from '@shared/marcas'
 import { anchorFromCaret, fatiasPorBloco, hasFormatting, totalWordCount } from '@shared/text'
 import type { Tab } from '@shared/types'
-import { LANGS, type Chave, type Lang } from '@shared/i18n'
+import { LANGS, type Lang } from '@shared/i18n'
 import { ProvedorDeIdioma, useT } from '../i18n'
 import { activeTabOf, useAppState } from '../state/useAppState'
 import { Icon, type IconName } from '../ui/Icon'
@@ -27,7 +28,13 @@ import { CardsDrawer } from './CardsDrawer'
 import { CommandPalette } from './CommandPalette'
 import { Credits } from './Credits'
 import { Deck } from './deck/Deck'
-import { EDITION_SPLIT_DEFAULT, EDITOR_FONT_MAX, EDITOR_FONT_MIN, FONT_OPTIONS } from '@shared/defaults'
+import {
+  EDITION_SPLIT_DEFAULT,
+  EDITOR_FONTE_PADRAO,
+  EDITOR_FONT_MAX,
+  EDITOR_FONT_MIN,
+  FONTES_DO_EDITOR
+} from '@shared/defaults'
 import { Editor, type EditorHandle } from './Editor'
 import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
@@ -167,98 +174,6 @@ function MenuDeCapitulo({
               {quantas}
             </span>
           </button>
-        </div>
-      ) : null}
-    </div>
-  )
-}
-
-/**
- * A fonte com que se DIGITA, no rodapé da Edição.
- *
- * A lista é a MESMA da saída (`FONT_OPTIONS`), e é de propósito: são as fontes
- * que este app sabe garantir em qualquer máquina, e ter duas listas parecidas
- * seria duas listas para manter. O que muda é onde a escolha mora — esta é
- * conforto de quem escreve e fica na máquina; a da saída é decisão do programa
- * e viaja no `.valendo`.
- *
- * Cada nome aparece DESENHADO na própria fonte. Num menu de fontes, o nome é o
- * rótulo e a amostra ao mesmo tempo — e "Monoespaçada" escrita em serifa não
- * ajudaria ninguém a escolher.
- */
-function SeletorDeFonteDoEditor({
-  valor,
-  rotulo,
-  nomeDa,
-  onEscolher
-}: {
-  valor: string
-  rotulo: string
-  nomeDa: (chave: Chave) => string
-  onEscolher: (value: string) => void
-}): React.JSX.Element {
-  const [aberto, setAberto] = useState(false)
-  const caixa = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!aberto) return
-    const fechar = (e: MouseEvent): void => {
-      if (!caixa.current?.contains(e.target as Node)) setAberto(false)
-    }
-    const escapar = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setAberto(false)
-    }
-    window.addEventListener('mousedown', fechar, true)
-    window.addEventListener('keydown', escapar)
-    return () => {
-      window.removeEventListener('mousedown', fechar, true)
-      window.removeEventListener('keydown', escapar)
-    }
-  }, [aberto])
-
-  const atual = FONT_OPTIONS.find((f) => f.value === valor) ?? FONT_OPTIONS[3]
-
-  return (
-    <div ref={caixa} className="relative flex-none">
-      <button
-        type="button"
-        data-fonte-do-editor
-        {...ajuda('editor.fontFamily')}
-        title={rotulo}
-        aria-label={rotulo}
-        aria-expanded={aberto}
-        onClick={() => setAberto((v) => !v)}
-        className="flex h-[18px] w-[92px] items-center gap-1 rounded border border-[var(--color-edge)] bg-[var(--color-ink-2)] px-1.5 text-[10px] text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
-      >
-        <span className="min-w-0 flex-1 truncate text-left" style={{ fontFamily: atual.value }}>
-          {nomeDa(atual.chave)}
-        </span>
-        <Icon name="down" size={8} className="flex-none opacity-70" />
-      </button>
-      {aberto ? (
-        /* abre para CIMA: o controle mora no rodapé, e um menu para baixo
-           nasceria fora da janela */
-        <div className="absolute bottom-full left-0 z-50 mb-1 min-w-max rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] py-1 shadow-[0_8px_24px_rgba(0,0,0,.6)]">
-          {FONT_OPTIONS.map((fonte) => (
-            <button
-              key={fonte.chave}
-              type="button"
-              data-fonte-item={fonte.chave}
-              {...ajuda('editor.fontFamily')}
-              onClick={() => {
-                setAberto(false)
-                onEscolher(fonte.value)
-              }}
-              className={`block w-full px-3 py-1.5 text-left text-[11px] whitespace-nowrap hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)] ${
-                fonte.value === atual.value
-                  ? 'bg-[var(--color-ink-3)] text-[var(--color-fog-0)]'
-                  : 'text-[var(--color-fog-1)]'
-              }`}
-              style={{ fontFamily: fonte.value }}
-            >
-              {nomeDa(fonte.chave)}
-            </button>
-          ))}
         </div>
       ) : null}
     </div>
@@ -2087,9 +2002,23 @@ function AppConteudo({
                   {/* a FAMÍLIA vem antes do CORPO, na ordem em que se decide:
                       primeiro com que letra se escreve, depois de que tamanho.
                       É o mesmo par que os Ajustes já usam para a saída */}
-                  <SeletorDeFonteDoEditor
+                  <SeletorDeFonte
+                    opcoes={FONTES_DO_EDITOR}
                     valor={state.maquina.editorFontFamily}
+                    padrao={EDITOR_FONTE_PADRAO}
                     rotulo={t('editor.fontFamily')}
+                    ajudaId="editor.fontFamily"
+                    direcao="cima"
+                    marca="data-fonte-do-editor"
+                    /* 118px e não 92: os nomes deixaram de ser categorias curtas
+                       ("Serifa") e viraram nomes próprios ("Atkinson
+                       Hyperlegible Next") — o rótulo continua cortando quando
+                       precisa, mas agora corta bem depois de dar para
+                       reconhecer a fonte */
+                    classeGatilho="flex h-[18px] w-[118px] items-center gap-1 rounded border border-[var(--color-edge)] bg-[var(--color-ink-2)] px-1.5 text-[10px] text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
+                    /* a caixa alta do editor entra na amostra: com o "aA" ligado
+                       é assim que o nome aparece na tela ao lado */
+                    estiloDoNome={state.maquina.editorAllCaps ? { textTransform: 'uppercase' } : undefined}
                     nomeDa={(chave) => t(chave)}
                     onEscolher={(editorFontFamily) =>
                       dispatch({ type: 'maquina/patch', patch: { editorFontFamily } })

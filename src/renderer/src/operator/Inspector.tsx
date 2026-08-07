@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Action } from '@shared/actions'
-import { FONT_OPTIONS } from '@shared/defaults'
+import { FONTE_EMBUTIDA, FONT_OPTIONS } from '@shared/defaults'
 import { PESOS, degrauDoValor, pesosQueDesenham } from '@shared/pesos'
 import {
   apagarDigitoDoAlvo,
@@ -27,6 +27,7 @@ import { ajuda } from '../ui/ajuda'
 import { Icon } from '../ui/Icon'
 import { Ficha, SliderConsole } from '../ui/console'
 import { SeletorDeCor } from '../ui/SeletorDeCor'
+import { SeletorDeFonte } from '../ui/SeletorDeFonte'
 import type { Presets } from '@shared/presets'
 import { FileiraDePresets, SecaoDoRodape } from './Presets'
 
@@ -548,6 +549,58 @@ function Toggle({
   )
 }
 
+/**
+ * A amostra: um rótulo só, na própria fonte, no estado de AGORA.
+ *
+ * O painel de Ajustes é cinza sobre cinza; a saída é branco puro sobre preto
+ * puro. Nesse contraste o traço incha — o branco invade o preto —, e é por isso
+ * que um peso parece certo aqui no painel e pesado demais no vidro. A tira
+ * devolve a luz certa para julgar: ela usa as cores REAIS da saída, e acompanha
+ * se o operador trocá-las.
+ *
+ * Um estado por vez, e não uma escada dos pesos disponíveis: se dois degraus do
+ * controle de peso saírem idênticos, é porque a fonte não tem aquelas faces, e
+ * a tira mostra isso acontecendo em vez de explicar.
+ *
+ * `letterSpacing` entra sem conta nenhuma porque o valor da saída já é em `em`
+ * — proporcional ao corpo por construção, aqui e no palco.
+ *
+ * Fica no painel e não dentro do menu: um menu aberto tapa os sliders, e uma
+ * amostra que só existisse com ele aberto nunca veria o arrasto que precisa
+ * refletir. Entrelinha, alinhamento e margem ficam de fora porque numa linha
+ * não têm onde acontecer — e já aparecem em tamanho real, com o roteiro de
+ * verdade, no painel de Transmissão ao lado.
+ *
+ * O ESPELHO não entra: `mirrorX` nasce ligado, mas já não vale para a prévia
+ * nem para a página da rede, e um nome de fonte ao contrário não se lê.
+ */
+function AmostraDaSaida({
+  a,
+  familia,
+  nome
+}: {
+  a: Appearance
+  familia: string
+  nome: string
+}): React.JSX.Element {
+  return (
+    <div
+      data-fonte-amostra
+      className="truncate rounded-md border border-[var(--color-edge)] px-2.5 py-2 text-[17px] leading-none"
+      style={{
+        background: a.bgColor,
+        color: a.textColor,
+        fontFamily: familia,
+        fontWeight: a.fontWeight,
+        letterSpacing: `${a.letterSpacing}em`,
+        textTransform: a.allCaps ? 'uppercase' : 'none'
+      }}
+    >
+      {nome}
+    </div>
+  )
+}
+
 export function Inspector({
   tab,
   paletas,
@@ -566,6 +619,11 @@ export function Inspector({
   const candidatas = useMemo(() => linhasCandidatas(tab.blocks), [tab.blocks])
   const patch = (value: Partial<Appearance>): void =>
     dispatch({ type: 'appearance/patch', tabId: tab.id, patch: value })
+
+  /* a fonte sob o cursor no menu, para a amostra comparar sem se comprometer:
+     percorrer as sete deixa de custar sete mudanças de estado — e sete passos
+     de desfazer. Nada é gravado; fechar o menu devolve a tira à escolhida */
+  const [fonteSobOMouse, setFonteSobOMouse] = useState<string | null>(null)
 
   // salvar o padrão quando já havia um não muda nada na tela; sem esta
   // confirmação o operador não teria como saber se o clique pegou
@@ -624,18 +682,20 @@ export function Inspector({
             LETRA a saída é desenhada, e a segunda cabe num "AA" ao lado sem
             gastar uma linha do painel */}
         <div className="flex items-stretch gap-1.5">
-          <select
-            {...ajuda('insp.font')}
-            value={a.fontFamily}
-            onChange={(event) => patch({ fontFamily: event.target.value })}
-            className="min-w-0 flex-1 rounded-md border border-[var(--color-edge)] bg-[#212126] px-2 py-1.5 text-[11px] text-[var(--color-fog-05)]"
-          >
-            {FONT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {t(option.chave)}
-              </option>
-            ))}
-          </select>
+          <SeletorDeFonte
+            opcoes={FONT_OPTIONS}
+            valor={a.fontFamily}
+            padrao={FONTE_EMBUTIDA}
+            rotulo={t('insp.font')}
+            ajudaId="insp.font"
+            direcao="baixo"
+            marca="data-fonte-da-saida"
+            classeCaixa="relative min-w-0 flex-1"
+            classeGatilho="flex w-full items-center gap-1 rounded-md border border-[var(--color-edge)] bg-[#212126] px-2 py-1.5 text-[11px] text-[var(--color-fog-05)]"
+            nomeDa={(chave) => t(chave)}
+            onEscolher={(fontFamily) => patch({ fontFamily })}
+            aoPassar={setFonteSobOMouse}
+          />
           {/* independente do "AA" do cabeçalho da Edição: aquele pinta o
               editor, este pinta a SAÍDA. Cada um dono de uma superfície —
               mexer num nunca move o outro */}
@@ -651,6 +711,14 @@ export function Inspector({
             AA
           </Ficha>
         </div>
+        <AmostraDaSaida
+          a={a}
+          familia={fonteSobOMouse ?? a.fontFamily}
+          nome={t(
+            (FONT_OPTIONS.find((f) => f.value === (fonteSobOMouse ?? a.fontFamily)) ?? FONT_OPTIONS[0])
+              .chave
+          )}
+        />
         <Slider
           ajudaId="insp.body"
           label={t('insp.body')}

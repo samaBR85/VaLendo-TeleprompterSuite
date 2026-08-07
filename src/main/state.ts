@@ -21,7 +21,8 @@ import {
   THUMB_MIN,
   TAB_COLORS,
   createInitialState,
-  createTab
+  createTab,
+  fonteDoEditorValida
 } from '@shared/defaults'
 import { History } from '@shared/history'
 import { traduzir } from '@shared/i18n'
@@ -1144,7 +1145,11 @@ export class Store {
               EDITOR_FONT_MIN,
               EDITOR_FONT_MAX
             ),
-            cardVolume: clamp(patch.cardVolume ?? atual.cardVolume, 0, 1)
+            cardVolume: clamp(patch.cardVolume ?? atual.cardVolume, 0, 1),
+            // a fonte de digitar tem o mesmo tratamento que os números: uma
+            // família que saiu da lista volta para a padrão, em vez de o menu
+            // mostrar um rótulo e o editor desenhar outra coisa
+            editorFontFamily: fonteDoEditorValida(patch.editorFontFamily ?? atual.editorFontFamily)
           }
         }
         break

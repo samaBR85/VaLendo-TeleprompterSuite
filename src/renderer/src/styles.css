@@ -21,7 +21,7 @@
  * inclinado — as letras são outras. As marcas do roteiro usam itálico, e uma
  * inclinação sintética é o tipo de coisa que se lê como borrão no vidro.
  *
- * SIL Open Font License 1.1 — o texto está em `fontes/Inter-LICENSE.txt`.
+ * SIL Open Font License 1.1 — o texto está em `fontes/licencas/Inter-OFL.txt`.
  * ====================================================================== */
 @font-face {
   font-family: 'Inter Variable';
@@ -37,6 +37,113 @@
   font-weight: 100 900;
   font-display: block;
   src: url('./fontes/InterVariable-Italic.woff2') format('woff2');
+}
+
+/* =========================================================================
+ * As nove fontes de DIGITAR, embutidas.
+ *
+ * A lista do editor era a mesma da saída, e era uma lista de categorias do
+ * sistema. Duas delas nem chegavam a existir: `Atkinson Hyperlegible` caía em
+ * Verdana em qualquer máquina, porque ninguém a tem instalada, e `Arial
+ * Narrow` fazia o mesmo no Mac. A monoespaçada padrão era SF Mono no Mac e
+ * Consolas no Windows — não é a mesma letra. Embutidas, as nove desenham
+ * igual nos dois sistemas, e a promessa do menu passa a ser verdade.
+ *
+ * ARQUIVOS ORIGINAIS, e não recortados. A entrega comum de webfont corta os
+ * glifos que a página não usa, e um arquivo de 40 KB é tentador. Mas a FAQ
+ * oficial da OFL (2.6) trata remover partes como MODIFICAÇÃO, e versão
+ * modificada não pode usar o nome reservado da original — a Cascadia e a iA
+ * Writer Quattro declaram um. O app vai ser vendido, e essa não é uma dúvida
+ * que valha economizar 3 MB para ter.
+ *
+ * O motivo prático é mais forte que o jurídico: arquivo recortado não tem
+ * todos os glifos. Um sobrenome polonês ou um nome em cirílico cairia em
+ * OUTRA fonte no meio da linha, e mudança de fonte no meio da linha muda
+ * onde a linha quebra. Num editor que é um campo de texto invisível casado
+ * caractere a caractere com o bloco colorido de baixo, isso desloca o cursor
+ * da letra que se está vendo.
+ *
+ * O nome declarado aqui é escolha nossa: nada usa `local()`, então o
+ * navegador casa pelo nome que está NESTE arquivo, não pelo que está dentro
+ * da fonte. É o que faz `Cascadia Mono` passar a valer a embutida mesmo em
+ * quem tenha uma cópia instalada — e é o que mantém a pilha
+ * `EDITOR_FONTE_PADRAO` gravada nos workspaces antigos funcionando sem
+ * migração nenhuma.
+ *
+ * `100 900` em todas: são todas variáveis, e onde o eixo real for mais
+ * estreito o navegador se limita sozinho ao que o arquivo tem. O editor não
+ * desenha negrito com peso (desenha um contorno, ver `Editor.tsx`), então
+ * aqui a faixa é só correção formal.
+ *
+ * `font-display: block` pelo mesmo motivo da Inter, logo acima.
+ *
+ * Todas SIL Open Font License 1.1 — um texto por família em
+ * `fontes/licencas/`, e o instalador os copia para `resources/licencas/`.
+ * Proveniência: Atkinson Hyperlegible Next, Lexend, IBM Plex Sans, Literata,
+ * Newsreader, Alegreya, JetBrains Mono e Cascadia Mono vêm do repositório
+ * `google/fonts` (pasta `ofl/`); a iA Writer Quattro vem de `iaolo/iA-Fonts`.
+ * ====================================================================== */
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  font-weight: 100 900;
+  font-display: block;
+  src: url('./fontes/AtkinsonHyperlegibleNext.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Lexend';
+  font-weight: 100 900;
+  font-display: block;
+  src: url('./fontes/Lexend.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-weight: 100 900;
+  font-display: block;
+  src: url('./fontes/IBMPlexSans.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Literata';
+  font-weight: 100 900;
+  font-display: block;
+  src: url('./fontes/Literata.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  font-weight: 100 900;
+  font-display: block;
+  src: url('./fontes/Newsreader.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Alegreya';
+  font-weight: 100 900;
+  font-display: block;
+  src: url('./fontes/Alegreya.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-weight: 100 900;
+  font-display: block;
+  src: url('./fontes/JetBrainsMono.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'iA Writer Quattro';
+  font-weight: 100 900;
+  font-display: block;
+  src: url('./fontes/iAWriterQuattro.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Cascadia Mono';
+  font-weight: 100 900;
+  font-display: block;
+  src: url('./fontes/CascadiaMono.ttf') format('truetype');
 }
 
 /*
