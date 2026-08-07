@@ -662,7 +662,7 @@ export const ajudaEn = {
   },
   'color.contrast': {
     nome: 'Contrast',
-    texto: 'Dims the colours that miss 7:1 against the current background. Dimmed, not blocked — you can still pick one.'
+    texto: 'Dims what misses 7:1 against the current background, and half-dims what clashes with a colour already used in the script. A warning, not a block.'
   },
   'insp.presenterRename': {
     nome: 'Rename presenter',

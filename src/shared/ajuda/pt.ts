@@ -635,7 +635,7 @@ export const ajudaPt = {
   },
   'color.contrast': {
     nome: 'Contraste',
-    texto: 'Apaga as cores que nao alcancam 7:1 no fundo de agora. Apagadas, nao proibidas — da para escolher assim mesmo.'
+    texto: 'Apaga o que nao alcanca 7:1 no fundo de agora, e meio-apaga o que se confunde com uma cor ja usada no roteiro. Aviso, nao proibicao.'
   },
   'insp.presenterRename': {
     nome: 'Renomear apresentador',

@@ -16,15 +16,27 @@
  *
  * A grade inteira continua existindo, atrás do "mais cores": quem precisa casar
  * uma marca com a arte de um canal precisa do tom exato, e esse caso é real.
+ *
+ * COMO ELAS FORAM ESCOLHIDAS, porque isso não foi gosto. Uma primeira versão
+ * saiu da minha mão e tinha um par a 7,5 de distância — quase o mesmo desenho
+ * para quem não separa vermelho de verde. Estas vieram de uma busca: uma cor
+ * por FAMÍLIA nomeável (amarelo, laranja, coral, rosa, roxo, azul, verde, mais
+ * o branco), e dentro de cada família o tom que faz o pior par do conjunto ser
+ * o maior possível. O pior par subiu para 27,4.
+ *
+ * A restrição de família não é enfeite: sem ela a busca devolve dois azuis e
+ * dois amarelos e nenhum verde. Ficam longe na conta e são inúteis na mesa —
+ * quem opera precisa poder dizer "põe o HARI no azul", não "no azul mais
+ * claro dos dois".
  */
 export const PALETA_CURTA = [
-  '#F0E442',
-  '#F5A93A',
-  '#FF8A5B',
-  '#F3A0C6',
-  '#B79BFF',
-  '#56B4E9',
-  '#4FD3AE',
+  '#efd739',
+  '#ef6f39',
+  '#f47183',
+  '#dd88b8',
+  '#a585ff',
+  '#85ceff',
+  '#66ff8a',
   '#FFFFFF'
 ] as const
 
@@ -64,6 +76,59 @@ export const CONTRASTE_MINIMO = 7
 
 export function legivelNo(cor: string, fundo: string): boolean {
   return contraste(cor, fundo) >= CONTRASTE_MINIMO
+}
+
+/**
+ * Duas cores, e o quanto o olho as separa — em Lab, não em RGB.
+ *
+ * A distância crua entre valores de arquivo mente: dois azuis com o mesmo
+ * número de diferença podem ser gêmeos, e dois amarelos com metade dessa
+ * diferença podem ser óbvios. Lab foi construído para que a mesma distância
+ * signifique a mesma percepção em qualquer parte do espaço, e é a única conta
+ * com a qual "mais separado" quer dizer alguma coisa.
+ */
+function lab(hex: string): [number, number, number] {
+  const f = (t: number): number => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116)
+  const canal = (de: number): number => {
+    const c = parseInt(hex.slice(de, de + 2), 16) / 255
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+  }
+  const [r, g, b] = [canal(1), canal(3), canal(5)]
+  const x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047
+  const y = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  const z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883
+  return [116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z))]
+}
+
+/**
+ * A separação entre duas cores pelo pior dos dois olhares.
+ *
+ * Mede com visão comum E com deuteranopia, e devolve a MENOR das duas: uma
+ * dupla só serve para separar apresentadores se ela separa para todo mundo que
+ * vai ler o vidro, e não só para a maioria.
+ */
+export function separacao(a: string, b: string): number {
+  const dist = (x: string, y: string): number => {
+    const p = lab(x)
+    const q = lab(y)
+    return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2])
+  }
+  return Math.min(dist(a, b), dist(comoDeuteranopo(a), comoDeuteranopo(b)))
+}
+
+/**
+ * Abaixo disto, duas cores se confundem numa olhada.
+ *
+ * 20 é bem abaixo dos 27,4 que separam as piores vizinhas da paleta curta — de
+ * propósito. O aviso é para quando o operador escolhe da GRADE, onde casas
+ * vizinhas são quase a mesma cor; marcar dentro da própria paleta seria marcar
+ * um conflito que ela foi construída para não ter.
+ */
+export const CONFLITO_MINIMO = 20
+
+/** A cor briga com alguma das que já dividem a tela? */
+export function conflita(cor: string, emUso: readonly string[]): boolean {
+  return emUso.some((outra) => separacao(cor, outra) < CONFLITO_MINIMO)
 }
 
 /**

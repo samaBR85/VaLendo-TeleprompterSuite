@@ -20,6 +20,14 @@ export interface OpcoesDeCor {
   contraste: boolean
   /** contra o que medir: o fundo da saída, ou o do cartão de tela */
   fundo: string
+  /**
+   * As cores que JÁ dividem a tela — apresentadores, texto, direção.
+   *
+   * É contra elas que o conflito é medido, e não contra a cor que o seletor
+   * mostra: o problema nunca foi uma cor sozinha, foi duas parecidas no mesmo
+   * vidro. Quem escolhe a terceira precisa saber quais casas já estão tomadas.
+   */
+  emUso: readonly string[]
   onCurta: (v: boolean) => void
   onContraste: (v: boolean) => void
 }
@@ -28,6 +36,7 @@ const PADRAO: OpcoesDeCor = {
   curta: false,
   contraste: true,
   fundo: '#000000',
+  emUso: [],
   onCurta: () => {},
   onContraste: () => {}
 }

@@ -635,7 +635,7 @@ export const ajudaEs = {
   },
   'color.contrast': {
     nome: 'Contraste',
-    texto: 'Apaga los colores que no llegan a 7:1 sobre el fondo actual. Apagados, no prohibidos.'
+    texto: 'Apaga lo que no llega a 7:1 sobre el fondo actual, y semiapaga lo que se confunde con un color ya usado en el guion. Aviso, no prohibicion.'
   },
   'insp.presenterRename': {
     nome: 'Renombrar presentador',

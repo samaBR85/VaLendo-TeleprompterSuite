@@ -635,7 +635,7 @@ export const ajudaIt = {
   },
   'color.contrast': {
     nome: 'Contrasto',
-    texto: 'Attenua i colori che non arrivano a 7:1 sullo sfondo attuale. Attenuati, non vietati.'
+    texto: 'Attenua cio che non arriva a 7:1 sullo sfondo attuale, e attenua a meta cio che si confonde con un colore gia usato. Un avviso, non un divieto.'
   },
   'insp.presenterRename': {
     nome: 'Rinomina presentatore',

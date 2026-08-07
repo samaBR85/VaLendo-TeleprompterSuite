@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { CONTRASTE_MINIMO, PALETA_CURTA, comoDeuteranopo, contraste, legivelNo, luminancia } from './paleta'
+import {
+  CONFLITO_MINIMO,
+  CONTRASTE_MINIMO,
+  PALETA_CURTA,
+  conflita,
+  contraste,
+  legivelNo,
+  luminancia,
+  separacao
+} from './paleta'
 
 describe('a conta de contraste', () => {
   it('dá 21 entre preto e branco, e 1 entre iguais', () => {
@@ -31,45 +40,49 @@ describe('a paleta curta', () => {
     }
   })
 
-  const distancia = (a: string, b: string): number =>
-    [1, 3, 5].reduce(
-      (soma, k) => soma + Math.abs(parseInt(a.slice(k, k + 2), 16) - parseInt(b.slice(k, k + 2), 16)),
-      0
-    )
-
-  it('nenhum par se confunde para quem enxerga as tres cores', () => {
-    const perto: string[] = []
+  /*
+   * A promessa que a paleta faz, medida na conta que importa.
+   *
+   * Nao e distancia crua entre valores de arquivo: `separacao` mede em Lab e
+   * devolve o PIOR dos dois olhares (visao comum e deuteranopia), que e o
+   * unico numero com o qual "mais separado" quer dizer alguma coisa.
+   *
+   * O piso de 25 nao foi escolhido para o teste passar. A primeira versao
+   * desta paleta saiu da mao e tinha um par a 7,5 — quase o mesmo desenho para
+   * quem nao separa vermelho de verde. Estas oito vieram de uma busca com uma
+   * cor por familia nomeavel, e o pior par delas e 27,4. O piso guarda essa
+   * conquista com uma folga pequena de propósito: quem trocar uma cor por
+   * gosto vai descobrir aqui se estragou o conjunto.
+   */
+  it('as oito se separam entre si, pelo pior dos dois olhares', () => {
+    let pior = Infinity
+    let culpado = ''
     for (let i = 0; i < PALETA_CURTA.length; i++) {
       for (let j = i + 1; j < PALETA_CURTA.length; j++) {
-        if (distancia(PALETA_CURTA[i], PALETA_CURTA[j]) < 60) {
-          perto.push(`${PALETA_CURTA[i]} x ${PALETA_CURTA[j]}`)
+        const d = separacao(PALETA_CURTA[i], PALETA_CURTA[j])
+        if (d < pior) {
+          pior = d
+          culpado = `${PALETA_CURTA[i]} x ${PALETA_CURTA[j]}`
         }
       }
     }
-    expect(perto).toEqual([])
+    expect(pior, culpado).toBeGreaterThanOrEqual(25)
   })
 
-  /*
-   * O limite, registrado em vez de escondido.
-   *
-   * A primeira versao desta paleta prometia que ela inteira sobrevivia ao
-   * daltonismo. Este teste reprovou a promessa, e ele estava certo: para quem
-   * tem deuteranopia sobra praticamente um eixo azul-amarelo, e NENHUM conjunto
-   * de oito cores distintas atravessa isso inteiro. Rosa e verde-azulado viram
-   * a mesma cor; roxo e azul-ceu tambem.
-   *
-   * Entao o que a paleta promete e o que ela cumpre: existe dentro dela um
-   * NUCLEO que se separa mesmo assim, grande o bastante para um programa com
-   * varios apresentadores. O numero fica preso aqui — se alguem trocar uma cor
-   * e o nucleo encolher, o teste conta.
-   */
-  it('tem um nucleo que se separa mesmo com deuteranopia', () => {
-    const nucleo: string[] = []
+  it('e nenhuma delas conflita com as outras sete', () => {
+    // o aviso de conflito nunca deve disparar DENTRO da paleta: ela foi
+    // construida para nao ter esse problema, e um aviso que acende sozinho
+    // ensina o olho a ignorar o aviso
     for (const cor of PALETA_CURTA) {
-      const vista = comoDeuteranopo(cor)
-      if (nucleo.every((ja) => distancia(vista, comoDeuteranopo(ja)) >= 60)) nucleo.push(cor)
+      const outras = PALETA_CURTA.filter((c) => c !== cor)
+      expect(conflita(cor, outras), cor).toBe(false)
     }
-    expect(nucleo.length).toBeGreaterThanOrEqual(5)
+  })
+
+  it('cobra menos para avisar do que a paleta garante', () => {
+    // se o limiar do aviso encostasse no piso da paleta, qualquer arredondamento
+    // faria as oito acenderem umas contra as outras
+    expect(CONFLITO_MINIMO).toBeLessThan(25)
   })
 
   /*

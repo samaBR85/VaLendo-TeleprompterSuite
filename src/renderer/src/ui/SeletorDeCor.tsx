@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { AjudaId } from '@shared/ajuda'
-import { PALETA_CURTA, legivelNo } from '@shared/paleta'
+import { PALETA_CURTA, conflita, legivelNo } from '@shared/paleta'
 import { useT } from '../i18n'
 import { ajuda } from './ajuda'
 import { useOpcoesDeCor } from './opcoesDeCor'
@@ -235,8 +235,24 @@ export function SeletorDeCor({
    * um seletor que bloqueia obriga a desligar o aviso inteiro para atender ao
    * caso raro.
    */
-  const apagado = (cor: string): string =>
-    opcoes.contraste && !legivelNo(cor, opcoes.fundo) ? '0.22' : '1'
+  /*
+   * Tres degraus, e nao dois: o aviso tem forca proporcional ao problema.
+   *
+   *   1     — serve
+   *   0.45  — CONFLITA com uma cor que ja divide a tela. Da para usar, e as
+   *           vezes e o certo (a mesma cor para duas vozes do mesmo lado), mas
+   *           quem escolhe precisa ter visto o aviso.
+   *   0.22  — nao se le no fundo. E o mais grave, e o mais apagado.
+   *
+   * A propria cor de agora nunca conflita consigo mesma: sem tirar `valor` da
+   * lista, reabrir o seletor mostraria a escolha em curso como um erro.
+   */
+  const jaNaTela = opcoes.emUso.filter((c) => c.toLowerCase() !== valor?.toLowerCase())
+  const apagado = (cor: string): string => {
+    if (opcoes.contraste && !legivelNo(cor, opcoes.fundo)) return '0.22'
+    if (opcoes.contraste && conflita(cor, jaNaTela)) return '0.45'
+    return '1'
+  }
 
   const gradiente = 'conic-gradient(#e5484d,#f0b429,#46d17f,#12a594,#6aa8ff,#9d5bd2,#d6409f,#e5484d)'
 

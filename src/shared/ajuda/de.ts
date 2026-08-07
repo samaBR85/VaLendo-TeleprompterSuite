@@ -635,7 +635,7 @@ export const ajudaDe = {
   },
   'color.contrast': {
     nome: 'Kontrast',
-    texto: 'Blendet Farben ab, die 7:1 auf dem aktuellen Hintergrund verfehlen. Abgeblendet, nicht gesperrt.'
+    texto: 'Blendet ab, was 7:1 auf dem Hintergrund verfehlt, und halb ab, was mit einer schon benutzten Farbe kollidiert. Ein Hinweis, keine Sperre.'
   },
   'insp.presenterRename': {
     nome: 'Sprecher umbenennen',

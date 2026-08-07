@@ -1255,6 +1255,18 @@ function AppConteudo({
       curta: state?.maquina.paletaCurta ?? false,
       contraste: state?.maquina.filtroDeContraste ?? true,
       fundo: state?.tabs.find((t) => t.id === state.activeTabId)?.appearance.bgColor ?? '#000000',
+      emUso: (() => {
+        const atual = state?.tabs.find((t) => t.id === state.activeTabId)
+        if (!atual) return []
+        /* tudo que ja pinta uma palavra no vidro: cada apresentador, a cor do
+           texto comum e a das rubricas. As marcas soltas ficam de fora — sao
+           destaque de momento, nao identidade de quem fala */
+        return [
+          ...atual.apresentadores.map((a) => a.cor),
+          atual.appearance.textColor,
+          atual.appearance.directionColor
+        ]
+      })(),
       onCurta: (paletaCurta: boolean) => dispatch({ type: 'maquina/patch', patch: { paletaCurta } }),
       onContraste: (filtroDeContraste: boolean) =>
         dispatch({ type: 'maquina/patch', patch: { filtroDeContraste } })
