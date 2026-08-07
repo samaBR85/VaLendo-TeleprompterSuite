@@ -5,6 +5,7 @@ import {
   capitularLinhasIguais,
   contarLinhasIguais,
   insertBlock,
+  tirarCapitulo,
   type InsertKind
 } from '@shared/insertBlock'
 import { coresDasLinhas, ehDeixa, type LinhaPintavel } from '@shared/apresentadores'
@@ -736,7 +737,11 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       if (!area) return
 
       const repor = preservarRolagem()
-      const result = insertBlock(area.value, area.selectionStart, area.selectionEnd, kind)
+      // sobre um capítulo, o botão de capítulo TIRA o capítulo; `tirarCapitulo`
+      // devolve null quando não há o que tirar, e aí vale o caminho de inserir
+      const result =
+        (kind === 'chapter' ? tirarCapitulo(area.value, area.selectionStart, area.selectionEnd) : null) ??
+        insertBlock(area.value, area.selectionStart, area.selectionEnd, kind)
       setDraft(result.text)
       push(result.text, 0)
 

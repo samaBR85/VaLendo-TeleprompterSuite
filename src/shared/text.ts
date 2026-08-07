@@ -18,6 +18,23 @@ export const CHAPTER_MARK = '##'
  */
 const CHAPTER_RE = /^#{1,6}\s+/
 
+/**
+ * Esta linha já é um título de capítulo?
+ *
+ * Pergunta feita com a MESMA régua da leitura — de `#` a `######` —, e não só
+ * com o `##` que o botão escreve. Um roteiro importado de outro lugar pode
+ * trazer `# ABERTURA`, e para quem lê aquilo já é capítulo: o botão tem de
+ * concordar com o que a tela mostra, não com o que ele mesmo teria escrito.
+ */
+export function ehLinhaDeCapitulo(linha: string): boolean {
+  return CHAPTER_RE.test(linha.trim())
+}
+
+/** A mesma linha sem a marca, preservando o recuo que houver. */
+export function semMarcaDeCapitulo(linha: string): string {
+  return linha.replace(/^(\s*)#{1,6}\s+/, '$1')
+}
+
 export function words(text: string): string[] {
   return text.trim().length === 0 ? [] : text.trim().split(/\s+/)
 }

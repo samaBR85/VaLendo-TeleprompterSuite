@@ -1,4 +1,4 @@
-import { CHAPTER_MARK } from './text'
+import { CHAPTER_MARK, ehLinhaDeCapitulo, semMarcaDeCapitulo } from './text'
 
 export type InsertKind = 'chapter' | 'direction'
 
@@ -51,6 +51,49 @@ export function insertBlock(
     text: before + prefix + block + suffix + after,
     selectionStart: contentStart,
     selectionEnd: contentStart + content.length
+  }
+}
+
+/**
+ * O botão de capítulo sobre um capítulo TIRA o capítulo.
+ *
+ * Antes ele só sabia acrescentar: apertar sobre uma linha que já era título
+ * escrevia `## ## (BEAT)` — a marca em cima da marca, e o título saía com um
+ * `##` visível na tela do apresentador. Um botão que só sabe pôr obriga a
+ * desfazer no braço, apagando dois caracteres com o cursor, no meio de um
+ * roteiro que pode estar no ar.
+ *
+ * Devolve `null` quando não há o que tirar, e é isso que o chamador usa para
+ * cair no caminho de inserir. A decisão é por LINHA e não pelo texto
+ * selecionado: o operador tanto seleciona o título inteiro (com o `##` junto,
+ * porque ele está ali na tela) quanto só clica no meio dele, e as duas coisas
+ * têm de significar a mesma.
+ *
+ * Numa seleção de várias linhas, todas as que têm texto precisam ser capítulo.
+ * Uma seleção que mistura título e fala não é "desfazer capítulo" — é uma
+ * seleção que pegou demais, e ali o certo é o comportamento de sempre.
+ */
+export function tirarCapitulo(value: string, selectionStart: number, selectionEnd: number): InsertResult | null {
+  const start = Math.max(0, Math.min(selectionStart, value.length))
+  const end = Math.max(start, Math.min(selectionEnd, value.length))
+
+  // as linhas que a seleção encosta, inteiras — o `+1` pula o `\n` achado
+  const inicio = value.lastIndexOf('\n', Math.max(0, start - 1)) + 1
+  const achado = value.indexOf('\n', end)
+  const fim = achado === -1 ? value.length : achado
+
+  const linhas = value.slice(inicio, fim).split('\n')
+  const comTexto = linhas.filter((l) => l.trim() !== '')
+  if (comTexto.length === 0 || !comTexto.every(ehLinhaDeCapitulo)) return null
+
+  const limpas = linhas.map((l) => (l.trim() === '' ? l : semMarcaDeCapitulo(l))).join('\n')
+
+  return {
+    text: value.slice(0, inicio) + limpas + value.slice(fim),
+    // o que sobrou fica selecionado: mostra o que mudou, e apertar o botão de
+    // novo devolve o capítulo — o gesto é reversível nos dois sentidos
+    selectionStart: inicio,
+    selectionEnd: inicio + limpas.length
   }
 }
 

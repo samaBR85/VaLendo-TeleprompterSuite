@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PLACEHOLDERS, capitularLinhasIguais, contarLinhasIguais, insertBlock } from './insertBlock'
+import { PLACEHOLDERS, capitularLinhasIguais, contarLinhasIguais, insertBlock, tirarCapitulo } from './insertBlock'
 import { blocksFromText } from './text'
 
 /** O que importa de verdade: o bloco inserido é reconhecido como tal. */
@@ -165,5 +165,69 @@ describe('capitular TODAS as linhas iguais à seleção', () => {
   it('espaços em volta da seleção não atrapalham', () => {
     const texto = 'BLOCO 1\n\nFala.'
     expect(capitularLinhasIguais(texto, '  BLOCO 1  ')).toBe('## BLOCO 1\n\nFala.')
+  })
+})
+
+/**
+ * O botão de capítulo sobre um capítulo TIRA o capítulo.
+ *
+ * O operador relatou o sintoma: apertar de novo escrevia `## ## (BEAT)`, e o
+ * título saía com um `##` visível na tela do apresentador.
+ */
+describe('desfazer o capítulo', () => {
+  it('tira a marca da linha em que o cursor está, sem seleção nenhuma', () => {
+    const texto = '## (BEAT)'
+    const r = tirarCapitulo(texto, 4, 4)
+    expect(r?.text).toBe('(BEAT)')
+  })
+
+  it('tira também quando a seleção pegou a linha inteira, com o ## junto', () => {
+    // é o que o operador faz: o `##` está na tela, e ele seleciona o que vê
+    const texto = '## (BEAT)'
+    const r = tirarCapitulo(texto, 0, texto.length)
+    expect(r?.text).toBe('(BEAT)')
+  })
+
+  it('o que sobrou fica selecionado, e apertar de novo devolve o capítulo', () => {
+    const texto = '## (BEAT)'
+    const tirado = tirarCapitulo(texto, 0, texto.length)!
+    expect(tirado.text.slice(tirado.selectionStart, tirado.selectionEnd)).toBe('(BEAT)')
+    const posto = insertBlock(tirado.text, tirado.selectionStart, tirado.selectionEnd, 'chapter')
+    expect(posto.text).toBe('## (BEAT)')
+  })
+
+  it('não mexe no texto em volta', () => {
+    const texto = 'HARI\n\n## (BEAT)\n\nE agora.'
+    const r = tirarCapitulo(texto, 8, 8)
+    expect(r?.text).toBe('HARI\n\n(BEAT)\n\nE agora.')
+  })
+
+  it('vale para qualquer marca que a LEITURA aceita, não só o ## que o botão escreve', () => {
+    expect(tirarCapitulo('# ABERTURA', 3, 3)?.text).toBe('ABERTURA')
+    expect(tirarCapitulo('#### BLOCO 2', 6, 6)?.text).toBe('BLOCO 2')
+  })
+
+  it('sobre linha comum devolve null — quem chama cai no inserir de sempre', () => {
+    expect(tirarCapitulo('E agora The Bear', 2, 7)).toBeNull()
+  })
+
+  it('sobre linha vazia devolve null, senão o botão viraria um clique morto', () => {
+    expect(tirarCapitulo('', 0, 0)).toBeNull()
+    expect(tirarCapitulo('\n\n', 1, 1)).toBeNull()
+  })
+
+  it('seleção de várias linhas: tira quando TODAS são capítulo', () => {
+    const texto = '## UM\n## DOIS'
+    expect(tirarCapitulo(texto, 0, texto.length)?.text).toBe('UM\nDOIS')
+  })
+
+  it('seleção que mistura título e fala não é desfazer — pegou demais', () => {
+    // ali o certo é o comportamento de sempre, e não decidir por quem selecionou
+    expect(tirarCapitulo('## UM\nE agora', 0, 12)).toBeNull()
+  })
+
+  it('as linhas em branco entre os títulos ficam onde estavam', () => {
+    const texto = '## UM\n\n## DOIS'
+    expect(tirarCapitulo(texto, 0, texto.length)?.text).toBe('UM\n\nDOIS')
   })
 })
