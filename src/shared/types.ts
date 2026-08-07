@@ -565,6 +565,16 @@ export interface PreferenciasDaMaquina {
   /** corpo da fonte de DIGITAR, no editor — nunca a da saída */
   editorFontSize: number
   /**
+   * A família com que se DIGITA — irmã do corpo acima, e do mesmo lado da
+   * fronteira: conforto de quem escreve, não decisão do programa.
+   *
+   * Mora na máquina e não no `.valendo` pelo mesmo motivo do corpo e da caixa
+   * alta do editor: mandar um projeto para um colega não pode trocar a fonte
+   * em que ELE digita. A fonte da SAÍDA é outra coisa e viaja no projeto,
+   * porque é o que o apresentador lê.
+   */
+  editorFontFamily: string
+  /**
    * CAIXA ALTA no EDITOR, e só nele.
    *
    * Tem um irmão em `Appearance.allCaps`, que faz o mesmo na saída. São dois

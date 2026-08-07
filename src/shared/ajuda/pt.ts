@@ -355,6 +355,10 @@ export const ajudaPt = {
     nome: 'Tamanho da fonte do editor',
     texto: 'O tamanho do texto que você digita. Não tem relação com o tamanho que o apresentador lê, que fica em Ajustes › Texto.'
   },
+  'editor.fontFamily': {
+    nome: 'Fonte do editor',
+    texto: 'Com que letra você DIGITA — a do apresentador é outra, e fica nos Ajustes. Vale só nesta máquina: mandar o projeto a um colega não troca a fonte dele.'
+  },
   'editor.fontBigger': {
     nome: 'Fonte maior',
     texto: 'Um ponto maior no editor. A tela do apresentador não muda — isto é o conforto de quem digita.'

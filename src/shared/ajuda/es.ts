@@ -355,6 +355,10 @@ export const ajudaEs = {
     nome: 'Tamaño de fuente del editor',
     texto: 'El tamaño del texto que escribes. No tiene relación con el tamaño que lee el presentador, que vive en Ajustes › Texto.'
   },
+  'editor.fontFamily': {
+    nome: 'Fuente del editor',
+    texto: 'Con qué letra TÚ escribes — la del presentador es otra, y está en Ajustes. Vale solo en esta máquina: mandar el proyecto a un colega no le cambia la fuente.'
+  },
   'editor.fontBigger': {
     nome: 'Fuente más grande',
     texto: 'Un punto más en el editor. La pantalla del presentador no se ve afectada — es la comodidad de quien escribe.'

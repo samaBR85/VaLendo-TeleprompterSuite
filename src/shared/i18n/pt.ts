@@ -54,6 +54,7 @@ export const pt = {
   'editor.goTo': 'Ir Para',
   'editor.undo': 'Desfazer',
   'editor.fontSize': 'Tamanho da fonte do editor',
+  'editor.fontFamily': 'Fonte do editor',
   'editor.fontSmaller': 'Diminuir a fonte do editor',
   'editor.fontBigger': 'Aumentar a fonte do editor',
   'editor.find': 'Procurar no roteiro',

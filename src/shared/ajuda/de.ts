@@ -355,6 +355,10 @@ export const ajudaDe = {
     nome: 'Schriftgröße des Editors',
     texto: 'Die Größe des Textes, den Sie tippen. Hat nichts mit der Größe zu tun, die der Sprecher liest — die liegt in Einstellungen › Text.'
   },
+  'editor.fontFamily': {
+    nome: 'Editor-Schrift',
+    texto: 'Die Schrift, in der DU tippst — die der sprechenden Person ist eine andere, in den Einstellungen. Gilt nur auf diesem Rechner: ein weitergegebenes Projekt ändert dort nichts.'
+  },
   'editor.fontBigger': {
     nome: 'Schrift vergrößern',
     texto: 'Einen Punkt größer im Editor. Der Bildschirm des Sprechers bleibt unberührt — das ist nur für den Komfort der Tippenden.'

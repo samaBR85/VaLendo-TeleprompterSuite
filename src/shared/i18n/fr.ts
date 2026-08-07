@@ -44,6 +44,7 @@ export const fr: Dicionario = {
   'editor.goTo': 'Aller à',
   'editor.undo': 'Annuler',
   'editor.fontSize': 'Taille de police de l’éditeur',
+  'editor.fontFamily': 'Police de l’éditeur',
   'editor.fontSmaller': 'Réduire la police de l’éditeur',
   'editor.fontBigger': 'Agrandir la police de l’éditeur',
   'editor.find': 'Rechercher dans le script',

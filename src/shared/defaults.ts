@@ -88,10 +88,22 @@ export const EDITOR_FONT_DEFAULT = 14
  * limitá-los num lugar só — e `semMaquina` consegue cortá-los do `.valendo`
  * como um bloco.
  */
+/**
+ * A fonte com que se DIGITA — não a que o apresentador lê.
+ *
+ * Monoespaçada por padrão porque o editor é uma ilusão de alinhamento: um
+ * campo de texto invisível por cima de um bloco colorido, casados caractere a
+ * caractere. Qualquer família serve, contanto que as DUAS camadas usem a
+ * mesma; a monoespaçada só é a que perdoa mais, porque a coluna do texto fica
+ * previsível para quem conta caracteres de deixa.
+ */
+export const EDITOR_FONTE_PADRAO = '"Cascadia Mono", "SF Mono", Consolas, monospace'
+
 export const MAQUINA_PADRAO: PreferenciasDaMaquina = {
   window: null,
   thumbSize: THUMB_DEFAULT,
   editorFontSize: EDITOR_FONT_DEFAULT,
+  editorFontFamily: EDITOR_FONTE_PADRAO,
   editorAllCaps: false,
   cardVolume: 1,
   /* a roda nasce VAZIA, e as quatro casas aparecem em branco na barra. Branco
@@ -136,7 +148,7 @@ export const FONT_OPTIONS: { chave: Chave; value: string }[] = [
   { chave: 'font.system', value: 'system-ui, sans-serif' },
   { chave: 'font.sans', value: '"Segoe UI", "Helvetica Neue", Arial, sans-serif' },
   { chave: 'font.serif', value: 'Georgia, "Times New Roman", serif' },
-  { chave: 'font.mono', value: '"Cascadia Mono", "SF Mono", Consolas, monospace' },
+  { chave: 'font.mono', value: EDITOR_FONTE_PADRAO },
   { chave: 'font.condensed', value: '"Arial Narrow", "Helvetica Neue Condensed", sans-serif' },
   { chave: 'font.legible', value: '"Atkinson Hyperlegible", "Verdana", sans-serif' }
 ]

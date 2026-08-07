@@ -44,6 +44,7 @@ export const de: Dicionario = {
   'editor.goTo': 'Gehe zu',
   'editor.undo': 'Rückgängig',
   'editor.fontSize': 'Schriftgröße des Editors',
+  'editor.fontFamily': 'Editor-Schrift',
   'editor.fontSmaller': 'Editorschrift verkleinern',
   'editor.fontBigger': 'Editorschrift vergrößern',
   'editor.find': 'Im Skript suchen',

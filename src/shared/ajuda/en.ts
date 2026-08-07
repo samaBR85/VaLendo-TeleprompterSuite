@@ -382,6 +382,10 @@ export const ajudaEn = {
     nome: 'Editor type size',
     texto: 'The size of the text you type. Nothing to do with the size the presenter reads, which lives in Settings › Text.'
   },
+  'editor.fontFamily': {
+    nome: 'Editor font',
+    texto: 'The letter YOU type in — the presenter’s is another one, over in Settings. It lives on this machine only: sending the project to a colleague won’t change their font.'
+  },
   'editor.fontBigger': {
     nome: 'Bigger type',
     texto: 'One point bigger in the editor. The presenter screen is unaffected — this is the comfort of whoever types.'

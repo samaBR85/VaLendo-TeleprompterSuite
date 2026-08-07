@@ -44,6 +44,7 @@ export const it: Dicionario = {
   'editor.goTo': 'Vai A',
   'editor.undo': 'Annulla',
   'editor.fontSize': 'Dimensione del carattere dell’editor',
+  'editor.fontFamily': 'Carattere dell’editor',
   'editor.fontSmaller': 'Riduci il carattere dell’editor',
   'editor.fontBigger': 'Ingrandisci il carattere dell’editor',
   'editor.find': 'Cerca nel copione',

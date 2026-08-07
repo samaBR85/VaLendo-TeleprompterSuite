@@ -355,6 +355,10 @@ export const ajudaFr = {
     nome: 'Taille de police de l’éditeur',
     texto: 'La taille du texte que vous tapez. Rien à voir avec celle que lit le présentateur, réglée dans Réglages › Texte.'
   },
+  'editor.fontFamily': {
+    nome: 'Police de l’éditeur',
+    texto: 'La lettre avec laquelle VOUS tapez — celle du présentateur est ailleurs, dans les Réglages. Valable sur cette machine seulement : envoyer le projet ne change rien chez l’autre.'
+  },
   'editor.fontBigger': {
     nome: 'Police plus grande',
     texto: 'Un point de plus dans l’éditeur. L’écran du présentateur n’est pas concerné — c’est le confort de qui tape.'

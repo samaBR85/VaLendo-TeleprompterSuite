@@ -355,6 +355,10 @@ export const ajudaIt = {
     nome: 'Dimensione carattere editor',
     texto: 'La dimensione del testo che scrivi. Non ha nulla a che fare con quella letta dal presentatore, che sta in Impostazioni › Testo.'
   },
+  'editor.fontFamily': {
+    nome: 'Carattere dell’editor',
+    texto: 'Il carattere con cui TU scrivi — quello del presentatore è un altro, nelle Impostazioni. Vale solo su questa macchina: mandare il progetto non lo cambia per l’altro.'
+  },
   'editor.fontBigger': {
     nome: 'Carattere più grande',
     texto: 'Un punto più grande nell’editor. Lo schermo del presentatore non cambia — è la comodità di chi scrive.'

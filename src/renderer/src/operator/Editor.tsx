@@ -522,6 +522,8 @@ interface Props {
   tab: Tab
   /** tamanho da fonte do textarea editável — não é a fonte da SAÍDA, só de digitar */
   fontSize: number
+  /** a família de digitar, escolhida no rodapé — ver `editorFontFamily` */
+  fontFamily: string
   dispatch: (action: Action) => void
   /**
    * O cursor mudou de lugar — clique, seta, ou a digitação também empurra o
@@ -620,7 +622,7 @@ export interface EditorHandle {
  * `pre` colorido dá as duas coisas.
  */
 export const Editor = forwardRef<EditorHandle, Props>(function Editor(
-  { tab, fontSize, apresentadores, dispatch, onCaretMove, onPendenteChange, allCaps, coresRecentes },
+  { tab, fontSize, fontFamily, apresentadores, dispatch, onCaretMove, onPendenteChange, allCaps, coresRecentes },
   ref
 ) {
   const { t } = useT()
@@ -1723,7 +1725,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
         ref={preRef}
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 overflow-x-hidden overflow-y-auto"
-        style={{ ...TYPE_SETTINGS, fontSize, scrollbarGutter: 'stable', ...caixaAlta }}
+        style={{ ...TYPE_SETTINGS, fontSize, fontFamily, scrollbarGutter: 'stable', ...caixaAlta }}
       >
         {highlighted}
         {'\n'}
@@ -1825,6 +1827,11 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
         style={{
           ...TYPE_SETTINGS,
           fontSize,
+          /* A MESMA família do `<pre>` de baixo, e isto não é detalhe: as duas
+             camadas estão casadas caractere a caractere, e a de cima é a que
+             recebe o cursor. Fontes diferentes quebrariam a linha em lugares
+             diferentes, e o cursor cairia ao lado da letra que se está vendo */
+          fontFamily,
           color: 'transparent',
           caretColor: 'var(--color-fog-0)',
           userSelect: 'text',
