@@ -5,6 +5,12 @@ release/
 *.log
 # projetos salvos ao testar o app não são código do app
 teste_projetos/
+
+# o perfil do `npm run start:debug`: workspace, presets e preferências do app
+# de TESTE. Fica dentro do repositório para ser fácil de achar e de apagar
+# quando uma checagem deixa sujeira — apagar a pasta devolve um app novo em
+# folha, sem tocar no perfil de trabalho de verdade
+.perfil-de-teste/
 .DS_Store
 Thumbs.db
 

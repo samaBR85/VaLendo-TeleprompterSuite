@@ -13,8 +13,11 @@ página de downloads. Commits, código e comentários seguem em português.
 - **`taskkill /F /IM electron.exe`** — mata qualquer Valendo que o operador tenha
   aberto na hora, inclusive um em uso. Se precisar encerrar um processo, mate
   **pelo PID** do que você mesmo subiu.
-- Rodar o app de teste contra o workspace real. Sempre `--user-data-dir` com
-  perfil isolado.
+- Rodar o app de teste contra o workspace real. Suba sempre pelo
+  `npm run start:debug`, que já passa `--user-data-dir=.perfil-de-teste`. Subir
+  o Electron na mão sem essa opção mistura a checagem com o trabalho do
+  operador — e o estrago é invisível: o app abre normal, e só depois se descobre
+  que o roteiro que apareceu na tela era o de verdade.
 - Publicar `D:\Claude Code\Valendo-privado\plano-licenciamento.md` ou qualquer
   coisa daquela pasta. Ela é sigilosa e mora **fora** do repositório de
   propósito — e **não** entra no `.gitignore`, porque o `.gitignore` é público e
@@ -28,6 +31,24 @@ npm run typecheck && npx vitest run && npm run build
 
 Os três, sempre. A CI roda `typecheck` e `test` de novo no runner — um teste
 vermelho descoberto lá vira uma release falhada, não um erro local.
+
+## Como rodar as checagens de tela (os `scripts/check-*.mjs`)
+
+```bash
+npm run build
+npm run start:debug     # num terminal; usa .perfil-de-teste/
+npm run perfil          # só quando o perfil é novo
+npm run verify          # ou qualquer scripts/check-*.mjs
+```
+
+O `npm run perfil` existe porque perfil separado nasce **vazio**, e quase toda
+checagem dá por certo que existe roteiro na tela — sem semear, elas falham por
+não ter o que medir, não por defeito do app. Ele fecha a estreia pelo caminho
+"demo" e é idempotente: rodar num perfil já pronto não faz nada.
+
+Se uma checagem deixar sujeira, apague `.perfil-de-teste/` e recomece do
+`start:debug` — a pasta nasce de novo. **Encerre o app pelo PID** do processo
+que você mesmo subiu, nunca por `taskkill /F /IM electron.exe`.
 
 ## Como cortar uma release
 
