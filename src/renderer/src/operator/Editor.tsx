@@ -65,24 +65,61 @@ interface MarcaDaLeitura {
  */
 function retanguloDoTexto(pre: HTMLPreElement, posicao: number): MarcaDaLeitura | null {
   const caminhante = document.createTreeWalker(pre, NodeFilter.SHOW_TEXT)
+  const nos: Text[] = []
+  for (let n = caminhante.nextNode() as Text | null; n; n = caminhante.nextNode() as Text | null) {
+    nos.push(n)
+  }
+  if (nos.length === 0) return null
+
+  const molde = pre.getBoundingClientRect()
+  /** O retângulo de UM caractere — `null` quando não há caractere ali. */
+  const medir = (no: Text, dentro: number): MarcaDaLeitura | null => {
+    if (dentro < 0 || dentro >= no.length) return null
+    const range = document.createRange()
+    range.setStart(no, dentro)
+    // um range vazio não tem retângulo em navegador nenhum; um caractere de
+    // largura sempre tem — e é por isso que `dentro` precisa apontar para um
+    // caractere que EXISTE, o que a guarda acima garante
+    range.setEnd(no, dentro + 1)
+    const caixa = range.getBoundingClientRect()
+    if (caixa.height === 0) return null
+    return { top: caixa.top - molde.top + pre.scrollTop, height: caixa.height }
+  }
+
+  /*
+   * `<` e não `<=`: a posição que cai EXATAMENTE no fim de um nó é o COMEÇO do
+   * próximo, e é ali que ela tem de ser medida.
+   *
+   * Com `<=` ela era medida no nó ANTERIOR, com o deslocamento no fim dele — o
+   * range nascia vazio, sem retângulo, e a marca era descartada. Como cada
+   * parágrafo do `<pre>` é precedido por um nó `"\n"`, isso acontecia no começo
+   * de TODO bloco: a faixa do SEGUIR piscava e sumia toda vez que a leitura
+   * entrava num capítulo, numa direção ou numa fala nova. Medido: nó `"\n"`,
+   * comprimento 1, deslocamento 1, altura 0.
+   */
   let percorrido = 0
-  let no = caminhante.nextNode() as Text | null
-  while (no) {
-    const fim = percorrido + no.length
-    if (posicao <= fim) {
-      const range = document.createRange()
-      const dentro = Math.max(0, Math.min(no.length, posicao - percorrido))
-      range.setStart(no, dentro)
-      // um range vazio não tem retângulo em todo navegador; um caractere de
-      // largura sempre tem
-      range.setEnd(no, Math.min(no.length, dentro + 1))
-      const caixa = range.getBoundingClientRect()
-      const molde = pre.getBoundingClientRect()
-      if (caixa.height === 0) return null
-      return { top: caixa.top - molde.top + pre.scrollTop, height: caixa.height }
+  let indice = nos.length - 1
+  let dentro = Math.max(0, nos[indice].length - 1)
+  for (let i = 0; i < nos.length; i++) {
+    const fim = percorrido + nos[i].length
+    if (posicao < fim) {
+      indice = i
+      dentro = Math.max(0, posicao - percorrido)
+      break
     }
     percorrido = fim
-    no = caminhante.nextNode() as Text | null
+  }
+
+  // do ponto para a frente, o primeiro caractere que tem retângulo: uma linha
+  // em branco no meio do parágrafo não serve de apoio para a faixa
+  for (let i = indice; i < nos.length; i++) {
+    const alvo = medir(nos[i], i === indice ? dentro : 0)
+    if (alvo) return alvo
+  }
+  // e, no fim do roteiro, o último caractere que existir para trás
+  for (let i = indice; i >= 0; i--) {
+    const alvo = medir(nos[i], nos[i].length - 1)
+    if (alvo) return alvo
   }
   return null
 }

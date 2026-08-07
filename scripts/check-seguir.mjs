@@ -194,6 +194,31 @@ await espera(400)
 const cursor = await ev(`document.querySelector('[data-sem-roda] textarea').selectionStart`)
 conferir('o Go To pousa o cursor na leitura, e não no início', cursor > 0, `posição ${cursor}`)
 
+/*
+ * A faixa NAO some ao entrar num bloco novo.
+ *
+ * Era o defeito que o operador viu: o comeco de cada paragrafo cai exatamente
+ * no fim do no de quebra de linha anterior, e a medida nascia de um range
+ * vazio -- que nao tem retangulo. A faixa piscava e sumia a cada bloco: em
+ * capitulo, em direcao e em fala.
+ *
+ * A leitura atravessa varios blocos aqui, e a faixa e cobrada em TODOS os
+ * passos: uma amostra so passaria por cima justamente do instante da troca,
+ * que e o unico em que o defeito aparece.
+ */
+await ev(`document.querySelector('[data-ajuda="editor.catch"]').click()`)
+await ev(`${SEGUIR}.getAttribute('aria-pressed') === 'true' ? null : ${SEGUIR}.click()`)
+await ev(`window.valendo.dispatch({ type: 'transport/restart' })`)
+await espera(500)
+
+let sumicos = 0
+for (let passo = 0; passo < 24; passo++) {
+  await ev(`window.valendo.dispatch({ type: 'transport/seekWords', delta: 2 })`)
+  await espera(300)
+  if ((await ev(topoDaMarca)) === null) sumicos += 1
+}
+conferir('a faixa nunca some ao atravessar os blocos', sumicos === 0, `${sumicos} sumico(s) em 24 passos`)
+
 // devolve o app como estava
 await ev(`document.querySelector('[data-ajuda="editor.catch"]').click()`)
 await ev(`document.querySelector('[data-grupo="transporte"] button:nth-child(3)').click()`)
