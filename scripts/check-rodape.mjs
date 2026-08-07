@@ -236,6 +236,56 @@ check(
   `${antes.larguraDaCelula}px (projeto: ${larguraDeProjeto}px, ${naRegua ? 'régua' : 'topo'})`
 )
 
+/*
+ * O mostrador não respira com o número.
+ *
+ * A célula do PPM tinha a largura do valor de AGORA: sair de 99 para 100
+ * alargava o mostrador inteiro e empurrava o que estava ao lado. Num console
+ * que se opera de relance, o pior momento para um elemento mudar de lugar é
+ * exatamente aquele em que se está olhando para ele.
+ *
+ * As três casas vêm de `PPM_MIN`/`PPM_MAX` (60 … 500): dois ou três dígitos, e
+ * nunca mais que isso. Os cinco valores abaixo cercam as duas viradas de
+ * casa — 99→100 é a que se vê no uso, 500 é o teto.
+ */
+/* guarda e devolve AQUI mesmo: quem anota o ritmo do operador para restaurar
+   no fim só faz isso mais abaixo, e sem esta devolução ele anotaria o 500 que
+   este laço deixou — a mesa "voltaria como estava" para um estado que nunca
+   existiu */
+const ppmAntesDaMedida = await app.evaluate(
+  `(async () => (await window.valendo.getState()).state.transport.ppm)()`
+)
+const larguras = []
+for (const ppm of [60, 99, 100, 148, 500]) {
+  await app.evaluate(`window.valendo.dispatch({ type: 'transport/ppm', ppm: ${ppm} })`)
+  await wait(250)
+  larguras.push(
+    await app.evaluate(
+      `Math.round(document.querySelector('[data-alvo]').closest('.k-lcd').getBoundingClientRect().width)`
+    )
+  )
+}
+check(
+  'o mostrador tem a mesma largura de 60 a 500',
+  new Set(larguras).size === 1,
+  `${larguras.join(' · ')}px`
+)
+
+/* e o valor fica CENTRADO na casa reservada, não encostado num lado */
+const centrado = await app.evaluate(`(() => {
+  const celula = document.querySelector('[data-alvo]').closest('.k-lcd').lastElementChild
+  const numero = celula.firstElementChild
+  const c = celula.getBoundingClientRect(), n = numero.getBoundingClientRect()
+  return { esq: +(n.left - c.left).toFixed(1), dir: +(c.right - n.right).toFixed(1) }
+})()`)
+check(
+  'e o valor fica centrado na casa',
+  Math.abs(centrado.esq - centrado.dir) < 0.5,
+  `${centrado.esq}px à esquerda · ${centrado.dir}px à direita`
+)
+await app.evaluate(`window.valendo.dispatch({ type: 'transport/ppm', ppm: ${ppmAntesDaMedida} })`)
+await wait(250)
+
 /* Parte de um ritmo ARBITRÁRIO antes de pedir a duração.
  *
  * Sem isso a checagem mede a si mesma: rodar duas vezes seguidas com o mesmo

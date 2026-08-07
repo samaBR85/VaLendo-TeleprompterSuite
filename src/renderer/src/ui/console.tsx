@@ -88,16 +88,43 @@ interface DigitoProps {
   /** sem cor é o branco esverdeado de LCD — o PPM da maquete */
   cor?: string
   tamanho?: number
+  /**
+   * Reserva largura para N caracteres, e o mostrador para de respirar.
+   *
+   * Sem isto a célula tem a largura do valor de agora: o PPM saindo de 60 para
+   * 100 alargava o mostrador inteiro, e o que estava ao lado dele andava junto.
+   * Num console que se opera de relance, elemento que muda de lugar sozinho é
+   * elemento que se perde — e o valor mudando de casa é justamente o momento em
+   * que se está olhando para ele.
+   *
+   * `ch` é a largura do "0" na fonte do elemento, e com `tabular-nums` todos os
+   * algarismos têm essa mesma largura: 3ch é exatamente três dígitos, medidos e
+   * não estimados.
+   */
+  caracteres?: number
   className?: string
 }
 
 /** Um dígito de mostrador: número mono grande, legenda micro-caps embaixo. */
-export function Digito({ valor, rotulo, cor, tamanho = 26, className = '' }: DigitoProps): React.JSX.Element {
+export function Digito({
+  valor,
+  rotulo,
+  cor,
+  tamanho = 26,
+  caracteres,
+  className = ''
+}: DigitoProps): React.JSX.Element {
   return (
     <div className={`flex flex-none flex-col items-center justify-center ${className}`}>
       <div
         className="font-mono leading-none font-semibold tabular-nums"
-        style={{ fontSize: tamanho, color: cor ?? '#e9f4ee' }}
+        style={{
+          fontSize: tamanho,
+          color: cor ?? '#e9f4ee',
+          // centrado DENTRO da largura reservada: com 3ch e o valor em 60, o
+          // que se vê tem de ser o 60 no meio da casa, não encostado à esquerda
+          ...(caracteres ? { width: `${caracteres}ch`, textAlign: 'center' as const } : {})
+        }}
       >
         {valor}
       </div>

@@ -1310,10 +1310,15 @@ export function BarraDeTransporte({
         <SpeedRuler ppm={transport.ppm} onChange={(ppm) => dispatch({ type: 'transport/ppm', ppm })} />
         <AlvoDeDuracao segundos={total} ruler={ruler} compacto={compacto} dispatch={dispatch} />
       </div>
+      {/* três casas sempre: o ritmo vai de 60 a 500 (`PPM_MIN`/`PPM_MAX`), então
+          o valor tem dois ou três dígitos e nunca mais que isso. Reservando as
+          três, passar de 99 para 100 deixa de alargar o mostrador e de empurrar
+          o que está ao lado */}
       <Digito
         valor={String(transport.ppm)}
         rotulo={t('toolbar.ppm')}
         tamanho={corpo}
+        caracteres={3}
         className={compacto ? 'px-4' : 'px-5'}
       />
     </Lcd>
