@@ -73,6 +73,8 @@ export function PocosDeArquivo({
 }): React.JSX.Element {
   const { t } = useT()
   const [saveMenuOpen, setSaveMenuOpen] = useState(false)
+  /** o irmão do de cima, no poço ROTEIRO: "exportar como…" */
+  const [exportMenuOpen, setExportMenuOpen] = useState(false)
   const [recentesOpen, setRecentesOpen] = useState(false)
   const [recentes, setRecentes] = useState<ProjetoRecente[]>([])
 
@@ -243,18 +245,61 @@ export function PocosDeArquivo({
           >
             <Icon name="projectOpen" size={13} />
           </Tecla>
-          <Tecla
-            {...ajuda('script.save')}
-            title={
-              tab.exportPath
-                ? `${t('toolbar.saveScriptTo', { file: fileName(tab.exportPath) })}${hint(keymap, 'document.save')}`
-                : `${t('toolbar.saveScript')}${hint(keymap, 'document.save')}`
-            }
-            className="h-6 px-2 text-[11px]"
-            onClick={() => run('document.save')}
-          >
-            {t('key.save')}
-          </Tecla>
+          {/* EXPORTAR, e não "salvar".
+              Salvar promete ida e volta: você salva, abre depois, continua de
+              onde parou. O arquivo que sai daqui é uma CÓPIA para alguém ler —
+              quem guarda o trabalho é o `.valendo` do poço ao lado, e mexer no
+              .docx depois não volta para o app. O operador perguntou se o Word
+              se auto-carregaria, e a pergunta era culpa da palavra.
+
+              A setinha existe pelo mesmo motivo que a do PROJETO: sem ela, a
+              primeira exportação prendia a aba naquele arquivo e não havia
+              caminho VISÍVEL para trocar de formato. O comando já existia — só
+              não tinha botão. */}
+          <div className="relative flex items-stretch">
+            <Tecla
+              {...ajuda('script.save')}
+              title={
+                tab.exportPath
+                  ? `${t('toolbar.exportScriptTo', { file: fileName(tab.exportPath) })}${hint(keymap, 'document.save')}`
+                  : `${t('toolbar.exportScript')}${hint(keymap, 'document.save')}`
+              }
+              aria-label={t('toolbar.exportScript')}
+              className="h-6 rounded-r-none border-r-0 px-2 text-[11px]"
+              onClick={() => run('document.save')}
+            >
+              {t('key.export')}
+            </Tecla>
+            <Tecla
+              {...ajuda('script.exportAs')}
+              title={`${t('toolbar.exportScriptAs')}${hint(keymap, 'document.saveAs')}`}
+              aria-label={t('toolbar.exportScriptAs')}
+              className="h-6 w-4 rounded-l-none px-0"
+              onClick={() => setExportMenuOpen((open) => !open)}
+            >
+              <Icon name="down" size={10} />
+            </Tecla>
+            {exportMenuOpen ? (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setExportMenuOpen(false)} />
+                <div className="absolute top-full right-0 z-50 mt-1 min-w-max rounded-md border border-[var(--color-line)] bg-[var(--color-ink-2)] py-1 shadow-lg">
+                  <button
+                    type="button"
+                    data-exportar-como
+                    {...ajuda('script.exportAs')}
+                    className="block w-full px-3 py-1.5 text-left text-[11px] whitespace-nowrap text-[var(--color-fog-1)] hover:bg-[var(--color-ink-3)] hover:text-[var(--color-fog-0)]"
+                    onClick={() => {
+                      setExportMenuOpen(false)
+                      run('document.saveAs')
+                    }}
+                  >
+                    {t('toolbar.exportScriptAs')}
+                    <span className="ml-3 text-[var(--color-fog-3)]">{hint(keymap, 'document.saveAs')}</span>
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
         </>
       )}
     </>

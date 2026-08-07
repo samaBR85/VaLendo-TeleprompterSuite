@@ -120,6 +120,11 @@ export const ajudaEn = {
     texto: 'Writes the active tab out as a text file — the script alone, without the project around it.',
     comando: 'document.save'
   },
+  'script.exportAs': {
+    nome: 'Export as…',
+    texto: 'Reopens the dialog, to pick another name or another format. The \'export\' beside it overwrites the last file without asking; this is the way to change format.',
+    comando: 'document.saveAs'
+  },
 
   /* ----------------------------------------------------------------- VIEWS */
   'view.transportTop': {

@@ -93,6 +93,11 @@ export const ajudaDe = {
     texto: 'Schreibt den aktiven Tab als Textdatei — nur das Skript, ohne das Projekt drumherum.',
     comando: 'document.save'
   },
+  'script.exportAs': {
+    nome: 'Exportieren unter…',
+    texto: 'Öffnet den Dialog erneut, für einen anderen Namen oder ein anderes Format. Das \'export\' daneben überschreibt die letzte Datei ohne Nachfrage; hier wechselt man das Format.',
+    comando: 'document.saveAs'
+  },
 
   /* ----------------------------------------------------------------- VIEWS */
   'view.transportTop': {

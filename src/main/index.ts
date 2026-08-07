@@ -246,7 +246,7 @@ function registerIpc(): void {
     if (!target) {
       const owner = getOperatorWindow()
       const options = {
-        title: idioma('main.saveScriptTitle'),
+        title: idioma('main.exportScriptTitle'),
         defaultPath: tab.exportPath || defaultFileName(tab.title),
         filters: EXPORT_FILTERS
       }

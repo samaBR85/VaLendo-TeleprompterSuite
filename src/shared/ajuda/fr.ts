@@ -93,6 +93,11 @@ export const ajudaFr = {
     texto: 'Écrit l’onglet actif dans un fichier texte — le texte seul, sans le projet autour.',
     comando: 'document.save'
   },
+  'script.exportAs': {
+    nome: 'Exporter sous…',
+    texto: 'Rouvre la boîte de dialogue, pour choisir un autre nom ou un autre format. L’« exporter » à côté réécrit le dernier fichier sans demander ; c’est ici qu’on change de format.',
+    comando: 'document.saveAs'
+  },
 
   /* ----------------------------------------------------------------- VIEWS */
   'view.transportTop': {

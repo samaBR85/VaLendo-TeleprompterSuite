@@ -93,6 +93,11 @@ export const ajudaIt = {
     texto: 'Scrive la scheda attiva come file di testo — solo il copione, senza il progetto intorno.',
     comando: 'document.save'
   },
+  'script.exportAs': {
+    nome: 'Esporta con nome…',
+    texto: 'Riapre la finestra, per scegliere un altro nome o un altro formato. L’« esporta » accanto riscrive l’ultimo file senza chiedere; qui si cambia formato.',
+    comando: 'document.saveAs'
+  },
 
   /* ----------------------------------------------------------------- VIEWS */
   'view.transportTop': {

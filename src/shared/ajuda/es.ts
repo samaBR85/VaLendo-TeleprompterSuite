@@ -93,6 +93,11 @@ export const ajudaEs = {
     texto: 'Escribe la pestaña activa como archivo de texto — solo el guion, sin el proyecto alrededor.',
     comando: 'document.save'
   },
+  'script.exportAs': {
+    nome: 'Exportar como…',
+    texto: 'Reabre el diálogo, para elegir otro nombre u otro formato. El \'exportar\' de al lado regraba el último archivo sin preguntar; este es el camino para cambiar de formato.',
+    comando: 'document.saveAs'
+  },
 
   /* ----------------------------------------------------------------- VIEWS */
   'view.transportTop': {

@@ -93,6 +93,11 @@ export const ajudaPt = {
     texto: 'Grava a aba ativa como um arquivo de texto — só o roteiro, sem o projeto em volta.',
     comando: 'document.save'
   },
+  'script.exportAs': {
+    nome: 'Exportar como…',
+    texto: 'Abre o diálogo de novo, para escolher outro nome ou outro formato. O \'exportar\' ao lado regrava o último arquivo sem perguntar; este é o caminho para trocar de formato.',
+    comando: 'document.saveAs'
+  },
 
   /* ----------------------------------------------------------------- VIEWS */
   'view.transportTop': {
