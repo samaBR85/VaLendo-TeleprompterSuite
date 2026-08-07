@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PLACEHOLDERS, capitularLinhasIguais, contarLinhasIguais, insertBlock, tirarCapitulo } from './insertBlock'
+import { PLACEHOLDERS, capitularLinhasIguais, contarLinhasIguais, insertBlock, tirarBloco, tirarCapitulo, tirarDirecao } from './insertBlock'
 import { blocksFromText } from './text'
 
 /** O que importa de verdade: o bloco inserido é reconhecido como tal. */
@@ -229,5 +229,57 @@ describe('desfazer o capítulo', () => {
   it('as linhas em branco entre os títulos ficam onde estavam', () => {
     const texto = '## UM\n\n## DOIS'
     expect(tirarCapitulo(texto, 0, texto.length)?.text).toBe('UM\n\nDOIS')
+  })
+})
+
+/**
+ * O mesmo no vizinho: o botão de direção sobre uma direção tira os colchetes.
+ *
+ * Só que a unidade aqui é o PARÁGRAFO e não a linha — o classificador entende
+ * `[...]` olhando o parágrafo inteiro, então uma direção de três linhas tem o
+ * colchete só na primeira e na última.
+ */
+describe('desfazer a direção', () => {
+  it('tira os colchetes da direção em que o cursor está', () => {
+    expect(tirarDirecao('[entra o VT]', 5, 5)?.text).toBe('entra o VT')
+  })
+
+  it('tira quando a seleção pegou os colchetes junto, que é o que se vê na tela', () => {
+    const texto = '[entra o VT]'
+    expect(tirarDirecao(texto, 0, texto.length)?.text).toBe('entra o VT')
+  })
+
+  it('ida e volta pelo mesmo botão', () => {
+    const tirado = tirarDirecao('[entra o VT]', 0, 12)!
+    expect(tirado.text.slice(tirado.selectionStart, tirado.selectionEnd)).toBe('entra o VT')
+    const posto = insertBlock(tirado.text, tirado.selectionStart, tirado.selectionEnd, 'direction')
+    expect(posto.text).toBe('[entra o VT]')
+  })
+
+  it('direção de várias linhas sai inteira — é por parágrafo, não por linha', () => {
+    const texto = 'HARI\n\n[entra o VT\ne sobe o som]\n\nE agora.'
+    // cursor na segunda linha da direção: mesmo assim os dois colchetes saem
+    expect(tirarDirecao(texto, 20, 20)?.text).toBe('HARI\n\nentra o VT\ne sobe o som\n\nE agora.')
+  })
+
+  it('sobre fala devolve null — quem chama cai no inserir de sempre', () => {
+    expect(tirarDirecao('E agora The Bear', 2, 7)).toBeNull()
+  })
+
+  it('colchete só de um lado não é direção, e o classificador concorda', () => {
+    expect(tirarDirecao('[entra o VT', 3, 3)).toBeNull()
+    expect(kindsOf('[entra o VT')).toEqual(['speech'])
+  })
+
+  it('colchete vazio não vira clique morto: devolve null em vez de apagar tudo', () => {
+    expect(tirarDirecao('[]', 1, 1)).toBeNull()
+  })
+
+  it('o `tirarBloco` manda cada tipo para a sua régua', () => {
+    expect(tirarBloco('## (BEAT)', 4, 4, 'chapter')?.text).toBe('(BEAT)')
+    expect(tirarBloco('[entra o VT]', 4, 4, 'direction')?.text).toBe('entra o VT')
+    // e não confunde um com o outro
+    expect(tirarBloco('## (BEAT)', 4, 4, 'direction')).toBeNull()
+    expect(tirarBloco('[entra o VT]', 4, 4, 'chapter')).toBeNull()
   })
 })

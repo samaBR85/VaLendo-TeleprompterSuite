@@ -98,6 +98,82 @@ export function tirarCapitulo(value: string, selectionStart: number, selectionEn
 }
 
 /**
+ * As bordas do PARÁGRAFO que a seleção encosta — o que está entre linhas em
+ * branco.
+ *
+ * É a unidade da direção, e não a linha: o classificador entende `[...]` como
+ * direção olhando o parágrafo inteiro, então uma direção pode ocupar três
+ * linhas com o colchete só na primeira e na última. Tirar por linha deixaria
+ * meia direção no roteiro.
+ */
+function limitesDoParagrafo(value: string, start: number, end: number): [number, number] {
+  let inicio = value.lastIndexOf('\n', Math.max(0, start - 1)) + 1
+  const primeiroFim = value.indexOf('\n', end)
+  let fim = primeiroFim === -1 ? value.length : primeiroFim
+
+  while (inicio > 0) {
+    const anteriorFim = inicio - 1
+    const anteriorInicio = value.lastIndexOf('\n', anteriorFim - 1) + 1
+    if (value.slice(anteriorInicio, anteriorFim).trim() === '') break
+    inicio = anteriorInicio
+  }
+
+  while (fim < value.length) {
+    const seguinteInicio = fim + 1
+    const achado = value.indexOf('\n', seguinteInicio)
+    const seguinteFim = achado === -1 ? value.length : achado
+    if (value.slice(seguinteInicio, seguinteFim).trim() === '') break
+    fim = seguinteFim
+  }
+
+  return [inicio, fim]
+}
+
+/**
+ * O botão de direção sobre uma direção TIRA os colchetes.
+ *
+ * O mesmo defeito do capítulo, no vizinho: apertar de novo escrevia
+ * `[[entra o VT]]`. Só que a unidade aqui é o parágrafo, não a linha — ver
+ * `limitesDoParagrafo`.
+ *
+ * Devolve `null` quando não há o que tirar, e o chamador cai no inserir.
+ */
+export function tirarDirecao(value: string, selectionStart: number, selectionEnd: number): InsertResult | null {
+  const start = Math.max(0, Math.min(selectionStart, value.length))
+  const end = Math.max(start, Math.min(selectionEnd, value.length))
+  const [inicio, fim] = limitesDoParagrafo(value, start, end)
+
+  const trecho = value.slice(inicio, fim)
+  const miolo = trecho.trim()
+  // a mesma prova que o classificador faz para chamar aquilo de direção
+  if (!/^\[[\s\S]*\]$/.test(miolo)) return null
+
+  const semColchetes = miolo.slice(1, -1).trim()
+  if (semColchetes === '') return null
+
+  const recuo = trecho.length - trecho.trimStart().length
+  const de = inicio + recuo
+
+  return {
+    text: value.slice(0, de) + semColchetes + value.slice(de + miolo.length),
+    selectionStart: de,
+    selectionEnd: de + semColchetes.length
+  }
+}
+
+/** Sobre um bloco do mesmo tipo, o botão desfaz. `null` quando não há o que desfazer. */
+export function tirarBloco(
+  value: string,
+  selectionStart: number,
+  selectionEnd: number,
+  kind: InsertKind
+): InsertResult | null {
+  return kind === 'chapter'
+    ? tirarCapitulo(value, selectionStart, selectionEnd)
+    : tirarDirecao(value, selectionStart, selectionEnd)
+}
+
+/**
  * Transforma em capítulo TODA linha cujo texto inteiro é igual ao selecionado.
  *
  * O caso que isto resolve: um roteiro com "BLOCO 1", "BLOCO 2", "INTERVALO"
