@@ -165,6 +165,20 @@ export function Inspector({
       {aba === 'texto' ? (
         <>
       <Group>
+        {/* a amostra vem PRIMEIRO, e fica de fora do cadeado: ela não é um
+            ajuste, é conferência — mostra o que já está valendo, não decide
+            nada. Apagá-la junto com o resto tiraria do operador justamente a
+            prova de que a leitura continua exibindo o que estava exibindo. O
+            menu de fontes abre para baixo e cobriria a própria amostra que
+            deveria mostrar — daí ela ficar ACIMA do seletor, não abaixo. */}
+        <AmostraDaSaida
+          a={a}
+          familia={fonteSobOMouse ?? a.fontFamily}
+          nome={t(
+            (FONT_OPTIONS.find((f) => f.value === (fonteSobOMouse ?? a.fontFamily)) ?? FONT_OPTIONS[0])
+              .chave
+          )}
+        />
         {/* a família e a caixa alta na mesma fileira: as duas dizem com que
             LETRA a saída é desenhada, e a segunda cabe num "AA" ao lado sem
             gastar uma linha do painel. O cadeado mora aqui, fora do bloco
@@ -212,21 +226,9 @@ export function Inspector({
             AA
           </Ficha>
         </div>
-        {/* tudo abaixo desta linha é o que o cadeado apaga: a amostra vem
-            ANTES do seletor, não depois — o menu de fontes abre para baixo e
-            cobriria a própria amostra que deveria mostrar, passar o mouse
-            pelas opções não teria o que revelar. Ela entra no bloco mudo
-            também: sozinha brilhando entre dois grupos apagados pareceria
-            um esquecimento, não uma escolha. */}
+        {/* daqui para baixo é o que o cadeado apaga: os ajustes de verdade,
+            não a conferência que veio antes */}
         <div className={`flex flex-col gap-2 ${mudo}`}>
-          <AmostraDaSaida
-            a={a}
-            familia={fonteSobOMouse ?? a.fontFamily}
-            nome={t(
-              (FONT_OPTIONS.find((f) => f.value === (fonteSobOMouse ?? a.fontFamily)) ?? FONT_OPTIONS[0])
-                .chave
-            )}
-          />
           <Slider
             ajudaId="insp.body"
             label={t('insp.body')}
