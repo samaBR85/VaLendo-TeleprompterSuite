@@ -383,6 +383,9 @@ export function createInitialState(
     presets: presetsPadrao(lang),
     cards: [],
     cardOverlay: DEFAULT_CARD_OVERLAY,
+    // nasce destravado: um app que abre com os controles mudos, sem ninguém
+    // ter travado nada, ensina que ele está quebrado
+    travaDoTexto: false,
     keymap: {},
     // `som` nasce ligado: é o comportamento que já existia antes de haver
     // interruptor, e ninguém é pego de surpresa por isso — quem assiste ainda

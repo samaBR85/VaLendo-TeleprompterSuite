@@ -39,6 +39,8 @@ interface Props {
   presets: Presets
   /** conforto desta máquina: em qual aba o painel reabre */
   maquina: PreferenciasDaMaquina
+  /** o cadeado da aba Texto — do projeto, não da máquina */
+  travado: boolean
   /**
    * Reaponta um apresentador para o nome selecionado no editor.
    *
@@ -80,6 +82,7 @@ export function Inspector({
   metrics,
   presets,
   maquina,
+  travado,
   onRelink,
   dispatch
 }: Props): React.JSX.Element {
@@ -98,18 +101,8 @@ export function Inspector({
      de desfazer. Nada é gravado; fechar o menu devolve a tira à escolhida */
   const [fonteSobOMouse, setFonteSobOMouse] = useState<string | null>(null)
 
-  /**
-   * O cadeado da aba Texto: apaga fonte, tamanho, peso, cores e alinhamento
-   * sem sair da tela, para o operador não mudar nada por engano com a
-   * leitura em curso — um tropeço no mouse não pode virar um susto no vidro.
-   *
-   * De propósito EFêMERO, e não preferência da máquina: é um "agora não" de
-   * durante um programa, não um hábito que deveria sobreviver a fechar o
-   * app. Persistir isto arriscaria o oposto do que ele promete — o operador
-   * abrindo a mesa três dias depois, sem lembrar por que os controles não
-   * respondem. O mesmo raciocínio do CATCH, em `App.tsx`.
-   */
-  const [travado, setTravado] = useState(false)
+  /* o cadeado mora no PROJETO (`AppState.travaDoTexto`) — ver o comentário
+     do campo em `shared/types.ts` para por que ele viaja no `.valendo` */
   const mudo = travado ? 'pointer-events-none opacity-40' : ''
 
   // salvar o padrão quando já havia um não muda nada na tela; sem esta
@@ -191,7 +184,7 @@ export function Inspector({
             title={t('insp.textLock')}
             aria-label={t('insp.textLock')}
             aria-pressed={travado}
-            onClick={() => setTravado((v) => !v)}
+            onClick={() => dispatch({ type: 'travaDoTexto/set', travada: !travado })}
             className="flex-none px-2"
           >
             <Icon name={travado ? 'lock' : 'unlock'} size={13} />

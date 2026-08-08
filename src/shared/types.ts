@@ -675,6 +675,22 @@ export interface AppState {
    * cartão sozinho por engano. Desligado, cada cartão decide por si (`card.overlay`).
    */
   cardOverlay: { enabled: boolean; style: CardOverlayStyle }
+  /**
+   * O cadeado da aba Texto: apaga fonte, corpo, peso, entrelinha, espaçamento,
+   * alinhamento e cores, para ninguém mexer neles por engano.
+   *
+   * Viaja no `.valendo`, e não em `maquina`, porque protege coisa que também
+   * viaja: a aparência é do programa, não do computador. Um roteiro cuja cara
+   * já foi fechada chega fechado na estação do estúdio — que é o ponto.
+   *
+   * Nasceu efêmero (um `useState` no painel) pela suposição de que o operador
+   * esqueceria de ter travado e não entenderia por que os controles não
+   * respondem. A suposição estava errada, e quem corrigiu foi quem opera: o
+   * botão é grande e fica ACESO, então ele mesmo é o lembrete — e o risco que
+   * importa é o oposto, o de alguém mudar um ajuste sem perceber entre uma
+   * sessão e outra.
+   */
+  travaDoTexto: boolean
   /** commandId -> binding, sobrepondo o padrão do registro */
   keymap: Record<string, string>
   /**

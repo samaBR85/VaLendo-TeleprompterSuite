@@ -64,6 +64,30 @@ describe('projeto gravado por uma versão anterior', () => {
     const { state } = await openProject(caminho)
     expect(state?.webview.som).toBe(false)
   })
+
+  it('sem o cadeado da aba Texto, abre DESTRAVADO', async () => {
+    // ausente tem de virar destravado: aquele programa foi montado quando nada
+    // travava, e abrir com os controles mudos faria o operador procurar defeito
+    // num app que está fazendo o que ele mandou — só que ele nunca mandou
+    const caminho = gravar((arquivo) => {
+      delete (arquivo.state as Record<string, unknown>).travaDoTexto
+    })
+
+    const { state, error } = await openProject(caminho)
+    expect(error).toBeNull()
+    expect(state?.travaDoTexto).toBe(false)
+  })
+
+  it('e travado de propósito continua travado ao reabrir', async () => {
+    // o outro lado da mesma moeda, e o motivo de o campo existir: quem fechou
+    // a cara do programa antes de ir ao ar reabre com ela fechada
+    const caminho = gravar((arquivo) => {
+      ;(arquivo.state as Record<string, unknown>).travaDoTexto = true
+    })
+
+    const { state } = await openProject(caminho)
+    expect(state?.travaDoTexto).toBe(true)
+  })
 })
 
 describe('o que o projeto leva da rede', () => {

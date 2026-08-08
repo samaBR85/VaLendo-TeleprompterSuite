@@ -94,6 +94,9 @@ export async function openProject(filePath: string): Promise<{ state: AppState |
       ...state,
       cards: state.cards ?? [],
       cardOverlay: state.cardOverlay ?? DEFAULT_CARD_OVERLAY,
+      // ausente vira DESTRAVADO: projeto salvo antes do cadeado existir foi
+      // feito quando nada travava, e é isso que preserva o que ele fazia
+      travaDoTexto: state.travaDoTexto ?? false,
       sidebarWidth: state.sidebarWidth ?? SIDEBAR_WIDTH_DEFAULT,
       editionSplit: state.editionSplit ?? EDITION_SPLIT_DEFAULT,
       transport: {

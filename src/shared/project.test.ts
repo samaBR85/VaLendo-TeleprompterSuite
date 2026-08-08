@@ -36,6 +36,7 @@ function programa(): AppState {
     },
     sidebarWidth: 260,
     editionSplit: 0.6,
+    travaDoTexto: true,
     webview: { ...state.webview, videoPerfil: 'media', som: false },
     tabs: state.tabs.map((tab) => ({
       ...tab,
@@ -82,6 +83,15 @@ describe('salvar e abrir o projeto', () => {
     expect(state?.transport.loop).toBe(true)
     expect(state?.transport.loopDelaySeconds).toBe(4)
     expect(state?.tabs[0].appearance.positionPct).toBe(30)
+  })
+
+  it('o cadeado da aba Texto viaja no arquivo', () => {
+    // é o ponto INTEIRO dele: um programa cuja cara já foi fechada chega
+    // fechado na próxima sessão, e na estação do estúdio. Se isto virar
+    // `false`, o cadeado voltou a ser um estado de momento sem ninguém pedir
+    const { state } = readProject(serializeProject(programa(), 0))
+
+    expect(state?.travaDoTexto).toBe(true)
   })
 
   it('a rota do áudio da rede viaja com o programa, desligada inclusive', () => {

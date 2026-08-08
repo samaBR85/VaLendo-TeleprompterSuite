@@ -1873,6 +1873,7 @@ function AppConteudo({
               metrics={metrics}
               presets={presets}
               maquina={state.maquina}
+              travado={state.travaDoTexto}
               onRelink={reapontarApresentador}
               dispatch={dispatch}
             />
@@ -2188,6 +2189,7 @@ function AppConteudo({
               metrics={metrics}
               presets={presets}
               maquina={state.maquina}
+              travado={state.travaDoTexto}
               onRelink={reapontarApresentador}
               dispatch={dispatch}
             />

@@ -203,6 +203,8 @@ export type Action =
   /** o interruptor "OVERLAY": ligado, força o texto por cima de qualquer cartão */
   | { type: 'cardOverlay/set'; enabled: boolean }
   | { type: 'cardOverlay/style'; style: CardOverlayStyle }
+  /** o cadeado da aba Texto: apaga os ajustes de aparência da saída */
+  | { type: 'travaDoTexto/set'; travada: boolean }
   /** a cópia leve ficou pronta (ou foi descartada, com `null`) */
   | { type: 'card/videoProxy'; cardId: string; proxy: { arquivo: string; perfil: PerfilDeRede } | null }
   | { type: 'history/undo'; tabId: string }

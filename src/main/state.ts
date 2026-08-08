@@ -1428,6 +1428,10 @@ export class Store {
         this.state = { ...this.state, cardOverlay: { ...this.state.cardOverlay, enabled: action.enabled } }
         break
 
+      case 'travaDoTexto/set':
+        this.state = { ...this.state, travaDoTexto: action.travada }
+        break
+
       case 'cardOverlay/style':
         this.state = { ...this.state, cardOverlay: { ...this.state.cardOverlay, style: action.style } }
         break
