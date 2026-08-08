@@ -179,6 +179,7 @@ export function Inspector({
             nomeDa={(chave) => t(chave)}
             onEscolher={(fontFamily) => patch({ fontFamily })}
             aoPassar={setFonteSobOMouse}
+            rodaDoMouse
           />
           {/* independente do "AA" do cabeçalho da Edição: aquele pinta o
               editor, este pinta a SAÍDA. Cada um dono de uma superfície —

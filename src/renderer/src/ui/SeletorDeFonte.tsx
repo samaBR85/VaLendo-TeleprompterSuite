@@ -35,7 +35,8 @@ export function SeletorDeFonte({
   estiloDoNome,
   nomeDa,
   onEscolher,
-  aoPassar
+  aoPassar,
+  rodaDoMouse = false
 }: {
   opcoes: { chave: Chave; value: string }[]
   valor: string
@@ -55,9 +56,27 @@ export function SeletorDeFonte({
   nomeDa: (chave: Chave) => string
   onEscolher: (value: string) => void
   aoPassar?: (value: string | null) => void
+  /**
+   * A roda do mouse, parada em cima do gatilho FECHADO, anda pela lista sem
+   * abrir menu nenhum — só no seletor da SAÍDA (aba Texto dos Ajustes), a
+   * pedido do operador. O da Edição não ganha isto: ele mora encostado no
+   * slider de tamanho da fonte no rodapé, e a mesma roda que rolaria fontes
+   * ali é a que o operador já usa para ajustar o corpo do texto — dar dois
+   * sentidos à mesma roda no mesmo canto confundiria mais do que ajudaria.
+   *
+   * Existe uma roda GLOBAL que muda a velocidade de leitura em qualquer canto
+   * do app (`App.tsx`, `naRoda`) — ela recua sozinha quando o alvo já chamou
+   * `preventDefault()`. Mas o JSX `onWheel` do React anexa o listener como
+   * PASSIVO por padrão, e num listener passivo `preventDefault()` não faz
+   * nada — foi medido assim: a fonte trocava, e a velocidade de leitura
+   * mudava JUNTO, por baixo. Por isso o listener aqui é nativo, com
+   * `{ passive: false }` explícito, no mesmo molde da roda global.
+   */
+  rodaDoMouse?: boolean
 }): React.JSX.Element {
   const [aberto, setAberto] = useState(false)
   const caixa = useRef<HTMLDivElement>(null)
+  const gatilho = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (!aberto) return
@@ -83,9 +102,33 @@ export function SeletorDeFonte({
 
   const atual = opcoes.find((f) => f.value === valor) ?? opcoes.find((f) => f.value === padrao) ?? opcoes[0]
 
+  /* o efeito só reanexa quando `rodaDoMouse` muda — não a cada tecla ou troca
+     de fonte — porque lê o resto sempre por esta referência, atualizada a
+     cada render. É o mesmo truque de `escalaAtual` em App.tsx. */
+  const estadoRoda = useRef({ aberto, opcoes, valorAtual: atual.value, onEscolher })
+  estadoRoda.current = { aberto, opcoes, valorAtual: atual.value, onEscolher }
+
+  useEffect(() => {
+    if (!rodaDoMouse) return
+    const el = gatilho.current
+    if (!el) return
+    const naRodaDoSeletor = (event: WheelEvent): void => {
+      const { aberto, opcoes, valorAtual, onEscolher } = estadoRoda.current
+      // com o menu aberto, a roda é da lista — não deste atalho
+      if (aberto) return
+      event.preventDefault()
+      const i = opcoes.findIndex((f) => f.value === valorAtual)
+      const proximo = opcoes[(i + (event.deltaY < 0 ? -1 : 1) + opcoes.length) % opcoes.length]
+      onEscolher(proximo.value)
+    }
+    el.addEventListener('wheel', naRodaDoSeletor, { passive: false })
+    return () => el.removeEventListener('wheel', naRodaDoSeletor)
+  }, [rodaDoMouse])
+
   return (
     <div ref={caixa} className={classeCaixa}>
       <button
+        ref={gatilho}
         type="button"
         {...{ [marca]: '' }}
         {...ajuda(ajudaId)}
