@@ -132,7 +132,6 @@ export function SeletorDeFonte({
         type="button"
         {...{ [marca]: '' }}
         {...ajuda(ajudaId)}
-        title={rotulo}
         aria-label={rotulo}
         aria-expanded={aberto}
         onClick={() => setAberto((v) => !v)}
