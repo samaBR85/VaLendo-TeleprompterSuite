@@ -163,9 +163,6 @@ export function PesoDaFonte({
         onValue={(i) => onChange(degraus[i] ?? valor)}
         className="w-full"
       />
-      {umaFaceSo ? (
-        <span className="mt-1 block text-[10px] leading-tight text-[var(--color-fog-3)]">{avisoDeFaceUnica}</span>
-      ) : null}
     </label>
   )
 }

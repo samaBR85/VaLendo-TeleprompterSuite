@@ -535,6 +535,15 @@
     border: 1px solid var(--color-edge);
   }
 
+  /* mesma linguagem do `.k-tecla:disabled` — apagado, não escondido. Sem esta
+     regra o navegador não muda nada sozinho num `appearance:none`, e o único
+     sinal de "esta fonte tem um peso só" era a frase escrita embaixo — que
+     empurrava os controles seguintes toda vez que aparecia */
+  input[type='range'].k-slider:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
   /* a miniatura para dentro do card de vídeo: mesmo desenho, escala menor */
   input[type='range'].k-slider-mini::-webkit-slider-runnable-track {
     height: 3px;
