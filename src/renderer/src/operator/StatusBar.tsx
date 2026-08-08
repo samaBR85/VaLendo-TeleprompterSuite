@@ -7,13 +7,22 @@ import { Poco, Tecla } from '../ui/console'
 import { useT } from '../i18n'
 import { ajuda } from '../ui/ajuda'
 
+/** O recado de "salvou" / "abriu" / "deu erro" — nasce em App.tsx, mora aqui. */
+export interface Notice {
+  title: string
+  lines: string[]
+  tone: 'ok' | 'warn'
+}
+
 interface Props {
   state: AppState
   tab: Tab
   history: HistoryInfo
   storage: StorageHealth
+  notice: Notice | null
   onModeChange: (mode: LayoutMode) => void
   onOpenPalette: () => void
+  onDismissNotice: () => void
 }
 
 const MODOS: {
@@ -112,6 +121,47 @@ function LuzDeGravacao({ storage }: { storage: StorageHealth }): React.JSX.Eleme
 }
 
 /**
+ * O recado de salvar/abrir, no lugar do balão flutuante que cobria o canto
+ * da tela por cima do roteiro.
+ *
+ * Título e caminho na MESMA sentença, e ela pode quebrar em até DUAS linhas
+ * (`line-clamp-2`) antes de cortar com reticências — 38px de barra sobram
+ * para isso com fonte de 10px e entrelinha apertada. Uma mensagem curta cabe
+ * numa linha só; um caminho de verdade ("D:\...\PROGRAMETES - 2608.valendo")
+ * usa a segunda antes de precisar cortar. O `title` no `<p>` devolve o texto
+ * inteiro ao passar o mouse, para quando nem duas linhas bastam.
+ *
+ * `min-w-0` no `<p>` é o que permite o corte funcionar dentro de um flex
+ * item — sem ele, um item flex nunca encolhe abaixo do próprio conteúdo, e
+ * o texto empurraria o Ctrl+K para fora da barra em vez de quebrar.
+ */
+function AvisoDoRodape({ notice, onDismiss }: { notice: Notice; onDismiss: () => void }): React.JSX.Element {
+  const { t } = useT()
+  const cor = notice.tone === 'ok' ? 'var(--color-go)' : 'var(--color-warn)'
+  const texto = notice.lines.length ? `${notice.title} — ${notice.lines.join(' · ')}` : notice.title
+  return (
+    <div data-notice={notice.tone} className="flex min-w-0 items-center gap-1.5">
+      <p
+        className="line-clamp-2 min-w-0 max-w-[280px] text-[10px] leading-[1.3] break-all"
+        style={{ color: cor }}
+        title={texto}
+      >
+        <span className="font-semibold">{notice.title}</span>
+        {notice.lines.length ? ` — ${notice.lines.join(' · ')}` : null}
+      </p>
+      <button
+        type="button"
+        aria-label={t('app.dismiss')}
+        onClick={onDismiss}
+        className="flex-none text-[var(--color-fog-3)] hover:text-[var(--color-fog-0)]"
+      >
+        <Icon name="close" size={10} />
+      </button>
+    </div>
+  )
+}
+
+/**
  * O rodapé: estado à esquerda, ponto de vista no centro, comandos à direita.
  *
  * Não tem controle nenhum — a última coisa que ele operava, a duração-alvo,
@@ -123,7 +173,16 @@ function LuzDeGravacao({ storage }: { storage: StorageHealth }): React.JSX.Eleme
  * pela MESMA conta. Repetir o número em dois lugares não dá duas certezas —
  * ensina o olho a não confiar em nenhum dos dois.
  */
-export function StatusBar({ state, tab, history, storage, onModeChange, onOpenPalette }: Props): React.JSX.Element {
+export function StatusBar({
+  state,
+  tab,
+  history,
+  storage,
+  notice,
+  onModeChange,
+  onOpenPalette,
+  onDismissNotice
+}: Props): React.JSX.Element {
   const { t, tp } = useT()
 
   return (
@@ -143,19 +202,26 @@ export function StatusBar({ state, tab, history, storage, onModeChange, onOpenPa
         <ModeSwitch mode={state.layoutMode} onChange={onModeChange} />
       </div>
 
-      <div className="ml-auto flex items-center gap-[9px]">
-        {/* era um texto solto dizendo que o atalho existe. Como tecla ele passa
-            a ser também a porta: quem nunca decorou o Ctrl+K clica */}
-        <Tecla
-          data-palette
-          {...ajuda('status.palette')}
-          title={t('cmd.palette.open')}
-          onClick={onOpenPalette}
-          className="rounded px-[7px] py-[3px] font-mono text-[10px] font-semibold text-[var(--color-fog-2)]"
-        >
-          Ctrl+K
-        </Tecla>
-        <span className="text-[10px] font-medium text-[var(--color-fog-3)]">{t('status.commands')}</span>
+      {/* o recado de salvar/abrir mora entre o seletor de modo e o Ctrl+K —
+          onde antes era um balão flutuante em cima do roteiro. O `min-w-0`
+          aqui é o que deixa o texto do recado encolher (e quebrar em duas
+          linhas) em vez de empurrar o Ctrl+K para fora da barra. */}
+      <div className="ml-auto flex min-w-0 items-center gap-3">
+        {notice ? <AvisoDoRodape notice={notice} onDismiss={onDismissNotice} /> : null}
+        <div className="flex flex-none items-center gap-[9px]">
+          {/* era um texto solto dizendo que o atalho existe. Como tecla ele
+              passa a ser também a porta: quem nunca decorou o Ctrl+K clica */}
+          <Tecla
+            data-palette
+            {...ajuda('status.palette')}
+            title={t('cmd.palette.open')}
+            onClick={onOpenPalette}
+            className="rounded px-[7px] py-[3px] font-mono text-[10px] font-semibold text-[var(--color-fog-2)]"
+          >
+            Ctrl+K
+          </Tecla>
+          <span className="text-[10px] font-medium text-[var(--color-fog-3)]">{t('status.commands')}</span>
+        </div>
       </div>
     </footer>
   )

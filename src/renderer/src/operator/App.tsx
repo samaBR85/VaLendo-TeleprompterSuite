@@ -41,19 +41,13 @@ import { Editor, type EditorHandle } from './Editor'
 import { Inspector } from './Inspector'
 import { KeymapEditor } from './KeymapEditor'
 import { Sidebar } from './Sidebar'
-import { StatusBar } from './StatusBar'
+import { StatusBar, type Notice } from './StatusBar'
 import { BarraDeArquivo, BarraDeTransporte, PocoDoAr } from './Toolbar'
 import { hint } from '../ui/atalho'
 import { WebviewPanel } from './WebviewPanel'
 import { useCommands } from './useCommands'
 
 const FALLBACK_VIEWPORT = { width: 1_920, height: 1_080 }
-
-interface Notice {
-  title: string
-  lines: string[]
-  tone: 'ok' | 'warn'
-}
 
 /**
  * O "83 palavras · 1:54" do cabeçalho da Edição. Palavras é a contagem de
@@ -2230,40 +2224,11 @@ function AppConteudo({
         tab={tab}
         history={history}
         storage={storage}
+        notice={notice}
         onModeChange={(mode) => dispatch({ type: 'layout/mode', mode })}
         onOpenPalette={() => setPalette(true)}
+        onDismissNotice={() => setNotice(null)}
       />
-
-      {notice ? (
-        <div
-          data-notice={notice.tone}
-          className={`absolute right-4 bottom-10 z-40 w-[340px] rounded-lg border bg-[var(--color-ink-2)] px-3 py-2.5 ${
-            notice.tone === 'ok' ? 'border-[var(--color-go)]/40' : 'border-[var(--color-warn)]/40'
-          }`}
-        >
-          <div className="mb-1 flex items-center gap-2">
-            <span
-              className="text-[11px] font-medium"
-              style={{ color: notice.tone === 'ok' ? 'var(--color-go)' : 'var(--color-warn)' }}
-            >
-              {notice.title}
-            </span>
-            <button
-              type="button"
-              aria-label={t('app.dismiss')}
-              onClick={() => setNotice(null)}
-              className="ml-auto text-[var(--color-fog-2)] hover:text-[var(--color-fog-0)]"
-            >
-              <Icon name="close" size={12} />
-            </button>
-          </div>
-          {notice.lines.map((message, index) => (
-            <p key={index} className="text-[11px] leading-relaxed break-all text-[var(--color-fog-1)]">
-              {message}
-            </p>
-          ))}
-        </div>
-      ) : null}
 
       {webviewOpen ? (
         <WebviewPanel
