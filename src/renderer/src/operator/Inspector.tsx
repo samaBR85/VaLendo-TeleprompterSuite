@@ -98,6 +98,20 @@ export function Inspector({
      de desfazer. Nada é gravado; fechar o menu devolve a tira à escolhida */
   const [fonteSobOMouse, setFonteSobOMouse] = useState<string | null>(null)
 
+  /**
+   * O cadeado da aba Texto: apaga fonte, tamanho, peso, cores e alinhamento
+   * sem sair da tela, para o operador não mudar nada por engano com a
+   * leitura em curso — um tropeço no mouse não pode virar um susto no vidro.
+   *
+   * De propósito EFêMERO, e não preferência da máquina: é um "agora não" de
+   * durante um programa, não um hábito que deveria sobreviver a fechar o
+   * app. Persistir isto arriscaria o oposto do que ele promete — o operador
+   * abrindo a mesa três dias depois, sem lembrar por que os controles não
+   * respondem. O mesmo raciocínio do CATCH, em `App.tsx`.
+   */
+  const [travado, setTravado] = useState(false)
+  const mudo = travado ? 'pointer-events-none opacity-40' : ''
+
   // salvar o padrão quando já havia um não muda nada na tela; sem esta
   // confirmação o operador não teria como saber se o clique pegou
   const [salvou, setSalvou] = useState(false)
@@ -151,21 +165,23 @@ export function Inspector({
       {aba === 'texto' ? (
         <>
       <Group>
-        {/* a amostra vem ANTES do seletor, não depois: o menu de fontes abre
-            para baixo e cobriria a própria amostra que deveria mostrar —
-            passar o mouse pelas opções não teria o que revelar */}
-        <AmostraDaSaida
-          a={a}
-          familia={fonteSobOMouse ?? a.fontFamily}
-          nome={t(
-            (FONT_OPTIONS.find((f) => f.value === (fonteSobOMouse ?? a.fontFamily)) ?? FONT_OPTIONS[0])
-              .chave
-          )}
-        />
         {/* a família e a caixa alta na mesma fileira: as duas dizem com que
             LETRA a saída é desenhada, e a segunda cabe num "AA" ao lado sem
-            gastar uma linha do painel */}
+            gastar uma linha do painel. O cadeado mora aqui, fora do bloco
+            que ele apaga — senão travar a aba também travaria o próprio
+            botão de destravar. */}
         <div className="flex items-stretch gap-1.5">
+          <Ficha
+            ativa={travado}
+            {...ajuda('insp.textLock')}
+            title={t('insp.textLock')}
+            aria-label={t('insp.textLock')}
+            aria-pressed={travado}
+            onClick={() => setTravado((v) => !v)}
+            className="flex-none px-2"
+          >
+            <Icon name={travado ? 'lock' : 'unlock'} size={13} />
+          </Ficha>
           <SeletorDeFonte
             opcoes={FONT_OPTIONS}
             valor={a.fontFamily}
@@ -174,7 +190,7 @@ export function Inspector({
             ajudaId="insp.font"
             direcao="baixo"
             marca="data-fonte-da-saida"
-            classeCaixa="relative min-w-0 flex-1"
+            classeCaixa={`relative min-w-0 flex-1 ${mudo}`}
             classeGatilho="flex w-full items-center gap-1 rounded-md border border-[var(--color-edge)] bg-[#212126] px-2 py-1.5 text-[11px] text-[var(--color-fog-05)]"
             nomeDa={(chave) => t(chave)}
             onEscolher={(fontFamily) => patch({ fontFamily })}
@@ -191,77 +207,96 @@ export function Inspector({
             aria-label={t('insp.allCaps')}
             aria-pressed={a.allCaps}
             onClick={() => patch({ allCaps: !a.allCaps })}
-            className="flex-none px-2.5 text-[11px] font-bold tracking-[0.06em]"
+            className={`flex-none px-2.5 text-[11px] font-bold tracking-[0.06em] ${mudo}`}
           >
             AA
           </Ficha>
         </div>
-        <Slider
-          ajudaId="insp.body"
-          label={t('insp.body')}
-          value={a.fontSize}
-          min={16}
-          max={260}
-          suffix="px"
-          onChange={(fontSize) => patch({ fontSize })}
-        />
-        <PesoDaFonte
-          valor={a.fontWeight}
-          degraus={pesosDaFonte}
-          rotulo={t('insp.weight')}
-          avisoDeFaceUnica={t('insp.weightOneFace')}
-          onChange={(fontWeight) => patch({ fontWeight })}
-        />
-        <Slider
-          ajudaId="insp.lineHeight"
-          label={t('insp.lineHeight')}
-          value={a.lineHeight}
-          min={1}
-          max={2.4}
-          step={0.05}
-          onChange={(lineHeight) => patch({ lineHeight })}
-        />
-        <Slider
-          ajudaId="insp.letterSpacing"
-          label={t('insp.letterSpacing')}
-          value={a.letterSpacing}
-          min={-0.04}
-          max={0.16}
-          step={0.01}
-          suffix="em"
-          onChange={(letterSpacing) => patch({ letterSpacing })}
-        />
-        {/* `min-w-0` + `truncate`: sem eles, um item flex nunca encolhe abaixo
-            do próprio texto, e a fileira inteira transbordava o painel — era o
-            "Direita" saindo pela borda direita. O rótulo mais longo dos seis
-            idiomas era o "Centralizado" do português, que também encurtou.
-            O truncar é rede de segurança para uma tradução futura, não o
-            comportamento esperado: o nome inteiro fica no `title`. */}
-        <div className="flex gap-1.5">
-          {(['left', 'center', 'right'] as const).map((align) => {
-            const rotulo = {
-              left: t('insp.alignLeft'),
-              center: t('insp.alignCenter'),
-              right: t('insp.alignRight')
-            }[align]
-            return (
-              <Ficha
-                key={align}
-                ativa={a.align === align}
-                {...ajuda('insp.align')}
-                title={rotulo}
-                onClick={() => patch({ align })}
-                className="min-w-0 flex-1 truncate px-1.5 py-1.5 text-[11px]"
-              >
-                {rotulo}
-              </Ficha>
-            )
-          })}
+        {/* tudo abaixo desta linha é o que o cadeado apaga: a amostra vem
+            ANTES do seletor, não depois — o menu de fontes abre para baixo e
+            cobriria a própria amostra que deveria mostrar, passar o mouse
+            pelas opções não teria o que revelar. Ela entra no bloco mudo
+            também: sozinha brilhando entre dois grupos apagados pareceria
+            um esquecimento, não uma escolha. */}
+        <div className={`flex flex-col gap-2 ${mudo}`}>
+          <AmostraDaSaida
+            a={a}
+            familia={fonteSobOMouse ?? a.fontFamily}
+            nome={t(
+              (FONT_OPTIONS.find((f) => f.value === (fonteSobOMouse ?? a.fontFamily)) ?? FONT_OPTIONS[0])
+                .chave
+            )}
+          />
+          <Slider
+            ajudaId="insp.body"
+            label={t('insp.body')}
+            value={a.fontSize}
+            min={16}
+            max={260}
+            suffix="px"
+            onChange={(fontSize) => patch({ fontSize })}
+          />
+          <PesoDaFonte
+            valor={a.fontWeight}
+            degraus={pesosDaFonte}
+            rotulo={t('insp.weight')}
+            avisoDeFaceUnica={t('insp.weightOneFace')}
+            onChange={(fontWeight) => patch({ fontWeight })}
+          />
+          <Slider
+            ajudaId="insp.lineHeight"
+            label={t('insp.lineHeight')}
+            value={a.lineHeight}
+            min={1}
+            max={2.4}
+            step={0.05}
+            onChange={(lineHeight) => patch({ lineHeight })}
+          />
+          <Slider
+            ajudaId="insp.letterSpacing"
+            label={t('insp.letterSpacing')}
+            value={a.letterSpacing}
+            min={-0.04}
+            max={0.16}
+            step={0.01}
+            suffix="em"
+            onChange={(letterSpacing) => patch({ letterSpacing })}
+          />
+          {/* `min-w-0` + `truncate`: sem eles, um item flex nunca encolhe abaixo
+              do próprio texto, e a fileira inteira transbordava o painel — era o
+              "Direita" saindo pela borda direita. O rótulo mais longo dos seis
+              idiomas era o "Centralizado" do português, que também encurtou.
+              O truncar é rede de segurança para uma tradução futura, não o
+              comportamento esperado: o nome inteiro fica no `title`. */}
+          <div className="flex gap-1.5">
+            {(['left', 'center', 'right'] as const).map((align) => {
+              const rotulo = {
+                left: t('insp.alignLeft'),
+                center: t('insp.alignCenter'),
+                right: t('insp.alignRight')
+              }[align]
+              return (
+                <Ficha
+                  key={align}
+                  ativa={a.align === align}
+                  {...ajuda('insp.align')}
+                  title={rotulo}
+                  onClick={() => patch({ align })}
+                  className="min-w-0 flex-1 truncate px-1.5 py-1.5 text-[11px]"
+                >
+                  {rotulo}
+                </Ficha>
+              )
+            })}
+          </div>
         </div>
       </Group>
 
       {/* cor mora junto da fonte: trocar o corpo e trocar o fundo são a mesma
-          decisão de legibilidade, e separá-las obrigava a ir e voltar */}
+          decisão de legibilidade, e separá-las obrigava a ir e voltar. O
+          grupo inteiro entra no bloco mudo — aqui não há nada que precise
+          ficar de fora, ao contrário do cadeado lá em cima. */}
+      <div className={mudo}>
       <Group label={t('insp.colors')}>
         <div className="flex items-center gap-2 text-[11px]">
           <label className="flex flex-1 items-center gap-1.5" {...ajuda('insp.textColor')}>
@@ -327,6 +362,7 @@ export function Inspector({
           {t('insp.invert')}
         </Ficha>
       </Group>
+      </div>
 
         </>
       ) : null}

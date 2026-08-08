@@ -148,6 +148,8 @@ export const pt = {
   'insp.wrapping.detail': 'Não cabem {words} palavras na largura desta saída com {size}px.',
   'insp.wrapping.fix': 'Ajustar corpo para {size}px',
 
+  'insp.textLock': 'Travar ajustes de texto',
+
   'insp.font': 'Fonte',
 
   'insp.body': 'Corpo',

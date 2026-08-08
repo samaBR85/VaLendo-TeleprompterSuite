@@ -135,6 +135,8 @@ export const en: Dicionario = {
   'insp.wrapping.detail': '{words} words do not fit this output’s width at {size}px.',
   'insp.wrapping.fix': 'Set size to {size}px',
 
+  'insp.textLock': 'Lock text settings',
+
   'insp.font': 'Typeface',
 
   'insp.body': 'Size',

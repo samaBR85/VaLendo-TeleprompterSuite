@@ -51,6 +51,8 @@ export type IconName =
   | 'alinharEsquerda'
   | 'alinharCentro'
   | 'alinharDireita'
+  | 'lock'
+  | 'unlock'
 
 const PATHS: Record<IconName, string> = {
   volume: 'M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6',
@@ -173,7 +175,12 @@ const PATHS: Record<IconName, string> = {
   /* Quem fala: cabeça e ombros, o desenho universal de "pessoa". Os ombros
      abertos, e não um círculo com um corpo colado, para o glifo continuar
      legível a 13px na barra da Edição. */
-  presenter: 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M4 21a8 8 0 0 1 16 0'
+  presenter: 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M4 21a8 8 0 0 1 16 0',
+  /* O cadeado fechado e o aberto compartilham o corpo — só a argola muda: uma
+     desce e fecha nos dois pés, a outra fica erguida e solta de um lado. É a
+     mesma leitura de qualquer app: fechado prende, aberto libera. */
+  lock: 'M6 11V7a6 6 0 0 1 12 0V11M5 11h14v9H5zM12 14.5v3',
+  unlock: 'M6 11V7a6 6 0 0 1 11-4M5 11h14v9H5zM12 14.5v3'
 }
 
 interface Props {

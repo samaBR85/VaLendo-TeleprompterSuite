@@ -135,6 +135,8 @@ export const es: Dicionario = {
   'insp.wrapping.detail': 'No caben {words} palabras en el ancho de esta salida con {size}px.',
   'insp.wrapping.fix': 'Ajustar el cuerpo a {size}px',
 
+  'insp.textLock': 'Bloquear ajustes de texto',
+
   'insp.font': 'Tipografía',
 
   'insp.body': 'Cuerpo',

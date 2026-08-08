@@ -573,6 +573,10 @@ export const ajudaEs = {
     nome: 'Salida',
     texto: 'Lo que solo existe en la pantalla del presentador: los relojes y el espejo que necesita el cristal de un teleprompter real.'
   },
+  'insp.textLock': {
+    nome: 'Bloquear ajustes de texto',
+    texto: 'Apaga fuente, tamaño, peso, interlineado, espaciado, alineación y colores — nada cambia por error durante la lectura. Vuelve a pulsar para desbloquear.'
+  },
   'insp.font': {
     nome: 'Tipografía',
     texto: 'La familia que lee el presentador. Las que se ofrecen son las que sobreviven a leerse a distancia, en espejo.'

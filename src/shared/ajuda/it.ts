@@ -573,6 +573,10 @@ export const ajudaIt = {
     nome: 'Uscita',
     texto: 'Ciò che esiste solo sullo schermo del presentatore: gli orologi e lo specchiamento richiesti dal vetro di un vero teleprompter.'
   },
+  'insp.textLock': {
+    nome: 'Blocca le opzioni testo',
+    texto: 'Attenua carattere, corpo, peso, interlinea, spaziatura, allineamento e colori — nulla cambia per sbaglio durante la lettura. Clicca di nuovo per sbloccare.'
+  },
   'insp.font': {
     nome: 'Carattere',
     texto: 'La famiglia che legge il presentatore. Quelle proposte sono quelle che reggono la lettura a distanza, specchiate.'

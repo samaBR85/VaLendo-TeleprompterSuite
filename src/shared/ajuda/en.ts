@@ -600,6 +600,10 @@ export const ajudaEn = {
     nome: 'Output',
     texto: 'What only exists on the presenter screen: the clocks and the mirroring the glass of a real teleprompter needs.'
   },
+  'insp.textLock': {
+    nome: 'Lock text settings',
+    texto: 'Dims font, size, weight, line height, spacing, alignment and colours — nothing changes by accident mid-read. Click again to unlock.'
+  },
   'insp.font': {
     nome: 'Typeface',
     texto: 'The family the presenter reads. The ones offered are the ones that survive being read at distance, in mirror.'

@@ -573,6 +573,10 @@ export const ajudaDe = {
     nome: 'Ausgabe',
     texto: 'Was nur auf dem Bildschirm des Sprechers existiert: die Uhren und die Spiegelung, die das Glas eines echten Teleprompters braucht.'
   },
+  'insp.textLock': {
+    nome: 'Textoptionen sperren',
+    texto: 'Blendet Schrift, Größe, Gewicht, Zeilenhöhe, Laufweite, Ausrichtung und Farben aus — nichts ändert sich versehentlich mitten im Lesen. Erneut klicken zum Entsperren.'
+  },
   'insp.font': {
     nome: 'Schriftart',
     texto: 'Die Familie, die der Sprecher liest. Angeboten werden nur die, die aus der Ferne und im Spiegel lesbar bleiben.'

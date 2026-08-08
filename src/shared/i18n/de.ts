@@ -135,6 +135,8 @@ export const de: Dicionario = {
   'insp.wrapping.detail': '{words} Wörter passen bei {size}px nicht in die Breite dieser Ausgabe.',
   'insp.wrapping.fix': 'Größe auf {size}px setzen',
 
+  'insp.textLock': 'Textoptionen sperren',
+
   'insp.font': 'Schriftart',
 
   'insp.body': 'Größe',

@@ -573,6 +573,10 @@ export const ajudaPt = {
     nome: 'Saída',
     texto: 'O que só existe na tela do apresentador: os relógios e o espelhamento que o vidro de um teleprompter de verdade exige.'
   },
+  'insp.textLock': {
+    nome: 'Travar ajustes de texto',
+    texto: 'Apaga fonte, tamanho, peso, entrelinha, espaçamento, alinhamento e cores — nada muda por engano com a leitura em curso. Clique de novo para destravar.'
+  },
   'insp.font': {
     nome: 'Fonte',
     texto: 'A família que o apresentador lê. As opções oferecidas são as que sobrevivem à leitura a distância, espelhada.'

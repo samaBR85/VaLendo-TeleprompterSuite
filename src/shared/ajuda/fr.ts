@@ -573,6 +573,10 @@ export const ajudaFr = {
     nome: 'Sortie',
     texto: 'Ce qui n’existe que sur l’écran du présentateur : les horloges et le miroir qu’exige le verre d’un vrai prompteur.'
   },
+  'insp.textLock': {
+    nome: 'Verrouiller le texte',
+    texto: 'Estompe police, taille, graisse, interligne, espacement, alignement et couleurs — rien ne change par erreur en pleine lecture. Recliquez pour déverrouiller.'
+  },
   'insp.font': {
     nome: 'Police',
     texto: 'La famille que lit le présentateur. Celles proposées survivent à une lecture à distance, en miroir.'
