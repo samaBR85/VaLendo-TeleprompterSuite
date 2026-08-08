@@ -151,6 +151,17 @@ export function Inspector({
       {aba === 'texto' ? (
         <>
       <Group>
+        {/* a amostra vem ANTES do seletor, não depois: o menu de fontes abre
+            para baixo e cobriria a própria amostra que deveria mostrar —
+            passar o mouse pelas opções não teria o que revelar */}
+        <AmostraDaSaida
+          a={a}
+          familia={fonteSobOMouse ?? a.fontFamily}
+          nome={t(
+            (FONT_OPTIONS.find((f) => f.value === (fonteSobOMouse ?? a.fontFamily)) ?? FONT_OPTIONS[0])
+              .chave
+          )}
+        />
         {/* a família e a caixa alta na mesma fileira: as duas dizem com que
             LETRA a saída é desenhada, e a segunda cabe num "AA" ao lado sem
             gastar uma linha do painel */}
@@ -184,14 +195,6 @@ export function Inspector({
             AA
           </Ficha>
         </div>
-        <AmostraDaSaida
-          a={a}
-          familia={fonteSobOMouse ?? a.fontFamily}
-          nome={t(
-            (FONT_OPTIONS.find((f) => f.value === (fonteSobOMouse ?? a.fontFamily)) ?? FONT_OPTIONS[0])
-              .chave
-          )}
-        />
         <Slider
           ajudaId="insp.body"
           label={t('insp.body')}
